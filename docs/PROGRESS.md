@@ -1,0 +1,73 @@
+# Project Progress & Milestones
+
+Tracking milestones for "Amategeko y'Umuhanda" (Rwanda driving-test theory study app in Rust with GPUI + GPUI Kit).
+
+## Milestones
+
+- [x] **Milestone 1: Question Bank & Asset Extraction** (Completed 2026-10-03)
+  - [x] Implement `tools/extract_questions.py` and `tools/requirements.txt`
+  - [x] Extract all questions into `assets/questions.json` (390 questions from PDF 1..433)
+  - [x] Extract, crop, and optimize sign/marking images into `assets/images/q{id}.png` (128 images)
+  - [x] Identify correct options via parenthesized letters `(a)`, `(b)`, `(c)`, `(d)` and PDF red text spans
+  - [x] Validate 3-4 options per question, exactly 1 answer (0 errors in validation)
+  - [x] Generate `tools/needs_review.json` and support `assets/overrides.json`
+- [ ] **Milestone 2: Workspace Setup & Mobile Spike**
+  - [ ] Set up Cargo workspace (`crates/core`, `crates/app`, `crates/desktop`, `crates/mobile`)
+  - [ ] Pin exact GPUI/GPUI Kit/gpui-mobile dependencies
+  - [ ] Desktop skeleton with GPUI Kit init and Theme
+  - [ ] Mobile spike on Android (compile check + run on device/emulator)
+  - [ ] Document findings in `MOBILE_NOTES.md`
+- [ ] **Milestone 3: Core Logic & Quiz Engine**
+  - [ ] Data models (`models.rs`), validation, question loader (`data.rs`)
+  - [ ] Platform abstraction traits (`Storage`, `Clock`) (`platform.rs`)
+  - [ ] Quiz engine (`quiz.rs`): Easy, Medium, Hard, weak questions practice
+  - [ ] Deadline-based monotonic/wall-clock timer (`timer.rs`)
+  - [ ] In-progress attempt persistence & recovery
+  - [ ] Statistics calculator (`stats.rs`)
+  - [ ] Complete Kinyarwanda translations (`i18n.rs`)
+  - [ ] Comprehensive unit tests for core
+- [ ] **Milestone 4: Responsive App Shell & Home Screen**
+  - [ ] Breakpoint-based responsive shell (`responsive.rs`, `shell.rs`)
+  - [ ] Desktop sidebar navigation vs Mobile bottom navigation bar
+  - [ ] Home screen (`home.rs`) with 3 mode cards, stats tiles, resume banner, weak practice card
+- [ ] **Milestone 5: Easy Mode (Layout A)**
+  - [ ] Instant feedback (green/red highlights, check/x icons, result explanation line)
+  - [ ] Free navigation (previous, next, skip), star/bookmark toggle
+  - [ ] Answer locking after first tap
+- [ ] **Milestone 6: Medium Mode (Layout A - Exam Simulation)**
+  - [ ] Countdown timer (turns red in last 2 mins), auto-submit at 0
+  - [ ] 20-cell question grid (desktop inline, mobile bottom sheet)
+  - [ ] Flags, answer changing, finish confirmation dialog listing unanswered questions
+- [ ] **Milestone 7: Hard Mode (Layout B - Strict Mode)**
+  - [ ] Shorter countdown, image question weighting
+  - [ ] Segmented progress bar, two-column desktop vs single-column mobile
+  - [ ] Strict navigation (no back, no skip, no pause, no grid)
+  - [ ] Selection validation before confirmation
+- [ ] **Milestone 8: Results Screen**
+  - [ ] Circular score badge, pass/fail status, filter chips
+  - [ ] Expandable question cards comparing user answer vs correct answer
+  - [ ] Retry mode & "Subiramo ibyo nakosheje" (retry wrong)
+  - [ ] Attempt history persistence
+- [ ] **Milestone 9: Ibibazo Screen (Question Bank / Study)**
+  - [ ] Search by text or question number
+  - [ ] Filter chips (all, has image, mistakes, starred)
+  - [ ] "Hisha ibisubizo" (hide answers) switch
+  - [ ] Smooth virtualized list (433 rows), star persistence
+- [ ] **Milestone 10: Imibare Screen (Statistics)**
+  - [ ] Metric tiles (attempts, average, high score, pass rate)
+  - [ ] 10-attempt bar chart with pass mark threshold line
+  - [ ] Most-missed questions card + practice launcher
+  - [ ] Mode breakdown & questions-seen progress
+- [ ] **Milestone 11: Igenamiterere Screen (Settings)**
+  - [ ] Mode timer sliders, pass mark slider
+  - [ ] Theme segmented control (Light / Dark / System)
+  - [ ] Font size slider with live preview
+  - [ ] Feature switches (desktop shortcuts, image weight, show answers)
+  - [ ] Clear history with confirmation
+- [ ] **Milestone 12: Polish, Mobile Optimization & Documentation**
+  - [ ] Mobile touch targets (>= 44px) & safe-area insets
+  - [ ] Android Back button handling
+  - [ ] App lifecycle pause/resume save
+  - [ ] Headless UI tests with GPUI Kit test harness
+  - [ ] Comprehensive README update with Windows and Android build/install instructions
+- [ ] **Milestone 13: Optional iOS Verification**
