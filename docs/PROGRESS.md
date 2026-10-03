@@ -53,11 +53,11 @@ Tracking milestones for "Amategeko y'Umuhanda" (Rwanda driving-test theory study
   - [x] Filter chips (all, has image, mistakes, starred)
   - [x] "Hisha ibisubizo" (hide answers) switch & flashcard interaction
   - [x] Smooth scrolling list of 390 questions, star persistence
-- [ ] **Milestone 10: Imibare Screen (Statistics)**
-  - [ ] Metric tiles (attempts, average, high score, pass rate)
-  - [ ] 10-attempt bar chart with pass mark threshold line
-  - [ ] Most-missed questions card + practice launcher
-  - [ ] Mode breakdown & questions-seen progress
+- [x] **Milestone 10: Imibare Screen (Statistics)** (Completed 2026-10-03)
+  - [x] Metric tiles (attempts, average, high score, pass rate)
+  - [x] 10-attempt bar chart with pass mark threshold line
+  - [x] Most-missed questions card + practice launcher
+  - [x] Mode breakdown & questions-seen progress
 - [ ] **Milestone 11: Igenamiterere Screen (Settings)**
   - [ ] Mode timer sliders, pass mark slider
   - [ ] Theme segmented control (Light / Dark / System)

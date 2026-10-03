@@ -3,3 +3,4 @@ pub mod questions;
 pub mod quiz;
 pub mod results;
 pub mod shell;
+pub mod stats;
