@@ -17,15 +17,15 @@ Tracking milestones for "Amategeko y'Umuhanda" (Rwanda driving-test theory study
   - [x] Desktop skeleton with GPUI Kit init and Theme
   - [x] Mobile spike on Android (compiled native ARM64 shared library & verified Gradle APK packaging)
   - [x] Document findings in `MOBILE_NOTES.md`
-- [ ] **Milestone 3: Core Logic & Quiz Engine**
-  - [ ] Data models (`models.rs`), validation, question loader (`data.rs`)
-  - [ ] Platform abstraction traits (`Storage`, `Clock`) (`platform.rs`)
-  - [ ] Quiz engine (`quiz.rs`): Easy, Medium, Hard, weak questions practice
-  - [ ] Deadline-based monotonic/wall-clock timer (`timer.rs`)
-  - [ ] In-progress attempt persistence & recovery
-  - [ ] Statistics calculator (`stats.rs`)
-  - [ ] Complete Kinyarwanda translations (`i18n.rs`)
-  - [ ] Comprehensive unit tests for core
+- [x] **Milestone 3: Core Logic & Quiz Engine** (Completed 2026-10-03)
+  - [x] Data models (`models.rs`), validation, question loader (`data.rs`)
+  - [x] Platform abstraction traits (`Storage`, `Clock`) (`platform.rs`)
+  - [x] Quiz engine (`quiz.rs`): Easy, Medium, Hard, weak questions practice
+  - [x] Deadline-based monotonic/wall-clock timer (`timer.rs`)
+  - [x] In-progress attempt persistence & recovery
+  - [x] Statistics calculator (`stats.rs`)
+  - [x] Complete Kinyarwanda translations (`i18n.rs`)
+  - [x] Comprehensive unit tests for core (10/10 passed)
 - [ ] **Milestone 4: Responsive App Shell & Home Screen**
   - [ ] Breakpoint-based responsive shell (`responsive.rs`, `shell.rs`)
   - [ ] Desktop sidebar navigation vs Mobile bottom navigation bar
