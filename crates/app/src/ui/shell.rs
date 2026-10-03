@@ -3,7 +3,8 @@ use crate::ui::home::HomeView;
 use crate::ui::questions::{QuestionsFilter, QuestionsView};
 use crate::ui::quiz::QuizView;
 use crate::ui::results::{ResultFilter, ResultsView};
-use amategeko_core::{QuizEngine, Strings};
+use crate::ui::stats::StatsView;
+use amategeko_core::{QuizEngine, QuizMode, Strings};
 use gpui::InteractiveElement as _;
 use gpui_kit::base::StyledExt;
 use gpui_kit::component::{ActiveTheme, Icon, IconName};
@@ -212,22 +213,20 @@ impl Render for ShellView {
                 },
             )
             .into_any_element(),
-            Screen::Stats => div()
-                .flex()
-                .flex_col()
-                .size_full()
-                .items_center()
-                .justify_center()
-                .gap_4()
-                .p_4()
-                .child(
-                    div()
-                        .text_xl()
-                        .font_bold()
-                        .text_color(colors.foreground)
-                        .child(Strings::STATS_TITLE),
-                )
-                .into_any_element(),
+            Screen::Stats => StatsView::render(
+                &self.state,
+                is_desktop,
+                cx,
+                |this, _, cx| {
+                    this.state.start_quiz(QuizMode::WeakPractice);
+                    cx.notify();
+                },
+                |this, _, cx| {
+                    this.state.navigate(Screen::Home);
+                    cx.notify();
+                },
+            )
+            .into_any_element(),
             Screen::Settings => div()
                 .flex()
                 .flex_col()
