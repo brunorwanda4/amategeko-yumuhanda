@@ -14,6 +14,7 @@ impl QuizView {
     pub fn render<V: 'static>(
         state: &AppState,
         _is_desktop: bool,
+        is_focus_mode: bool,
         cx: &mut Context<V>,
         on_select_option: impl Fn(&mut V, &str, &mut Window, &mut Context<V>) + 'static + Copy,
         on_next: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
@@ -23,6 +24,7 @@ impl QuizView {
         on_jump_to: impl Fn(&mut V, usize, &mut Window, &mut Context<V>) + 'static + Copy,
         on_toggle_flag: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
         on_toggle_star: impl Fn(&mut V, u32, &mut Window, &mut Context<V>) + 'static + Copy,
+        on_toggle_focus: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
         on_finish_request: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
         on_abandon_request: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
     ) -> impl IntoElement {
@@ -74,7 +76,7 @@ impl QuizView {
             .flex_col()
             .size_full()
             .bg(colors.background)
-            // Top Bar: Back / Mode Badge / Counter / Timer / Quick Action
+            // Top Bar: Back / Mode Badge / Counter / Timer / Quick Action / Focus Toggle
             .child(
                 div()
                     .flex()
@@ -142,7 +144,7 @@ impl QuizView {
                                     .child(format!("{}/{}", current_idx + 1, total_questions)),
                             ),
                     )
-                    // Timer & Star / Flag Actions
+                    // Timer & Star / Flag Actions & Focus Mode Button
                     .child(
                         div()
                             .flex()
@@ -255,32 +257,83 @@ impl QuizView {
                                                 .text_color(flag_color),
                                         ),
                                 )
-                            }),
+                            })
+                            // Focus on questions toggle button
+                            .child(
+                                div()
+                                    .id("focus_mode_btn")
+                                    .flex()
+                                    .flex_row()
+                                    .items_center()
+                                    .gap_1p5()
+                                    .px_2p5()
+                                    .py_1()
+                                    .rounded_lg()
+                                    .border_1()
+                                    .border_color(if is_focus_mode {
+                                        colors.primary
+                                    } else {
+                                        colors.border
+                                    })
+                                    .bg(if is_focus_mode {
+                                        colors.primary
+                                    } else {
+                                        colors.background
+                                    })
+                                    .cursor_pointer()
+                                    .hover(|el| el.bg(colors.accent))
+                                    .on_click(cx.listener(move |this, _, window, cx| {
+                                        on_toggle_focus(this, window, cx);
+                                    }))
+                                    .child(
+                                        Icon::new(if is_focus_mode {
+                                            IconName::Minimize
+                                        } else {
+                                            IconName::Maximize
+                                        })
+                                        .size(px(15.0))
+                                        .text_color(
+                                            if is_focus_mode {
+                                                colors.primary_foreground
+                                            } else {
+                                                colors.foreground
+                                            },
+                                        ),
+                                    )
+                                    .child(
+                                        div()
+                                            .text_xs()
+                                            .font_semibold()
+                                            .text_color(if is_focus_mode {
+                                                colors.primary_foreground
+                                            } else {
+                                                colors.foreground
+                                            })
+                                            .child(if is_focus_mode {
+                                                "Kureka kwibanda"
+                                            } else {
+                                                "Kwibanda"
+                                            }),
+                                    ),
+                            ),
                     ),
             )
             // Segmented Progress Bar (Hard mode)
             .when(attempt.mode == QuizMode::Bikomeye, |el| {
-                el.child(
-                    div()
-                        .flex()
-                        .flex_row()
-                        .w_full()
-                        .h(px(4.0))
-                        .children((0..total_questions).map(|i| {
-                            let seg_color = if i < current_idx {
-                                colors.primary
-                            } else if i == current_idx {
-                                colors.accent
-                            } else {
-                                colors.border
-                            };
-                            div()
-                                .flex_1()
-                                .h_full()
-                                .bg(seg_color)
-                                .when(i > 0, |seg| seg.border_l_1().border_color(colors.background))
-                        })),
-                )
+                el.child(div().flex().flex_row().w_full().h(px(4.0)).children(
+                    (0..total_questions).map(|i| {
+                        let seg_color = if i < current_idx {
+                            colors.primary
+                        } else if i == current_idx {
+                            colors.accent
+                        } else {
+                            colors.border
+                        };
+                        div().flex_1().h_full().bg(seg_color).when(i > 0, |seg| {
+                            seg.border_l_1().border_color(colors.background)
+                        })
+                    }),
+                ))
             })
             // Question Grid (Medium mode)
             .when(attempt.mode == QuizMode::Hagati, |el| {
@@ -357,120 +410,123 @@ impl QuizView {
                     .flex_1()
                     .overflow_y_scroll()
                     .p_4()
-                    .gap_4()
-                    // Question text
-                    .child(
-                        div()
-                            .text_lg()
-                            .font_bold()
-                            .text_color(colors.foreground)
-                            .child(format!("{}. {}", current_q.id, current_q.text)),
-                    )
-                    // Sign image (if question has an image)
-                    .when(current_q.has_image, |el| {
-                        el.child(
-                            div()
-                                .flex()
-                                .items_center()
-                                .justify_center()
-                                .p_2()
-                                .rounded_xl()
-                                .border_1()
-                                .border_color(colors.border)
-                                .bg(colors.secondary)
-                                .child(
-                                    img(format!("assets/images/q{}.png", current_q.id))
-                                        .max_h(px(180.0))
-                                        .rounded_lg(),
-                                ),
-                        )
-                    })
-                    // Options list
                     .child(
                         div()
                             .flex()
                             .flex_col()
-                            .gap_3()
-                            .children(current_q.options.iter().map(|(letter, opt_text)| {
-                                Self::render_option_card(
-                                    attempt,
-                                    letter,
-                                    opt_text,
-                                    &current_q.correct,
-                                    user_ans.as_deref(),
-                                    is_locked,
-                                    cx,
-                                    on_select_option,
+                            .w_full()
+                            .when(is_focus_mode, |el| el.max_w(px(850.0)).mx_auto())
+                            .gap_4()
+                            // Question text
+                            .child(
+                                div()
+                                    .text_lg()
+                                    .font_bold()
+                                    .text_color(colors.foreground)
+                                    .child(format!("{}. {}", current_q.id, current_q.text)),
+                            )
+                            // Sign image (if question has an image)
+                            .when(current_q.has_image, |el| {
+                                el.child(
+                                    div()
+                                        .flex()
+                                        .items_center()
+                                        .justify_center()
+                                        .p_2()
+                                        .rounded_xl()
+                                        .border_1()
+                                        .border_color(colors.border)
+                                        .bg(colors.secondary)
+                                        .child(
+                                            img(format!("assets/images/q{}.png", current_q.id))
+                                                .max_h(px(180.0))
+                                                .rounded_lg(),
+                                        ),
                                 )
-                            })),
-                    )
-                    // Easy mode explanation / hint
-                    .when(attempt.mode.provides_instant_feedback(), |el| {
-                        if let Some(ans) = &user_ans {
-                            let is_correct = ans.eq_ignore_ascii_case(&current_q.correct);
-                            let explanation_text = if is_correct {
-                                Strings::QUIZ_EASY_CORRECT
-                                    .replace("{option}", &current_q.correct.to_uppercase())
-                            } else {
-                                Strings::QUIZ_EASY_WRONG
-                                    .replace("{option}", &current_q.correct.to_uppercase())
-                            };
-                            let exp_color = if is_correct {
-                                colors.success
-                            } else {
-                                colors.danger
-                            };
+                            })
+                            // Options list
+                            .child(div().flex().flex_col().gap_3().children(
+                                current_q.options.iter().map(|(letter, opt_text)| {
+                                    Self::render_option_card(
+                                        attempt,
+                                        letter,
+                                        opt_text,
+                                        &current_q.correct,
+                                        user_ans.as_deref(),
+                                        is_locked,
+                                        cx,
+                                        on_select_option,
+                                    )
+                                }),
+                            ))
+                            // Easy mode explanation / hint
+                            .when(attempt.mode.provides_instant_feedback(), |el| {
+                                if let Some(ans) = &user_ans {
+                                    let is_correct = ans.eq_ignore_ascii_case(&current_q.correct);
+                                    let explanation_text = if is_correct {
+                                        Strings::QUIZ_EASY_CORRECT
+                                            .replace("{option}", &current_q.correct.to_uppercase())
+                                    } else {
+                                        Strings::QUIZ_EASY_WRONG
+                                            .replace("{option}", &current_q.correct.to_uppercase())
+                                    };
+                                    let exp_color = if is_correct {
+                                        colors.success
+                                    } else {
+                                        colors.danger
+                                    };
 
-                            el.child(
-                                div()
-                                    .flex()
-                                    .flex_row()
-                                    .items_center()
-                                    .gap_2()
-                                    .p_3()
-                                    .rounded_lg()
-                                    .border_1()
-                                    .border_color(exp_color)
-                                    .bg(colors.secondary)
-                                    .child(
-                                        Icon::new(if is_correct {
-                                            IconName::Check
-                                        } else {
-                                            IconName::CircleX
-                                        })
-                                        .size(px(18.0))
-                                        .text_color(exp_color),
-                                    )
-                                    .child(
+                                    el.child(
                                         div()
-                                            .text_sm()
-                                            .font_semibold()
-                                            .text_color(exp_color)
-                                            .child(explanation_text),
-                                    ),
-                            )
-                        } else {
-                            el.child(
-                                div()
-                                    .flex()
-                                    .flex_row()
-                                    .items_center()
-                                    .gap_2()
-                                    .p_2()
-                                    .child(
-                                        Icon::new(IconName::Info)
-                                            .size(px(16.0))
-                                            .text_color(colors.muted_foreground),
+                                            .flex()
+                                            .flex_row()
+                                            .items_center()
+                                            .gap_2()
+                                            .p_3()
+                                            .rounded_lg()
+                                            .border_1()
+                                            .border_color(exp_color)
+                                            .bg(colors.secondary)
+                                            .child(
+                                                Icon::new(if is_correct {
+                                                    IconName::Check
+                                                } else {
+                                                    IconName::CircleX
+                                                })
+                                                .size(px(18.0))
+                                                .text_color(exp_color),
+                                            )
+                                            .child(
+                                                div()
+                                                    .text_sm()
+                                                    .font_semibold()
+                                                    .text_color(exp_color)
+                                                    .child(explanation_text),
+                                            ),
                                     )
-                                    .child(
+                                } else {
+                                    el.child(
                                         div()
-                                            .text_xs()
-                                            .text_color(colors.muted_foreground)
-                                            .child(Strings::QUIZ_EASY_HINT),
-                                    ),
-                            )
-                        }
-                    }),
+                                            .flex()
+                                            .flex_row()
+                                            .items_center()
+                                            .gap_2()
+                                            .p_2()
+                                            .child(
+                                                Icon::new(IconName::Info)
+                                                    .size(px(16.0))
+                                                    .text_color(colors.muted_foreground),
+                                            )
+                                            .child(
+                                                div()
+                                                    .text_xs()
+                                                    .text_color(colors.muted_foreground)
+                                                    .child(Strings::QUIZ_EASY_HINT),
+                                            ),
+                                    )
+                                }
+                            }),
+                    ),
             )
             // Bottom Action Navigation Bar
             .child(
@@ -483,97 +539,113 @@ impl QuizView {
                     .border_t_1()
                     .border_color(colors.border)
                     .bg(colors.secondary)
-                    .child(match attempt.mode {
-                        QuizMode::Bikomeye => {
-                            // Hard mode: Single large confirm button
-                            div()
-                                .flex()
-                                .w_full()
-                                .child(
-                                    Button::new("hard_confirm_btn")
-                                        .primary()
-                                        .label(Strings::QUIZ_CONFIRM_ANSWER)
-                                        .on_click(cx.listener(move |this, _, window, cx| {
-                                            on_hard_confirm(this, window, cx);
-                                        })),
-                                )
-                        }
-                        QuizMode::Hagati => {
-                            // Medium mode: Prev, Next, Finish
-                            div()
-                                .flex()
-                                .flex_row()
-                                .w_full()
-                                .items_center()
-                                .justify_between()
-                                .child(
-                                    Button::new("med_prev_btn")
-                                        .outline()
-                                        .label(Strings::QUIZ_PREVIOUS)
-                                        .on_click(cx.listener(move |this, _, window, cx| {
-                                            on_prev(this, window, cx);
-                                        })),
-                                )
-                                .child(
-                                    Button::new("med_next_btn")
-                                        .primary()
-                                        .label(Strings::QUIZ_NEXT)
-                                        .on_click(cx.listener(move |this, _, window, cx| {
-                                            on_next(this, window, cx);
-                                        })),
-                                )
-                                .child(
-                                    Button::new("med_finish_btn")
-                                        .primary()
-                                        .label(Strings::QUIZ_FINISH)
-                                        .on_click(cx.listener(move |this, _, window, cx| {
-                                            on_finish_request(this, window, cx);
-                                        })),
-                                )
-                        }
-                        _ => {
-                            // Easy / Practice mode: Prev, Skip, Next / Finish
-                            let is_last = current_idx + 1 == total_questions;
-                            div()
-                                .flex()
-                                .flex_row()
-                                .w_full()
-                                .items_center()
-                                .justify_between()
-                                .child(
-                                    Button::new("easy_prev_btn")
-                                        .outline()
-                                        .label(Strings::QUIZ_PREVIOUS)
-                                        .on_click(cx.listener(move |this, _, window, cx| {
-                                            on_prev(this, window, cx);
-                                        })),
-                                )
-                                .child(
-                                    Button::new("easy_skip_btn")
-                                        .outline()
-                                        .label(Strings::QUIZ_SKIP)
-                                        .on_click(cx.listener(move |this, _, window, cx| {
-                                            on_skip(this, window, cx);
-                                        })),
-                                )
-                                .child(
-                                    Button::new("easy_next_btn")
-                                        .primary()
-                                        .label(if is_last {
-                                            Strings::QUIZ_FINISH
-                                        } else {
-                                            Strings::QUIZ_NEXT
-                                        })
-                                        .on_click(cx.listener(move |this, _, window, cx| {
-                                            if is_last {
-                                                on_finish_request(this, window, cx);
-                                            } else {
-                                                on_next(this, window, cx);
-                                            }
-                                        })),
-                                )
-                        }
-                    }),
+                    .child(
+                        div()
+                            .flex()
+                            .flex_row()
+                            .w_full()
+                            .when(is_focus_mode, |el| el.max_w(px(850.0)).mx_auto())
+                            .child(match attempt.mode {
+                                QuizMode::Bikomeye => {
+                                    // Hard mode: Single large confirm button
+                                    div().flex().w_full().child(
+                                        Button::new("hard_confirm_btn")
+                                            .primary()
+                                            .label(Strings::QUIZ_CONFIRM_ANSWER)
+                                            .on_click(cx.listener(move |this, _, window, cx| {
+                                                on_hard_confirm(this, window, cx);
+                                            })),
+                                    )
+                                }
+                                QuizMode::Hagati => {
+                                    // Medium mode: Prev, Next, Finish
+                                    div()
+                                        .flex()
+                                        .flex_row()
+                                        .w_full()
+                                        .items_center()
+                                        .justify_between()
+                                        .child(
+                                            Button::new("med_prev_btn")
+                                                .outline()
+                                                .label(Strings::QUIZ_PREVIOUS)
+                                                .on_click(cx.listener(
+                                                    move |this, _, window, cx| {
+                                                        on_prev(this, window, cx);
+                                                    },
+                                                )),
+                                        )
+                                        .child(
+                                            Button::new("med_next_btn")
+                                                .primary()
+                                                .label(Strings::QUIZ_NEXT)
+                                                .on_click(cx.listener(
+                                                    move |this, _, window, cx| {
+                                                        on_next(this, window, cx);
+                                                    },
+                                                )),
+                                        )
+                                        .child(
+                                            Button::new("med_finish_btn")
+                                                .primary()
+                                                .label(Strings::QUIZ_FINISH)
+                                                .on_click(cx.listener(
+                                                    move |this, _, window, cx| {
+                                                        on_finish_request(this, window, cx);
+                                                    },
+                                                )),
+                                        )
+                                }
+                                _ => {
+                                    // Easy / Practice mode: Prev, Skip, Next / Finish
+                                    let is_last = current_idx + 1 == total_questions;
+                                    div()
+                                        .flex()
+                                        .flex_row()
+                                        .w_full()
+                                        .items_center()
+                                        .justify_between()
+                                        .child(
+                                            Button::new("easy_prev_btn")
+                                                .outline()
+                                                .label(Strings::QUIZ_PREVIOUS)
+                                                .on_click(cx.listener(
+                                                    move |this, _, window, cx| {
+                                                        on_prev(this, window, cx);
+                                                    },
+                                                )),
+                                        )
+                                        .child(
+                                            Button::new("easy_skip_btn")
+                                                .outline()
+                                                .label(Strings::QUIZ_SKIP)
+                                                .on_click(cx.listener(
+                                                    move |this, _, window, cx| {
+                                                        on_skip(this, window, cx);
+                                                    },
+                                                )),
+                                        )
+                                        .child(
+                                            Button::new("easy_next_btn")
+                                                .primary()
+                                                .label(if is_last {
+                                                    Strings::QUIZ_FINISH
+                                                } else {
+                                                    Strings::QUIZ_NEXT
+                                                })
+                                                .on_click(cx.listener(
+                                                    move |this, _, window, cx| {
+                                                        if is_last {
+                                                            on_finish_request(this, window, cx);
+                                                        } else {
+                                                            on_next(this, window, cx);
+                                                        }
+                                                    },
+                                                )),
+                                        )
+                                }
+                            }),
+                    ),
             )
     }
 
@@ -633,29 +705,14 @@ impl QuizView {
                         )
                     }
                 } else {
-                    (
-                        colors.border,
-                        colors.secondary,
-                        colors.foreground,
-                        None,
-                    )
+                    (colors.border, colors.secondary, colors.foreground, None)
                 }
             } else {
                 // Medium or Hard mode
                 if is_selected {
-                    (
-                        colors.primary,
-                        colors.sidebar_accent,
-                        colors.primary,
-                        None,
-                    )
+                    (colors.primary, colors.sidebar_accent, colors.primary, None)
                 } else {
-                    (
-                        colors.border,
-                        colors.secondary,
-                        colors.foreground,
-                        None,
-                    )
+                    (colors.border, colors.secondary, colors.foreground, None)
                 }
             };
 
@@ -672,7 +729,9 @@ impl QuizView {
             .border_1()
             .border_color(border_color)
             .bg(bg_color)
-            .when(!is_locked, |el| el.cursor_pointer().hover(|e| e.bg(colors.sidebar_accent)))
+            .when(!is_locked, |el| {
+                el.cursor_pointer().hover(|e| e.bg(colors.sidebar_accent))
+            })
             .on_click(cx.listener(move |this, _, window, cx| {
                 if !is_locked {
                     on_select_option(this, &letter_owned, window, cx);
@@ -713,10 +772,8 @@ impl QuizView {
                     .text_color(text_color)
                     .child(text.to_string()),
             )
-            .children(icon_element.map(|icon| {
-                Icon::new(icon)
-                    .size(px(18.0))
-                    .text_color(text_color)
-            }))
+            .children(
+                icon_element.map(|icon| Icon::new(icon).size(px(18.0)).text_color(text_color)),
+            )
     }
 }

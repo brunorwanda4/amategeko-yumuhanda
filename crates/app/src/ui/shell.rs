@@ -21,6 +21,7 @@ pub struct ShellView {
     pub questions_search: String,
     pub questions_revealed: HashMap<u32, String>,
     pub settings_confirm_clear: bool,
+    pub focus_mode: bool,
 }
 
 impl ShellView {
@@ -33,6 +34,7 @@ impl ShellView {
             questions_search: String::new(),
             questions_revealed: HashMap::new(),
             settings_confirm_clear: false,
+            focus_mode: false,
         }
     }
 }
@@ -69,6 +71,7 @@ impl Render for ShellView {
             Screen::Quiz => QuizView::render(
                 &self.state,
                 is_desktop,
+                self.focus_mode,
                 cx,
                 |this, opt, _, cx| {
                     this.state.record_current_answer(opt);
@@ -122,10 +125,16 @@ impl Render for ShellView {
                     cx.notify();
                 },
                 |this, _, cx| {
+                    this.focus_mode = !this.focus_mode;
+                    cx.notify();
+                },
+                |this, _, cx| {
+                    this.focus_mode = false;
                     this.state.finish_current_quiz();
                     cx.notify();
                 },
                 |this, _, cx| {
+                    this.focus_mode = false;
                     this.state.discard_in_progress();
                     this.state.navigate(Screen::Home);
                     cx.notify();
@@ -264,6 +273,11 @@ impl Render for ShellView {
                                 !this.state.settings.desktop_shortcuts_enabled;
                             this.state.save_settings(this.state.settings.clone());
                         }
+                        SettingsAction::ToggleShowAllAnswersAtEnd => {
+                            this.state.settings.study_hide_answers =
+                                !this.state.settings.study_hide_answers;
+                            this.state.save_settings(this.state.settings.clone());
+                        }
                         SettingsAction::SetTheme(mode) => {
                             let old_theme = this.state.settings.theme;
                             this.state.settings.theme = mode;
@@ -284,12 +298,20 @@ impl Render for ShellView {
                         }
                         SettingsAction::DecFontScale => {
                             this.state.settings.font_size_scale =
-                                (this.state.settings.font_size_scale - 0.05).max(0.85);
+                                (this.state.settings.font_size_scale - 0.05).max(0.80);
                             this.state.save_settings(this.state.settings.clone());
                         }
                         SettingsAction::IncFontScale => {
                             this.state.settings.font_size_scale =
-                                (this.state.settings.font_size_scale + 0.05).min(1.25);
+                                (this.state.settings.font_size_scale + 0.05).min(1.33);
+                            this.state.save_settings(this.state.settings.clone());
+                        }
+                        SettingsAction::ResetDefaults => {
+                            this.state.settings = amategeko_core::Settings::default();
+                            this.state.save_settings(this.state.settings.clone());
+                            Theme::sync_system_appearance(Some(window), cx);
+                        }
+                        SettingsAction::SaveSettings => {
                             this.state.save_settings(this.state.settings.clone());
                         }
                         SettingsAction::RequestClearHistory(req) => {
@@ -308,12 +330,15 @@ impl Render for ShellView {
 
         if is_desktop {
             // Desktop Layout: Left Sidebar + Content
+            // Focus Mode in Quiz hides the sidebar for a pure, distraction-free reading experience
+            let show_sidebar = !is_in_quiz || !self.focus_mode;
+
             div()
                 .flex()
                 .flex_row()
                 .size_full()
                 .bg(colors.background)
-                .child(self.render_desktop_sidebar(cx))
+                .when(show_sidebar, |el| el.child(self.render_desktop_sidebar(cx)))
                 .child(
                     div()
                         .flex_1()

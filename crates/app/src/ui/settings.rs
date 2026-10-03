@@ -1,14 +1,15 @@
 use crate::state::AppState;
-use amategeko_core::{Strings, ThemeMode};
+use amategeko_core::Strings;
 use gpui::InteractiveElement as _;
-use gpui_kit::base::{Disableable as _, StyledExt};
+use gpui_kit::base::StyledExt;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::switch::Switch;
-use gpui_kit::component::{ActiveTheme, Icon, IconName};
+use gpui_kit::component::theme::ThemeColor;
+use gpui_kit::component::{ActiveTheme, IconName};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SettingsAction {
     DecPassMark,
     IncPassMark,
@@ -19,11 +20,14 @@ pub enum SettingsAction {
     ToggleEasyTimer,
     ToggleHardWeightImages,
     ToggleDesktopShortcuts,
-    SetTheme(ThemeMode),
+    ToggleShowAllAnswersAtEnd,
+    SetTheme(amategeko_core::ThemeMode),
     DecFontScale,
     IncFontScale,
     RequestClearHistory(bool),
     ConfirmClearHistory,
+    ResetDefaults,
+    SaveSettings,
 }
 
 pub struct SettingsView;
@@ -48,620 +52,610 @@ impl SettingsView {
             .overflow_y_scroll()
             .bg(colors.background)
             .p_4()
-            .gap_4()
-            // Title Header
+            .when(is_desktop, |el| el.p_6())
             .child(
                 div()
                     .flex()
-                    .flex_row()
-                    .items_center()
-                    .gap_3()
-                    .child(
-                        Icon::new(IconName::Settings)
-                            .size(px(24.0))
-                            .text_color(colors.primary),
-                    )
+                    .flex_col()
+                    .w_full()
+                    .max_w(px(720.0))
+                    .mx_auto()
+                    .gap_6()
+                    // Page Title Header
                     .child(
                         div()
-                            .text_xl()
-                            .font_extrabold()
+                            .text_2xl()
+                            .font_bold()
                             .text_color(colors.foreground)
                             .child(Strings::SETTINGS_TITLE),
-                    ),
-            )
-            // SECTION 1: QUIZ RULES & TIMERS
-            .child(
-                div()
-                    .flex()
-                    .flex_col()
-                    .p_4()
-                    .rounded_2xl()
-                    .border_1()
-                    .border_color(colors.border)
-                    .bg(colors.secondary)
-                    .gap_4()
-                    .child(
-                        div()
-                            .text_base()
-                            .font_bold()
-                            .text_color(colors.foreground)
-                            .child("Igenamiterere ry'Ibizamini"),
                     )
-                    // Pass mark stepper (10..20)
-                    .child(
-                        div()
-                            .flex()
-                            .flex_row()
-                            .items_center()
-                            .justify_between()
-                            .child(
-                                div()
-                                    .flex()
-                                    .flex_col()
-                                    .gap_0p5()
-                                    .child(
-                                        div()
-                                            .text_sm()
-                                            .font_semibold()
-                                            .text_color(colors.foreground)
-                                            .child(Strings::SETTINGS_PASS_MARK),
-                                    )
-                                    .child(
-                                        div()
-                                            .text_xs()
-                                            .text_color(colors.muted_foreground)
-                                            .child("Amanota ukeneye kugira ngo utsinde ikizamini"),
-                                    ),
-                            )
-                            .child(
-                                div()
-                                    .flex()
-                                    .flex_row()
-                                    .items_center()
-                                    .gap_2()
-                                    .child(
-                                        Button::new("pass_mark_dec")
-                                            .outline()
-                                            .label("-")
-                                            .disabled(s.pass_mark <= 10)
-                                            .on_click(cx.listener(move |this, _, window, cx| {
-                                                on_action(this, SettingsAction::DecPassMark, window, cx);
-                                            })),
-                                    )
-                                    .child(
-                                        div()
-                                            .w(px(55.0))
-                                            .text_sm()
-                                            .font_bold()
-                                            .text_center()
-                                            .text_color(colors.primary)
-                                            .child(format!("{}/20", s.pass_mark)),
-                                    )
-                                    .child(
-                                        Button::new("pass_mark_inc")
-                                            .outline()
-                                            .label("+")
-                                            .disabled(s.pass_mark >= 20)
-                                            .on_click(cx.listener(move |this, _, window, cx| {
-                                                on_action(this, SettingsAction::IncPassMark, window, cx);
-                                            })),
-                                    ),
-                            ),
-                    )
-                    // Medium mode duration (10..40 mins)
-                    .child(
-                        div()
-                            .flex()
-                            .flex_row()
-                            .items_center()
-                            .justify_between()
-                            .child(
-                                div()
-                                    .flex()
-                                    .flex_col()
-                                    .gap_0p5()
-                                    .child(
-                                        div()
-                                            .text_sm()
-                                            .font_semibold()
-                                            .text_color(colors.foreground)
-                                            .child(Strings::SETTINGS_MEDIUM_TIME),
-                                    )
-                                    .child(
-                                        div()
-                                            .text_xs()
-                                            .text_color(colors.muted_foreground)
-                                            .child("Igihe cyo gukora ikizamini cyo mu rwego rwo Hagati"),
-                                    ),
-                            )
-                            .child(
-                                div()
-                                    .flex()
-                                    .flex_row()
-                                    .items_center()
-                                    .gap_2()
-                                    .child(
-                                        Button::new("medium_time_dec")
-                                            .outline()
-                                            .label("-")
-                                            .disabled(s.medium_duration_mins <= 10)
-                                            .on_click(cx.listener(move |this, _, window, cx| {
-                                                on_action(this, SettingsAction::DecMediumTime, window, cx);
-                                            })),
-                                    )
-                                    .child(
-                                        div()
-                                            .w(px(55.0))
-                                            .text_sm()
-                                            .font_bold()
-                                            .text_center()
-                                            .text_color(colors.foreground)
-                                            .child(format!("{} min", s.medium_duration_mins)),
-                                    )
-                                    .child(
-                                        Button::new("medium_time_inc")
-                                            .outline()
-                                            .label("+")
-                                            .disabled(s.medium_duration_mins >= 40)
-                                            .on_click(cx.listener(move |this, _, window, cx| {
-                                                on_action(this, SettingsAction::IncMediumTime, window, cx);
-                                            })),
-                                    ),
-                            ),
-                    )
-                    // Hard mode duration (5..20 mins)
-                    .child(
-                        div()
-                            .flex()
-                            .flex_row()
-                            .items_center()
-                            .justify_between()
-                            .child(
-                                div()
-                                    .flex()
-                                    .flex_col()
-                                    .gap_0p5()
-                                    .child(
-                                        div()
-                                            .text_sm()
-                                            .font_semibold()
-                                            .text_color(colors.foreground)
-                                            .child(Strings::SETTINGS_HARD_TIME),
-                                    )
-                                    .child(
-                                        div()
-                                            .text_xs()
-                                            .text_color(colors.muted_foreground)
-                                            .child("Igihe cyo gukora ikizamini Gikomeye cy'isaha ngufi"),
-                                    ),
-                            )
-                            .child(
-                                div()
-                                    .flex()
-                                    .flex_row()
-                                    .items_center()
-                                    .gap_2()
-                                    .child(
-                                        Button::new("hard_time_dec")
-                                            .outline()
-                                            .label("-")
-                                            .disabled(s.hard_duration_mins <= 5)
-                                            .on_click(cx.listener(move |this, _, window, cx| {
-                                                on_action(this, SettingsAction::DecHardTime, window, cx);
-                                            })),
-                                    )
-                                    .child(
-                                        div()
-                                            .w(px(55.0))
-                                            .text_sm()
-                                            .font_bold()
-                                            .text_center()
-                                            .text_color(colors.foreground)
-                                            .child(format!("{} min", s.hard_duration_mins)),
-                                    )
-                                    .child(
-                                        Button::new("hard_time_inc")
-                                            .outline()
-                                            .label("+")
-                                            .disabled(s.hard_duration_mins >= 20)
-                                            .on_click(cx.listener(move |this, _, window, cx| {
-                                                on_action(this, SettingsAction::IncHardTime, window, cx);
-                                            })),
-                                    ),
-                            ),
-                    )
-                    // Easy mode elapsed time switch
-                    .child(
-                        div()
-                            .flex()
-                            .flex_row()
-                            .items_center()
-                            .justify_between()
-                            .child(
-                                div()
-                                    .flex()
-                                    .flex_col()
-                                    .gap_0p5()
-                                    .child(
-                                        div()
-                                            .text_sm()
-                                            .font_semibold()
-                                            .text_color(colors.foreground)
-                                            .child(Strings::SETTINGS_EASY_TIMER),
-                                    )
-                                    .child(
-                                        div()
-                                            .text_xs()
-                                            .text_color(colors.muted_foreground)
-                                            .child("Kwerekana iminota umaze mu cyiciro Byoroshye"),
-                                    ),
-                            )
-                            .child(
-                                Switch::new("easy_timer_switch")
-                                    .checked(s.easy_show_timer)
-                                    .on_click(cx.listener(move |this, _, window, cx| {
-                                        on_action(this, SettingsAction::ToggleEasyTimer, window, cx);
-                                    })),
-                            ),
-                    )
-                    // Hard mode weighted sign/image questions switch
-                    .child(
-                        div()
-                            .flex()
-                            .flex_row()
-                            .items_center()
-                            .justify_between()
-                            .child(
-                                div()
-                                    .flex()
-                                    .flex_col()
-                                    .gap_0p5()
-                                    .child(
-                                        div()
-                                            .text_sm()
-                                            .font_semibold()
-                                            .text_color(colors.foreground)
-                                            .child("Kweza ibyapa mu Gikomeye"),
-                                    )
-                                    .child(
-                                        div()
-                                            .text_xs()
-                                            .text_color(colors.muted_foreground)
-                                            .child("Ibibazo by'ibyapa n'ibimenyetso biza kenshi mu Gikomeye"),
-                                    ),
-                            )
-                            .child(
-                                Switch::new("hard_weight_switch")
-                                    .checked(s.hard_weight_images)
-                                    .on_click(cx.listener(move |this, _, window, cx| {
-                                        on_action(this, SettingsAction::ToggleHardWeightImages, window, cx);
-                                    })),
-                            ),
-                    )
-                    // Desktop shortcuts switch (visible only on desktop)
-                    .when(is_desktop, |el| {
-                        el.child(
-                            div()
-                                .flex()
-                                .flex_row()
-                                .items_center()
-                                .justify_between()
-                                .child(
-                                    div()
-                                        .flex()
-                                        .flex_col()
-                                        .gap_0p5()
-                                        .child(
-                                            div()
-                                                .text_sm()
-                                                .font_semibold()
-                                                .text_color(colors.foreground)
-                                                .child(Strings::SETTINGS_DESKTOP_SHORTCUTS),
-                                        )
-                                        .child(
-                                            div()
-                                                .text_xs()
-                                                .text_color(colors.muted_foreground)
-                                                .child("Kanda A-D cyangwa 1-4, Enter, F kugira ngo uhitemo"),
-                                        ),
-                                )
-                                .child(
-                                    Switch::new("shortcuts_switch")
-                                        .checked(s.desktop_shortcuts_enabled)
-                                        .on_click(cx.listener(move |this, _, window, cx| {
-                                            on_action(this, SettingsAction::ToggleDesktopShortcuts, window, cx);
-                                        })),
-                                ),
-                        )
-                    }),
-            )
-            // SECTION 2: THEME & DISPLAY
-            .child(
-                div()
-                    .flex()
-                    .flex_col()
-                    .p_4()
-                    .rounded_2xl()
-                    .border_1()
-                    .border_color(colors.border)
-                    .bg(colors.secondary)
-                    .gap_4()
-                    .child(
-                        div()
-                            .text_base()
-                            .font_bold()
-                            .text_color(colors.foreground)
-                            .child("Insanganyamatsiko n'Urumuri"),
-                    )
-                    // Theme segmented buttons
+                    // SECTION 1: Ikizamini
                     .child(
                         div()
                             .flex()
                             .flex_col()
-                            .gap_2()
+                            .gap_1p5()
                             .child(
                                 div()
                                     .text_sm()
                                     .font_semibold()
-                                    .text_color(colors.foreground)
-                                    .child(Strings::SETTINGS_THEME),
+                                    .text_color(colors.muted_foreground)
+                                    .child("Ikizamini"),
                             )
                             .child(
                                 div()
                                     .flex()
-                                    .flex_row()
-                                    .gap_2()
-                                    // System Theme
-                                    .child(
-                                        div()
-                                            .id("theme_system_btn")
-                                            .flex_1()
-                                            .py_2()
-                                            .px_3()
-                                            .rounded_xl()
-                                            .cursor_pointer()
-                                            .border_1()
-                                            .border_color(if s.theme == ThemeMode::System {
-                                                colors.primary
-                                            } else {
-                                                colors.border
-                                            })
-                                            .bg(if s.theme == ThemeMode::System {
-                                                colors.primary
-                                            } else {
-                                                colors.background
-                                            })
-                                            .text_xs()
-                                            .font_bold()
-                                            .text_center()
-                                            .text_color(if s.theme == ThemeMode::System {
-                                                colors.primary_foreground
-                                            } else {
-                                                colors.foreground
-                                            })
-                                            .child(Strings::SETTINGS_THEME_SYSTEM)
-                                            .on_click(cx.listener(move |this, _, window, cx| {
-                                                on_action(this, SettingsAction::SetTheme(ThemeMode::System), window, cx);
-                                            })),
-                                    )
-                                    // Light Theme
-                                    .child(
-                                        div()
-                                            .id("theme_light_btn")
-                                            .flex_1()
-                                            .py_2()
-                                            .px_3()
-                                            .rounded_xl()
-                                            .cursor_pointer()
-                                            .border_1()
-                                            .border_color(if s.theme == ThemeMode::Light {
-                                                colors.primary
-                                            } else {
-                                                colors.border
-                                            })
-                                            .bg(if s.theme == ThemeMode::Light {
-                                                colors.primary
-                                            } else {
-                                                colors.background
-                                            })
-                                            .text_xs()
-                                            .font_bold()
-                                            .text_center()
-                                            .text_color(if s.theme == ThemeMode::Light {
-                                                colors.primary_foreground
-                                            } else {
-                                                colors.foreground
-                                            })
-                                            .child(Strings::SETTINGS_THEME_LIGHT)
-                                            .on_click(cx.listener(move |this, _, window, cx| {
-                                                on_action(this, SettingsAction::SetTheme(ThemeMode::Light), window, cx);
-                                            })),
-                                    )
-                                    // Dark Theme
-                                    .child(
-                                        div()
-                                            .id("theme_dark_btn")
-                                            .flex_1()
-                                            .py_2()
-                                            .px_3()
-                                            .rounded_xl()
-                                            .cursor_pointer()
-                                            .border_1()
-                                            .border_color(if s.theme == ThemeMode::Dark {
-                                                colors.primary
-                                            } else {
-                                                colors.border
-                                            })
-                                            .bg(if s.theme == ThemeMode::Dark {
-                                                colors.primary
-                                            } else {
-                                                colors.background
-                                            })
-                                            .text_xs()
-                                            .font_bold()
-                                            .text_center()
-                                            .text_color(if s.theme == ThemeMode::Dark {
-                                                colors.primary_foreground
-                                            } else {
-                                                colors.foreground
-                                            })
-                                            .child(Strings::SETTINGS_THEME_DARK)
-                                            .on_click(cx.listener(move |this, _, window, cx| {
-                                                on_action(this, SettingsAction::SetTheme(ThemeMode::Dark), window, cx);
-                                            })),
-                                    ),
+                                    .flex_col()
+                                    .rounded_2xl()
+                                    .border_1()
+                                    .border_color(colors.border)
+                                    .bg(colors.secondary)
+                                    // Row 1: Igihe cya Hagati
+                                    .child(Self::render_slider_row(
+                                        "Igihe cya Hagati",
+                                        "Iminota y'ikizamini cy'ibibazo 20",
+                                        Self::render_slider(
+                                            "slider_medium",
+                                            s.medium_duration_mins,
+                                            10,
+                                            30,
+                                            "min",
+                                            &colors,
+                                            cx,
+                                            move |this, window, cx| {
+                                                on_action(this, SettingsAction::DecMediumTime, window, cx);
+                                            },
+                                            move |this, window, cx| {
+                                                on_action(this, SettingsAction::IncMediumTime, window, cx);
+                                            },
+                                        ),
+                                    ))
+                                    .child(Self::render_divider(&colors))
+                                    // Row 2: Igihe cya Bikomeye
+                                    .child(Self::render_slider_row(
+                                        "Igihe cya Bikomeye",
+                                        "Gito kurusha Hagati",
+                                        Self::render_slider(
+                                            "slider_hard",
+                                            s.hard_duration_mins,
+                                            5,
+                                            20,
+                                            "min",
+                                            &colors,
+                                            cx,
+                                            move |this, window, cx| {
+                                                on_action(this, SettingsAction::DecHardTime, window, cx);
+                                            },
+                                            move |this, window, cx| {
+                                                on_action(this, SettingsAction::IncHardTime, window, cx);
+                                            },
+                                        ),
+                                    ))
+                                    .child(Self::render_divider(&colors))
+                                    // Row 3: Amanota yo gutsinda
+                                    .child(Self::render_slider_row(
+                                        "Amanota yo gutsinda",
+                                        "Ibibazo bigomba kuba byujuje kuri 20",
+                                        Self::render_slider(
+                                            "slider_pass",
+                                            s.pass_mark,
+                                            10,
+                                            20,
+                                            "/ 20",
+                                            &colors,
+                                            cx,
+                                            move |this, window, cx| {
+                                                on_action(this, SettingsAction::DecPassMark, window, cx);
+                                            },
+                                            move |this, window, cx| {
+                                                on_action(this, SettingsAction::IncPassMark, window, cx);
+                                            },
+                                        ),
+                                    )),
                             ),
                     )
-                    // Font size scaling stepper (0.85x .. 1.25x)
+                    // SECTION 2: Isura
                     .child(
                         div()
                             .flex()
                             .flex_col()
-                            .gap_2()
+                            .gap_1p5()
+                            .child(
+                                div()
+                                    .text_sm()
+                                    .font_semibold()
+                                    .text_color(colors.muted_foreground)
+                                    .child("Isura"),
+                            )
                             .child(
                                 div()
                                     .flex()
-                                    .flex_row()
-                                    .items_center()
-                                    .justify_between()
-                                    .child(
-                                        div()
-                                            .text_sm()
-                                            .font_semibold()
-                                            .text_color(colors.foreground)
-                                            .child(Strings::SETTINGS_FONT_SIZE),
-                                    )
+                                    .flex_col()
+                                    .rounded_2xl()
+                                    .border_1()
+                                    .border_color(colors.border)
+                                    .bg(colors.secondary)
+                                    // Theme Segmented Selector
                                     .child(
                                         div()
                                             .flex()
                                             .flex_row()
                                             .items_center()
-                                            .gap_2()
+                                            .justify_between()
+                                            .p_4()
                                             .child(
-                                                Button::new("font_dec")
-                                                    .outline()
-                                                    .label("-")
-                                                    .disabled(s.font_size_scale <= 0.85)
-                                                    .on_click(cx.listener(move |this, _, window, cx| {
-                                                        on_action(this, SettingsAction::DecFontScale, window, cx);
-                                                    })),
+                                                div()
+                                                    .text_sm()
+                                                    .font_semibold()
+                                                    .text_color(colors.foreground)
+                                                    .child("Insanganyamatsiko"),
                                             )
                                             .child(
                                                 div()
-                                                    .w(px(55.0))
-                                                    .text_sm()
-                                                    .font_bold()
-                                                    .text_center()
-                                                    .text_color(colors.primary)
-                                                    .child(format!("{:.0}%", s.font_size_scale * 100.0)),
-                                            )
-                                            .child(
-                                                Button::new("font_inc")
-                                                    .outline()
-                                                    .label("+")
-                                                    .disabled(s.font_size_scale >= 1.25)
-                                                    .on_click(cx.listener(move |this, _, window, cx| {
-                                                        on_action(this, SettingsAction::IncFontScale, window, cx);
-                                                    })),
+                                                    .flex()
+                                                    .flex_row()
+                                                    .items_center()
+                                                    .p_1()
+                                                    .gap_1()
+                                                    .rounded_xl()
+                                                    .border_1()
+                                                    .border_color(colors.border)
+                                                    .bg(colors.background)
+                                                    .child(Self::render_theme_tab(
+                                                        "theme_light",
+                                                        "Umucyo",
+                                                        s.theme == amategeko_core::ThemeMode::Light,
+                                                        &colors,
+                                                        cx,
+                                                        move |this, window, cx| {
+                                                            on_action(this, SettingsAction::SetTheme(amategeko_core::ThemeMode::Light), window, cx);
+                                                        },
+                                                    ))
+                                                    .child(Self::render_theme_tab(
+                                                        "theme_dark",
+                                                        "Umwijima",
+                                                        s.theme == amategeko_core::ThemeMode::Dark,
+                                                        &colors,
+                                                        cx,
+                                                        move |this, window, cx| {
+                                                            on_action(this, SettingsAction::SetTheme(amategeko_core::ThemeMode::Dark), window, cx);
+                                                        },
+                                                    ))
+                                                    .child(Self::render_theme_tab(
+                                                        "theme_system",
+                                                        "Sisitemu",
+                                                        s.theme == amategeko_core::ThemeMode::System,
+                                                        &colors,
+                                                        cx,
+                                                        move |this, window, cx| {
+                                                            on_action(this, SettingsAction::SetTheme(amategeko_core::ThemeMode::System), window, cx);
+                                                        },
+                                                    )),
                                             ),
-                                    ),
-                            )
-                            // Live Font Preview
-                            .child(
-                                div()
-                                    .p_3()
-                                    .rounded_xl()
-                                    .border_1()
-                                    .border_color(colors.border)
-                                    .bg(colors.background)
+                                    )
+                                    .child(Self::render_divider(&colors))
+                                    // Font Size Slider & Live Preview
                                     .child(
                                         div()
-                                            .text_sm()
-                                            .text_color(colors.foreground)
-                                            .child(Strings::SETTINGS_FONT_PREVIEW),
+                                            .flex()
+                                            .flex_col()
+                                            .p_4()
+                                            .gap_3()
+                                            .child(
+                                                div()
+                                                    .flex()
+                                                    .flex_row()
+                                                    .items_center()
+                                                    .justify_between()
+                                                    .child(
+                                                        div()
+                                                            .text_sm()
+                                                            .font_semibold()
+                                                            .text_color(colors.foreground)
+                                                            .child("Ubunini bw'inyandiko"),
+                                                    )
+                                                    .child(Self::render_slider(
+                                                        "slider_font",
+                                                        (s.font_size_scale * 15.0).round() as u32,
+                                                        12,
+                                                        20,
+                                                        "px",
+                                                        &colors,
+                                                        cx,
+                                                        move |this, window, cx| {
+                                                            on_action(this, SettingsAction::DecFontScale, window, cx);
+                                                        },
+                                                        move |this, window, cx| {
+                                                            on_action(this, SettingsAction::IncFontScale, window, cx);
+                                                        },
+                                                    )),
+                                            )
+                                            .child(
+                                                div()
+                                                    .p_3()
+                                                    .rounded_xl()
+                                                    .border_1()
+                                                    .border_color(colors.border)
+                                                    .bg(colors.background)
+                                                    .child(
+                                                        div()
+                                                            .text_sm()
+                                                            .text_color(colors.foreground)
+                                                            .child(Strings::SETTINGS_FONT_PREVIEW),
+                                                    ),
+                                            ),
                                     ),
+                            ),
+                    )
+                    // SECTION 3: Imikorere
+                    .child(
+                        div()
+                            .flex()
+                            .flex_col()
+                            .gap_1p5()
+                            .child(
+                                div()
+                                    .text_sm()
+                                    .font_semibold()
+                                    .text_color(colors.muted_foreground)
+                                    .child("Imikorere"),
+                            )
+                            .child(
+                                div()
+                                    .flex()
+                                    .flex_col()
+                                    .rounded_2xl()
+                                    .border_1()
+                                    .border_color(colors.border)
+                                    .bg(colors.secondary)
+                                    // Easy timer switch
+                                    .child(Self::render_switch_row(
+                                        "Erekana igihe cyakoreshejwe muri Byoroshye",
+                                        "Nta mwanya ugenwe, ariko igihe kiragaragara",
+                                        "sw_easy_timer",
+                                        s.easy_show_timer,
+                                        cx,
+                                        move |this, window, cx| {
+                                            on_action(this, SettingsAction::ToggleEasyTimer, window, cx);
+                                        },
+                                    ))
+                                    .child(Self::render_divider(&colors))
+                                    // Keyboard shortcuts switch
+                                    .child(Self::render_switch_row(
+                                        "Koresha inyuguti za clavier",
+                                        "A–D, 1–4, Enter, F",
+                                        "sw_shortcuts",
+                                        s.desktop_shortcuts_enabled,
+                                        cx,
+                                        move |this, window, cx| {
+                                            on_action(this, SettingsAction::ToggleDesktopShortcuts, window, cx);
+                                        },
+                                    ))
+                                    .child(Self::render_divider(&colors))
+                                    // Hard weight image questions switch
+                                    .child(Self::render_switch_row(
+                                        "Shyiramo ibibazo by'ibyapa kenshi muri Bikomeye",
+                                        "Ibyapa n'ibimenyetso by'umuhanda",
+                                        "sw_hard_images",
+                                        s.hard_weight_images,
+                                        cx,
+                                        move |this, window, cx| {
+                                            on_action(this, SettingsAction::ToggleHardWeightImages, window, cx);
+                                        },
+                                    ))
+                                    .child(Self::render_divider(&colors))
+                                    // Show all answers at end switch
+                                    .child(Self::render_switch_row(
+                                        "Erekana ibisubizo byose ku iherezo",
+                                        "Ibyo wakosheje n'ibyo wabonye neza",
+                                        "sw_show_all",
+                                        !s.study_hide_answers,
+                                        cx,
+                                        move |this, window, cx| {
+                                            on_action(this, SettingsAction::ToggleShowAllAnswersAtEnd, window, cx);
+                                        },
+                                    )),
+                            ),
+                    )
+                    // SECTION 4: Amakuru (Clear History)
+                    .child(
+                        div()
+                            .flex()
+                            .flex_col()
+                            .gap_1p5()
+                            .child(
+                                div()
+                                    .text_sm()
+                                    .font_semibold()
+                                    .text_color(colors.muted_foreground)
+                                    .child("Amakuru"),
+                            )
+                            .child(
+                                div()
+                                    .flex()
+                                    .flex_col()
+                                    .rounded_2xl()
+                                    .border_1()
+                                    .border_color(colors.border)
+                                    .bg(colors.secondary)
+                                    .p_4()
+                                    .child(
+                                        div()
+                                            .flex()
+                                            .flex_row()
+                                            .items_center()
+                                            .justify_between()
+                                            .child(
+                                                div()
+                                                    .flex()
+                                                    .flex_col()
+                                                    .gap_0p5()
+                                                    .child(
+                                                        div()
+                                                            .text_sm()
+                                                            .font_semibold()
+                                                            .text_color(colors.foreground)
+                                                            .child("Siba amateka y'ibizamini"),
+                                                    )
+                                                    .child(
+                                                        div()
+                                                            .text_xs()
+                                                            .text_color(colors.muted_foreground)
+                                                            .child("Bikuraho amanota n'imibare yose"),
+                                                    ),
+                                            )
+                                            .child(
+                                                div()
+                                                    .flex()
+                                                    .flex_row()
+                                                    .items_center()
+                                                    .gap_2()
+                                                    .when(!confirm_clear, |el| {
+                                                        el.child(
+                                                            Button::new("btn_clear_history")
+                                                                .outline()
+                                                                .icon(IconName::Delete)
+                                                                .label("Siba")
+                                                                .on_click(cx.listener(move |this, _, window, cx| {
+                                                                    on_action(this, SettingsAction::RequestClearHistory(true), window, cx);
+                                                                })),
+                                                        )
+                                                    })
+                                                    .when(confirm_clear, |el| {
+                                                        el.child(
+                                                            Button::new("btn_confirm_clear_yes")
+                                                                .primary()
+                                                                .label("Yego, Siba")
+                                                                .on_click(cx.listener(move |this, _, window, cx| {
+                                                                    on_action(this, SettingsAction::ConfirmClearHistory, window, cx);
+                                                                })),
+                                                        )
+                                                        .child(
+                                                            Button::new("btn_confirm_clear_no")
+                                                                .outline()
+                                                                .label("Reka")
+                                                                .on_click(cx.listener(move |this, _, window, cx| {
+                                                                    on_action(this, SettingsAction::RequestClearHistory(false), window, cx);
+                                                                })),
+                                                        )
+                                                    }),
+                                            ),
+                                    ),
+                            ),
+                    )
+                    // Bottom Actions: Subiza ku by'ibanze & Bika
+                    .child(
+                        div()
+                            .flex()
+                            .flex_row()
+                            .items_center()
+                            .justify_between()
+                            .pt_2()
+                            .pb_6()
+                            .child(
+                                Button::new("btn_reset_defaults")
+                                    .outline()
+                                    .label("Subiza ku by'ibanze")
+                                    .on_click(cx.listener(move |this, _, window, cx| {
+                                        on_action(this, SettingsAction::ResetDefaults, window, cx);
+                                    })),
+                            )
+                            .child(
+                                Button::new("btn_save_settings")
+                                    .primary()
+                                    .label("Bika")
+                                    .on_click(cx.listener(move |this, _, window, cx| {
+                                        on_action(this, SettingsAction::SaveSettings, window, cx);
+                                    })),
                             ),
                     ),
             )
-            // SECTION 3: DANGER ZONE (CLEAR HISTORY)
+    }
+
+    fn render_divider(colors: &ThemeColor) -> impl IntoElement {
+        div().h(px(1.0)).bg(colors.border).mx_4()
+    }
+
+    fn render_slider_row(
+        title: &'static str,
+        subtitle: &'static str,
+        slider_control: impl IntoElement,
+    ) -> impl IntoElement {
+        div()
+            .flex()
+            .flex_row()
+            .items_center()
+            .justify_between()
+            .p_4()
             .child(
                 div()
                     .flex()
                     .flex_col()
-                    .p_4()
-                    .rounded_2xl()
-                    .border_1()
-                    .border_color(colors.danger)
-                    .bg(colors.secondary)
-                    .gap_3()
+                    .gap_0p5()
+                    .child(div().text_sm().font_semibold().child(title))
+                    .child(div().text_xs().child(subtitle)),
+            )
+            .child(slider_control)
+    }
+
+    fn render_switch_row<V: 'static>(
+        title: &'static str,
+        subtitle: &'static str,
+        switch_id: &'static str,
+        is_checked: bool,
+        cx: &mut Context<V>,
+        on_toggle: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
+    ) -> impl IntoElement {
+        div()
+            .flex()
+            .flex_row()
+            .items_center()
+            .justify_between()
+            .p_4()
+            .child(
+                div()
+                    .flex()
+                    .flex_col()
+                    .gap_0p5()
+                    .child(div().text_sm().font_semibold().child(title))
+                    .child(div().text_xs().child(subtitle)),
+            )
+            .child(
+                Switch::new(switch_id)
+                    .checked(is_checked)
+                    .on_click(cx.listener(move |this, _, window, cx| {
+                        on_toggle(this, window, cx);
+                    })),
+            )
+    }
+
+    fn render_theme_tab<V: 'static>(
+        id: &'static str,
+        label: &'static str,
+        is_active: bool,
+        colors: &ThemeColor,
+        cx: &mut Context<V>,
+        on_select: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
+    ) -> impl IntoElement {
+        div()
+            .id(id)
+            .px_3()
+            .py_1()
+            .rounded_lg()
+            .cursor_pointer()
+            .text_xs()
+            .font_semibold()
+            .bg(if is_active {
+                colors.foreground
+            } else {
+                gpui::hsla(0.0, 0.0, 0.0, 0.0)
+            })
+            .text_color(if is_active {
+                colors.background
+            } else {
+                colors.muted_foreground
+            })
+            .child(label)
+            .on_click(cx.listener(move |this, _, window, cx| {
+                on_select(this, window, cx);
+            }))
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn render_slider<V: 'static>(
+        id_prefix: &'static str,
+        val: u32,
+        min: u32,
+        max: u32,
+        suffix: &'static str,
+        colors: &ThemeColor,
+        cx: &mut Context<V>,
+        on_dec: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
+        on_inc: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
+    ) -> impl IntoElement {
+        let pct = if max > min {
+            ((val.saturating_sub(min)) as f32 / (max - min) as f32).clamp(0.0, 1.0)
+        } else {
+            0.5
+        };
+
+        let track_w = 140.0;
+        let thumb_pos = track_w * pct;
+
+        div()
+            .flex()
+            .flex_row()
+            .items_center()
+            .gap_3()
+            // Interactive track
+            .child(
+                div()
+                    .id(format!("{id_prefix}_track"))
+                    .relative()
+                    .w(px(track_w))
+                    .h(px(24.0))
+                    .flex()
+                    .items_center()
+                    .cursor_pointer()
+                    // Left half clicks decrement
                     .child(
                         div()
-                            .text_base()
-                            .font_bold()
-                            .text_color(colors.danger)
-                            .child("Akarere ko Kwitonda (Danger Zone)"),
+                            .id(format!("{id_prefix}_dec_zone"))
+                            .absolute()
+                            .left_0()
+                            .top_0()
+                            .w(px(track_w / 2.0))
+                            .h_full()
+                            .on_click(cx.listener(move |this, _, window, cx| {
+                                on_dec(this, window, cx);
+                            })),
                     )
+                    // Right half clicks increment
                     .child(
                         div()
-                            .text_xs()
-                            .text_color(colors.muted_foreground)
-                            .child("Gusiba amakuru yose y'ibizamini byakozwe, amanota, n'imibare byose byasubira ku busa."),
+                            .id(format!("{id_prefix}_inc_zone"))
+                            .absolute()
+                            .right_0()
+                            .top_0()
+                            .w(px(track_w / 2.0))
+                            .h_full()
+                            .on_click(cx.listener(move |this, _, window, cx| {
+                                on_inc(this, window, cx);
+                            })),
                     )
-                    // Clear history button or confirmation dialog
-                    .when(!confirm_clear, |el| {
-                        el.child(
-                            Button::new("clear_history_btn")
-                                .outline()
-                                .label(Strings::SETTINGS_CLEAR_HISTORY)
-                                .icon(IconName::CircleX)
-                                .on_click(cx.listener(move |this, _, window, cx| {
-                                    on_action(this, SettingsAction::RequestClearHistory(true), window, cx);
-                                })),
-                        )
-                    })
-                    .when(confirm_clear, |el| {
-                        el.child(
-                            div()
-                                .flex()
-                                .flex_col()
-                                .p_3()
-                                .rounded_xl()
-                                .border_1()
-                                .border_color(colors.danger)
-                                .bg(colors.background)
-                                .gap_3()
-                                .child(
-                                    div()
-                                        .text_sm()
-                                        .font_bold()
-                                        .text_color(colors.danger)
-                                        .child(Strings::SETTINGS_CLEAR_CONFIRM),
-                                )
-                                .child(
-                                    div()
-                                        .flex()
-                                        .flex_row()
-                                        .gap_3()
-                                        .child(
-                                            Button::new("confirm_clear_yes")
-                                                .primary()
-                                                .label("Yego, Siba Byose")
-                                                .icon(IconName::CircleX)
-                                                .on_click(cx.listener(move |this, _, window, cx| {
-                                                    on_action(this, SettingsAction::ConfirmClearHistory, window, cx);
-                                                })),
-                                        )
-                                        .child(
-                                            Button::new("confirm_clear_no")
-                                                .outline()
-                                                .label("Reka")
-                                                .on_click(cx.listener(move |this, _, window, cx| {
-                                                    on_action(this, SettingsAction::RequestClearHistory(false), window, cx);
-                                                })),
-                                        ),
-                                ),
-                        )
-                    }),
+                    // The background track bar
+                    .child(div().w_full().h(px(3.0)).rounded_full().bg(colors.border))
+                    // Filled track portion
+                    .child(
+                        div()
+                            .absolute()
+                            .left_0()
+                            .w(px(thumb_pos))
+                            .h(px(3.0))
+                            .rounded_full()
+                            .bg(colors.primary),
+                    )
+                    // The thumb knob (circle)
+                    .child(
+                        div()
+                            .absolute()
+                            .left(px((thumb_pos - 7.0).max(0.0)))
+                            .size(px(14.0))
+                            .rounded_full()
+                            .bg(colors.foreground)
+                            .border_2()
+                            .border_color(colors.background),
+                    ),
+            )
+            // Value display label
+            .child(
+                div()
+                    .w(px(55.0))
+                    .text_sm()
+                    .font_bold()
+                    .text_right()
+                    .text_color(colors.foreground)
+                    .child(format!("{val} {suffix}")),
             )
     }
 }
