@@ -1440,6 +1440,7 @@ dependencies = [
  "amategeko-app",
  "amategeko-core",
  "directories",
+ "embed-resource",
  "gpui-kit",
  "gpui-pre",
  "log",
