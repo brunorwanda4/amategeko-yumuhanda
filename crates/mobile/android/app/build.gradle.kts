@@ -1,17 +1,10 @@
-// App module build.gradle.kts for the GPUI Mobile Android Example.
+// App module build.gradle.kts for Amategeko y'Umuhanda.
 //
 // This module packages the pre-compiled Rust native library into an APK
 // that uses Android's NativeActivity to host the GPUI application.
 //
 // The Rust library must be compiled separately and placed into
 // app/src/main/jniLibs/<abi>/ before building the APK.
-//
-// Quick start:
-//   cd <repo-root>
-//   cargo ndk -t arm64-v8a -o example/android_app/gradle/app/src/main/jniLibs \
-//       build --example android_app --release
-//   cd example/android_app/gradle
-//   ./gradlew assembleDebug
 
 plugins {
     id("com.android.application")
@@ -35,7 +28,7 @@ android {
         }
 
         // Forward the library name to the manifest via a placeholder.
-        manifestPlaceholders["nativeLibraryName"] = "gpui_mobile_example"
+        manifestPlaceholders["nativeLibraryName"] = "gpui_mobile_app"
     }
 
     buildTypes {
@@ -54,9 +47,6 @@ android {
 
     // We do NOT use CMake / ndk-build — the native library is compiled
     // externally via cargo-ndk and placed directly into jniLibs.
-    //
-    // Disable the built-in native build system so Gradle doesn't look for
-    // a CMakeLists.txt or Android.mk.
     externalNativeBuild {
         // Intentionally left empty.
     }
@@ -78,10 +68,7 @@ android {
         // release mode and stripping again can break backtraces.
         jniLibs {
             keepDebugSymbols += listOf(
-                "*/arm64-v8a/libgpui_mobile_example.so",
-                "*/armeabi-v7a/libgpui_mobile_example.so",
-                "*/x86_64/libgpui_mobile_example.so",
-                "*/x86/libgpui_mobile_example.so"
+                "*/arm64-v8a/libgpui_mobile_app.so"
             )
         }
     }
@@ -98,8 +85,4 @@ dependencies {
     implementation("androidx.core:core:1.12.0")
     // AndroidX SplashScreen compat (used by GpuiActivity to hold splash until native init)
     implementation("androidx.core:core-splashscreen:1.0.1")
-    // AndroidX Biometric for BiometricPrompt (used by GpuiAuthActivity)
-    implementation("androidx.biometric:biometric:1.1.0")
-    // AndroidX Media for MediaSessionCompat (used by GpuiMediaSession for system controls)
-    implementation("androidx.media:media:1.7.1")
 }
