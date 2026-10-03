@@ -1,6 +1,7 @@
 use crate::state::{AppState, Screen};
 use crate::ui::home::HomeView;
-use amategeko_core::Strings;
+use crate::ui::quiz::QuizView;
+use amategeko_core::{QuizEngine, Strings};
 use gpui::InteractiveElement as _;
 use gpui_kit::base::StyledExt;
 use gpui_kit::component::{ActiveTheme, Icon, IconName};
@@ -46,28 +47,80 @@ impl Render for ShellView {
                 },
             )
             .into_any_element(),
-            Screen::Quiz => div()
-                .flex()
-                .flex_col()
-                .size_full()
-                .items_center()
-                .justify_center()
-                .gap_4()
-                .p_4()
-                .child(
-                    div()
-                        .text_xl()
-                        .font_bold()
-                        .text_color(colors.foreground)
-                        .child("Ikizamini kigiye gutangira..."),
-                )
-                .child(
-                    div()
-                        .text_sm()
-                        .text_color(colors.muted_foreground)
-                        .child("Milestone 5-7 izashyiramo imiterere yose y'ibizamini."),
-                )
-                .into_any_element(),
+            Screen::Quiz => QuizView::render(
+                &self.state,
+                is_desktop,
+                cx,
+                |this, letter, _, cx| {
+                    this.state.record_current_answer(letter);
+                    cx.notify();
+                },
+                |this, _, cx| {
+                    if let Some(att) = &mut this.state.current_attempt {
+                        QuizEngine::next_question(att);
+                        let _ = this.state.storage.save_in_progress(att);
+                    }
+                    cx.notify();
+                },
+                |this, _, cx| {
+                    if let Some(att) = &mut this.state.current_attempt {
+                        QuizEngine::previous_question(att);
+                        let _ = this.state.storage.save_in_progress(att);
+                    }
+                    cx.notify();
+                },
+                |this, _, cx| {
+                    if let Some(att) = &mut this.state.current_attempt {
+                        QuizEngine::skip_question(att);
+                        let _ = this.state.storage.save_in_progress(att);
+                    }
+                    cx.notify();
+                },
+                |this, _, cx| {
+                    if let Some(att) = &mut this.state.current_attempt {
+                        match QuizEngine::confirm_and_advance_hard(att) {
+                            Ok(true) => {
+                                this.state.finish_current_quiz();
+                            }
+                            Ok(false) => {
+                                let _ = this.state.storage.save_in_progress(att);
+                            }
+                            Err(e) => {
+                                log::warn!("Hard confirm error: {e}");
+                            }
+                        }
+                    }
+                    cx.notify();
+                },
+                |this, target_idx, _, cx| {
+                    if let Some(att) = &mut this.state.current_attempt {
+                        QuizEngine::jump_to_question(att, target_idx);
+                        let _ = this.state.storage.save_in_progress(att);
+                    }
+                    cx.notify();
+                },
+                |this, _, cx| {
+                    if let Some(att) = &mut this.state.current_attempt {
+                        QuizEngine::toggle_current_flag(att);
+                        let _ = this.state.storage.save_in_progress(att);
+                    }
+                    cx.notify();
+                },
+                |this, q_id, _, cx| {
+                    this.state.progress.toggle_starred(q_id);
+                    let _ = this.state.storage.save_progress(&this.state.progress);
+                    cx.notify();
+                },
+                |this, _, cx| {
+                    this.state.finish_current_quiz();
+                    cx.notify();
+                },
+                |this, _, cx| {
+                    this.state.navigate(Screen::Home);
+                    cx.notify();
+                },
+            )
+            .into_any_element(),
             Screen::Results => div()
                 .flex()
                 .flex_col()
