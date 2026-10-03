@@ -1,0 +1,17 @@
+[package]
+name = "desktop"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "amategeko"
+path = "src/main.rs"
+
+[dependencies]
+amategeko-core.workspace = true
+amategeko-app.workspace = true
+gpui.workspace = true
+gpui-kit.workspace = true
+directories.workspace = true
+log.workspace = true

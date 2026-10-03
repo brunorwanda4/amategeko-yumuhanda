@@ -1,0 +1,25 @@
+[package]
+name = "mobile"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+name = "gpui_mobile_app"
+crate-type = ["cdylib", "staticlib", "lib"]
+path = "src/lib.rs"
+
+[dependencies]
+amategeko-core.workspace = true
+amategeko-app.workspace = true
+gpui.workspace = true
+gpui-mobile.workspace = true
+gpui-kit = { git = "https://github.com/longbridge/gpui-kit", rev = "7d9efcd2069f9eaa6eb3ba6345aac4aa7d87c9f7", default-features = false, features = ["component"] }
+log.workspace = true
+
+[target.'cfg(target_os = "android")'.dependencies]
+android_logger = "0.15"
+android-activity = { version = "0.6", features = ["native-activity"] }
+
+[target.'cfg(target_os = "ios")'.dependencies]
+objc2 = "0.6"

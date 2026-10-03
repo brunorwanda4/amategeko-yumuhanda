@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  AndroidManifest.xml for Amategeko y'Umuhanda.
+  100% OFFLINE: No INTERNET or network permissions.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Vibration permission for tactile feedback on answers if needed -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- Vulkan feature declaration.
+         `required="false"` allows the app to fall back to OpenGL ES on
+         devices without Vulkan support. -->
+    <uses-feature
+        android:name="android.hardware.vulkan.level"
+        android:required="false"
+        android:version="0"
+    />
+
+    <uses-feature
+        android:name="android.hardware.vulkan.version"
+        android:required="false"
+        android:version="0x00401000"
+    />
+
+    <!-- GPU hardware acceleration is required for wgpu rendering. -->
+    <uses-feature android:glEsVersion="0x00030000" android:required="true" />
+
+    <!-- Touchscreen support. -->
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false"
+    />
+
+    <application
+        android:allowBackup="false"
+        android:hardwareAccelerated="true"
+        android:largeHeap="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="Amategeko y'Umuhanda"
+        android:roundIcon="@drawable/ic_launcher"
+        android:supportsRtl="true"
+        android:theme="@style/GpuiTheme"
+    >
+
+        <activity
+            android:name="dev.gpui.mobile.GpuiActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|keyboard|navigation|uiMode|density"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:screenOrientation="unspecified"
+            android:theme="@style/GpuiSplashTheme"
+            android:windowSoftInputMode="adjustResize"
+        >
+
+            <!-- The native library name WITHOUT the "lib" prefix and ".so" suffix.
+                 This is set via manifestPlaceholders in build.gradle.kts. -->
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="${nativeLibraryName}"
+            />
+
+            <!-- Mark this activity as the main launcher entry point. -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- Deep link intent filter for custom URL scheme -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="amategeko" />
+            </intent-filter>
+        </activity>
+
+    </application>
+
+</manifest>
