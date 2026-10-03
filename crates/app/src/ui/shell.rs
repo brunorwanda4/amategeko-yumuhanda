@@ -1,5 +1,6 @@
 use crate::state::{AppState, Screen};
 use crate::ui::home::HomeView;
+use crate::ui::questions::{QuestionsFilter, QuestionsView};
 use crate::ui::quiz::QuizView;
 use crate::ui::results::{ResultFilter, ResultsView};
 use amategeko_core::{QuizEngine, Strings};
@@ -8,12 +9,15 @@ use gpui_kit::base::StyledExt;
 use gpui_kit::component::{ActiveTheme, Icon, IconName};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 pub struct ShellView {
     pub state: AppState,
     pub results_filter: ResultFilter,
     pub results_expanded: HashSet<usize>,
+    pub questions_filter: QuestionsFilter,
+    pub questions_search: String,
+    pub questions_revealed: HashMap<u32, String>,
 }
 
 impl ShellView {
@@ -22,6 +26,9 @@ impl ShellView {
             state,
             results_filter: ResultFilter::All,
             results_expanded: HashSet::new(),
+            questions_filter: QuestionsFilter::All,
+            questions_search: String::new(),
+            questions_revealed: HashMap::new(),
         }
     }
 }
@@ -172,22 +179,39 @@ impl Render for ShellView {
                 },
             )
             .into_any_element(),
-            Screen::Questions => div()
-                .flex()
-                .flex_col()
-                .size_full()
-                .items_center()
-                .justify_center()
-                .gap_4()
-                .p_4()
-                .child(
-                    div()
-                        .text_xl()
-                        .font_bold()
-                        .text_color(colors.foreground)
-                        .child("Ibibazo 390 by'Amategeko y'Umuhanda"),
-                )
-                .into_any_element(),
+            Screen::Questions => QuestionsView::render(
+                &self.state,
+                is_desktop,
+                self.questions_filter,
+                &self.questions_search,
+                self.state.settings.study_hide_answers,
+                &self.questions_revealed,
+                cx,
+                |this, filter, _, cx| {
+                    this.questions_filter = filter;
+                    cx.notify();
+                },
+                |this, query, _, cx| {
+                    this.questions_search = query;
+                    cx.notify();
+                },
+                |this, hide, _, cx| {
+                    this.state.settings.study_hide_answers = hide;
+                    let _ = this.state.storage.save_settings(&this.state.settings);
+                    this.questions_revealed.clear();
+                    cx.notify();
+                },
+                |this, q_id, _, cx| {
+                    this.state.progress.toggle_starred(q_id);
+                    let _ = this.state.storage.save_progress(&this.state.progress);
+                    cx.notify();
+                },
+                |this, q_id, letter, _, cx| {
+                    this.questions_revealed.insert(q_id, letter);
+                    cx.notify();
+                },
+            )
+            .into_any_element(),
             Screen::Stats => div()
                 .flex()
                 .flex_col()
