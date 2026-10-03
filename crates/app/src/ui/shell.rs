@@ -1,20 +1,28 @@
 use crate::state::{AppState, Screen};
 use crate::ui::home::HomeView;
 use crate::ui::quiz::QuizView;
+use crate::ui::results::{ResultFilter, ResultsView};
 use amategeko_core::{QuizEngine, Strings};
 use gpui::InteractiveElement as _;
 use gpui_kit::base::StyledExt;
 use gpui_kit::component::{ActiveTheme, Icon, IconName};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
+use std::collections::HashSet;
 
 pub struct ShellView {
     pub state: AppState,
+    pub results_filter: ResultFilter,
+    pub results_expanded: HashSet<usize>,
 }
 
 impl ShellView {
     pub fn new(state: AppState) -> Self {
-        Self { state }
+        Self {
+            state,
+            results_filter: ResultFilter::All,
+            results_expanded: HashSet::new(),
+        }
     }
 }
 
@@ -78,15 +86,12 @@ impl Render for ShellView {
                 },
                 |this, _, cx| {
                     if let Some(att) = &mut this.state.current_attempt {
-                        match QuizEngine::confirm_and_advance_hard(att) {
-                            Ok(true) => {
-                                this.state.finish_current_quiz();
-                            }
-                            Ok(false) => {
+                        if att.current_answer().is_some() {
+                            if att.current_index + 1 < att.total_questions() {
+                                QuizEngine::next_question(att);
                                 let _ = this.state.storage.save_in_progress(att);
-                            }
-                            Err(e) => {
-                                log::warn!("Hard confirm error: {e}");
+                            } else {
+                                this.state.finish_current_quiz();
                             }
                         }
                     }
@@ -113,6 +118,16 @@ impl Render for ShellView {
                 },
                 |this, _, cx| {
                     this.state.finish_current_quiz();
+                    // On finish quiz, expand wrong answers by default for review
+                    this.results_filter = ResultFilter::All;
+                    this.results_expanded.clear();
+                    if let Some(res) = &this.state.last_result {
+                        for (idx, qr) in res.question_results.iter().enumerate() {
+                            if !qr.is_correct {
+                                this.results_expanded.insert(idx);
+                            }
+                        }
+                    }
                     cx.notify();
                 },
                 |this, _, cx| {
@@ -121,22 +136,42 @@ impl Render for ShellView {
                 },
             )
             .into_any_element(),
-            Screen::Results => div()
-                .flex()
-                .flex_col()
-                .size_full()
-                .items_center()
-                .justify_center()
-                .gap_4()
-                .p_4()
-                .child(
-                    div()
-                        .text_xl()
-                        .font_bold()
-                        .text_color(colors.foreground)
-                        .child(Strings::RESULTS_TITLE),
-                )
-                .into_any_element(),
+            Screen::Results => ResultsView::render(
+                &self.state,
+                is_desktop,
+                self.results_filter,
+                &self.results_expanded,
+                cx,
+                |this, filter, _, cx| {
+                    this.results_filter = filter;
+                    cx.notify();
+                },
+                |this, idx, _, cx| {
+                    if this.results_expanded.contains(&idx) {
+                        this.results_expanded.remove(&idx);
+                    } else {
+                        this.results_expanded.insert(idx);
+                    }
+                    cx.notify();
+                },
+                |this, _, cx| {
+                    this.state.start_retry_wrong();
+                    this.results_filter = ResultFilter::All;
+                    this.results_expanded.clear();
+                    cx.notify();
+                },
+                |this, _, cx| {
+                    this.state.navigate(Screen::Home);
+                    this.results_filter = ResultFilter::All;
+                    this.results_expanded.clear();
+                    cx.notify();
+                },
+                |this, _, cx| {
+                    this.state.navigate(Screen::Home);
+                    cx.notify();
+                },
+            )
+            .into_any_element(),
             Screen::Questions => div()
                 .flex()
                 .flex_col()
@@ -463,7 +498,7 @@ impl ShellView {
         let theme = cx.theme();
         let colors = theme.colors;
 
-        let icon_color = if is_active {
+        let text_color = if is_active {
             colors.primary
         } else {
             colors.muted_foreground
@@ -477,7 +512,6 @@ impl ShellView {
             .justify_center()
             .flex_1()
             .h_full()
-            .gap_1()
             .cursor_pointer()
             .on_click(cx.listener(move |this, _, _, cx| {
                 this.state.navigate(target.clone());
@@ -486,13 +520,13 @@ impl ShellView {
             .child(
                 Icon::new(icon)
                     .size(px(20.0))
-                    .text_color(icon_color),
+                    .text_color(text_color),
             )
             .child(
                 div()
                     .text_xs()
-                    .text_color(icon_color)
                     .when(is_active, |el| el.font_semibold())
+                    .text_color(text_color)
                     .child(label),
             )
     }
