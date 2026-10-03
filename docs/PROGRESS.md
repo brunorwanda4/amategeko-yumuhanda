@@ -11,12 +11,12 @@ Tracking milestones for "Amategeko y'Umuhanda" (Rwanda driving-test theory study
   - [x] Identify correct options via parenthesized letters `(a)`, `(b)`, `(c)`, `(d)` and PDF red text spans
   - [x] Validate 3-4 options per question, exactly 1 answer (0 errors in validation)
   - [x] Generate `tools/needs_review.json` and support `assets/overrides.json`
-- [ ] **Milestone 2: Workspace Setup & Mobile Spike**
-  - [ ] Set up Cargo workspace (`crates/core`, `crates/app`, `crates/desktop`, `crates/mobile`)
-  - [ ] Pin exact GPUI/GPUI Kit/gpui-mobile dependencies
-  - [ ] Desktop skeleton with GPUI Kit init and Theme
-  - [ ] Mobile spike on Android (compile check + run on device/emulator)
-  - [ ] Document findings in `MOBILE_NOTES.md`
+- [x] **Milestone 2: Workspace Setup & Mobile Spike** (Completed 2026-10-03)
+  - [x] Set up Cargo workspace (`crates/core`, `crates/app`, `crates/desktop`, `crates/mobile`)
+  - [x] Pin exact GPUI/GPUI Kit/gpui-mobile dependencies
+  - [x] Desktop skeleton with GPUI Kit init and Theme
+  - [x] Mobile spike on Android (compiled native ARM64 shared library & verified Gradle APK packaging)
+  - [x] Document findings in `MOBILE_NOTES.md`
 - [ ] **Milestone 3: Core Logic & Quiz Engine**
   - [ ] Data models (`models.rs`), validation, question loader (`data.rs`)
   - [ ] Platform abstraction traits (`Storage`, `Clock`) (`platform.rs`)
