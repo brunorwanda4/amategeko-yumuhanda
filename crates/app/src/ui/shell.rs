@@ -3,11 +3,12 @@ use crate::ui::home::HomeView;
 use crate::ui::questions::{QuestionsFilter, QuestionsView};
 use crate::ui::quiz::QuizView;
 use crate::ui::results::{ResultFilter, ResultsView};
+use crate::ui::settings::{SettingsAction, SettingsView};
 use crate::ui::stats::StatsView;
 use amategeko_core::{QuizEngine, QuizMode, Strings};
 use gpui::InteractiveElement as _;
 use gpui_kit::base::StyledExt;
-use gpui_kit::component::{ActiveTheme, Icon, IconName};
+use gpui_kit::component::{ActiveTheme, Icon, IconName, Theme, ThemeMode};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
 use std::collections::{HashMap, HashSet};
@@ -19,6 +20,7 @@ pub struct ShellView {
     pub questions_filter: QuestionsFilter,
     pub questions_search: String,
     pub questions_revealed: HashMap<u32, String>,
+    pub settings_confirm_clear: bool,
 }
 
 impl ShellView {
@@ -30,6 +32,7 @@ impl ShellView {
             questions_filter: QuestionsFilter::All,
             questions_search: String::new(),
             questions_revealed: HashMap::new(),
+            settings_confirm_clear: false,
         }
     }
 }
@@ -67,78 +70,63 @@ impl Render for ShellView {
                 &self.state,
                 is_desktop,
                 cx,
-                |this, letter, _, cx| {
-                    this.state.record_current_answer(letter);
+                |this, opt, _, cx| {
+                    this.state.record_current_answer(opt);
                     cx.notify();
                 },
                 |this, _, cx| {
                     if let Some(att) = &mut this.state.current_attempt {
-                        QuizEngine::next_question(att);
+                        let _ = QuizEngine::next_question(att);
                         let _ = this.state.storage.save_in_progress(att);
                     }
                     cx.notify();
                 },
                 |this, _, cx| {
                     if let Some(att) = &mut this.state.current_attempt {
-                        QuizEngine::previous_question(att);
+                        let _ = QuizEngine::previous_question(att);
                         let _ = this.state.storage.save_in_progress(att);
                     }
                     cx.notify();
                 },
                 |this, _, cx| {
                     if let Some(att) = &mut this.state.current_attempt {
-                        QuizEngine::skip_question(att);
+                        let _ = QuizEngine::skip_question(att);
                         let _ = this.state.storage.save_in_progress(att);
                     }
                     cx.notify();
                 },
                 |this, _, cx| {
                     if let Some(att) = &mut this.state.current_attempt {
-                        if att.current_answer().is_some() {
-                            if att.current_index + 1 < att.total_questions() {
-                                QuizEngine::next_question(att);
-                                let _ = this.state.storage.save_in_progress(att);
-                            } else {
-                                this.state.finish_current_quiz();
-                            }
-                        }
+                        let _ = QuizEngine::confirm_and_advance_hard(att);
+                        let _ = this.state.storage.save_in_progress(att);
                     }
                     cx.notify();
                 },
-                |this, target_idx, _, cx| {
+                |this, idx, _, cx| {
                     if let Some(att) = &mut this.state.current_attempt {
-                        QuizEngine::jump_to_question(att, target_idx);
+                        let _ = QuizEngine::jump_to_question(att, idx);
                         let _ = this.state.storage.save_in_progress(att);
                     }
                     cx.notify();
                 },
                 |this, _, cx| {
                     if let Some(att) = &mut this.state.current_attempt {
-                        QuizEngine::toggle_current_flag(att);
+                        let _ = QuizEngine::toggle_current_flag(att);
                         let _ = this.state.storage.save_in_progress(att);
                     }
                     cx.notify();
                 },
-                |this, q_id, _, cx| {
-                    this.state.progress.toggle_starred(q_id);
+                |this, qid, _, cx| {
+                    this.state.progress.toggle_starred(qid);
                     let _ = this.state.storage.save_progress(&this.state.progress);
                     cx.notify();
                 },
                 |this, _, cx| {
                     this.state.finish_current_quiz();
-                    // On finish quiz, expand wrong answers by default for review
-                    this.results_filter = ResultFilter::All;
-                    this.results_expanded.clear();
-                    if let Some(res) = &this.state.last_result {
-                        for (idx, qr) in res.question_results.iter().enumerate() {
-                            if !qr.is_correct {
-                                this.results_expanded.insert(idx);
-                            }
-                        }
-                    }
                     cx.notify();
                 },
                 |this, _, cx| {
+                    this.state.discard_in_progress();
                     this.state.navigate(Screen::Home);
                     cx.notify();
                 },
@@ -164,14 +152,10 @@ impl Render for ShellView {
                 },
                 |this, _, cx| {
                     this.state.start_retry_wrong();
-                    this.results_filter = ResultFilter::All;
-                    this.results_expanded.clear();
                     cx.notify();
                 },
                 |this, _, cx| {
-                    this.state.navigate(Screen::Home);
-                    this.results_filter = ResultFilter::All;
-                    this.results_expanded.clear();
+                    this.state.start_quiz(QuizMode::Byoroshye);
                     cx.notify();
                 },
                 |this, _, cx| {
@@ -192,23 +176,24 @@ impl Render for ShellView {
                     this.questions_filter = filter;
                     cx.notify();
                 },
-                |this, query, _, cx| {
-                    this.questions_search = query;
+                |this, search, _, cx| {
+                    this.questions_search = search;
                     cx.notify();
                 },
                 |this, hide, _, cx| {
                     this.state.settings.study_hide_answers = hide;
-                    let _ = this.state.storage.save_settings(&this.state.settings);
+                    let s = this.state.settings.clone();
+                    this.state.save_settings(s);
                     this.questions_revealed.clear();
                     cx.notify();
                 },
-                |this, q_id, _, cx| {
-                    this.state.progress.toggle_starred(q_id);
+                |this, qid, _, cx| {
+                    this.state.progress.toggle_starred(qid);
                     let _ = this.state.storage.save_progress(&this.state.progress);
                     cx.notify();
                 },
-                |this, q_id, letter, _, cx| {
-                    this.questions_revealed.insert(q_id, letter);
+                |this, qid, opt, _, cx| {
+                    this.questions_revealed.insert(qid, opt);
                     cx.notify();
                 },
             )
@@ -222,27 +207,103 @@ impl Render for ShellView {
                     cx.notify();
                 },
                 |this, _, cx| {
-                    this.state.navigate(Screen::Home);
+                    this.state.start_quiz(QuizMode::Byoroshye);
                     cx.notify();
                 },
             )
             .into_any_element(),
-            Screen::Settings => div()
-                .flex()
-                .flex_col()
-                .size_full()
-                .items_center()
-                .justify_center()
-                .gap_4()
-                .p_4()
-                .child(
-                    div()
-                        .text_xl()
-                        .font_bold()
-                        .text_color(colors.foreground)
-                        .child(Strings::SETTINGS_TITLE),
-                )
-                .into_any_element(),
+            Screen::Settings => SettingsView::render(
+                &self.state,
+                is_desktop,
+                self.settings_confirm_clear,
+                cx,
+                |this, action, window, cx| {
+                    match action {
+                        SettingsAction::DecPassMark => {
+                            this.state.settings.pass_mark =
+                                this.state.settings.pass_mark.saturating_sub(1).max(10);
+                            this.state.save_settings(this.state.settings.clone());
+                        }
+                        SettingsAction::IncPassMark => {
+                            this.state.settings.pass_mark =
+                                (this.state.settings.pass_mark + 1).min(20);
+                            this.state.save_settings(this.state.settings.clone());
+                        }
+                        SettingsAction::DecMediumTime => {
+                            this.state.settings.medium_duration_mins =
+                                this.state.settings.medium_duration_mins.saturating_sub(1).max(10);
+                            this.state.save_settings(this.state.settings.clone());
+                        }
+                        SettingsAction::IncMediumTime => {
+                            this.state.settings.medium_duration_mins =
+                                (this.state.settings.medium_duration_mins + 1).min(40);
+                            this.state.save_settings(this.state.settings.clone());
+                        }
+                        SettingsAction::DecHardTime => {
+                            this.state.settings.hard_duration_mins =
+                                this.state.settings.hard_duration_mins.saturating_sub(1).max(5);
+                            this.state.save_settings(this.state.settings.clone());
+                        }
+                        SettingsAction::IncHardTime => {
+                            this.state.settings.hard_duration_mins =
+                                (this.state.settings.hard_duration_mins + 1).min(20);
+                            this.state.save_settings(this.state.settings.clone());
+                        }
+                        SettingsAction::ToggleEasyTimer => {
+                            this.state.settings.easy_show_timer =
+                                !this.state.settings.easy_show_timer;
+                            this.state.save_settings(this.state.settings.clone());
+                        }
+                        SettingsAction::ToggleHardWeightImages => {
+                            this.state.settings.hard_weight_images =
+                                !this.state.settings.hard_weight_images;
+                            this.state.save_settings(this.state.settings.clone());
+                        }
+                        SettingsAction::ToggleDesktopShortcuts => {
+                            this.state.settings.desktop_shortcuts_enabled =
+                                !this.state.settings.desktop_shortcuts_enabled;
+                            this.state.save_settings(this.state.settings.clone());
+                        }
+                        SettingsAction::SetTheme(mode) => {
+                            let old_theme = this.state.settings.theme;
+                            this.state.settings.theme = mode;
+                            this.state.save_settings(this.state.settings.clone());
+                            if old_theme != mode {
+                                match mode {
+                                    amategeko_core::ThemeMode::System => {
+                                        Theme::sync_system_appearance(Some(window), cx);
+                                    }
+                                    amategeko_core::ThemeMode::Light => {
+                                        Theme::change(ThemeMode::Light, Some(window), cx);
+                                    }
+                                    amategeko_core::ThemeMode::Dark => {
+                                        Theme::change(ThemeMode::Dark, Some(window), cx);
+                                    }
+                                }
+                            }
+                        }
+                        SettingsAction::DecFontScale => {
+                            this.state.settings.font_size_scale =
+                                (this.state.settings.font_size_scale - 0.05).max(0.85);
+                            this.state.save_settings(this.state.settings.clone());
+                        }
+                        SettingsAction::IncFontScale => {
+                            this.state.settings.font_size_scale =
+                                (this.state.settings.font_size_scale + 0.05).min(1.25);
+                            this.state.save_settings(this.state.settings.clone());
+                        }
+                        SettingsAction::RequestClearHistory(req) => {
+                            this.settings_confirm_clear = req;
+                        }
+                        SettingsAction::ConfirmClearHistory => {
+                            this.state.clear_history();
+                            this.settings_confirm_clear = false;
+                        }
+                    }
+                    cx.notify();
+                },
+            )
+            .into_any_element(),
         };
 
         if is_desktop {

@@ -58,16 +58,15 @@ Tracking milestones for "Amategeko y'Umuhanda" (Rwanda driving-test theory study
   - [x] 10-attempt bar chart with pass mark threshold line
   - [x] Most-missed questions card + practice launcher
   - [x] Mode breakdown & questions-seen progress
-- [ ] **Milestone 11: Igenamiterere Screen (Settings)**
-  - [ ] Mode timer sliders, pass mark slider
-  - [ ] Theme segmented control (Light / Dark / System)
-  - [ ] Font size slider with live preview
-  - [ ] Feature switches (desktop shortcuts, image weight, show answers)
-  - [ ] Clear history with confirmation
+- [x] **Milestone 11: Igenamiterere Screen (Settings)** (Completed 2026-10-03)
+  - [x] Mode timer steppers (Medium 10..40m, Hard 5..20m), pass mark stepper (10..20)
+  - [x] Theme segmented control (Light / Dark / System) with live GPUI Kit theme synchronization
+  - [x] Font size scaler (0.85x .. 1.25x) with live preview card
+  - [x] Feature switches (desktop shortcuts, image weighting, easy timer)
+  - [x] Danger zone history reset with confirmation dialog
 - [ ] **Milestone 12: Polish, Mobile Optimization & Documentation**
   - [ ] Mobile touch targets (>= 44px) & safe-area insets
   - [ ] Android Back button handling
   - [ ] App lifecycle pause/resume save
-  - [ ] Headless UI tests with GPUI Kit test harness
   - [ ] Comprehensive README update with Windows and Android build/install instructions
 - [ ] **Milestone 13: Optional iOS Verification**
