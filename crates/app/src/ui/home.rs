@@ -12,7 +12,7 @@ pub struct HomeView;
 impl HomeView {
     pub fn render<V: 'static>(
         state: &AppState,
-        is_desktop: bool,
+        window_width: Pixels,
         cx: &mut Context<V>,
         on_start_mode: impl Fn(&mut V, QuizMode, &mut Window, &mut Context<V>) + 'static + Copy,
         on_resume: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
@@ -21,6 +21,9 @@ impl HomeView {
         let theme = cx.theme();
         let colors = theme.colors;
         let stats_summary = StatsCalculator::compute_summary(&state.progress);
+
+        let is_desktop = window_width >= px(700.0);
+        let is_wide = window_width >= px(1060.0);
 
         div()
             .id("home_scroll")
@@ -122,7 +125,7 @@ impl HomeView {
                                     ),
                             )
                     }))
-                    // Mode Cards Section
+                    // Mode Cards Section (Fully responsive: 3-col on wide screens, 2-col wrap on medium screens, 1-col on mobile)
                     .child(
                         div()
                             .flex()
@@ -138,9 +141,10 @@ impl HomeView {
                             .child(
                                 div()
                                     .flex()
-                                    .flex_col()
                                     .gap_4()
-                                    .when(is_desktop, |el| el.flex_row())
+                                    .when(is_wide, |el| el.flex_row())
+                                    .when(is_desktop && !is_wide, |el| el.flex_row().flex_wrap())
+                                    .when(!is_desktop, |el| el.flex_col())
                                     // Card 1: Byoroshye (Easy - Green)
                                     .child(
                                         Self::render_mode_card(
@@ -150,6 +154,7 @@ impl HomeView {
                                             Strings::MODE_EASY_DESC,
                                             "20 ibibazo • Nta gihe kigabanyuka • Ibisubizo byihuse",
                                             colors.success,
+                                            is_desktop,
                                             cx,
                                             on_start_mode,
                                         ),
@@ -163,6 +168,7 @@ impl HomeView {
                                             Strings::MODE_MEDIUM_DESC,
                                             "20 ibibazo • Iminota 20 • Guhindura igisubizo • Gusimbuka",
                                             colors.warning,
+                                            is_desktop,
                                             cx,
                                             on_start_mode,
                                         ),
@@ -176,6 +182,7 @@ impl HomeView {
                                             Strings::MODE_HARD_DESC,
                                             "20 ibibazo • Iminota 12 • Ibyapa byinshi • Nta gusimbuka",
                                             colors.danger,
+                                            is_desktop,
                                             cx,
                                             on_start_mode,
                                         ),
@@ -222,7 +229,7 @@ impl HomeView {
                                     })),
                             ),
                     )
-                    // Quick Statistics Preview (Responsive 4 in a row on Desktop, 2x2 grid on Mobile)
+                    // Quick Statistics Preview (Responsive 4 in a row on Wide Desktop, 2x2 grid on Compact Desktop & Mobile)
                     .child(
                         div()
                             .flex()
@@ -237,8 +244,8 @@ impl HomeView {
                             )
                             .child(
                                 div()
-                                    .when(is_desktop, |el| {
-                                        // 4 in a single horizontal row on Desktop
+                                    .when(is_wide, |el| {
+                                        // 4 in a single horizontal row on Wide Desktop
                                         el.flex()
                                             .flex_row()
                                             .gap_3()
@@ -263,8 +270,8 @@ impl HomeView {
                                                 cx,
                                             ))
                                     })
-                                    .when(!is_desktop, |el| {
-                                        // 2x2 grid on Mobile for clean touch readability
+                                    .when(!is_wide, |el| {
+                                        // 2x2 grid on Compact Desktop & Mobile for clean readability
                                         el.flex()
                                             .flex_col()
                                             .gap_2()
@@ -314,6 +321,7 @@ impl HomeView {
         desc: &'static str,
         features: &'static str,
         accent_color: gpui::Hsla,
+        is_desktop: bool,
         cx: &mut Context<V>,
         on_start_mode: impl Fn(&mut V, QuizMode, &mut Window, &mut Context<V>) + 'static + Copy,
     ) -> impl IntoElement {
@@ -324,6 +332,7 @@ impl HomeView {
             .flex()
             .flex_col()
             .flex_1()
+            .when(is_desktop, |el| el.min_w(px(260.0)))
             .gap_3()
             .p_4()
             .rounded_xl()
@@ -337,6 +346,7 @@ impl HomeView {
                     .flex_row()
                     .items_center()
                     .justify_between()
+                    .gap_2()
                     .child(
                         div()
                             .text_lg()
@@ -357,12 +367,7 @@ impl HomeView {
                             .child(badge_text),
                     ),
             )
-            .child(
-                div()
-                    .text_xs()
-                    .text_color(colors.foreground)
-                    .child(desc),
-            )
+            .child(div().text_xs().text_color(colors.foreground).child(desc))
             .child(
                 div()
                     .text_xs()
@@ -370,16 +375,14 @@ impl HomeView {
                     .child(features),
             )
             .child(
-                div()
-                    .pt_2()
-                    .child(
-                        Button::new(format!("btn_mode_{title}"))
-                            .primary()
-                            .label(format!("Tangira {title}"))
-                            .on_click(cx.listener(move |this, _, window, cx| {
-                                on_start_mode(this, mode, window, cx);
-                            })),
-                    ),
+                div().mt_auto().pt_2().child(
+                    Button::new(format!("btn_mode_{title}"))
+                        .primary()
+                        .label(format!("Tangira {title}"))
+                        .on_click(cx.listener(move |this, _, window, cx| {
+                            on_start_mode(this, mode, window, cx);
+                        })),
+                ),
             )
     }
 

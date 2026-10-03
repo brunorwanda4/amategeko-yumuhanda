@@ -52,7 +52,7 @@ impl Render for ShellView {
         let content = match active_screen {
             Screen::Home => HomeView::render(
                 &self.state,
-                is_desktop,
+                window_width,
                 cx,
                 |this, mode, _, cx| {
                     this.state.start_quiz(mode);
