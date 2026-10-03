@@ -12,8 +12,7 @@ Tracking milestones for "Amategeko y'Umuhanda" (Rwanda driving-test theory study
   - [x] Validate 3-4 options per question, exactly 1 answer (0 errors in validation)
   - [x] Generate `tools/needs_review.json` and support `assets/overrides.json`
 - [x] **Milestone 2: Workspace Setup & Mobile Spike** (Completed 2026-10-03)
-  - [x] Set up Cargo workspace (`crates/core`, `crates/app`, `crates/desktop`, `crates/mobile`)
-  - [x] Pin exact GPUI/GPUI Kit/gpui-mobile dependencies
+  - [x] Set up Cargo workspace (`crates/core`, `crates/app`, `crates/desktop`, `crates/mobile`)\n  - [x] Pin exact GPUI/GPUI Kit/gpui-mobile dependencies
   - [x] Desktop skeleton with GPUI Kit init and Theme
   - [x] Mobile spike on Android (compiled native ARM64 shared library & verified Gradle APK packaging)
   - [x] Document findings in `MOBILE_NOTES.md`
@@ -30,19 +29,19 @@ Tracking milestones for "Amategeko y'Umuhanda" (Rwanda driving-test theory study
   - [x] Breakpoint-based responsive shell (`shell.rs`, desktop >= 700px vs mobile < 700px)
   - [x] Desktop sidebar navigation vs Mobile bottom navigation bar (focus mode hiding bar in quiz)
   - [x] Home screen (`home.rs`) with 3 mode cards, stats tiles, resume banner, weak practice card
-- [ ] **Milestone 5: Easy Mode (Layout A)**
-  - [ ] Instant feedback (green/red highlights, check/x icons, result explanation line)
-  - [ ] Free navigation (previous, next, skip), star/bookmark toggle
-  - [ ] Answer locking after first tap
-- [ ] **Milestone 6: Medium Mode (Layout A - Exam Simulation)**
-  - [ ] Countdown timer (turns red in last 2 mins), auto-submit at 0
-  - [ ] 20-cell question grid (desktop inline, mobile bottom sheet)
-  - [ ] Flags, answer changing, finish confirmation dialog listing unanswered questions
-- [ ] **Milestone 7: Hard Mode (Layout B - Strict Mode)**
-  - [ ] Shorter countdown, image question weighting
-  - [ ] Segmented progress bar, two-column desktop vs single-column mobile
-  - [ ] Strict navigation (no back, no skip, no pause, no grid)
-  - [ ] Selection validation before confirmation
+- [x] **Milestone 5: Easy Mode (Layout A)** (Completed 2026-10-03)
+  - [x] Instant feedback (green/red highlights, check/x icons, result explanation line)
+  - [x] Free navigation (previous, next, skip), star/bookmark toggle
+  - [x] Answer locking after first tap
+- [x] **Milestone 6: Medium Mode (Layout A - Exam Simulation)** (Completed 2026-10-03)
+  - [x] Countdown timer (turns red in last 2 mins), auto-submit at 0
+  - [x] 20-cell question grid (desktop inline, mobile bottom sheet)
+  - [x] Flags, answer changing, finish confirmation dialog listing unanswered questions
+- [x] **Milestone 7: Hard Mode (Layout B - Strict Mode)** (Completed 2026-10-03)
+  - [x] Shorter countdown, image question weighting
+  - [x] Segmented progress bar, two-column desktop vs single-column mobile
+  - [x] Strict navigation (no back, no skip, no pause, no grid)
+  - [x] Selection validation before confirmation
 - [ ] **Milestone 8: Results Screen**
   - [ ] Circular score badge, pass/fail status, filter chips
   - [ ] Expandable question cards comparing user answer vs correct answer
