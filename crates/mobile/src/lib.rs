@@ -77,8 +77,8 @@ fn android_main(app: android_activity::AndroidApp) {
 #[cfg(target_os = "ios")]
 #[no_mangle]
 pub extern "C" fn gpui_ios_register_app() {
-    let data_dir = PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "/tmp".into()))
-        .join("Documents");
+    let data_dir =
+        PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "/tmp".into())).join("Documents");
     let storage = Arc::new(MobileStorage { data_dir });
     let clock = Arc::new(SystemClock);
 

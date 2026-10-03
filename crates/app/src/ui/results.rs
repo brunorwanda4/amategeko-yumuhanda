@@ -34,41 +34,39 @@ impl ResultsView {
         let theme = cx.theme();
         let colors = theme.colors;
 
-        let result = match &state.last_result {
-            Some(res) => res,
-            None => {
-                return div()
-                    .id("results_empty_scroll")
-                    .flex()
-                    .flex_col()
-                    .items_center()
-                    .justify_center()
-                    .size_full()
-                    .p_6()
-                    .gap_4()
-                    .child(
-                        div()
-                            .text_lg()
-                            .font_bold()
-                            .text_color(colors.foreground)
-                            .child("Nta bisubizo by'ikizamini bihari."),
-                    )
-                    .child(
-                        div()
-                            .text_sm()
-                            .text_color(colors.muted_foreground)
-                            .child("Tangira ikizamini gishya kugira ngo ubone ibisubizo byawe hano."),
-                    )
-                    .child(
-                        Button::new("home_empty_btn")
-                            .primary()
-                            .label("Gusubira Ahabanza")
-                            .on_click(cx.listener(move |this, _, window, cx| {
-                                on_home(this, window, cx);
-                            })),
-                    );
-            }
-        };
+        let result =
+            match &state.last_result {
+                Some(res) => res,
+                None => {
+                    return div()
+                        .id("results_empty_scroll")
+                        .flex()
+                        .flex_col()
+                        .items_center()
+                        .justify_center()
+                        .size_full()
+                        .p_6()
+                        .gap_4()
+                        .child(
+                            div()
+                                .text_lg()
+                                .font_bold()
+                                .text_color(colors.foreground)
+                                .child("Nta bisubizo by'ikizamini bihari."),
+                        )
+                        .child(div().text_sm().text_color(colors.muted_foreground).child(
+                            "Tangira ikizamini gishya kugira ngo ubone ibisubizo byawe hano.",
+                        ))
+                        .child(
+                            Button::new("home_empty_btn")
+                                .primary()
+                                .label("Gusubira Ahabanza")
+                                .on_click(cx.listener(move |this, _, window, cx| {
+                                    on_home(this, window, cx);
+                                })),
+                        );
+                }
+            };
 
         let score = result.score;
         let total = result.total;
@@ -122,7 +120,11 @@ impl ResultsView {
                     .p_6()
                     .rounded_2xl()
                     .border_1()
-                    .border_color(if is_passed { colors.success } else { colors.danger })
+                    .border_color(if is_passed {
+                        colors.success
+                    } else {
+                        colors.danger
+                    })
                     .bg(colors.secondary)
                     .gap_3()
                     // Score circular badge
@@ -136,13 +138,21 @@ impl ResultsView {
                             .h(px(110.0))
                             .rounded_full()
                             .border_4()
-                            .border_color(if is_passed { colors.success } else { colors.danger })
+                            .border_color(if is_passed {
+                                colors.success
+                            } else {
+                                colors.danger
+                            })
                             .bg(colors.background)
                             .child(
                                 div()
                                     .text_2xl()
                                     .font_extrabold()
-                                    .text_color(if is_passed { colors.success } else { colors.danger })
+                                    .text_color(if is_passed {
+                                        colors.success
+                                    } else {
+                                        colors.danger
+                                    })
                                     .child(format!("{}/{}", score, total)),
                             )
                             .child(
@@ -158,8 +168,16 @@ impl ResultsView {
                         div()
                             .text_xl()
                             .font_bold()
-                            .text_color(if is_passed { colors.success } else { colors.danger })
-                            .child(if is_passed { Strings::RESULTS_PASSED } else { Strings::RESULTS_FAILED }),
+                            .text_color(if is_passed {
+                                colors.success
+                            } else {
+                                colors.danger
+                            })
+                            .child(if is_passed {
+                                Strings::RESULTS_PASSED
+                            } else {
+                                Strings::RESULTS_FAILED
+                            }),
                     )
                     // Mode + Time + Pass threshold metadata row
                     .child(
@@ -263,11 +281,23 @@ impl ResultsView {
                             .rounded_full()
                             .cursor_pointer()
                             .border_1()
-                            .border_color(if filter == ResultFilter::All { colors.primary } else { colors.border })
-                            .bg(if filter == ResultFilter::All { colors.primary } else { colors.secondary })
+                            .border_color(if filter == ResultFilter::All {
+                                colors.primary
+                            } else {
+                                colors.border
+                            })
+                            .bg(if filter == ResultFilter::All {
+                                colors.primary
+                            } else {
+                                colors.secondary
+                            })
                             .text_xs()
                             .font_semibold()
-                            .text_color(if filter == ResultFilter::All { colors.primary_foreground } else { colors.foreground })
+                            .text_color(if filter == ResultFilter::All {
+                                colors.primary_foreground
+                            } else {
+                                colors.foreground
+                            })
                             .child(format!("Byose ({})", total))
                             .on_click(cx.listener(move |this, _, window, cx| {
                                 on_set_filter(this, ResultFilter::All, window, cx);
@@ -282,11 +312,23 @@ impl ResultsView {
                             .rounded_full()
                             .cursor_pointer()
                             .border_1()
-                            .border_color(if filter == ResultFilter::Correct { colors.success } else { colors.border })
-                            .bg(if filter == ResultFilter::Correct { colors.success } else { colors.secondary })
+                            .border_color(if filter == ResultFilter::Correct {
+                                colors.success
+                            } else {
+                                colors.border
+                            })
+                            .bg(if filter == ResultFilter::Correct {
+                                colors.success
+                            } else {
+                                colors.secondary
+                            })
                             .text_xs()
                             .font_semibold()
-                            .text_color(if filter == ResultFilter::Correct { colors.primary_foreground } else { colors.foreground })
+                            .text_color(if filter == ResultFilter::Correct {
+                                colors.primary_foreground
+                            } else {
+                                colors.foreground
+                            })
                             .child(format!("Iby'ukuri ({})", correct_count))
                             .on_click(cx.listener(move |this, _, window, cx| {
                                 on_set_filter(this, ResultFilter::Correct, window, cx);
@@ -301,11 +343,23 @@ impl ResultsView {
                             .rounded_full()
                             .cursor_pointer()
                             .border_1()
-                            .border_color(if filter == ResultFilter::Wrong { colors.danger } else { colors.border })
-                            .bg(if filter == ResultFilter::Wrong { colors.danger } else { colors.secondary })
+                            .border_color(if filter == ResultFilter::Wrong {
+                                colors.danger
+                            } else {
+                                colors.border
+                            })
+                            .bg(if filter == ResultFilter::Wrong {
+                                colors.danger
+                            } else {
+                                colors.secondary
+                            })
                             .text_xs()
                             .font_semibold()
-                            .text_color(if filter == ResultFilter::Wrong { colors.primary_foreground } else { colors.foreground })
+                            .text_color(if filter == ResultFilter::Wrong {
+                                colors.primary_foreground
+                            } else {
+                                colors.foreground
+                            })
                             .child(format!("Ibyakosheje ({})", wrong_count))
                             .on_click(cx.listener(move |this, _, window, cx| {
                                 on_set_filter(this, ResultFilter::Wrong, window, cx);
@@ -325,8 +379,16 @@ impl ResultsView {
                         let user_ans = qr.user_answer.as_deref();
                         let correct_ans = &qr.correct_answer;
 
-                        let status_color = if is_correct { colors.success } else { colors.danger };
-                        let status_icon = if is_correct { IconName::Check } else { IconName::CircleX };
+                        let status_color = if is_correct {
+                            colors.success
+                        } else {
+                            colors.danger
+                        };
+                        let status_icon = if is_correct {
+                            IconName::Check
+                        } else {
+                            IconName::CircleX
+                        };
 
                         let mut sorted_keys: Vec<&String> = q.options.keys().collect();
                         sorted_keys.sort();
@@ -337,7 +399,11 @@ impl ResultsView {
                             .flex_col()
                             .rounded_xl()
                             .border_1()
-                            .border_color(if is_expanded { status_color } else { colors.border })
+                            .border_color(if is_expanded {
+                                status_color
+                            } else {
+                                colors.border
+                            })
                             .bg(colors.secondary)
                             .p_3()
                             .gap_3()
@@ -376,7 +442,11 @@ impl ResultsView {
                                                             .text_sm()
                                                             .font_bold()
                                                             .text_color(colors.foreground)
-                                                            .child(format!("{}. Ikibazo cya {}", orig_idx + 1, q.id)),
+                                                            .child(format!(
+                                                                "{}. Ikibazo cya {}",
+                                                                orig_idx + 1,
+                                                                q.id
+                                                            )),
                                                     )
                                                     .when(!is_expanded, |snip| {
                                                         let snippet = if q.text.len() > 65 {
@@ -458,73 +528,97 @@ impl ResultsView {
                                             )
                                         })
                                         // Options review
-                                        .child(
-                                            div()
-                                                .flex()
-                                                .flex_col()
-                                                .gap_2()
-                                                .children(sorted_keys.into_iter().map(|key| {
-                                                    let opt_text = q.options.get(key).cloned().unwrap_or_default();
-                                                    let is_user_choice = user_ans == Some(key.as_str());
-                                                    let is_correct_choice = correct_ans == key;
+                                        .child(div().flex().flex_col().gap_2().children(
+                                            sorted_keys.into_iter().map(|key| {
+                                                let opt_text =
+                                                    q.options.get(key).cloned().unwrap_or_default();
+                                                let is_user_choice = user_ans == Some(key.as_str());
+                                                let is_correct_choice = correct_ans == key;
 
-                                                    let (opt_bg, opt_border, badge_text, badge_color) = if is_user_choice && is_correct_choice {
-                                                        (colors.success, colors.success, Some("Igisubizo cyawe (Cy'ukuri)"), colors.success)
+                                                let (opt_bg, opt_border, badge_text, badge_color) =
+                                                    if is_user_choice && is_correct_choice {
+                                                        (
+                                                            colors.success,
+                                                            colors.success,
+                                                            Some("Igisubizo cyawe (Cy'ukuri)"),
+                                                            colors.success,
+                                                        )
                                                     } else if is_user_choice && !is_correct_choice {
-                                                        (colors.danger, colors.danger, Some("Igisubizo cyawe (Siko)"), colors.danger)
+                                                        (
+                                                            colors.danger,
+                                                            colors.danger,
+                                                            Some("Igisubizo cyawe (Siko)"),
+                                                            colors.danger,
+                                                        )
                                                     } else if is_correct_choice {
-                                                        (colors.success, colors.success, Some("Igisubizo cy'ukuri"), colors.success)
+                                                        (
+                                                            colors.success,
+                                                            colors.success,
+                                                            Some("Igisubizo cy'ukuri"),
+                                                            colors.success,
+                                                        )
                                                     } else {
-                                                        (colors.background, colors.border, None, colors.muted_foreground)
+                                                        (
+                                                            colors.background,
+                                                            colors.border,
+                                                            None,
+                                                            colors.muted_foreground,
+                                                        )
                                                     };
 
-                                                    div()
-                                                        .flex()
-                                                        .flex_col()
-                                                        .p_2p5()
-                                                        .rounded_lg()
-                                                        .border_1()
-                                                        .border_color(opt_border)
-                                                        .bg(if is_user_choice || is_correct_choice { colors.background } else { opt_bg })
-                                                        .gap_1()
-                                                        .child(
-                                                            div()
-                                                                .flex()
-                                                                .flex_row()
-                                                                .items_start()
-                                                                .gap_2()
-                                                                .child(
-                                                                    div()
-                                                                        .text_xs()
-                                                                        .font_bold()
-                                                                        .text_color(if is_correct_choice {
+                                                div()
+                                                    .flex()
+                                                    .flex_col()
+                                                    .p_2p5()
+                                                    .rounded_lg()
+                                                    .border_1()
+                                                    .border_color(opt_border)
+                                                    .bg(if is_user_choice || is_correct_choice {
+                                                        colors.background
+                                                    } else {
+                                                        opt_bg
+                                                    })
+                                                    .gap_1()
+                                                    .child(
+                                                        div()
+                                                            .flex()
+                                                            .flex_row()
+                                                            .items_start()
+                                                            .gap_2()
+                                                            .child(
+                                                                div()
+                                                                    .text_xs()
+                                                                    .font_bold()
+                                                                    .text_color(
+                                                                        if is_correct_choice {
                                                                             colors.success
                                                                         } else if is_user_choice {
                                                                             colors.danger
                                                                         } else {
                                                                             colors.foreground
-                                                                        })
-                                                                        .child(format!("{})", key)),
-                                                                )
-                                                                .child(
-                                                                    div()
-                                                                        .text_xs()
-                                                                        .text_color(colors.foreground)
-                                                                        .flex_1()
-                                                                        .child(opt_text),
-                                                                ),
-                                                        )
-                                                        .when_some(badge_text, |b, txt| {
-                                                            b.child(
+                                                                        },
+                                                                    )
+                                                                    .child(format!("{})", key)),
+                                                            )
+                                                            .child(
                                                                 div()
                                                                     .text_xs()
-                                                                    .font_semibold()
-                                                                    .text_color(badge_color)
-                                                                    .child(txt),
-                                                            )
-                                                        })
-                                                })),
-                                        ),
+                                                                    .text_color(colors.foreground)
+                                                                    .flex_1()
+                                                                    .child(opt_text),
+                                                            ),
+                                                    )
+                                                    .when_some(badge_text, |b, txt| {
+                                                        b.child(
+                                                            div()
+                                                                .text_xs()
+                                                                .font_semibold()
+                                                                .text_color(badge_color)
+                                                                .child(txt),
+                                                        )
+                                                    })
+                                            }),
+                                        )),
                                 )
                             })
                     })),

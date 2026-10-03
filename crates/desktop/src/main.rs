@@ -18,13 +18,12 @@ impl Storage for DesktopStorage {
 }
 
 fn main() {
-    let storage_dir = if let Some(proj_dirs) =
-        ProjectDirs::from("rw", "amategeko", "AmategekoYumuhanda")
-    {
-        proj_dirs.data_dir().to_path_buf()
-    } else {
-        PathBuf::from("data")
-    };
+    let storage_dir =
+        if let Some(proj_dirs) = ProjectDirs::from("rw", "amategeko", "AmategekoYumuhanda") {
+            proj_dirs.data_dir().to_path_buf()
+        } else {
+            PathBuf::from("data")
+        };
 
     let storage = Arc::new(DesktopStorage { storage_dir });
     let clock = Arc::new(SystemClock);

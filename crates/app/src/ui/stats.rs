@@ -462,11 +462,7 @@ impl StatsView {
         let theme = cx.theme();
         let colors = theme.colors;
 
-        let width_val = if is_desktop {
-            px(160.0)
-        } else {
-            px(150.0)
-        };
+        let width_val = if is_desktop { px(160.0) } else { px(150.0) };
 
         div()
             .flex()
@@ -492,11 +488,7 @@ impl StatsView {
                             .text_color(colors.muted_foreground)
                             .child(label),
                     )
-                    .child(
-                        Icon::new(icon)
-                            .size(px(18.0))
-                            .text_color(accent_color),
-                    ),
+                    .child(Icon::new(icon).size(px(18.0)).text_color(accent_color)),
             )
             .child(
                 div()

@@ -49,7 +49,10 @@ impl QuizMode {
     }
 
     pub fn provides_instant_feedback(&self) -> bool {
-        matches!(self, QuizMode::Byoroshye | QuizMode::WeakPractice | QuizMode::RetryWrong)
+        matches!(
+            self,
+            QuizMode::Byoroshye | QuizMode::WeakPractice | QuizMode::RetryWrong
+        )
     }
 }
 
@@ -144,7 +147,10 @@ impl Attempt {
     }
 
     pub fn is_current_locked(&self) -> bool {
-        self.locked.get(&self.current_index).copied().unwrap_or(false)
+        self.locked
+            .get(&self.current_index)
+            .copied()
+            .unwrap_or(false)
     }
 
     pub fn is_current_flagged(&self) -> bool {

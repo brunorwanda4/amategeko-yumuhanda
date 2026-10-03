@@ -239,8 +239,12 @@ impl Render for ShellView {
                             this.state.save_settings(this.state.settings.clone());
                         }
                         SettingsAction::DecMediumTime => {
-                            this.state.settings.medium_duration_mins =
-                                this.state.settings.medium_duration_mins.saturating_sub(1).max(10);
+                            this.state.settings.medium_duration_mins = this
+                                .state
+                                .settings
+                                .medium_duration_mins
+                                .saturating_sub(1)
+                                .max(10);
                             this.state.save_settings(this.state.settings.clone());
                         }
                         SettingsAction::IncMediumTime => {
@@ -249,8 +253,12 @@ impl Render for ShellView {
                             this.state.save_settings(this.state.settings.clone());
                         }
                         SettingsAction::DecHardTime => {
-                            this.state.settings.hard_duration_mins =
-                                this.state.settings.hard_duration_mins.saturating_sub(1).max(5);
+                            this.state.settings.hard_duration_mins = this
+                                .state
+                                .settings
+                                .hard_duration_mins
+                                .saturating_sub(1)
+                                .max(5);
                             this.state.save_settings(this.state.settings.clone());
                         }
                         SettingsAction::IncHardTime => {
@@ -339,13 +347,7 @@ impl Render for ShellView {
                 .size_full()
                 .bg(colors.background)
                 .when(show_sidebar, |el| el.child(self.render_desktop_sidebar(cx)))
-                .child(
-                    div()
-                        .flex_1()
-                        .size_full()
-                        .overflow_hidden()
-                        .child(content),
-                )
+                .child(div().flex_1().size_full().overflow_hidden().child(content))
         } else {
             // Mobile Layout: Top App Bar + Content + Bottom Bar (hidden in quiz)
             div()
@@ -354,14 +356,10 @@ impl Render for ShellView {
                 .size_full()
                 .bg(colors.background)
                 .child(self.render_mobile_top_bar(cx))
-                .child(
-                    div()
-                        .flex_1()
-                        .size_full()
-                        .overflow_hidden()
-                        .child(content),
-                )
-                .when(!is_in_quiz, |el| el.child(self.render_mobile_bottom_bar(cx)))
+                .child(div().flex_1().size_full().overflow_hidden().child(content))
+                .when(!is_in_quiz, |el| {
+                    el.child(self.render_mobile_bottom_bar(cx))
+                })
         }
     }
 }
@@ -493,11 +491,7 @@ impl ShellView {
                 this.state.navigate(target.clone());
                 cx.notify();
             }))
-            .child(
-                Icon::new(icon)
-                    .size(px(18.0))
-                    .text_color(text_color),
-            )
+            .child(Icon::new(icon).size(px(18.0)).text_color(text_color))
             .child(
                 div()
                     .text_sm()
@@ -626,11 +620,7 @@ impl ShellView {
                 this.state.navigate(target.clone());
                 cx.notify();
             }))
-            .child(
-                Icon::new(icon)
-                    .size(px(20.0))
-                    .text_color(text_color),
-            )
+            .child(Icon::new(icon).size(px(20.0)).text_color(text_color))
             .child(
                 div()
                     .text_xs()
