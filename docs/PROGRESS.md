@@ -26,10 +26,10 @@ Tracking milestones for "Amategeko y'Umuhanda" (Rwanda driving-test theory study
   - [x] Statistics calculator (`stats.rs`)
   - [x] Complete Kinyarwanda translations (`i18n.rs`)
   - [x] Comprehensive unit tests for core (10/10 passed)
-- [ ] **Milestone 4: Responsive App Shell & Home Screen**
-  - [ ] Breakpoint-based responsive shell (`responsive.rs`, `shell.rs`)
-  - [ ] Desktop sidebar navigation vs Mobile bottom navigation bar
-  - [ ] Home screen (`home.rs`) with 3 mode cards, stats tiles, resume banner, weak practice card
+- [x] **Milestone 4: Responsive App Shell & Home Screen** (Completed 2026-10-03)
+  - [x] Breakpoint-based responsive shell (`shell.rs`, desktop >= 700px vs mobile < 700px)
+  - [x] Desktop sidebar navigation vs Mobile bottom navigation bar (focus mode hiding bar in quiz)
+  - [x] Home screen (`home.rs`) with 3 mode cards, stats tiles, resume banner, weak practice card
 - [ ] **Milestone 5: Easy Mode (Layout A)**
   - [ ] Instant feedback (green/red highlights, check/x icons, result explanation line)
   - [ ] Free navigation (previous, next, skip), star/bookmark toggle
