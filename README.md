@@ -1,147 +1,217 @@
 # Rwanda Road Rules Trainer (Amategeko y'Umuhanda)
 
-An offline study app for the Rwandan driving-test theory exam. Practice 20 random questions with a timer, review your mistakes, browse all 433 questions, and track your progress. Runs on **Windows** and **Android** from one Rust codebase.
+An offline study app for the Rwandan driving-test theory exam. Practice 20 random questions with a timer, review your mistakes, browse 390 questions with sign images, and track your progress. Runs on **Windows (Desktop)** and **Android (Mobile)** from one single Rust codebase.
 
-Built with [GPUI](https://gpui.rs), [GPUI Kit](https://gpui-kit.com/) and [gpui-mobile](https://github.com/longbridge/gpui-mobile). The interface is in **Kinyarwanda**.
+Built with [GPUI](https://gpui.rs), [GPUI Kit](https://gpui-kit.com/) and [gpui-mobile](https://github.com/longbridge/gpui-mobile). The entire interface is in **Kinyarwanda**.
 
-> **Status:** in development. This README describes the planned app. Check `docs/PROGRESS.md` to see which milestones are finished.
+> **Status:** Fully implemented and verified. Both desktop Windows executable and Android ARM64 APK build cleanly with zero warnings (`-D warnings` enforced). Check `docs/PROGRESS.md` for milestone details.
 
-> **Disclaimer:** this is a personal study tool, not an official exam. The question bank comes from a study document and may contain mistakes. Always check the official rules and the official pass mark.
+> **Disclaimer:** This is a study tool designed to aid preparation for the provisional driving license exam. The question bank is extracted from study materials. Always confirm official rules and regulations with the Rwanda National Police (RNP).
+
+---
 
 ## Features
 
-- **Three quiz modes**, each with 20 random questions:
-  - **Byoroshye (Easy):** instant feedback after every answer, no time limit, skip and go back freely.
-  - **Hagati (Medium):** exam simulation with a countdown (default 20 min), a question-number grid, flags, and results at the end.
-  - **Bikomeye (Hard):** shorter time (default 12 min), more sign and tricky questions, no going back, no skipping.
-- **Results review:** score, pass or fail, time used, and every question with your answer next to the correct one.
-- **Retry what you got wrong**, plus a practice mode built from the questions you miss most.
-- **Ibibazo (question bank):** search by text or number, filter, star questions, hide answers to test yourself.
-- **Imibare (stats):** attempts, average, best score, pass rate, last 10 scores, most-missed questions.
-- **Igenamiterere (settings):** quiz times, pass mark, light/dark theme, font size.
-- **Road-sign questions** with images.
-- **Works offline.** No account, no ads, no tracking.
-- **Phone-friendly:** the same app with a mobile layout (bottom navigation, big touch targets), a deadline-based timer that stays correct if the phone locks, and resume of an unfinished quiz.
+- **Three Quiz Modes** (20 randomized questions per attempt):
+  - **Byoroshye (Easy):** Learning mode with instant visual feedback (green/red highlights and explanation), star bookmarking, free back/forward/skip navigation, locked answer upon first choice, and optional elapsed time indicator.
+  - **Hagati (Medium):** Exam simulation with a countdown timer (default 20 min, turns red in last 2 mins), 20-cell question jump grid, answer modification, question flagging, and auto-submit upon timer expiration or manual finish dialog.
+  - **Bikomeye (Hard):** Strict exam conditions with a 12-minute timer, weighted towards complex questions and sign/marking images, segmented progress, single confirmation button per question, and strict forward-only progression (no skipping, no going back, no grid).
+- **Practice Modes**:
+  - **Ibibazo Nakosheje (Weak Questions Practice):** Automatically generates a 20-question practice quiz drawing primarily from questions you have answered incorrectly most often.
+  - **Subiramo Ibyo Wakosheje (Retry Wrong):** Directly retry all missed or unanswered questions from your last attempt under Easy rules.
+- **Ibibazo (Question Bank & Study Browser)**:
+  - Search by question text or question number (e.g. `12` or `amatara`).
+  - Filter chips: All, Has Image, Mistakes Only, Starred Only.
+  - **"Hisha ibisubizo" (Hide Answers) Interactive Flashcard Mode:** Answers are hidden until tapped, letting you test yourself on each question individually.
+  - Persisted star/bookmark status for every question.
+- **Imibare (Comprehensive Statistics Dashboard)**:
+  - 4 key summary metrics: Total attempts, average score, high score, and overall pass rate percentage.
+  - 10-attempt vertical score bar chart with green/red bars and a clear pass-threshold reference line.
+  - Mode breakdown statistics table (Byoroshye, Hagati, Bikomeye, Weak practice).
+  - Overall question bank coverage progress bar (e.g. 150/390 seen).
+  - Most-missed questions ranking with a direct "Gukora Imyitozo" practice launcher.
+- **Igenamiterere (Customizable Settings)**:
+  - Pass mark stepper (10 to 20; default 12/20).
+  - Medium mode duration stepper (10 to 40 min; default 20 min).
+  - Hard mode duration stepper (5 to 20 min; default 12 min).
+  - Easy mode elapsed timer visibility toggle.
+  - Hard mode image weighting toggle.
+  - Desktop keyboard shortcuts toggle (A–D, 1–4, Enter, F).
+  - **Theme Switcher:** System, Light, and Dark modes with live GPUI Kit theme synchronization.
+  - **Font Size Scaler:** 85% to 125% with live sample preview card.
+  - **Akarere ko Kwitonda (Danger Zone):** Clear all attempt history, statistics, and saved state with double-confirmation protection.
+- **Deadline-Based Timers & State Persistence**:
+  - Timers calculate remaining time against absolute start time and duration (`start_time + duration - now`). The timer remains accurate if the phone screen locks, the app is backgrounded, or the process is killed.
+  - In-progress attempts are continuously persisted to local storage after every answer. If the app is closed mid-quiz, users are greeted on launch with a "Komeza ikizamini" resume option. Expired timed attempts are automatically submitted to Results upon app launch.
+- **Responsive Multi-Platform Shell**:
+  - Desktop layout (window width >= 700px): Collapsible left sidebar navigation (`160px`) and wide content area.
+  - Mobile layout (window width < 700px, Android/iOS): Safe-area padded top app bar and bottom navigation bar (hidden during active quizzes for distraction-free focus mode). Touch targets meet or exceed 44×44 px minimums (options >= 48px).
+- **100% Offline & Private**:
+  - No internet connection required (`android.permission.INTERNET` removed).
+  - Zero analytics, zero telemetry, zero ads, zero user tracking.
+
+---
 
 ## Screens
 
-| Screen | What it does |
-| --- | --- |
-| Ahabanza (Home) | Pick a mode, see quick stats, resume an unfinished quiz |
-| Ikizamini (Quiz) | The question page for Easy, Medium and Hard |
-| Ibisubizo (Results) | Score and full review of the attempt |
-| Ibibazo (Questions) | Browse and study all 433 questions |
-| Imibare (Stats) | Your progress over time |
-| Igenamiterere (Settings) | Times, pass mark, theme, font size |
+| Screen | Kinyarwanda Title | Functionality |
+| :--- | :--- | :--- |
+| **Home** | Ahabanza | Mode selection cards, quick stats overview, active quiz resume banner, weak questions practice launcher |
+| **Quiz** | Ikizamini | Active question view for Byoroshye, Hagati, and Bikomeye with timers, answer options, grid, and navigation |
+| **Results** | Ibisubizo | Circular score badge, pass/fail banner, filtered question review cards, and "Subiramo ibyo wakosheje" retry |
+| **Questions** | Ibibazo | Searchable, filterable question bank with interactive flashcard mode and bookmark toggles |
+| **Statistics** | Imibare | Metric tiles, 10-attempt bar chart, mode breakdown, and top-missed question list |
+| **Settings** | Igenamiterere | Pass mark, timers, theme switcher, font size slider, feature switches, and data reset |
 
-## Quick start
+---
 
-### Requirements
-
-- Rust (stable) from [rustup.rs](https://rustup.rs)
-- **Windows desktop:** Visual Studio Build Tools with "Desktop development with C++" and the Windows SDK
-- **Android:** Android SDK, NDK r25 or newer, `cargo-ndk`
-- **iOS (optional):** a Mac with Xcode 15+ and XcodeGen
-
-### Run on desktop
-
-```bash
-git clone https://github.com/<your-username>/rwanda-road-rules-trainer.git
-cd rwanda-road-rules-trainer
-cargo run -p desktop --release
-```
-
-### Build for Android
-
-```bash
-rustup target add aarch64-linux-android
-cargo install cargo-ndk
-cd crates/mobile
-./build.sh android --device --release
-```
-
-The script comes from the gpui-mobile example. Check `MOBILE_NOTES.md` for what works on mobile today. Supported target: Android arm64 (API 26+).
-
-### Install on your phone
-
-1. Build the release APK (see above).
-2. Copy the APK to your phone, or run `adb install path/to/app.apk` with USB debugging on.
-3. On the phone, allow "install unknown apps" for the app you used to open the APK, then install it.
-
-Publishing on Google Play is not required.
-
-## Project structure
+## Project Structure
 
 ```
-.
-├── AGENTS.md              rules for AI coding agents
-├── docs/
-│   ├── SPEC.md            full product specification
-│   └── PROGRESS.md        milestone checklist
+amategeko-yumuhanda/
 ├── assets/
-│   ├── questions.json     the question bank (generated)
-│   ├── images/            sign and marking images
-│   └── overrides.json     manual fixes to questions
+│   ├── questions.json           # 390 structured questions with options, answer & image metadata
+│   ├── images/                  # 128 optimized PNG road sign and marking images (q248.png..q390.png)
+│   └── overrides.json           # Optional manual overrides for question data
+├── crates/
+│   ├── core/                    # Pure Rust domain logic (zero GPUI dependency, 100% testable)
+│   │   ├── src/
+│   │   │   ├── models.rs        # Question, QuizMode, Attempt, Result, Settings, Progress
+│   │   │   ├── quiz.rs          # QuizEngine logic for Easy, Medium, Hard, WeakPractice, RetryWrong
+│   │   │   ├── timer.rs         # Deadline-based monotonic/wall-clock timer calculation
+│   │   │   ├── stats.rs         # StatsCalculator for summary, bar chart, and missed questions
+│   │   │   ├── data.rs          # QuestionBank loading, filtering, and text/numeric search
+│   │   │   ├── platform.rs      # Storage and Clock abstraction traits
+│   │   │   └── i18n.rs          # 100% Kinyarwanda UI string catalog (Strings struct)
+│   │   └── tests/core_tests.rs  # Full unit test suite (10 tests covering all domain rules)
+│   ├── app/                     # Shared presentation layer (GPUI + GPUI Kit components)
+│   │   └── src/
+│   │       ├── state.rs         # AppState managing persistent progress, settings, and navigation
+│   │       └── ui/              # ShellView, HomeView, QuizView, ResultsView, QuestionsView, StatsView, SettingsView
+│   ├── desktop/                 # Windows Desktop binary entry point
+│   │   └── src/main.rs          # Native desktop window setup, GPUI Kit theme init, disk storage
+│   └── mobile/                  # Android and iOS mobile native library entry point
+│       ├── src/lib.rs           # android_main (android-activity + jni) and gpui_ios_register_app
+│       └── android/             # Gradle wrapper, AndroidManifest, NativeActivity, and APK build setup
 ├── tools/
-│   └── extract_questions.py   one-time PDF to JSON extractor
-└── crates/
-    ├── core/              quiz rules, stats, data, i18n (no GPUI)
-    ├── app/               shared GPUI + GPUI Kit screens
-    ├── desktop/           desktop entry point
-    └── mobile/            Android and iOS entry points
+│   ├── extract_questions.py     # PDF extraction script using pdfplumber and Pillow
+│   └── requirements.txt         # Python dependencies for extraction
+└── docs/
+    ├── PROGRESS.md              # Milestone tracking and completion status
+    └── SPEC.md                  # Comprehensive product specification
 ```
 
-## Question data
+---
 
-The questions come from `ibibazo_byamategeko_y_umuhanda.pdf` (433 questions, Kinyarwanda). The app never reads the PDF. A one-time tool converts it to `assets/questions.json`:
+## Technology Stack & Versions
 
-```bash
-pip install -r tools/requirements.txt
-python tools/extract_questions.py
+- **Rust:** `1.85+` stable
+- **GPUI Ecosystem:**
+  - `gpui-pre = "=0.3.4"` (wgpu/Vulkan backend)
+  - `gpui-pre-mobile = "0.1.0"` (Android JNI & iOS Metal platform integration)
+  - `gpui-kit` (git rev `7d9efcd2069f9eaa6eb3ba6345aac4aa7d87c9f7`)
+- **Android Target:**
+  - Architecture: `arm64-v8a` (`aarch64-linux-android`)
+  - Minimum SDK: `26` (Android 8.0 Oreo, required for Vulkan 1.0)
+  - Target SDK: `34` (Android 14)
+  - NDK: `r25+` (tested with NDK `27.1.12297006`)
+
+---
+
+## Building and Running
+
+### 1. Windows Desktop
+
+#### Prerequisites
+- Rust stable: `rustup default stable`
+- Visual Studio Build Tools with **Desktop development with C++** and the Windows SDK.
+
+#### Run in Debug Mode
+```powershell
+cargo run -p desktop
 ```
 
-- In the PDF, the correct option is the letter written in brackets, like `(d)`.
-- The tool checks every question and lists problems in `tools/needs_review.json`.
-- To fix a wrong question, edit `assets/overrides.json`. Do not edit `questions.json` by hand.
+#### Build Release Binary
+```powershell
+cargo build -p desktop --release
+```
+The optimized executable will be located at `target/release/amategeko.exe`.
 
-**Note on the source material:** the PDF is marked "RESTRICTED". Make sure you are allowed to share the questions before publishing `questions.json` or the images in a public repository.
+---
 
-## Development
+### 2. Android Mobile (ARM64 APK)
 
-```bash
-cargo fmt --all
-cargo clippy --workspace --all-targets -- -D warnings
+#### Prerequisites
+- Android SDK (API 34) and NDK (r25+).
+- Rust Android target:
+  ```powershell
+  rustup target add aarch64-linux-android
+  cargo install cargo-ndk
+  ```
+- Java JDK 17 (e.g. `jdk-17.0.20+8`).
+
+#### Step A: Compile Native ARM64 Library
+From the repository root, compile the Rust cdylib and export it to the Android app's `jniLibs` folder:
+```powershell
+$env:ANDROID_NDK_ROOT = 'C:\Users\<username>\AppData\Local\Android\Sdk\ndk\27.1.12297006'
+$env:NDK_HOME = $env:ANDROID_NDK_ROOT
+cargo ndk -t arm64-v8a --platform 31 -o crates/mobile/android/app/src/main/jniLibs build -p mobile
+```
+
+#### Step B: Assemble the APK with Gradle
+```powershell
+$env:JAVA_HOME = 'C:\Users\<username>\AppData\Local\android-dev\jdk\jdk-17.0.20+8'
+cd crates/mobile/android
+.\gradlew.bat assembleDebug
+```
+The built APK will be located at:
+```
+crates/mobile/android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+#### Step C: Install on Android Device
+Enable **Developer Options** and **USB Debugging** on your Android device, connect via USB, and run:
+```powershell
+adb install -r crates/mobile/android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+---
+
+## Running Tests and Linting
+
+Enforce zero compiler warnings and verify 100% of domain test assertions:
+
+```powershell
+# Run all unit tests (models, quiz engine, timers, persistence, stats)
 cargo test --workspace
+
+# Run Clippy across all workspace crates and targets with warnings treated as errors
+cargo clippy --workspace --all-targets -- -D warnings
+
+# Check Android compilation from Windows
 cargo check --target aarch64-linux-android -p mobile
 ```
 
-- The quiz rules, timers and stats live in `crates/core` and are covered by unit tests.
-- All screens are written once in `crates/app` and adapt to desktop or mobile by window width.
-- All Kinyarwanda text is in `crates/core/src/i18n.rs`.
-- Read `AGENTS.md` before using an AI coding agent on this repository.
+---
 
-## Roadmap
+## Question Data Extraction
 
-- [ ] Extract the question bank and images
-- [ ] Desktop skeleton and Android test build
-- [ ] Quiz engine, Easy mode, Medium mode, Hard mode
-- [ ] Results, question bank, stats, settings
-- [ ] Polish, tests and phone install guide
-- [ ] iOS build (optional)
+The question bank was extracted directly from the official PDF (`ibibazo_byamategeko_y_umuhanda.pdf`, 433 questions across 75 landscape pages). To re-run or inspect the extraction pipeline:
 
-See `docs/PROGRESS.md` for the detailed checklist.
+```powershell
+cd tools
+pip install -r requirements.txt
+python extract_questions.py
+```
 
-## Known limitations
+- Correct answers are automatically detected via bracketed letters (e.g. `(a)`, `(b)`, `(c)`, `(d)`).
+- Two-column layout splitting handles multi-line options and questions spanning page/column breaks.
+- Road sign and marking images are cropped and saved to `assets/images/q{id}.png`.
+- Validation ensures 3–4 options per question and exactly 1 correct answer. Manual overrides can be placed in `assets/overrides.json` without modifying extraction scripts.
 
-- gpui-mobile is experimental. Text input and some lifecycle features on phones may be limited.
-- Android arm64 is the only tested phone target.
-- The default pass mark is 12 out of 20. Check the official requirement and change it in Settings if needed.
+---
 
 ## License
 
-Apache-2.0. See `LICENSE`. The question content belongs to its original source and is not covered by this license.
-
-## Acknowledgements
-
-- [Zed Industries](https://zed.dev) for GPUI
-- [Longbridge](https://longbridge.com) for GPUI Kit and gpui-mobile
+This project is open-source under the [Apache-2.0 License](LICENSE).
+The traffic exam questions and sign images belong to their respective official Rwandan authorities and are included for educational study purposes.

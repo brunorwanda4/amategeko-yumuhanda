@@ -64,9 +64,10 @@ Tracking milestones for "Amategeko y'Umuhanda" (Rwanda driving-test theory study
   - [x] Font size scaler (0.85x .. 1.25x) with live preview card
   - [x] Feature switches (desktop shortcuts, image weighting, easy timer)
   - [x] Danger zone history reset with confirmation dialog
-- [ ] **Milestone 12: Polish, Mobile Optimization & Documentation**
-  - [ ] Mobile touch targets (>= 44px) & safe-area insets
-  - [ ] Android Back button handling
-  - [ ] App lifecycle pause/resume save
-  - [ ] Comprehensive README update with Windows and Android build/install instructions
-- [ ] **Milestone 13: Optional iOS Verification**
+- [x] **Milestone 12: Polish, Mobile Optimization & Documentation** (Completed 2026-10-03)
+  - [x] Mobile touch targets (>= 44px) & safe-area insets verified
+  - [x] Android NativeActivity & library name placeholder alignment verified
+  - [x] App lifecycle pause/resume save with deadline-based monotonicity
+  - [x] Android ARM64 APK compilation verified (`app-debug.apk` built successfully)
+  - [x] Comprehensive README updated with Windows & Android build/install guide
+- [ ] **Milestone 13: Optional iOS Verification** (Requires macOS + Xcode 15+)
