@@ -1,0 +1,2 @@
+// GPUI on Windows loads icon resource ID 1 from the exe for the window and taskbar.
+1 ICON "app.ico"

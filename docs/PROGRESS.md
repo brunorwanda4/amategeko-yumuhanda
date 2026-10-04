@@ -70,4 +70,6 @@ Tracking milestones for "Amategeko y'Umuhanda" (Rwanda driving-test theory study
   - [x] App lifecycle pause/resume save with deadline-based monotonicity
   - [x] Android ARM64 APK compilation verified (`app-debug.apk` built successfully)
   - [x] Comprehensive README updated with Windows & Android build/install guide
+  - [x] Add branded Windows executable and Android launcher icons (2026-10-04)
+  - [x] Restore the saved theme during desktop and mobile startup (2026-10-04)
 - [ ] **Milestone 13: Optional iOS Verification** (Requires macOS + Xcode 15+)

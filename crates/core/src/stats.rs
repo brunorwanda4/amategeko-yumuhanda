@@ -110,11 +110,8 @@ impl StatsCalculator {
         let mode_summaries = modes
             .iter()
             .filter_map(|&m| {
-                let attempts_for_mode: Vec<&AttemptResult> = progress
-                    .attempts
-                    .iter()
-                    .filter(|a| a.mode == m)
-                    .collect();
+                let attempts_for_mode: Vec<&AttemptResult> =
+                    progress.attempts.iter().filter(|a| a.mode == m).collect();
 
                 if attempts_for_mode.is_empty() {
                     None

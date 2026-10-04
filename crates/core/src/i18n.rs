@@ -16,16 +16,20 @@ impl Strings {
     pub const HOME_RESUME_BTN: &'static str = "Komeza ikizamini";
     pub const HOME_DISCARD_BTN: &'static str = "Reka";
     pub const HOME_WEAK_TITLE: &'static str = "Ibibazo nakosheje kenshi";
-    pub const HOME_WEAK_DESC: &'static str = "Itoze ibibazo ugiramo amakosa cyane kugira ngo ubyumve neza";
+    pub const HOME_WEAK_DESC: &'static str =
+        "Itoze ibibazo ugiramo amakosa cyane kugira ngo ubyumve neza";
     pub const HOME_WEAK_BTN: &'static str = "Tangira kwitoza ibyo nakosheje";
 
     // Modes
     pub const MODE_EASY_TITLE: &'static str = "Byoroshye";
-    pub const MODE_EASY_DESC: &'static str = "Uburyo bwo kwiga: igisubizo cyihuse, nta gihe kigabanyuka";
+    pub const MODE_EASY_DESC: &'static str =
+        "Uburyo bwo kwiga: igisubizo cyihuse, nta gihe kigabanyuka";
     pub const MODE_MEDIUM_TITLE: &'static str = "Hagati";
-    pub const MODE_MEDIUM_DESC: &'static str = "Imyitozo y'ikizamini nyacyo: iminota 20, ushobora gusimbuka";
+    pub const MODE_MEDIUM_DESC: &'static str =
+        "Imyitozo y'ikizamini nyacyo: iminota 20, ushobora gusimbuka";
     pub const MODE_HARD_TITLE: &'static str = "Bikomeye";
-    pub const MODE_HARD_DESC: &'static str = "Uburyo bukaze: iminota 12, nta gusubira inyuma cyangwa gusimbuka";
+    pub const MODE_HARD_DESC: &'static str =
+        "Uburyo bukaze: iminota 12, nta gusubira inyuma cyangwa gusimbuka";
 
     // Quiz Common
     pub const QUIZ_QUESTION_PROGRESS: &'static str = "Ikibazo {current} kuri {total}";
@@ -49,14 +53,17 @@ impl Strings {
 
     // Finish / Abandon Dialogs
     pub const DIALOG_FINISH_TITLE: &'static str = "Soza ikizamini?";
-    pub const DIALOG_UNANSWERED_WARNING: &'static str = "Haracyari ibibazo {count} bitasubijwe: {list}";
+    pub const DIALOG_UNANSWERED_WARNING: &'static str =
+        "Haracyari ibibazo {count} bitasubijwe: {list}";
     pub const DIALOG_ALL_ANSWERED: &'static str = "Ibibazo byose 20 byasubijwe neza.";
     pub const DIALOG_CONFIRM_FINISH: &'static str = "Emeza gusoza";
     pub const DIALOG_CANCEL: &'static str = "Komeza ikizamini";
 
     pub const DIALOG_ABANDON_TITLE: &'static str = "Guhagarika ikizamini?";
-    pub const DIALOG_ABANDON_DESC_SAVABLE: &'static str = "Urashaka gusohoka? Ikizamini cyawe kirabikwa kugira ngo uzagikomeze.";
-    pub const DIALOG_ABANDON_DESC_STRICT: &'static str = "Mu buryo bukaze, gusohoka bivuze ko ikizamini kizarangira burundu.";
+    pub const DIALOG_ABANDON_DESC_SAVABLE: &'static str =
+        "Urashaka gusohoka? Ikizamini cyawe kirabikwa kugira ngo uzagikomeze.";
+    pub const DIALOG_ABANDON_DESC_STRICT: &'static str =
+        "Mu buryo bukaze, gusohoka bivuze ko ikizamini kizarangira burundu.";
     pub const DIALOG_ABANDON_CONFIRM: &'static str = "Sohoka";
 
     // Results Screen
@@ -76,7 +83,8 @@ impl Strings {
     pub const RESULTS_UNANSWERED: &'static str = "Ntiwasubije";
 
     // Questions Screen (Question Bank)
-    pub const QUESTIONS_SEARCH_PLACEHOLDER: &'static str = "Shakisha mu bibazo cyangwa andika numero...";
+    pub const QUESTIONS_SEARCH_PLACEHOLDER: &'static str =
+        "Shakisha mu bibazo cyangwa andika numero...";
     pub const QUESTIONS_FILTER_ALL: &'static str = "Byose";
     pub const QUESTIONS_FILTER_IMAGE: &'static str = "Bifite amashusho";
     pub const QUESTIONS_FILTER_MISTAKES: &'static str = "Ibyo nakosheje";
@@ -95,7 +103,8 @@ impl Strings {
     pub const STATS_TOP_MISSED_TITLE: &'static str = "Ibibazo bikunze gukoswa cyane";
     pub const STATS_MISSED_COUNT: &'static str = "Byakoswe inshuro {wrong} kuri {seen}";
     pub const STATS_QUESTIONS_SEEN: &'static str = "Ibibazo wamaze kubona: {seen} kuri {total}";
-    pub const STATS_EMPTY: &'static str = "Nta kizamini urakora. Tangira ikizamini kugira ngo ubone imibare!";
+    pub const STATS_EMPTY: &'static str =
+        "Nta kizamini urakora. Tangira ikizamini kugira ngo ubone imibare!";
 
     // Settings Screen
     pub const SETTINGS_TITLE: &'static str = "Igenamiterere";
@@ -103,14 +112,17 @@ impl Strings {
     pub const SETTINGS_MEDIUM_TIME: &'static str = "Igihe cy'ikizamini cya Hagati (iminota)";
     pub const SETTINGS_HARD_TIME: &'static str = "Igihe cy'ikizamini Gikomeye (iminota)";
     pub const SETTINGS_EASY_TIMER: &'static str = "Kwereka igihe muri Byoroshye";
-    pub const SETTINGS_HARD_WEIGHT: &'static str = "Gushyira imbere ibyapa n'ibimenyetso mu Gikomeye";
-    pub const SETTINGS_DESKTOP_SHORTCUTS: &'static str = "Gukoresha buto za clavier (A-D, Enter, F)";
+    pub const SETTINGS_HARD_WEIGHT: &'static str =
+        "Gushyira imbere ibyapa n'ibimenyetso mu Gikomeye";
+    pub const SETTINGS_DESKTOP_SHORTCUTS: &'static str =
+        "Gukoresha buto za clavier (A-D, Enter, F)";
     pub const SETTINGS_THEME: &'static str = "Insanganyamatsiko (Theme)";
     pub const SETTINGS_THEME_SYSTEM: &'static str = "Iya telefone / mudasobwa";
     pub const SETTINGS_THEME_LIGHT: &'static str = "Urumuri (Light)";
     pub const SETTINGS_THEME_DARK: &'static str = "Umwijima (Dark)";
     pub const SETTINGS_FONT_SIZE: &'static str = "Ingano y'inyandiko";
-    pub const SETTINGS_FONT_PREVIEW: &'static str = "Urugero rw'inyandiko: Amategeko y'Umuhanda mu Rwanda";
+    pub const SETTINGS_FONT_PREVIEW: &'static str =
+        "Urugero rw'inyandiko: Amategeko y'Umuhanda mu Rwanda";
     pub const SETTINGS_CLEAR_HISTORY: &'static str = "Gusiba amakuru n'ibizamini byakozwe";
     pub const SETTINGS_CLEAR_CONFIRM: &'static str = "Wizeye neza ko ushaka gusiba amakuru yose?";
     pub const SETTINGS_SAVE_BTN: &'static str = "Bika impinduka";

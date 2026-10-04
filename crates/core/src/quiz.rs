@@ -17,12 +17,8 @@ impl QuizEngine {
         now_secs: u64,
     ) -> Result<Attempt> {
         let count = 20;
-        let questions = bank.generate_quiz_questions(
-            count,
-            mode,
-            settings.hard_weight_images,
-            stats,
-        );
+        let questions =
+            bank.generate_quiz_questions(count, mode, settings.hard_weight_images, stats);
 
         if questions.is_empty() {
             return Err(AppError::InvalidData(
@@ -48,10 +44,7 @@ impl QuizEngine {
     }
 
     /// Starts a "Retry Wrong" quiz from the failed or unanswered questions of a prior result.
-    pub fn start_retry_wrong(
-        previous_result: &AttemptResult,
-        now_secs: u64,
-    ) -> Result<Attempt> {
+    pub fn start_retry_wrong(previous_result: &AttemptResult, now_secs: u64) -> Result<Attempt> {
         let wrong_questions: Vec<Question> = previous_result
             .question_results
             .iter()
@@ -83,7 +76,9 @@ impl QuizEngine {
     pub fn select_option(attempt: &mut Attempt, option_letter: &str) -> Result<()> {
         let idx = attempt.current_index;
         if idx >= attempt.questions.len() {
-            return Err(AppError::InvalidData("Ikibazo kirenze umubare w'ibibazo".into()));
+            return Err(AppError::InvalidData(
+                "Ikibazo kirenze umubare w'ibibazo".into(),
+            ));
         }
 
         if attempt.mode.provides_instant_feedback() {

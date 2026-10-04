@@ -18,13 +18,12 @@ impl Storage for DesktopStorage {
 }
 
 fn main() {
-    let storage_dir = if let Some(proj_dirs) =
-        ProjectDirs::from("rw", "amategeko", "AmategekoYumuhanda")
-    {
-        proj_dirs.data_dir().to_path_buf()
-    } else {
-        PathBuf::from("data")
-    };
+    let storage_dir =
+        if let Some(proj_dirs) = ProjectDirs::from("rw", "amategeko", "AmategekoYumuhanda") {
+            proj_dirs.data_dir().to_path_buf()
+        } else {
+            PathBuf::from("data")
+        };
 
     let storage = Arc::new(DesktopStorage { storage_dir });
     let clock = Arc::new(SystemClock);
@@ -35,6 +34,8 @@ fn main() {
             gpui_kit::init(cx);
 
             let app_state = AppState::new(storage.clone(), clock.clone());
+            let initial_theme = app_state.settings.theme;
+            amategeko_app::apply_theme(initial_theme, None, cx);
 
             let options = WindowOptions {
                 titlebar: Some(TitlebarOptions {
@@ -45,6 +46,7 @@ fn main() {
             };
 
             cx.open_window(options, |window, cx| {
+                amategeko_app::apply_theme(initial_theme, Some(window), cx);
                 let shell = cx.new(|_| ShellView::new(app_state));
                 cx.new(|cx| Root::new(shell, window, cx))
             })

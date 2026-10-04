@@ -75,8 +75,15 @@ fn test_quiz_generation_and_uniqueness() {
         .expect("Hard attempt failed");
     assert_eq!(attempt_hard.total_questions(), 20);
     assert_eq!(attempt_hard.deadline_secs, Some(1000 + 12 * 60));
-    let image_q_count = attempt_hard.questions.iter().filter(|q| q.has_image).count();
-    assert!(image_q_count >= 5, "Hard mode should weight image questions");
+    let image_q_count = attempt_hard
+        .questions
+        .iter()
+        .filter(|q| q.has_image)
+        .count();
+    assert!(
+        image_q_count >= 5,
+        "Hard mode should weight image questions"
+    );
 }
 
 #[test]
@@ -185,7 +192,8 @@ fn test_retry_wrong_flow() {
     assert!(!result.passed);
 
     // Start retry wrong
-    let retry_attempt = QuizEngine::start_retry_wrong(&result, 1200).expect("Retry wrong start failed");
+    let retry_attempt =
+        QuizEngine::start_retry_wrong(&result, 1200).expect("Retry wrong start failed");
     assert_eq!(retry_attempt.total_questions(), 15);
     assert_eq!(retry_attempt.mode, QuizMode::RetryWrong);
 }
@@ -202,7 +210,10 @@ fn test_deadline_timer() {
     // At 1000s, full 1200s (20 mins) remaining
     let state = QuizTimer::state(&attempt, 1000, true);
     match state {
-        TimerState::Countdown { remaining_seconds, is_urgent } => {
+        TimerState::Countdown {
+            remaining_seconds,
+            is_urgent,
+        } => {
             assert_eq!(remaining_seconds, 1200);
             assert!(!is_urgent);
         }
@@ -212,7 +223,10 @@ fn test_deadline_timer() {
     // At 2100s, 100s remaining -> urgent!
     let state_urgent = QuizTimer::state(&attempt, 2100, true);
     match state_urgent {
-        TimerState::Countdown { remaining_seconds, is_urgent } => {
+        TimerState::Countdown {
+            remaining_seconds,
+            is_urgent,
+        } => {
             assert_eq!(remaining_seconds, 100);
             assert!(is_urgent);
         }
@@ -282,21 +296,19 @@ fn test_stats_calculator() {
         passed: false,
         timestamp_secs: 2000,
         duration_seconds: 500,
-        question_results: vec![
-            QuestionResult {
-                question: Question {
-                    id: 20,
-                    text: "Q20".into(),
-                    options: Default::default(),
-                    correct: "b".into(),
-                    image: None,
-                    has_image: false,
-                },
-                user_answer: Some("d".into()),
-                correct_answer: "b".into(),
-                is_correct: false,
+        question_results: vec![QuestionResult {
+            question: Question {
+                id: 20,
+                text: "Q20".into(),
+                options: Default::default(),
+                correct: "b".into(),
+                image: None,
+                has_image: false,
             },
-        ],
+            user_answer: Some("d".into()),
+            correct_answer: "b".into(),
+            is_correct: false,
+        }],
     };
     progress.record_attempt_result(res2);
 

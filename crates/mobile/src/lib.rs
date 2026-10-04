@@ -65,8 +65,11 @@ fn android_main(app: android_activity::AndroidApp) {
         gpui_kit::init(cx);
 
         let app_state = AppState::new(storage.clone(), clock.clone());
+        let initial_theme = app_state.settings.theme;
+        amategeko_app::apply_theme(initial_theme, None, cx);
 
         cx.open_window(WindowOptions::default(), |window, cx| {
+            amategeko_app::apply_theme(initial_theme, Some(window), cx);
             let shell = cx.new(|_| ShellView::new(app_state));
             cx.new(|cx| gpui_kit::component::Root::new(shell, window, cx))
         })
@@ -77,8 +80,8 @@ fn android_main(app: android_activity::AndroidApp) {
 #[cfg(target_os = "ios")]
 #[no_mangle]
 pub extern "C" fn gpui_ios_register_app() {
-    let data_dir = PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "/tmp".into()))
-        .join("Documents");
+    let data_dir =
+        PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "/tmp".into())).join("Documents");
     let storage = Arc::new(MobileStorage { data_dir });
     let clock = Arc::new(SystemClock);
 
@@ -86,8 +89,11 @@ pub extern "C" fn gpui_ios_register_app() {
         gpui_kit::init(cx);
 
         let app_state = AppState::new(storage.clone(), clock.clone());
+        let initial_theme = app_state.settings.theme;
+        amategeko_app::apply_theme(initial_theme, None, cx);
 
         cx.open_window(WindowOptions::default(), |window, cx| {
+            amategeko_app::apply_theme(initial_theme, Some(window), cx);
             let shell = cx.new(|_| ShellView::new(app_state));
             cx.new(|cx| gpui_kit::component::Root::new(shell, window, cx))
         })

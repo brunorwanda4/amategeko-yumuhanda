@@ -8,7 +8,7 @@ use crate::ui::stats::StatsView;
 use amategeko_core::{QuizEngine, QuizMode, Strings};
 use gpui::InteractiveElement as _;
 use gpui_kit::base::StyledExt;
-use gpui_kit::component::{ActiveTheme, Icon, IconName, Theme, ThemeMode};
+use gpui_kit::component::{ActiveTheme, Icon, IconName};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
 use std::collections::{HashMap, HashSet};
@@ -21,6 +21,7 @@ pub struct ShellView {
     pub questions_search: String,
     pub questions_revealed: HashMap<u32, String>,
     pub settings_confirm_clear: bool,
+    pub focus_mode: bool,
 }
 
 impl ShellView {
@@ -33,6 +34,7 @@ impl ShellView {
             questions_search: String::new(),
             questions_revealed: HashMap::new(),
             settings_confirm_clear: false,
+            focus_mode: false,
         }
     }
 }
@@ -50,7 +52,7 @@ impl Render for ShellView {
         let content = match active_screen {
             Screen::Home => HomeView::render(
                 &self.state,
-                is_desktop,
+                window_width,
                 cx,
                 |this, mode, _, cx| {
                     this.state.start_quiz(mode);
@@ -69,6 +71,7 @@ impl Render for ShellView {
             Screen::Quiz => QuizView::render(
                 &self.state,
                 is_desktop,
+                self.focus_mode,
                 cx,
                 |this, opt, _, cx| {
                     this.state.record_current_answer(opt);
@@ -122,10 +125,16 @@ impl Render for ShellView {
                     cx.notify();
                 },
                 |this, _, cx| {
+                    this.focus_mode = !this.focus_mode;
+                    cx.notify();
+                },
+                |this, _, cx| {
+                    this.focus_mode = false;
                     this.state.finish_current_quiz();
                     cx.notify();
                 },
                 |this, _, cx| {
+                    this.focus_mode = false;
                     this.state.discard_in_progress();
                     this.state.navigate(Screen::Home);
                     cx.notify();
@@ -230,8 +239,12 @@ impl Render for ShellView {
                             this.state.save_settings(this.state.settings.clone());
                         }
                         SettingsAction::DecMediumTime => {
-                            this.state.settings.medium_duration_mins =
-                                this.state.settings.medium_duration_mins.saturating_sub(1).max(10);
+                            this.state.settings.medium_duration_mins = this
+                                .state
+                                .settings
+                                .medium_duration_mins
+                                .saturating_sub(1)
+                                .max(10);
                             this.state.save_settings(this.state.settings.clone());
                         }
                         SettingsAction::IncMediumTime => {
@@ -240,8 +253,12 @@ impl Render for ShellView {
                             this.state.save_settings(this.state.settings.clone());
                         }
                         SettingsAction::DecHardTime => {
-                            this.state.settings.hard_duration_mins =
-                                this.state.settings.hard_duration_mins.saturating_sub(1).max(5);
+                            this.state.settings.hard_duration_mins = this
+                                .state
+                                .settings
+                                .hard_duration_mins
+                                .saturating_sub(1)
+                                .max(5);
                             this.state.save_settings(this.state.settings.clone());
                         }
                         SettingsAction::IncHardTime => {
@@ -264,32 +281,32 @@ impl Render for ShellView {
                                 !this.state.settings.desktop_shortcuts_enabled;
                             this.state.save_settings(this.state.settings.clone());
                         }
+                        SettingsAction::ToggleShowAllAnswersAtEnd => {
+                            this.state.settings.study_hide_answers =
+                                !this.state.settings.study_hide_answers;
+                            this.state.save_settings(this.state.settings.clone());
+                        }
                         SettingsAction::SetTheme(mode) => {
-                            let old_theme = this.state.settings.theme;
                             this.state.settings.theme = mode;
                             this.state.save_settings(this.state.settings.clone());
-                            if old_theme != mode {
-                                match mode {
-                                    amategeko_core::ThemeMode::System => {
-                                        Theme::sync_system_appearance(Some(window), cx);
-                                    }
-                                    amategeko_core::ThemeMode::Light => {
-                                        Theme::change(ThemeMode::Light, Some(window), cx);
-                                    }
-                                    amategeko_core::ThemeMode::Dark => {
-                                        Theme::change(ThemeMode::Dark, Some(window), cx);
-                                    }
-                                }
-                            }
+                            crate::apply_theme(mode, Some(window), cx);
                         }
                         SettingsAction::DecFontScale => {
                             this.state.settings.font_size_scale =
-                                (this.state.settings.font_size_scale - 0.05).max(0.85);
+                                (this.state.settings.font_size_scale - 0.05).max(0.80);
                             this.state.save_settings(this.state.settings.clone());
                         }
                         SettingsAction::IncFontScale => {
                             this.state.settings.font_size_scale =
-                                (this.state.settings.font_size_scale + 0.05).min(1.25);
+                                (this.state.settings.font_size_scale + 0.05).min(1.33);
+                            this.state.save_settings(this.state.settings.clone());
+                        }
+                        SettingsAction::ResetDefaults => {
+                            this.state.settings = amategeko_core::Settings::default();
+                            this.state.save_settings(this.state.settings.clone());
+                            crate::apply_theme(this.state.settings.theme, Some(window), cx);
+                        }
+                        SettingsAction::SaveSettings => {
                             this.state.save_settings(this.state.settings.clone());
                         }
                         SettingsAction::RequestClearHistory(req) => {
@@ -308,19 +325,16 @@ impl Render for ShellView {
 
         if is_desktop {
             // Desktop Layout: Left Sidebar + Content
+            // Focus Mode in Quiz hides the sidebar for a pure, distraction-free reading experience
+            let show_sidebar = !is_in_quiz || !self.focus_mode;
+
             div()
                 .flex()
                 .flex_row()
                 .size_full()
                 .bg(colors.background)
-                .child(self.render_desktop_sidebar(cx))
-                .child(
-                    div()
-                        .flex_1()
-                        .size_full()
-                        .overflow_hidden()
-                        .child(content),
-                )
+                .when(show_sidebar, |el| el.child(self.render_desktop_sidebar(cx)))
+                .child(div().flex_1().size_full().overflow_hidden().child(content))
         } else {
             // Mobile Layout: Top App Bar + Content + Bottom Bar (hidden in quiz)
             div()
@@ -329,14 +343,10 @@ impl Render for ShellView {
                 .size_full()
                 .bg(colors.background)
                 .child(self.render_mobile_top_bar(cx))
-                .child(
-                    div()
-                        .flex_1()
-                        .size_full()
-                        .overflow_hidden()
-                        .child(content),
-                )
-                .when(!is_in_quiz, |el| el.child(self.render_mobile_bottom_bar(cx)))
+                .child(div().flex_1().size_full().overflow_hidden().child(content))
+                .when(!is_in_quiz, |el| {
+                    el.child(self.render_mobile_bottom_bar(cx))
+                })
         }
     }
 }
@@ -468,11 +478,7 @@ impl ShellView {
                 this.state.navigate(target.clone());
                 cx.notify();
             }))
-            .child(
-                Icon::new(icon)
-                    .size(px(18.0))
-                    .text_color(text_color),
-            )
+            .child(Icon::new(icon).size(px(18.0)).text_color(text_color))
             .child(
                 div()
                     .text_sm()
@@ -601,11 +607,7 @@ impl ShellView {
                 this.state.navigate(target.clone());
                 cx.notify();
             }))
-            .child(
-                Icon::new(icon)
-                    .size(px(20.0))
-                    .text_color(text_color),
-            )
+            .child(Icon::new(icon).size(px(20.0)).text_color(text_color))
             .child(
                 div()
                     .text_xs()

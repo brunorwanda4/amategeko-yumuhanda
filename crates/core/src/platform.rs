@@ -103,26 +103,29 @@ impl Storage for InMemoryStorage {
     }
 
     fn read_file(&self, filename: &str) -> std::io::Result<String> {
-        let map = self.files.read().map_err(|_| {
-            std::io::Error::other("Lock poisoned")
-        })?;
-        map.get(filename).cloned().ok_or_else(|| {
-            std::io::Error::new(std::io::ErrorKind::NotFound, "File not found")
-        })
+        let map = self
+            .files
+            .read()
+            .map_err(|_| std::io::Error::other("Lock poisoned"))?;
+        map.get(filename)
+            .cloned()
+            .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::NotFound, "File not found"))
     }
 
     fn write_file(&self, filename: &str, content: &str) -> std::io::Result<()> {
-        let mut map = self.files.write().map_err(|_| {
-            std::io::Error::other("Lock poisoned")
-        })?;
+        let mut map = self
+            .files
+            .write()
+            .map_err(|_| std::io::Error::other("Lock poisoned"))?;
         map.insert(filename.to_string(), content.to_string());
         Ok(())
     }
 
     fn delete_file(&self, filename: &str) -> std::io::Result<()> {
-        let mut map = self.files.write().map_err(|_| {
-            std::io::Error::other("Lock poisoned")
-        })?;
+        let mut map = self
+            .files
+            .write()
+            .map_err(|_| std::io::Error::other("Lock poisoned"))?;
         map.remove(filename);
         Ok(())
     }
@@ -159,11 +162,13 @@ impl MockClock {
     }
 
     pub fn advance(&self, secs: u64) {
-        self.current.fetch_add(secs, std::sync::atomic::Ordering::SeqCst);
+        self.current
+            .fetch_add(secs, std::sync::atomic::Ordering::SeqCst);
     }
 
     pub fn set(&self, secs: u64) {
-        self.current.store(secs, std::sync::atomic::Ordering::SeqCst);
+        self.current
+            .store(secs, std::sync::atomic::Ordering::SeqCst);
     }
 }
 
