@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "text": "Ikinyabiziga cyose cyangwa ibinyabiziga\nbigenda bigomba kugira:",
+    "text": "Ikinyabiziga cyose cyangwa ibinyabiziga bigenda bigomba kugira:",
     "options": {
       "a": "Umuyobozi",
       "b": "Umuherekeza",
@@ -14,7 +14,7 @@
   },
   {
     "id": 2,
-    "text": "Ijambo “akayira” bivuga inzira\nnyabagendwa ifunganye yagenewe gusa:",
+    "text": "Ijambo “akayira” bivuga inzira nyabagendwa ifunganye yagenewe gusa:",
     "options": {
       "a": "Abanyamaguru",
       "b": "Ibinyabiziga bigendera ku biziga bibiri",
@@ -27,7 +27,7 @@
   },
   {
     "id": 3,
-    "text": "Umurongo uciyemo uduce umenyesha\nahegereye umurongo ushobora kuzuzwa\nn'uturanga gukata tw'ibara ryera utwo\nturanga cyerekezo tumenyesha :",
+    "text": "Umurongo uciyemo uduce umenyesha ahegereye umurongo ushobora kuzuzwa n'uturanga gukata tw'ibara ryera utwo turanga cyerekezo tumenyesha :",
     "options": {
       "a": "Igisate cy'umuhanda abayobozi bagomba gukurikira",
       "b": "Ahegereye umurongo ukomeje",
@@ -40,7 +40,7 @@
   },
   {
     "id": 4,
-    "text": "Ahantu ho kugendera mu muhanda\nherekanwa n'ibimenyetso bimurika\nibinyabiziga ntibishobora kuhagenda :",
+    "text": "Ahantu ho kugendera mu muhanda herekanwa n'ibimenyetso bimurika ibinyabiziga ntibishobora kuhagenda :",
     "options": {
       "a": "Biteganye",
       "b": "Ku murongo umwe",
@@ -53,7 +53,7 @@
   },
   {
     "id": 5,
-    "text": "Ibinyabiziga bikurikira bigomba gukorerwa\nisuzumwa buri mwaka:",
+    "text": "Ibinyabiziga bikurikira bigomba gukorerwa isuzumwa buri mwaka:",
     "options": {
       "a": "Ibinyabiziga bigenewe gutwara abagenzi muri rusange",
       "b": "Ibinyabiziga bigenewe gutwara ibintu birengeje toni 3.5",
@@ -66,7 +66,7 @@
   },
   {
     "id": 6,
-    "text": "Ubugari bwa romoruki ikuruwe\nn'ikinyamitende itatu ntibugomba kurenza\nibipimo bikurikira:",
+    "text": "Ubugari bwa romoruki ikuruwe n'ikinyamitende itatu ntibugomba kurenza ibipimo bikurikira:",
     "options": {
       "a": "cm75",
       "b": "cm125",
@@ -79,7 +79,7 @@
   },
   {
     "id": 7,
-    "text": "Uburebure bw'ibinyabiziga bikurikira\nntibugomba kurenga metero 11 :",
+    "text": "Uburebure bw'ibinyabiziga bikurikira ntibugomba kurenga metero 11 :",
     "options": {
       "a": "Ibifite umutambiko umwe uhuza imipira",
       "b": "Ibifite imitambiko ibiri ikurikiranye mu bugari bwayo",
@@ -92,7 +92,7 @@
   },
   {
     "id": 8,
-    "text": "Ikinyabiziga kibujijwe guhagarara akanya\nkanini aha hakurikira :",
+    "text": "Ikinyabiziga kibujijwe guhagarara akanya kanini aha hakurikira :",
     "options": {
       "a": "Ahatarengeje  metero 1 imbere cyangwa inyuma y'ikinyabiziga gihagaze akanya gato cyangwa kanini :",
       "b": "Ahantu hari ibimenyetso bibuza byabugenewe",
@@ -118,7 +118,7 @@
   },
   {
     "id": 10,
-    "text": "Icyapa cyerekana umuvuduko ntarengwa\nikinyabiziga kitagomba kurenza gishyirwa gusa\nku binyabiziga bifite uburemere ntarengwa\nbukurikira:",
+    "text": "Icyapa cyerekana umuvuduko ntarengwa ikinyabiziga kitagomba kurenza gishyirwa gusa ku binyabiziga bifite uburemere ntarengwa bukurikira:",
     "options": {
       "a": "Burenga toni 1",
       "b": "Burenga toni 2",
@@ -131,7 +131,7 @@
   },
   {
     "id": 11,
-    "text": "Ahatari mu nsisiro umuvuduko ntarengwa\nmu isaha wa velomoteri ni:",
+    "text": "Ahatari mu nsisiro umuvuduko ntarengwa mu isaha wa velomoteri ni:",
     "options": {
       "a": "Km50",
       "b": "Km40",
@@ -144,7 +144,7 @@
   },
   {
     "id": 12,
-    "text": "Umuyobozi ugenda mu muhanda igihe\nubugari bwawo budatuma anyuranaho nta\nnkomyi ashobora kunyura mu kayira\nk'abanyamaguru ariko amaze kureba ibi\nbikurikira:",
+    "text": "Umuyobozi ugenda mu muhanda igihe ubugari bwawo budatuma anyuranaho nta nkomyi ashobora kunyura mu kayira k'abanyamaguru ariko amaze kureba ibi bikurikira:",
     "options": {
       "a": "Umuvuduko w'abanyamaguru",
       "b": "Ubugari bw'umuhanda",
@@ -157,7 +157,7 @@
   },
   {
     "id": 13,
-    "text": "Ku byerekeye kwerekana ibinyabiziga\nn'ukumurika kwabyo ndetse no kwerekana\nihindura ry'ibyerekezo byabyo. Birabujijwe\ngukora andi matara cyangwa utugarurarumuri\nuretse ibitegetswe ariko ntibireba amatara\nakurikira:",
+    "text": "Ku byerekeye kwerekana ibinyabiziga n'ukumurika kwabyo ndetse no kwerekana ihindura ry'ibyerekezo byabyo. Birabujijwe gukora andi matara cyangwa utugarurarumuri uretse ibitegetswe ariko ntibireba amatara akurikira:",
     "options": {
       "a": "Amatara ndanga",
       "b": "Amatara ari imbere mu modoka",
@@ -170,7 +170,7 @@
   },
   {
     "id": 14,
-    "text": "Iyo nta mategeko awugabanya\nby'umwihariko umuvuduko ntarengwa\nw'amapikipiki mu isaha ni:",
+    "text": "Iyo nta mategeko awugabanya by'umwihariko umuvuduko ntarengwa w'amapikipiki mu isaha ni:",
     "options": {
       "a": "Km25",
       "b": "Km70",
@@ -183,7 +183,7 @@
   },
   {
     "id": 15,
-    "text": "Uburyo bukoreshwa kugirango ikinyabiziga\nkigende gahoro igihe feri idakora neza babwita:",
+    "text": "Uburyo bukoreshwa kugirango ikinyabiziga kigende gahoro igihe feri idakora neza babwita:",
     "options": {
       "a": "Feri y'urugendo",
       "b": "Feri yo guhagarara umwanya munini",
@@ -196,7 +196,7 @@
   },
   {
     "id": 16,
-    "text": "Nibura ikinyabiziga gitegetswe kugira\nuduhanagurakirahure tungahe:",
+    "text": "Nibura ikinyabiziga gitegetswe kugira uduhanagurakirahure tungahe:",
     "options": {
       "a": "2",
       "b": "3",
@@ -209,7 +209,7 @@
   },
   {
     "id": 17,
-    "text": "Amatara maremare y'ikinyabiziga agomba\nkuzimwa mu bihe bikurikira:",
+    "text": "Amatara maremare y'ikinyabiziga agomba kuzimwa mu bihe bikurikira:",
     "options": {
       "a": "Iyo umuhanda umurikiye umuyobozi abasha kureba muri metero 20",
       "b": "Iyo ikinyabiziga kigiye kubisikana n'ibindi",
@@ -222,7 +222,7 @@
   },
   {
     "id": 18,
-    "text": "Ikinyabiziga ntigishobora kugira amatara\narenga abiri y'ubwoko bumwe keretse\nkubyerekeye amatara akurikira:",
+    "text": "Ikinyabiziga ntigishobora kugira amatara arenga abiri y'ubwoko bumwe keretse kubyerekeye amatara akurikira:",
     "options": {
       "a": "Itara ndangamubyimba",
       "b": "Itara ryerekana icyerekezo",
@@ -235,7 +235,7 @@
   },
   {
     "id": 19,
-    "text": "Ubugari bwa romoruki ikuruwe n'igare\ncyangwa velomoteri ntiburenza ibipimo\nbikurikira:",
+    "text": "Ubugari bwa romoruki ikuruwe n'igare cyangwa velomoteri ntiburenza ibipimo bikurikira:",
     "options": {
       "a": "cm25",
       "b": "cm125",
@@ -248,7 +248,7 @@
   },
   {
     "id": 20,
-    "text": "Ibinyabiziga\nbikoreshwa\nnka\ntagisi,\nbitegerereza abantu mu nzira nyabagendwa,\nbishobora gushyirwaho itara ryerekana ko\nikinyabiziga\nkitakodeshejwe.\nIryo\ntara\nrishyirwaho ku buryo bukurikira:",
+    "text": "Ibinyabiziga bikoreshwa nka tagisi, bitegerereza abantu mu nzira nyabagendwa, bishobora gushyirwaho itara ryerekana ko ikinyabiziga kitakodeshejwe. Iryo tara rishyirwaho ku buryo bukurikira:",
     "options": {
       "a": "Ni itara ry'icyatsi rishyirwa imbere ku kinyabiziga",
       "b": "Ni itara ry'icyatsi rishyirwa ibumoso",
@@ -261,7 +261,7 @@
   },
   {
     "id": 21,
-    "text": "Za otobisi zagenewe gutwara abanyeshuri\nzishobora gushyirwaho amatara abiri asa\nn'icunga rihishije amyasa kugirango yerekane\nko zihagaze no kwerekana ko bagomba\nkwitonda, ayo matara ashyirwaho ku buryo\nbukurikira :",
+    "text": "Za otobisi zagenewe gutwara abanyeshuri zishobora gushyirwaho amatara abiri asa n'icunga rihishije amyasa kugirango yerekane ko zihagaze no kwerekana ko bagomba kwitonda, ayo matara ashyirwaho ku buryo bukurikira :",
     "options": {
       "a": "Amatara abiri ashyirwa inyuma",
       "b": "Amatara abiri ashyirwa imbere",
@@ -274,7 +274,7 @@
   },
   {
     "id": 22,
-    "text": "Itara ryo guhagarara ry'ibara ritukura\nrigomba kugaragara igihe ijuru rikeye nibura\nmu ntera ikurikira:",
+    "text": "Itara ryo guhagarara ry'ibara ritukura rigomba kugaragara igihe ijuru rikeye nibura mu ntera ikurikira:",
     "options": {
       "a": "Metero 100 ku manywa na metero 20 mu ijoro",
       "b": "Metero 150 ku manywa na metero50 mu ijoro",
@@ -287,7 +287,7 @@
   },
   {
     "id": 23,
-    "text": "Iyo umuvuduko w'ibinyabiziga bidapakiye\nushobora kurenga km50 mu isaha ahategamye,\nbigomba kuba bifite ibikoresho by'ihoni\nbyumvikanira mu ntera:",
+    "text": "Iyo umuvuduko w'ibinyabiziga bidapakiye ushobora kurenga km50 mu isaha ahategamye, bigomba kuba bifite ibikoresho by'ihoni byumvikanira mu ntera:",
     "options": {
       "a": "Metero 100",
       "b": "Metero 200",
@@ -300,7 +300,7 @@
   },
   {
     "id": 24,
-    "text": "Birabujijwe kugenza ibinyabiziga\nbigendeshwa na moteri naza romoruki\nzikururwa nabyo, iyo ibiziga byambaye inziga\nzidahagwa cyangwa inziga zikururuka zifite\numubyimba uri hasi ya cm 4.  Ariko ibyo\nntibikurikizwa kubinyabiziga bikurikira:",
+    "text": "Birabujijwe kugenza ibinyabiziga bigendeshwa na moteri naza romoruki zikururwa nabyo, iyo ibiziga byambaye inziga zidahagwa cyangwa inziga zikururuka zifite umubyimba uri hasi ya cm 4. Ariko ibyo ntibikurikizwa kubinyabiziga bikurikira:",
     "options": {
       "a": "Ku binyabiziga by'ingabo bijya ahatarenga km25",
       "b": "Ibinyabiziga bihinga",
@@ -313,7 +313,7 @@
   },
   {
     "id": 25,
-    "text": "Igice cy'inzira nyabagendwa kigarukira ku\nmirongo ibiri yera icagaguye ibangikanye kandi\ngifite ubugari budahagije kugira ngo imodoka\nzitambuke neza, kiba ari:",
+    "text": "Igice cy'inzira nyabagendwa kigarukira ku mirongo ibiri yera icagaguye ibangikanye kandi gifite ubugari budahagije kugira ngo imodoka zitambuke neza, kiba ari:",
     "options": {
       "a": "Ahanyurwa n'amagare na velomoteri",
       "b": "Ahanyurwa n'ingorofani",
@@ -326,7 +326,7 @@
   },
   {
     "id": 26,
-    "text": "Ubugari bwa romoruki ntiburenza ubugari\nbw'ikinyabiziga kiyikurura iyo ikuruwe\nn'ibinyabiziga bikurikira:",
+    "text": "Ubugari bwa romoruki ntiburenza ubugari bw'ikinyabiziga kiyikurura iyo ikuruwe n'ibinyabiziga bikurikira:",
     "options": {
       "a": "Igare",
       "b": "Velomoteri",
@@ -339,7 +339,7 @@
   },
   {
     "id": 27,
-    "text": "Iyo hatarimo indi myanya birabujijwe\ngutwara ku ntebe y'imbere y'imodoka abana\nbadafite imyaka:",
+    "text": "Iyo hatarimo indi myanya birabujijwe gutwara ku ntebe y'imbere y'imodoka abana badafite imyaka:",
     "options": {
       "a": "Imyaka 10",
       "b": "Imyaka 12",
@@ -352,7 +352,7 @@
   },
   {
     "id": 28,
-    "text": "Icyapa kivuga gutambuka mbere\ny'ibinyabiziga biturutse imbere gifite amabara\nakurikira:",
+    "text": "Icyapa kivuga gutambuka mbere y'ibinyabiziga biturutse imbere gifite amabara akurikira:",
     "options": {
       "a": "Ubuso ni umweru",
       "b": "Ikirango ni umutuku n'umukara",
@@ -365,7 +365,7 @@
   },
   {
     "id": 29,
-    "text": "Ni ryari itegeko  rigenga gutambuka mbere\nkw'iburyo rikurikizwa mu masangano:",
+    "text": "Ni ryari itegeko rigenga gutambuka mbere kw'iburyo rikurikizwa mu masangano:",
     "options": {
       "a": "Iyo nta cyapa cyo gutambuka mbere gihari",
       "b": "Iyo ikimenyetso kimurika cyagenewe ibinyabiziga kidakora",
@@ -378,7 +378,7 @@
   },
   {
     "id": 30,
-    "text": "Ibimenyetso bimurika byerekana uburyo\nbwo kugendera mu muhanda kw'ibinyabiziga\nbishyirwa iburyo bw'umuhanda. Ariko\nbishobora no gushyirwa ibumoso cyangwa\nhejuru y'umuhanda:",
+    "text": "Ibimenyetso bimurika byerekana uburyo bwo kugendera mu muhanda kw'ibinyabiziga bishyirwa iburyo bw'umuhanda. Ariko bishobora no gushyirwa ibumoso cyangwa hejuru y'umuhanda:",
     "options": {
       "a": "Hakurikijwe icyerekezo abagenzi bireba baganamo",
       "b": "Hakurikijwe icyo ibyo bimenyetso bigamije kwerekana",
@@ -391,7 +391,7 @@
   },
   {
     "id": 31,
-    "text": "Iyo itara ry'umuhondo rimyatsa\nrikoreshejwe mu masangano y'amayira\nahwanyije agaciro rishyirwa ahagana he:",
+    "text": "Iyo itara ry'umuhondo rimyatsa rikoreshejwe mu masangano y'amayira ahwanyije agaciro rishyirwa ahagana he:",
     "options": {
       "a": "Kuri buri nzira",
       "b": "Hagati y'amasangano",
@@ -404,7 +404,7 @@
   },
   {
     "id": 32,
-    "text": "Inkombe z'inzira nyabagendwa cyangwa\nz'umuhanda zishobora kugaragazwa\nn'ibikoresho ngarurarumuri. Ibyo bikoresho\nbigomba gushyirwaho ku buryo abagenzi\nbabibona :",
+    "text": "Inkombe z'inzira nyabagendwa cyangwa z'umuhanda zishobora kugaragazwa n'ibikoresho ngarurarumuri. Ibyo bikoresho bigomba gushyirwaho ku buryo abagenzi babibona :",
     "options": {
       "a": "Babona gusa ibumoso bwabo iby'ibara ritukura",
       "b": "Iburyo babona iby'ibara risa n'icunga rihishije gusa",
@@ -417,7 +417,7 @@
   },
   {
     "id": 33,
-    "text": "Ibinyabiziga bikurikira bigomba gukorerwa\nisuzumwa rimwe mu mezi 6:",
+    "text": "Ibinyabiziga bikurikira bigomba gukorerwa isuzumwa rimwe mu mezi 6:",
     "options": {
       "a": "Ibinyabiziga bitwara abagenzi muri rusange",
       "b": "Ibinyabiziga bigenewe gutwara ibintu birengeje toni 3.5",
@@ -430,7 +430,7 @@
   },
   {
     "id": 34,
-    "text": "Iyo kuyobya umuhanda ari ngombwa\nbigaragazwa kuva aho uhera no kuburebure\nbwawo n'icyapa gifite ubuso bw'amabara\nakurikira:",
+    "text": "Iyo kuyobya umuhanda ari ngombwa bigaragazwa kuva aho uhera no kuburebure bwawo n'icyapa gifite ubuso bw'amabara akurikira:",
     "options": {
       "a": "Ubururu",
       "b": "Umweru",
@@ -443,7 +443,7 @@
   },
   {
     "id": 35,
-    "text": "Ku mihanda ibyapa bikurikira bigomba\nkugaragazwa ku buryo bumwe:",
+    "text": "Ku mihanda ibyapa bikurikira bigomba kugaragazwa ku buryo bumwe:",
     "options": {
       "a": "Ibyapa biyobora n'ibitegeka",
       "b": "Ibyapa biburira n'ibitegeka",
@@ -456,7 +456,7 @@
   },
   {
     "id": 36,
-    "text": "Ni iyihe feri ituma imodoka igenda buhoro\nkandi igahagarara ku buryo bwizewe\nbubangutse kandi nyabwo, uko imodoka yaba\nyikoreye kose yaba igeze ahacuramye cyangwa\nahaterera:",
+    "text": "Ni iyihe feri ituma imodoka igenda buhoro kandi igahagarara ku buryo bwizewe bubangutse kandi nyabwo, uko imodoka yaba yikoreye kose yaba igeze ahacuramye cyangwa ahaterera:",
     "options": {
       "a": "Feri y'urugendo",
       "b": "Feri yo gutabara",
@@ -469,7 +469,7 @@
   },
   {
     "id": 37,
-    "text": "Ibizirikisho by'iminyururu cyangwa\nby'insinga kimwe n'ibindi by'ingoboka\nbikoreshwa gusa igihe nta kundi umuntu\nyabigenza kandi nta kindi bigiriwe uretse gusa\nkugirango ikinyabiziga kigere aho kigomba\ngukorerwa kandi nturenze na rimwe km 20 mu\nisaha, ibyo bizirikisho bigaragazwa ku buryo\nbukurikira:",
+    "text": "Ibizirikisho by'iminyururu cyangwa by'insinga kimwe n'ibindi by'ingoboka bikoreshwa gusa igihe nta kundi umuntu yabigenza kandi nta kindi bigiriwe uretse gusa kugirango ikinyabiziga kigere aho kigomba gukorerwa kandi nturenze na rimwe km 20 mu isaha, ibyo bizirikisho bigaragazwa ku buryo bukurikira:",
     "options": {
       "a": "Agatambaro gatukura kuri cm 50 z'umuhanda",
       "b": "Ikimenyetso cy'itara risa n'icunga rihishije",
@@ -482,7 +482,7 @@
   },
   {
     "id": 38,
-    "text": "Uretse mu mujyi, ku yindi mihanda\nyajyenwe na minisitiri ushinzwe gutwara\nabantu n'ibintu, uburemere ntarengwa ku\nbinyabiziga bifite imitambiko itatu cyangwa\nirenga hatarimo makuzungu ni :",
+    "text": "Uretse mu mujyi, ku yindi mihanda yajyenwe na minisitiri ushinzwe gutwara abantu n'ibintu, uburemere ntarengwa ku binyabiziga bifite imitambiko itatu cyangwa irenga hatarimo makuzungu ni :",
     "options": {
       "a": "Toni 10",
       "b": "Toni 12",
@@ -495,7 +495,7 @@
   },
   {
     "id": 39,
-    "text": "Ubugari bw'imizigo yikorewe\nn'ibinyamitende itatu n'ubwiyikorewe\nn'ibinyamitende 4 bifite cyangwa bidafite\nmoteri kimwe n'ubw'iyikorewe na romuruki\nzikuruwe n'ibyo binyabiziga ntibushobora\nkurenga ibipimo bikurikira:",
+    "text": "Ubugari bw'imizigo yikorewe n'ibinyamitende itatu n'ubwiyikorewe n'ibinyamitende 4 bifite cyangwa bidafite moteri kimwe n'ubw'iyikorewe na romuruki zikuruwe n'ibyo binyabiziga ntibushobora kurenga ibipimo bikurikira:",
     "options": {
       "a": "cm 30 ku bugari bw'icyo kinyabiziga kidapakiye",
       "b": "Ubugari ntarengwa budakuka ni metero 2 na sentimetero 50",
@@ -508,7 +508,7 @@
   },
   {
     "id": 40,
-    "text": "Kunyura ku binyabiziga bindi, uretse\nicy'ibiziga bibiri, bibujijwe aha hakurikira:",
+    "text": "Kunyura ku binyabiziga bindi, uretse icy'ibiziga bibiri, bibujijwe aha hakurikira:",
     "options": {
       "a": "Hafi y'iteme iyo hari umuhanda ufunganye",
       "b": "Hafi y'aho abanyamaguru banyura",
@@ -521,7 +521,7 @@
   },
   {
     "id": 41,
-    "text": "Iyo nta mategeko awugabanya\nby'umwihariko, umuvuduko ntarengwa ku\nmodoka zitwara abagenzi mu buryo bwa\nrusange ni:",
+    "text": "Iyo nta mategeko awugabanya by'umwihariko, umuvuduko ntarengwa ku modoka zitwara abagenzi mu buryo bwa rusange ni:",
     "options": {
       "a": "Km 60 mu isaha",
       "b": "Km 40 mu isaha",
@@ -534,7 +534,7 @@
   },
   {
     "id": 42,
-    "text": "Iyo nta mategeko awugabanya\nby'umwihariko, umuvuduko ntarengwa ku\nmodoka zikoreshwa nk'amavatiri y'ifasi\ncyangwa amatagisi zifite uburemere bwemewe\nbutarenga kilogarama 3500 ni:",
+    "text": "Iyo nta mategeko awugabanya by'umwihariko, umuvuduko ntarengwa ku modoka zikoreshwa nk'amavatiri y'ifasi cyangwa amatagisi zifite uburemere bwemewe butarenga kilogarama 3500 ni:",
     "options": {
       "a": "Km 60 mu isaha",
       "b": "Km 40 mu isaha",
@@ -547,7 +547,7 @@
   },
   {
     "id": 43,
-    "text": "Ikinyabiziga kibujijwe guhagarara akanya\nkanini aha hakurikira :",
+    "text": "Ikinyabiziga kibujijwe guhagarara akanya kanini aha hakurikira :",
     "options": {
       "a": "Imbere y'ahantu hinjirwa hakasohokerwa n'abantu benshi",
       "b": "Mu muhanda aho ugabanyijemo ibisate bigaragazwa n'imirongo idacagaguye",
@@ -560,7 +560,7 @@
   },
   {
     "id": 44,
-    "text": "Iyo bwije kugeza bukeye cyangwa bitewe\nn'uko ibihe bimeze nk'igihe cy'ibihu cyangwa\ncy'imvura bitagishoboka kubona neza muri m\n200, udutsiko twose tw'abanyamaguru\nnk'imperekerane cyangwa udutsiko\ntw'abanyeshuri bari ku murongo bayobowe\nn'umwarimu, iyo bagenda mu muhanda ku\nisonga hakaba hari abantu barenze umwe\nbagomba kugaragazwa kuburyo bukurikira :",
+    "text": "Iyo bwije kugeza bukeye cyangwa bitewe n'uko ibihe bimeze nk'igihe cy'ibihu cyangwa cy'imvura bitagishoboka kubona neza muri m 200, udutsiko twose tw'abanyamaguru nk'imperekerane cyangwa udutsiko tw'abanyeshuri bari ku murongo bayobowe n'umwarimu, iyo bagenda mu muhanda ku isonga hakaba hari abantu barenze umwe bagomba kugaragazwa kuburyo bukurikira :",
     "options": {
       "a": "Imbere ni itara ry'umuhondo ritwariwe ibumoso",
       "b": "Inyuma ni itara ryera ritwariwe ibumoso n'umuntu uri ku murongo w'inyuma hafi y'umurongo ugabanya umuhanda mo kabiri",
@@ -573,7 +573,7 @@
   },
   {
     "id": 45,
-    "text": "Utuyira turi ku mpande z'umuhanda\nn'inkengero zigiye hejuru biharirwa\nabanyamaguru mu bihe bikurikira:",
+    "text": "Utuyira turi ku mpande z'umuhanda n'inkengero zigiye hejuru biharirwa abanyamaguru mu bihe bikurikira:",
     "options": {
       "a": "Iyo hari amategeko yihariye yerekanwa n'ibimenyetso",
       "b": "Iyo badatatanye kandi bayobowe n'umwarimu",
@@ -586,7 +586,7 @@
   },
   {
     "id": 46,
-    "text": "Imburira zimurika zemerewe gukoreshwa\nkugirango bamenyeshe umuyobozi ko bagiye\nkumunyuraho aha hakurikira:",
+    "text": "Imburira zimurika zemerewe gukoreshwa kugirango bamenyeshe umuyobozi ko bagiye kumunyuraho aha hakurikira:",
     "options": {
       "a": "Mu nsisiro gusa",
       "b": "Ahegereye inyamaswa zikurura",
@@ -599,7 +599,7 @@
   },
   {
     "id": 47,
-    "text": "Uburemere ntarengwa bwemewe\nntibushobora kurenga ½ cy'uburemere\nbw'ikinyabiziga gikurura nubw'umuyobozi\nkuri romoruki zikurikira :",
+    "text": "Uburemere ntarengwa bwemewe ntibushobora kurenga ½ cy'uburemere bw'ikinyabiziga gikurura nubw'umuyobozi kuri romoruki zikurikira :",
     "options": {
       "a": "Romoruki ifite feri y'urugendo",
       "b": "Romoruki idafite feri y'urugendo",
@@ -612,7 +612,7 @@
   },
   {
     "id": 48,
-    "text": "Ibinyabiziga bifite ubugari bufite ibipimo\nbikurikira bigomba kugira amatara\nndangaburumbarare :",
+    "text": "Ibinyabiziga bifite ubugari bufite ibipimo bikurikira bigomba kugira amatara ndangaburumbarare :",
     "options": {
       "a": "Metero 2 na cm 10",
       "b": "Metero 2 na cm 50",
@@ -625,7 +625,7 @@
   },
   {
     "id": 49,
-    "text": "Nta tara na rimwe cyangwa\nakagarurarumuri bishobora kuba bifunze ku\nburyo igice cyabyo cyo hasi cyane kimurika\nkitaba kiri hasi y'ibipimo bikurikira kuva ku\nbutaka igihe ikinyabiziga kidapakiye :",
+    "text": "Nta tara na rimwe cyangwa akagarurarumuri bishobora kuba bifunze ku buryo igice cyabyo cyo hasi cyane kimurika kitaba kiri hasi y'ibipimo bikurikira kuva ku butaka igihe ikinyabiziga kidapakiye :",
     "options": {
       "a": "Cm 30",
       "b": "Cm 40",
@@ -638,7 +638,7 @@
   },
   {
     "id": 50,
-    "text": "Iyo ikinyabiziga gifite amatara abiri\ncyangwa menshi y'ubwoko bumwe ayo matara\nagomba kugira ibara rimwe n'ingufu zingana\nkandi akagomba gushyirwaho ku buryo\nbuteganye uhereye ku murongo ugabanya\nikinyabizigamo kabiri mu burebure bwacyo.\nAriko ibi ntibikurikizwa ku matara akurikira:",
+    "text": "Iyo ikinyabiziga gifite amatara abiri cyangwa menshi y'ubwoko bumwe ayo matara agomba kugira ibara rimwe n'ingufu zingana kandi akagomba gushyirwaho ku buryo buteganye uhereye ku murongo ugabanya ikinyabizigamo kabiri mu burebure bwacyo. Ariko ibi ntibikurikizwa ku matara akurikira:",
     "options": {
       "a": "itara ndangamubyimba",
       "b": "itara ndangaburumbarare",
@@ -651,7 +651,7 @@
   },
   {
     "id": 51,
-    "text": "Ahari hejuru cyane y'ubuso bumurika\nh'amatara ndangambere na ndanganyuma\nntihashobora kuba aharenze ibipimo bikurikira\nhejuru y'ubutaka iyo ikinyabiziga kidapakiye:",
+    "text": "Ahari hejuru cyane y'ubuso bumurika h'amatara ndangambere na ndanganyuma ntihashobora kuba aharenze ibipimo bikurikira hejuru y'ubutaka iyo ikinyabiziga kidapakiye:",
     "options": {
       "a": "m1 na cm 50",
       "b": "m1 na cm 75",
@@ -664,7 +664,7 @@
   },
   {
     "id": 52,
-    "text": "Ni ryari ikinyabiziga gishobora kugenda mu\nmuhanda moteri itaka cyangwa vitesi idakora:",
+    "text": "Ni ryari ikinyabiziga gishobora kugenda mu muhanda moteri itaka cyangwa vitesi idakora:",
     "options": {
       "a": "igihe kigenda ahamanuka",
       "b": "igihe gikuruwe n'ikindi kinyabiziga",
@@ -677,7 +677,7 @@
   },
   {
     "id": 53,
-    "text": "Umurongo mugari wera udacagaguye\nushobora gucibwa ku muhanda kugirango\nugaragaze ibi bikurikira:",
+    "text": "Umurongo mugari wera udacagaguye ushobora gucibwa ku muhanda kugirango ugaragaze ibi bikurikira:",
     "options": {
       "a": "inkombe mpimbano z'umuhanda",
       "b": "ahahagararwa umwanya muto n'umunini",
@@ -690,7 +690,7 @@
   },
   {
     "id": 54,
-    "text": "Buri modoka cyangwa buri romoruki\nikuruwe n'iyo modoka bishobora kugira itara\nrisa n'icyatsi kibisi bituma umuyobozi\nyerekana ko yabonye ikimenyetso cy'uwitegura\nkumunyuraho. Iryo tara rigomba gushyirwa\naha hakurikira:",
+    "text": "Buri modoka cyangwa buri romoruki ikuruwe n'iyo modoka bishobora kugira itara risa n'icyatsi kibisi bituma umuyobozi yerekana ko yabonye ikimenyetso cy'uwitegura kumunyuraho. Iryo tara rigomba gushyirwa aha hakurikira:",
     "options": {
       "a": "hafi y'inguni y'ibumoso bw'ikinyabiziga",
       "b": "inyuma hafi y'impera y'iburyo bw'ikinyabiziga",
@@ -703,7 +703,7 @@
   },
   {
     "id": 55,
-    "text": "Ibinyabiziga bikurikira bigomba kugira\nicyerekana umuvuduko kiri aho umuyobozi\nareba neza kandi kigahora kitabwaho\nkugirango kigume gukora neza:",
+    "text": "Ibinyabiziga bikurikira bigomba kugira icyerekana umuvuduko kiri aho umuyobozi areba neza kandi kigahora kitabwaho kugirango kigume gukora neza:",
     "options": {
       "a": "ibinyabiziga bifite umuvuduko nibura wa km 60 mu isaha",
       "b": "ibinyabiziga bishobora kurenza km 40 mu isaha",
@@ -716,7 +716,7 @@
   },
   {
     "id": 56,
-    "text": "Ubugari bw'imizigo yikorewe n'ipikipiki\nidafite akanyabiziga ko kuruhande kimwe\nn'ubwa romoruki ikuruwe na bene icyo\nkinyabiziga ntibushobora kurenza ibipimo\nbikurikira:",
+    "text": "Ubugari bw'imizigo yikorewe n'ipikipiki idafite akanyabiziga ko kuruhande kimwe n'ubwa romoruki ikuruwe na bene icyo kinyabiziga ntibushobora kurenza ibipimo bikurikira:",
     "options": {
       "a": "m 1.25",
       "b": "cm 30",
@@ -729,7 +729,7 @@
   },
   {
     "id": 57,
-    "text": "Ibinyabiziga bikurikira bigomba kugira\nitara ry'ubururu rimyatsa riboneka mu\nmpande zose:",
+    "text": "Ibinyabiziga bikurikira bigomba kugira itara ry'ubururu rimyatsa riboneka mu mpande zose:",
     "options": {
       "a": "ibinyabiziga bifite ubugari burenga m 2 na cm 10",
       "b": "ibinyabiziga bya police y'igihugu",
@@ -742,7 +742,7 @@
   },
   {
     "id": 58,
-    "text": "Ibinyabiziga bihinga n'ibindi bikoresho\nbyihariye bikoreshwa n'ibigo bipatana imirimo,\niyo bigenda mu nzira nyabagendwa igihe cya\nnijoro cyangwa bitewe n'uko ibihe bimeze\nbitagishoboka kubona neza muri m 200\nbishobora kugaragazwa inyuma n'amatara 2\natukura, bipfa kuba bitarenza ibipimo\nbikurikira:",
+    "text": "Ibinyabiziga bihinga n'ibindi bikoresho byihariye bikoreshwa n'ibigo bipatana imirimo, iyo bigenda mu nzira nyabagendwa igihe cya nijoro cyangwa bitewe n'uko ibihe bimeze bitagishoboka kubona neza muri m 200 bishobora kugaragazwa inyuma n'amatara 2 atukura, bipfa kuba bitarenza ibipimo bikurikira:",
     "options": {
       "a": "kutarenza umuvuduko wa km20 mu isaha",
       "b": "uburebure bwabyo habariwemo ibyo bitwaye bukaba butarengeje m6",
@@ -755,7 +755,7 @@
   },
   {
     "id": 59,
-    "text": "Iyo romoruki iziritse ku kinyamitende,\nvelomoteri n'amapikipiki bidafite akanyabiziga\nko kuruhande uretse ikinyamitende na\nvelomoteri bidafite umuyobozi, iyo\nuburumbarare bwayo cyangwa bw'ibyo\nyikoreye bituma itara ry'ikinyabiziga gikurura\nritagaragara igihe bitagishoboka kubona neza\nmuri m 200 bigomba kugaragazwa ku buryo\nbukurikira:",
+    "text": "Iyo romoruki iziritse ku kinyamitende, velomoteri n'amapikipiki bidafite akanyabiziga ko kuruhande uretse ikinyamitende na velomoteri bidafite umuyobozi, iyo uburumbarare bwayo cyangwa bw'ibyo yikoreye bituma itara ry'ikinyabiziga gikurura ritagaragara igihe bitagishoboka kubona neza muri m 200 bigomba kugaragazwa ku buryo bukurikira:",
     "options": {
       "a": "itara ryera cyangwa ry'umuhondo cyangwa risa n'icunga rihishije riri kuri rumoruki inyuma",
       "b": "itara ry'icyatsi cyangwa ry'umuhondo cyangwa risa n'icunga rihishije riri kuri rumoruki inyuma",
@@ -768,7 +768,7 @@
   },
   {
     "id": 60,
-    "text": "Ku kinyabiziga cyangwa ibinyabiziga\nbikururana igice kirenga ku biziga ntikigomba\nkurenga ibipimo bikurikira:",
+    "text": "Ku kinyabiziga cyangwa ibinyabiziga bikururana igice kirenga ku biziga ntikigomba kurenga ibipimo bikurikira:",
     "options": {
       "a": "inyuma ni m 3 na cm 50",
       "b": "imbere ni m 1  na cm 70",
@@ -781,7 +781,7 @@
   },
   {
     "id": 61,
-    "text": "Iyo amatara y'ikinyabiziga agomba\ngucanwa kandi igihe imizigo isumba impera\ny'ikinyabiziga ho metero irenga igice gihera\ncy'imizigo kigaragazwa ku buryo bukurikira:",
+    "text": "Iyo amatara y'ikinyabiziga agomba gucanwa kandi igihe imizigo isumba impera y'ikinyabiziga ho metero irenga igice gihera cy'imizigo kigaragazwa ku buryo bukurikira:",
     "options": {
       "a": "itara ritukura cyangwa akagarurarumuri ku mutuku ku manywa",
       "b": "agatambaro gatukura gafite nibura cm 50 z'uruhande mu ijoro",
@@ -794,7 +794,7 @@
   },
   {
     "id": 62,
-    "text": "Iyo imizigo igizwe n'ibinyampeke, ikawa,\nipamba idatonoye, ibishara, ibyatsi, ibishami\ncyangwa ubwatsi bw'amatungo bidahambiriye\nuretse amapaki afunze, ubugari bwayo\nbushobora kugera ku bipimo bikurikira:",
+    "text": "Iyo imizigo igizwe n'ibinyampeke, ikawa, ipamba idatonoye, ibishara, ibyatsi, ibishami cyangwa ubwatsi bw'amatungo bidahambiriye uretse amapaki afunze, ubugari bwayo bushobora kugera ku bipimo bikurikira:",
     "options": {
       "a": "m 2.50",
       "b": "m 2.75",
@@ -807,7 +807,7 @@
   },
   {
     "id": 63,
-    "text": "Uretse mu mijyi kuyindi mihanda yagenywe\nna minisiteri ushinzwe gutwara ibintu\nn'abantu, uburemere ntarengwa bwemewe ku\nbinyabiziga bifatanye bifite imitambiko itatu\nni:",
+    "text": "Uretse mu mijyi kuyindi mihanda yagenywe na minisiteri ushinzwe gutwara ibintu n'abantu, uburemere ntarengwa bwemewe ku binyabiziga bifatanye bifite imitambiko itatu ni:",
     "options": {
       "a": "toni 20",
       "b": "toni 16",
@@ -820,7 +820,7 @@
   },
   {
     "id": 64,
-    "text": "Buri modoka cyangwa buri romoruki\nikuruwe n'iyo modoka bishobora kugira itara\nrituma umuyobozi yerekana ko yabonye\nikimenyetso cy'uwitegura kumunyuraho. Iryo\ntara rifite amabara akurikira:",
+    "text": "Buri modoka cyangwa buri romoruki ikuruwe n'iyo modoka bishobora kugira itara rituma umuyobozi yerekana ko yabonye ikimenyetso cy'uwitegura kumunyuraho. Iryo tara rifite amabara akurikira:",
     "options": {
       "a": "umuhondo",
       "b": "icyatsi kibisi",
@@ -833,7 +833,7 @@
   },
   {
     "id": 65,
-    "text": "Ikinyabiziga cyangwa ibinyabiziga\nbikururana bifite imitambiko ibiri ikurikiranye\nmu bugari bwayo ni ukuvuga imitambiko\nyihindukiza kucyo ifungiyeho, uburebure\nbwabyo ntibugomba kurenza ibipimo\nbikurikira:",
+    "text": "Ikinyabiziga cyangwa ibinyabiziga bikururana bifite imitambiko ibiri ikurikiranye mu bugari bwayo ni ukuvuga imitambiko yihindukiza kucyo ifungiyeho, uburebure bwabyo ntibugomba kurenza ibipimo bikurikira:",
     "options": {
       "a": "m11",
       "b": "m10",
@@ -846,7 +846,7 @@
   },
   {
     "id": 66,
-    "text": "Bumwe muri ubu bwoko bwa feri ituma\nimodoka iguma aho iri uko yaba yikoreye kose\nku muzamuko cyangwa ku gacuri bya 16%,\nimyanya ya feri igomba gufata igakomeza\nkwegera kuburyo bw'ibyuma niyo umuyobozi\nyaba atarimo:",
+    "text": "Bumwe muri ubu bwoko bwa feri ituma imodoka iguma aho iri uko yaba yikoreye kose ku muzamuko cyangwa ku gacuri bya 16%, imyanya ya feri igomba gufata igakomeza kwegera kuburyo bw'ibyuma niyo umuyobozi yaba atarimo:",
     "options": {
       "a": "feri yo guhagarara umwanya munini",
       "b": "feri y'urugendo",
@@ -859,7 +859,7 @@
   },
   {
     "id": 67,
-    "text": "Utugarurarumuri turi mu mbavu\nz'ikinyabiziga tugomba kugira ibara\nrikurikira:",
+    "text": "Utugarurarumuri turi mu mbavu z'ikinyabiziga tugomba kugira ibara rikurikira:",
     "options": {
       "a": "umweru",
       "b": "umuhondo",
@@ -872,7 +872,7 @@
   },
   {
     "id": 68,
-    "text": "Romoruki zifite ubugari ntarengwa bwa cm\n80 zishobora gushyirwaho akagarurarumuri\nkamwe gusa iyo zikuruwe n'ibinyabiziga\nbikurikira:",
+    "text": "Romoruki zifite ubugari ntarengwa bwa cm 80 zishobora gushyirwaho akagarurarumuri kamwe gusa iyo zikuruwe n'ibinyabiziga bikurikira:",
     "options": {
       "a": "velomoteri",
       "b": "ipikipiki idafite akanyabiziga ku ruhande",
@@ -885,7 +885,7 @@
   },
   {
     "id": 69,
-    "text": "Amatara maremare y'ibara ryera cyangwa\nry'umuhondo agomba, nijoro igihe ijuru\nrikeye, kumurika mu muhanda mu ntera ya m\n100 nibura imbere y'ikinyabiziga, ariko ku\nbinyabiziga bifite moteri itarengeje za\nsentimetero kibe 125 iyo ntera igira ibipimo\nbikurikira:",
+    "text": "Amatara maremare y'ibara ryera cyangwa ry'umuhondo agomba, nijoro igihe ijuru rikeye, kumurika mu muhanda mu ntera ya m 100 nibura imbere y'ikinyabiziga, ariko ku binyabiziga bifite moteri itarengeje za sentimetero kibe 125 iyo ntera igira ibipimo bikurikira:",
     "options": {
       "a": "m200",
       "b": "m100",
@@ -898,7 +898,7 @@
   },
   {
     "id": 70,
-    "text": "Iyo banyuze iruhande rw'inkomyi\nabanyamaguru bagomba gukikira banyuze mu\nmuhanda, abayobozi bagomba gusiga\numwanya ufite ubugari bwa m 1 nibura hagati\nyabo nayo. Iyo ibyo bidashobora kubahirizwa\nkandi umunyamaguru akaba anyura hafi yiyo\nnkomyi, umuyobozi agomba kuyikikira afite\numuvuduko utarengeje ibipimo bikurikira:",
+    "text": "Iyo banyuze iruhande rw'inkomyi abanyamaguru bagomba gukikira banyuze mu muhanda, abayobozi bagomba gusiga umwanya ufite ubugari bwa m 1 nibura hagati yabo nayo. Iyo ibyo bidashobora kubahirizwa kandi umunyamaguru akaba anyura hafi yiyo nkomyi, umuyobozi agomba kuyikikira afite umuvuduko utarengeje ibipimo bikurikira:",
     "options": {
       "a": "km 10 mu isaha",
       "b": "km 20 mu isaha",
@@ -911,7 +911,7 @@
   },
   {
     "id": 71,
-    "text": "Guhagarara akanya gato no guhagarara\nakanya kanini bibujijwe cyane cyane aha\nhakurikira:",
+    "text": "Guhagarara akanya gato no guhagarara akanya kanini bibujijwe cyane cyane aha hakurikira:",
     "options": {
       "a": "ku mihanda y'icyerekezo kimwe hose",
       "b": "mu ruhande ruteganye n'urwo ikindi kinyabiziga gihagazemo akanya gato cyangwa kanini",
@@ -924,7 +924,7 @@
   },
   {
     "id": 72,
-    "text": "Amatara ndangambere n'aya ndanganyuma\ny'imodoka zitarengeje m 6 z'uburebure na m 2\nz'ubugari habariwemo imitwaro kdi nta\nkinyabiziga kindi kiziritseho ashobora\ngusimburwa n'amatara akurikira, iyo ibyo\nbinyabiziga bihagaze umwanya muto cyangwa\nmunini mu nsisiro bibangikanye ku ruhande\nrw'umuhanda:",
+    "text": "Amatara ndangambere n'aya ndanganyuma y'imodoka zitarengeje m 6 z'uburebure na m 2 z'ubugari habariwemo imitwaro kdi nta kinyabiziga kindi kiziritseho ashobora gusimburwa n'amatara akurikira, iyo ibyo binyabiziga bihagaze umwanya muto cyangwa munini mu nsisiro bibangikanye ku ruhande rw'umuhanda:",
     "options": {
       "a": "amatara magufi",
       "b": "amatara ndangaburumbarare",
@@ -937,7 +937,7 @@
   },
   {
     "id": 73,
-    "text": "Iyo kuva bwije kugeza bukeye cyangwa\nbitewe nuko ibihe bimeze nk'igihe cy'igihu\ncyangwa cy'imvura bitagishoboka kubona neza\nmuri m 200, imirongo y'ingabo z'igihugu\nzigendera kuri gahunda n'utundi dutsiko twose\ntw'abanyamaguru nk'imperekerane cyangwa\nudutsiko tw'abanyeshuri bari ku murongo\nbayobowe na mwarimu, iyo bagenda mu\nmuhanda ku isonga hakaba hari abantu\nbarenze umwe, bagaragzwa ku buryo\nbukurikira:",
+    "text": "Iyo kuva bwije kugeza bukeye cyangwa bitewe nuko ibihe bimeze nk'igihe cy'igihu cyangwa cy'imvura bitagishoboka kubona neza muri m 200, imirongo y'ingabo z'igihugu zigendera kuri gahunda n'utundi dutsiko twose tw'abanyamaguru nk'imperekerane cyangwa udutsiko tw'abanyeshuri bari ku murongo bayobowe na mwarimu, iyo bagenda mu muhanda ku isonga hakaba hari abantu barenze umwe, bagaragzwa ku buryo bukurikira:",
     "options": {
       "a": "imbere ni itara ryera ritwariwe ku ruhande rw'ibumoso n'umuntu uri ku murongo w'imbere hafi y'umurongo ugabanya umuhanda mo kabiri",
       "b": "inyuma ni itara umuhondo ritwariwe ku ruhande rw'ibumoso n'umuntu uri ku murongo w'inyuma hafi y'umurongo ugabanya umuhanda mo kabiri",
@@ -950,7 +950,7 @@
   },
   {
     "id": 74,
-    "text": "Imizigo yikorewe n'amagare, velomoteri,\namapikipiki, ibinyamitende by'ibiziga bitatu\nnibyo ibiziga bine bifite cyangwa bidafite\nmoteri inyuma ntishobora kurenza ibipimo\nbikurikira:",
+    "text": "Imizigo yikorewe n'amagare, velomoteri, amapikipiki, ibinyamitende by'ibiziga bitatu nibyo ibiziga bine bifite cyangwa bidafite moteri inyuma ntishobora kurenza ibipimo bikurikira:",
     "options": {
       "a": "cm 20",
       "b": "cm 30",
@@ -963,7 +963,7 @@
   },
   {
     "id": 75,
-    "text": "Itara ndanganyuma rigomba gushyirwa aha\nhakurikira:",
+    "text": "Itara ndanganyuma rigomba gushyirwa aha hakurikira:",
     "options": {
       "a": "ahagereye inguni y'ibumoso y'ikinyabiziga",
       "b": "ahagereye inguni y'iburyo bw'ikinyabiziga",
@@ -976,7 +976,7 @@
   },
   {
     "id": 76,
-    "text": "Nta tara na rimwe cyangwa\nutugarurarumuri bishobora kuba bifunze\nkuburyo igice cyabyo cyo hasi cyane kimurika\nkitaba kiri hasi ya cm 40 kuva ku butaka igihe\nikinyabiziga kidapakiye ariko ibyo\nntibikurikizwa ku matara akurikira:",
+    "text": "Nta tara na rimwe cyangwa utugarurarumuri bishobora kuba bifunze kuburyo igice cyabyo cyo hasi cyane kimurika kitaba kiri hasi ya cm 40 kuva ku butaka igihe ikinyabiziga kidapakiye ariko ibyo ntibikurikizwa ku matara akurikira:",
     "options": {
       "a": "amatara kamenabihu",
       "b": "amatara yo gusubira inyuma",
@@ -989,7 +989,7 @@
   },
   {
     "id": 77,
-    "text": "Iyo tumuritswe n'amatara y'urugendo y'i\nkinyabiziga utugarurarumuri tugomba n'ijoro,\nigihe ijuru rikeye kubonwa n'umuyobozi\nw'ikinyabiziga kiri mu ntera ikurikira:",
+    "text": "Iyo tumuritswe n'amatara y'urugendo y'i kinyabiziga utugarurarumuri tugomba n'ijoro, igihe ijuru rikeye kubonwa n'umuyobozi w'ikinyabiziga kiri mu ntera ikurikira:",
     "options": {
       "a": "metero 100",
       "b": "metero 150",
@@ -1002,7 +1002,7 @@
   },
   {
     "id": 78,
-    "text": "Ibinyabiziga bigendeshwa na moteri,\nhatarimo velomoteri n'ibinyabiziga bidapakiye\numuvuduko wabyo udashobora kurenga km 50\nmu isaha ahateganye bigomba kuba bifite\nibikoresho by'ihoni byumvikanira mu ntera\nikurikira:",
+    "text": "Ibinyabiziga bigendeshwa na moteri, hatarimo velomoteri n'ibinyabiziga bidapakiye umuvuduko wabyo udashobora kurenga km 50 mu isaha ahateganye bigomba kuba bifite ibikoresho by'ihoni byumvikanira mu ntera ikurikira:",
     "options": {
       "a": "metero 200",
       "b": "metero 150",
@@ -1015,7 +1015,7 @@
   },
   {
     "id": 79,
-    "text": "Ahatari mu nsisiro ibyapa biburira\nn'ibyapa byo gutambuka mbere bigomba\ngushyirwa mu ntera ikurikira y'ahantu\nhabyerekana:",
+    "text": "Ahatari mu nsisiro ibyapa biburira n'ibyapa byo gutambuka mbere bigomba gushyirwa mu ntera ikurikira y'ahantu habyerekana:",
     "options": {
       "a": "metero 150 kugeza kuri 200",
       "b": "metero 100 kugeza kuri 150",
@@ -1028,7 +1028,7 @@
   },
   {
     "id": 80,
-    "text": "Inkombe z'inzira nyabagendwa cyangwa\nz'umuhanda zishobora kugaragazwa\nn'ibikoresho ngarurarumuri. Ibyo bikoresho\nbigomba gushyirwaho ku buryo abagenzi\nbabibona ku buryo bukurikira:",
+    "text": "Inkombe z'inzira nyabagendwa cyangwa z'umuhanda zishobora kugaragazwa n'ibikoresho ngarurarumuri. Ibyo bikoresho bigomba gushyirwaho ku buryo abagenzi babibona ku buryo bukurikira:",
     "options": {
       "a": "babona iburyo bwabo ibyibara ritukura cyangwa ibisa n'icunga rihishije",
       "b": "ibumoso babona iby'ibara ryera",
@@ -1041,7 +1041,7 @@
   },
   {
     "id": 81,
-    "text": "Ahatari mu nsisiro, umuyobozi wese ugenza\nikinyabiziga kimwe cyangwa ibinyabiziga\nbikomatanye bifite uburemere ntarengwa\nbwemewe burenga ibiro 3500 cyangwa bifite\nuburebure bwite burenga metero 10 agomba,\nkeretse iyo anyuze cyangwa agiye kunyura ku\nbindi binyabiziga, gusiga hagati y'ikinyabiziga\ncye n'iki muri imbere umwanya uhagije\nkugirango ibinyabiziga bimuhiseho bishobore\nkuhigobeka bidateje impanuka igihe bibaye\nngombwa ariko ibyo ntibikurikizwa mu bihe\nbikurikira:",
+    "text": "Ahatari mu nsisiro, umuyobozi wese ugenza ikinyabiziga kimwe cyangwa ibinyabiziga bikomatanye bifite uburemere ntarengwa bwemewe burenga ibiro 3500 cyangwa bifite uburebure bwite burenga metero 10 agomba, keretse iyo anyuze cyangwa agiye kunyura ku bindi binyabiziga, gusiga hagati y'ikinyabiziga cye n'iki muri imbere umwanya uhagije kugirango ibinyabiziga bimuhiseho bishobore kuhigobeka bidateje impanuka igihe bibaye ngombwa ariko ibyo ntibikurikizwa mu bihe bikurikira:",
     "options": {
       "a": "mu gihe ibigendera mu muhanda ari byinshi kimwe no mu duce tw'inzira nyabagendwa aho kunyuranaho bibujijwe",
       "b": "igihe ibigendera mu muhanda ari byinshi",
@@ -1054,7 +1054,7 @@
   },
   {
     "id": 82,
-    "text": "Ibiziga by'ibinyabiziga bigendeshwa na\nmoteri n'ibya velomoteri kimwe n'ibya\nromoruki zabyo bigomba kuba byambaye\ninziga zihagwa zifite amano n'ubujyakuzimu\nbutari munsi ya milimetero imwe ku migongo\nyabyo yose nubudodo bwabyo ntibugire ahantu\nna hamwe bugaragara kandi ntibugire aho\nbyacitse bikomeye mu mpande zabyo ariko\nibyo ntibikurikizwa ku binyabiziga bikurikira:",
+    "text": "Ibiziga by'ibinyabiziga bigendeshwa na moteri n'ibya velomoteri kimwe n'ibya romoruki zabyo bigomba kuba byambaye inziga zihagwa zifite amano n'ubujyakuzimu butari munsi ya milimetero imwe ku migongo yabyo yose nubudodo bwabyo ntibugire ahantu na hamwe bugaragara kandi ntibugire aho byacitse bikomeye mu mpande zabyo ariko ibyo ntibikurikizwa ku binyabiziga bikurikira:",
     "options": {
       "a": "m 1",
       "b": "m 2",
@@ -1067,7 +1067,7 @@
   },
   {
     "id": 83,
-    "text": "Icyapa cyerekana ahantu hagenewe\nguhagararwamo n'imodoka nini zagenewe\ngutwara abantu cyirangwa n'ubuso\nbw'amabara akurikira:",
+    "text": "Icyapa cyerekana ahantu hagenewe guhagararwamo n'imodoka nini zagenewe gutwara abantu cyirangwa n'ubuso bw'amabara akurikira:",
     "options": {
       "a": "ubururu",
       "b": "umweru",
@@ -1080,7 +1080,7 @@
   },
   {
     "id": 84,
-    "text": "Icyapa cyerekana ko inzira giteyeho mu\nntangiriro idakomeza kigaragazwa n'ikirango\n(ikimenyetso) cy'amabara akurikira:",
+    "text": "Icyapa cyerekana ko inzira giteyeho mu ntangiriro idakomeza kigaragazwa n'ikirango (ikimenyetso) cy'amabara akurikira:",
     "options": {
       "a": "umukara n'umutuku",
       "b": "umukara n'umweru",
@@ -1093,7 +1093,7 @@
   },
   {
     "id": 85,
-    "text": "Buri modoka yagenewe gutwara abantu,\nariko umubare wabo ntarengwa ukaba munsi\nya 6 umuyobozi abariwemo igomba kugira\nimikandara yo kurinda ibyago igenewe aba\nbakurikira:",
+    "text": "Buri modoka yagenewe gutwara abantu, ariko umubare wabo ntarengwa ukaba munsi ya 6 umuyobozi abariwemo igomba kugira imikandara yo kurinda ibyago igenewe aba bakurikira:",
     "options": {
       "a": "umuyobozi",
       "b": "umugenzi wicaye ku ntebe y'imbere",
@@ -1106,7 +1106,7 @@
   },
   {
     "id": 86,
-    "text": "Usibye ibinyabiziga by'ingabo z'Igihugu,\nIkinyabiziga kigendeshwa na moteri kiriho\nibyuma ntamenwa cyangwa ikindi cyose gituma\ngikoreshwa mu gutera cyangwa mu kwitabara\nntigishobora kugenda mu nzira nyabagendwa\nkidafite uruhushya rwihariye. Urwo ruhushya\nrutangwa naba bakurikira:",
+    "text": "Usibye ibinyabiziga by'ingabo z'Igihugu, Ikinyabiziga kigendeshwa na moteri kiriho ibyuma ntamenwa cyangwa ikindi cyose gituma gikoreshwa mu gutera cyangwa mu kwitabara ntigishobora kugenda mu nzira nyabagendwa kidafite uruhushya rwihariye. Urwo ruhushya rutangwa naba bakurikira:",
     "options": {
       "a": "police y'igihugu",
       "b": "minisitiri ushinzwe gutwara abantu n'ibintu",
@@ -1119,7 +1119,7 @@
   },
   {
     "id": 87,
-    "text": "Iyo umukumbi ugizwe n'amatungo\nmaremare arenze ane cyangwa amatungo\nmagufi arenze atandatu mu nzira nyabagendwa\niyo hatakibona neza kuburyo umuyobozi abona\nmuri m 200 ugomba kugaragazwa kuburyo\nbukurikira:",
+    "text": "Iyo umukumbi ugizwe n'amatungo maremare arenze ane cyangwa amatungo magufi arenze atandatu mu nzira nyabagendwa iyo hatakibona neza kuburyo umuyobozi abona muri m 200 ugomba kugaragazwa kuburyo bukurikira:",
     "options": {
       "a": "itara ry'urumuri rwera cyangwa rusa n'icunga rihishije imbere y'umukumbi",
       "b": "itara ry'urumuri rutukura cyangwaumuhondo ritwawe inyuma y'umukumbi",
@@ -1132,7 +1132,7 @@
   },
   {
     "id": 88,
-    "text": "Ibinyabiziga biherekeranyije mu butumwa\nntibishobora gutonda uburebure burenga\numurongo wa m 500. Iyi bibaye bityo\nibinyabiziga biherekeranye mu butumwa\nbishobora kugabanwamo amatsinda atonze\numurongo atarengeje m 50 z'uburebure kdi\nhagati yayo hakaba byibura m 50 ariko ibyo\nntibikurikizwa kubinyabiziga bikurikira:",
+    "text": "Ibinyabiziga biherekeranyije mu butumwa ntibishobora gutonda uburebure burenga umurongo wa m 500. Iyi bibaye bityo ibinyabiziga biherekeranye mu butumwa bishobora kugabanwamo amatsinda atonze umurongo atarengeje m 50 z'uburebure kdi hagati yayo hakaba byibura m 50 ariko ibyo ntibikurikizwa kubinyabiziga bikurikira:",
     "options": {
       "a": "ibinyabiziga bya police biherekeranyije",
       "b": "ibinyabiziga by'abasirikare biherekeranyije mu nsisiro",
@@ -1145,7 +1145,7 @@
   },
   {
     "id": 89,
-    "text": "Iyo ikinyabiziga gikururwa n'inyamaswa\nnacyo gikuruye ikindi uburebure\nbw'ibikururwa bukaba burenga m 18\nhatabariwemo icyo kinyabiziga cya mbere\nkiziritseho hagomba ibi bikurikira:",
+    "text": "Iyo ikinyabiziga gikururwa n'inyamaswa nacyo gikuruye ikindi uburebure bw'ibikururwa bukaba burenga m 18 hatabariwemo icyo kinyabiziga cya mbere kiziritseho hagomba ibi bikurikira:",
     "options": {
       "a": "umuherekeza w'ikinyabiziga cya kabiri",
       "b": "abaherekeza babiri",
@@ -1158,7 +1158,7 @@
   },
   {
     "id": 90,
-    "text": "Ibinyabiziga bikurikira ntibitegetswe\nkugira ibimenyetso bibyerekana iyo\nbyambukiranya umuhanda cyangwa bigenda\nku ruhande rwawo:",
+    "text": "Ibinyabiziga bikurikira ntibitegetswe kugira ibimenyetso bibyerekana iyo byambukiranya umuhanda cyangwa bigenda ku ruhande rwawo:",
     "options": {
       "a": "ibinyabiziga bigendwamo n'abana",
       "b": "ibinyabiziga bigendwamo n'abamugaye",
@@ -1171,7 +1171,7 @@
   },
   {
     "id": 91,
-    "text": "Icyapa cy'inyongera kigaragaza ikibanza\ncy'ingando cyangwa cy'abantu benshi\nbagendera ku nyamaswa kirangwa n'amabara\nakurikira:",
+    "text": "Icyapa cy'inyongera kigaragaza ikibanza cy'ingando cyangwa cy'abantu benshi bagendera ku nyamaswa kirangwa n'amabara akurikira:",
     "options": {
       "a": "ubururu, umweru n'umukara",
       "b": "umukara umweru n'umuhondo",
@@ -1184,7 +1184,7 @@
   },
   {
     "id": 92,
-    "text": "Icyapa cyerekana ahantu  amategeko y'\nUmuhanda urombeje w'ibice byinshi atangirira\ngukurikizwa,  kirangwa n'ibirango\n(ibimenyetso) by'amabara akurikira:",
+    "text": "Icyapa cyerekana ahantu amategeko y' Umuhanda urombeje w'ibice byinshi atangirira gukurikizwa, kirangwa n'ibirango (ibimenyetso) by'amabara akurikira:",
     "options": {
       "a": "umweru n'umukara",
       "b": "umweru n'umutuku",
@@ -1197,7 +1197,7 @@
   },
   {
     "id": 93,
-    "text": "Igihe ikorwa ry'imirimo ribangamiye\ncyane cyangwa buke uburyo bwo kugenda mu\nnzira nyabagendwa, ahakorerwa imirimo\nhagaragazwa ku buryo bukurikira:",
+    "text": "Igihe ikorwa ry'imirimo ribangamiye cyane cyangwa buke uburyo bwo kugenda mu nzira nyabagendwa, ahakorerwa imirimo hagaragazwa ku buryo bukurikira:",
     "options": {
       "a": "icyapa cyera cya mpande enye, zingana zifite uruhande rwa metero 0.30",
       "b": "uruzitiro ruri ku mpera y'iburyo",
@@ -1210,7 +1210,7 @@
   },
   {
     "id": 94,
-    "text": "Iyo mu muhanda, imirimo yihariye\nubugari butuma abayobozi bagomba kuva mu\nmwanya wabo usanzwe kugirango bakomeze\nurugendo, ahategetswe kunyurwa hagaragazwa\nn'ikimenyetso gishyirwa aho imirimo irangirira\nmu ruhande rugenderwamo. Icyo kimenyetso\nkirangwa n'amabara akurikira:",
+    "text": "Iyo mu muhanda, imirimo yihariye ubugari butuma abayobozi bagomba kuva mu mwanya wabo usanzwe kugirango bakomeze urugendo, ahategetswe kunyurwa hagaragazwa n'ikimenyetso gishyirwa aho imirimo irangirira mu ruhande rugenderwamo. Icyo kimenyetso kirangwa n'amabara akurikira:",
     "options": {
       "a": "ubuso bw'ubururu ikirango cy'umweru",
       "b": "umuzenguruko w'umutuku, ubuso umweru n'ikirango cy'umukara",
@@ -1223,7 +1223,7 @@
   },
   {
     "id": 95,
-    "text": "Icyapa cyerekana ko hari amabwiriza\nyihariye mu buryo bwo kugendera mu cyambu\ncyangwa ku kibuga cy'indege giteye ku buryo\nbukurikira:",
+    "text": "Icyapa cyerekana ko hari amabwiriza yihariye mu buryo bwo kugendera mu cyambu cyangwa ku kibuga cy'indege giteye ku buryo bukurikira:",
     "options": {
       "a": "ishusho mpandeshatu, ubuso mu ibara ryera, ikirango mu ibara ry'umukara",
       "b": "ishusho mpandenye, ubuso mu ibara ry'ubururu n'ikirango kiri mu ibara ryera",
@@ -1236,7 +1236,7 @@
   },
   {
     "id": 96,
-    "text": "Nijoro igihe ijuru rikeye, itara ribonesha\nicyapa kiranga numero y'ikinyabiziga rigomba\ngutuma izo numero zisomerwa nibura mu ntera\nikurikira:",
+    "text": "Nijoro igihe ijuru rikeye, itara ribonesha icyapa kiranga numero y'ikinyabiziga rigomba gutuma izo numero zisomerwa nibura mu ntera ikurikira:",
     "options": {
       "a": "m150",
       "b": "m50",
@@ -1249,7 +1249,7 @@
   },
   {
     "id": 97,
-    "text": "Ibyapa byerekana icyago cyidahoraho\nkandi bigenewe kwerekana aho bagana\ncyangwa aho berekeza  umuhanda nk'igihe\ncy'impanuka cyangwa hari imirimo ikorwa mu\nmuhanda birangwa n'amabara akurikira:",
+    "text": "Ibyapa byerekana icyago cyidahoraho kandi bigenewe kwerekana aho bagana cyangwa aho berekeza umuhanda nk'igihe cy'impanuka cyangwa hari imirimo ikorwa mu muhanda birangwa n'amabara akurikira:",
     "options": {
       "a": "umweru n'umukara",
       "b": "umweru n'umuhondo",
@@ -1262,7 +1262,7 @@
   },
   {
     "id": 98,
-    "text": "Birabujijwe kubangamira imigendere\nisanzwe y'ibindi binyabiziga kubera ibi\nbikurikira:",
+    "text": "Birabujijwe kubangamira imigendere isanzwe y'ibindi binyabiziga kubera ibi bikurikira:",
     "options": {
       "a": "kugabanya umuvuduko kuburyo budasanzwe",
       "b": "gukacira feri bidatewe no kwirinda ibyago",
@@ -1275,7 +1275,7 @@
   },
   {
     "id": 99,
-    "text": "Iyo kuva bwije kugeza bukeye cyangwa\nbitewe n'uko ibihe bimeze bitagishoboka\nkubona neza muri m 200, mu nzira\nnyabagendwa, romoruki iziritse kuri\nvelomoteri cyangwa ipikipiki idafite\nakanyabiziga ku ruhande, uretse velomoteri\nidafite umuyobozi, kandi uburumbarare\nbwayo, cyangwa bw'ibyo yikoreye bukaba\nbutuma itara ry'ikinyabiziga biyikurura\nritagaragara, iyo romoruki igaragazwa ku\nburyo bukurikira:",
+    "text": "Iyo kuva bwije kugeza bukeye cyangwa bitewe n'uko ibihe bimeze bitagishoboka kubona neza muri m 200, mu nzira nyabagendwa, romoruki iziritse kuri velomoteri cyangwa ipikipiki idafite akanyabiziga ku ruhande, uretse velomoteri idafite umuyobozi, kandi uburumbarare bwayo, cyangwa bw'ibyo yikoreye bukaba butuma itara ry'ikinyabiziga biyikurura ritagaragara, iyo romoruki igaragazwa ku buryo bukurikira:",
     "options": {
       "a": "itara ryera riri kuri romoruki inyuma",
       "b": "itara ry'umuhondo riri kuri romoruki inyuma",
@@ -1288,7 +1288,7 @@
   },
   {
     "id": 100,
-    "text": "Amatara maremare y'ikinyabiziga agomba\nkuzimwa mu bihe bikurikira:",
+    "text": "Amatara maremare y'ikinyabiziga agomba kuzimwa mu bihe bikurikira:",
     "options": {
       "a": "iyo umuhanda umurikiwe hose kandi umuyobozi ashobora kubona nibura mu ntera ingana na metero 200",
       "b": "iyo ikinyabiziga gikurikiye mu ntambwe zitagera muri m100 keretse iyo umuyobozi wacyo ashaka kunyura kucyo akurikiye acana azimya vuba vuba amatara maremare",
@@ -1301,7 +1301,7 @@
   },
   {
     "id": 101,
-    "text": "Iyo akanyabiziga gasunikwa cyangwa ibyo\ngatwaye bidatuma umuyobozi abona neza\nimbere ye, uwo muyobozi agomba gukora ibi\nbikurikira:",
+    "text": "Iyo akanyabiziga gasunikwa cyangwa ibyo gatwaye bidatuma umuyobozi abona neza imbere ye, uwo muyobozi agomba gukora ibi bikurikira:",
     "options": {
       "a": "gushaka umuherekeza",
       "b": "gukurura ikinyabiziga cye",
@@ -1314,7 +1314,7 @@
   },
   {
     "id": 102,
-    "text": "Uretse igihe hari amategeko yihariye\nakurikizwa muri ako karere cyangwa\nimitunganyirize bwite y'aho, ikinyabiziga cyose\ncyangwa inyamaswa ihagaze umwanya muto\ncyangwa munini igomba kuba iri aha\nhakurikira:",
+    "text": "Uretse igihe hari amategeko yihariye akurikizwa muri ako karere cyangwa imitunganyirize bwite y'aho, ikinyabiziga cyose cyangwa inyamaswa ihagaze umwanya muto cyangwa munini igomba kuba iri aha hakurikira:",
     "options": {
       "a": "mu kaboko k'iburyo hakurikijwe aho yaganaga uretse igihe ari mu muhanda w'icyerekezo kimwe",
       "b": "ahegereye bishobotse akayira k'abanyamaguru iyo umuhanda ugafite ariko umwanya w'ibiziga n'akayira ntube urenga santimetero 50",
@@ -1327,7 +1327,7 @@
   },
   {
     "id": 103,
-    "text": "Iyo ikinyabiziga gihagaritswe n'ijoro ku\nburyo abayobozi bakigana badashobora\nkumenya ko kibabereye imbogamizi, kigomba\nkurangirwa kure n'ikimenyetso cyabigenewe\nkiri ahantu hagaragara kugirango kiburire\nhakiri kare abandi bayobozi baza bagisanga,\nariko ntibireba ibinyabiziga bikurikira:",
+    "text": "Iyo ikinyabiziga gihagaritswe n'ijoro ku buryo abayobozi bakigana badashobora kumenya ko kibabereye imbogamizi, kigomba kurangirwa kure n'ikimenyetso cyabigenewe kiri ahantu hagaragara kugirango kiburire hakiri kare abandi bayobozi baza bagisanga, ariko ntibireba ibinyabiziga bikurikira:",
     "options": {
       "a": "velomoteri",
       "b": "ipikipiki idafite akanyabiziga ku ruhande",
@@ -1340,7 +1340,7 @@
   },
   {
     "id": 104,
-    "text": "Abanyamaguru batatanye cyangwa bagize\nudutsiko tudafatanyije gahunda kdi\nbatanayobowe n'umwarimu bategetswe\nkunyura mu tuyira turi ku mpande\nz'umuhanda no ku nkengero zigiye hejuru\nuretse ubutaka butsindagiye butandukanya\nimihanda ibiri bwo kunyurwamo gusa n'aba\nbakurikira:",
+    "text": "Abanyamaguru batatanye cyangwa bagize udutsiko tudafatanyije gahunda kdi batanayobowe n'umwarimu bategetswe kunyura mu tuyira turi ku mpande z'umuhanda no ku nkengero zigiye hejuru uretse ubutaka butsindagiye butandukanya imihanda ibiri bwo kunyurwamo gusa n'aba bakurikira:",
     "options": {
       "a": "abanyamaguru bashaka guhagarara akanya gato igihe bambukiranya umuhanda",
       "b": "abanyamaguru bagize udutsiko tw'abantu benshi",
@@ -1353,7 +1353,7 @@
   },
   {
     "id": 105,
-    "text": "Ibinyabiziga biherekeranyije mu butumwa\nntibishobora gutonda uburebure burenga\numurongo wa m 500, iyo bibaye bityo\nibinyabiziga biherekeranyije mu butumwa\nbishobora kugabanywamo amatsinda atonze\numurongo utarengeje ibipimo bikurikira:",
+    "text": "Ibinyabiziga biherekeranyije mu butumwa ntibishobora gutonda uburebure burenga umurongo wa m 500, iyo bibaye bityo ibinyabiziga biherekeranyije mu butumwa bishobora kugabanywamo amatsinda atonze umurongo utarengeje ibipimo bikurikira:",
     "options": {
       "a": "utarengeje m50",
       "b": "utarengeje m100",
@@ -1366,7 +1366,7 @@
   },
   {
     "id": 106,
-    "text": "Ibyapa byereka inkomane y'inzira\nnyabagendwa n'inzira ya gariyamoshi bigomba\niteka kumurikwa cyangwa kugarura urumuri\nku buryo bigaragarira nibura mu ntera\nikurikira igihe ijuru rikeye:",
+    "text": "Ibyapa byereka inkomane y'inzira nyabagendwa n'inzira ya gariyamoshi bigomba iteka kumurikwa cyangwa kugarura urumuri ku buryo bigaragarira nibura mu ntera ikurikira igihe ijuru rikeye:",
     "options": {
       "a": "m200",
       "b": "m 250",
@@ -1379,7 +1379,7 @@
   },
   {
     "id": 107,
-    "text": "Imbibi ziri ku mpera z'ubwihugiko\nbw'abanyamaguru kandi ziri mu muhanda\nkimwe n'imbibi n'ibindi bikoresho bigenewe\ngutuma bagenda mu muhanda nta muvundo\nzisigwa irangi ry'ibara rikurikira:",
+    "text": "Imbibi ziri ku mpera z'ubwihugiko bw'abanyamaguru kandi ziri mu muhanda kimwe n'imbibi n'ibindi bikoresho bigenewe gutuma bagenda mu muhanda nta muvundo zisigwa irangi ry'ibara rikurikira:",
     "options": {
       "a": "irangi ry'umuhondo ngarurarumuri",
       "b": "irangi ry'umweru ngarurarumuri",
@@ -1392,7 +1392,7 @@
   },
   {
     "id": 108,
-    "text": "Kugirango ikinyabiziga kive ahantu hari\nurwondo cyangwa hanyerera bidasanzwe\nhashobora gukoreshwa uburyo bukurikira:",
+    "text": "Kugirango ikinyabiziga kive ahantu hari urwondo cyangwa hanyerera bidasanzwe hashobora gukoreshwa uburyo bukurikira:",
     "options": {
       "a": "inziga zishobora gushyirwaho udushyundu",
       "b": "inziga zishobora gushyirwaho iminyururu irwanya ubunyerere",
@@ -1405,7 +1405,7 @@
   },
   {
     "id": 109,
-    "text": "Iyo imizigo igizwe n'ibinyampeke, ikawa,\namakara, ubwatsi bw'amatungo\nbidahambiriye, ubugari bwayo bushobora\nkugera kuri m2 na cm75 ariko iyo iyo mizigo\nijyanwa mu karere katarenga km25 uvuye aho\nyapakiriwe, usibye mu nsisiro, ubugari bwayo\nbushobora kugera ku bipimo bikurikira:",
+    "text": "Iyo imizigo igizwe n'ibinyampeke, ikawa, amakara, ubwatsi bw'amatungo bidahambiriye, ubugari bwayo bushobora kugera kuri m2 na cm75 ariko iyo iyo mizigo ijyanwa mu karere katarenga km25 uvuye aho yapakiriwe, usibye mu nsisiro, ubugari bwayo bushobora kugera ku bipimo bikurikira:",
     "options": {
       "a": "m4",
       "b": "m3 na cm50",
@@ -1418,7 +1418,7 @@
   },
   {
     "id": 110,
-    "text": "Mu mujyi no ku mihanda y'igihugu\nigenwa na minisitiri ushinzwe gutwara abantu\nn'ibintu, ubwikorere ntarengwa ku ikamyo iyo\nariyo yose ntibushobora kurenga ibipimo\nbikurikira:",
+    "text": "Mu mujyi no ku mihanda y'igihugu igenwa na minisitiri ushinzwe gutwara abantu n'ibintu, ubwikorere ntarengwa ku ikamyo iyo ariyo yose ntibushobora kurenga ibipimo bikurikira:",
     "options": {
       "a": "toni 10",
       "b": "toni 16",
@@ -1431,7 +1431,7 @@
   },
   {
     "id": 111,
-    "text": "Iyo bitewe n'imiterere y'ahantu intera\nitandukanya icyapa n'ahantu habi iri munsi ya\nm150 ku buryo bugaragara, iyo ntera\nyerekanishwa icyapa cy'inyongera giteye ku\nburyo bukurikira:",
+    "text": "Iyo bitewe n'imiterere y'ahantu intera itandukanya icyapa n'ahantu habi iri munsi ya m150 ku buryo bugaragara, iyo ntera yerekanishwa icyapa cy'inyongera giteye ku buryo bukurikira:",
     "options": {
       "a": "kare ifite ubuso bw'ibara ryera",
       "b": "urukiramende rufite ubuso bw'ibara ryera",
@@ -1444,7 +1444,7 @@
   },
   {
     "id": 112,
-    "text": "Nijoro, amatara yo kubisikana y'ibara\nryera cyangwa y'umuhondo agomba, igihe\nijoro rikeye kumurika mu muhanda nibura mu\nntera ikurikira:",
+    "text": "Nijoro, amatara yo kubisikana y'ibara ryera cyangwa y'umuhondo agomba, igihe ijoro rikeye kumurika mu muhanda nibura mu ntera ikurikira:",
     "options": {
       "a": "m100",
       "b": "m50",
@@ -1457,7 +1457,7 @@
   },
   {
     "id": 113,
-    "text": "Ikintu cyose cyatuma hahindurwa\nibyanditse bireba nyirikarita cyangwa ibiranga\nikinyabiziga kigomba kumenyeshwa ibiro\nby'umusoro haba mu magambo cyangwa mu\nibaruwa ishinganye ibyo bikorwa mu gihe\nkingana gute:",
+    "text": "Ikintu cyose cyatuma hahindurwa ibyanditse bireba nyirikarita cyangwa ibiranga ikinyabiziga kigomba kumenyeshwa ibiro by'umusoro haba mu magambo cyangwa mu ibaruwa ishinganye ibyo bikorwa mu gihe kingana gute:",
     "options": {
       "a": "mu mezi 2",
       "b": "mu kwezi kumwe",
@@ -1470,7 +1470,7 @@
   },
   {
     "id": 114,
-    "text": "Kugirango berekane ahantu habi cyane,\nhakoreshwa ikimenyetso cy'itara ry'umuhondo\nrimyasa,  rivuga uburenganzira bwo\ngutambuka icyo kimenyetso barushijeho\nkwitonda. Ese icyo kimenyetso gihindura iki ku\nmategeko agenga gutambuka mbere:",
+    "text": "Kugirango berekane ahantu habi cyane, hakoreshwa ikimenyetso cy'itara ry'umuhondo rimyasa, rivuga uburenganzira bwo gutambuka icyo kimenyetso barushijeho kwitonda. Ese icyo kimenyetso gihindura iki ku mategeko agenga gutambuka mbere:",
     "options": {
       "a": "ntacyo gihindura",
       "b": "abo rireba nibo batambuka mbere",
@@ -1483,7 +1483,7 @@
   },
   {
     "id": 115,
-    "text": "Romoruki zifite ubugari ntarengwa bwa\nsentimetero 80 zishobora gushyirwaho\nakagarurarumuri kamwe gusa iyo zikuruwe\nn'ibinyabiziga bikurikira:",
+    "text": "Romoruki zifite ubugari ntarengwa bwa sentimetero 80 zishobora gushyirwaho akagarurarumuri kamwe gusa iyo zikuruwe n'ibinyabiziga bikurikira:",
     "options": {
       "a": "velomoteri",
       "b": "ipikipiki ifite akanyabiziga kuruhande",
@@ -1496,7 +1496,7 @@
   },
   {
     "id": 116,
-    "text": "Amatara maremare y'ibara ryera cyangwa\nry'umuhondo agomba nijoro igihe ijuru rikeye\nkumurika mu ntera ikurikira ku binyabiziga\nbifite moteri itarengeje ingufu zigera kuri\nsentimetero kibe 125",
+    "text": "Amatara maremare y'ibara ryera cyangwa ry'umuhondo agomba nijoro igihe ijuru rikeye kumurika mu ntera ikurikira ku binyabiziga bifite moteri itarengeje ingufu zigera kuri sentimetero kibe 125",
     "options": {
       "a": "m100",
       "b": "m75",
@@ -1509,7 +1509,7 @@
   },
   {
     "id": 117,
-    "text": "Iyo kuva bwije kugeza bukeye cyangwa\nbitewe n'uko ibintu bimeze bitagishoboka\nkubona muri m 200, ibinyabiziga cyangwa\nimitwaro bifite ubugari burenga m 2.50 iyo\nbigenda mu nzira nyabagendwa bigaragazwa\nku buryo bukurikira:",
+    "text": "Iyo kuva bwije kugeza bukeye cyangwa bitewe n'uko ibintu bimeze bitagishoboka kubona muri m 200, ibinyabiziga cyangwa imitwaro bifite ubugari burenga m 2.50 iyo bigenda mu nzira nyabagendwa bigaragazwa ku buryo bukurikira:",
     "options": {
       "a": "inyuma ni amatara abiri atukura",
       "b": "iyo bibaye ngombwa no ku mpera y'amabondo y'ikinyabiziga cyangwa y'imitwaro ni itara ndangaburumbarare risa n'icunga rihishije cyangwa ry'umuhondo",
@@ -1522,7 +1522,7 @@
   },
   {
     "id": 118,
-    "text": "Igice cy'umuhanda kiri hakurya\ny'umurongo mugari wera udacagaguye\nugaragaza inkombe mpimbano y'umuhanda\nkiba kigenewe ibi bikurikira:",
+    "text": "Igice cy'umuhanda kiri hakurya y'umurongo mugari wera udacagaguye ugaragaza inkombe mpimbano y'umuhanda kiba kigenewe ibi bikurikira:",
     "options": {
       "a": "guhagararwamo umwanya muto gusa",
       "b": "guhagararwamo umwanya muto n'umunini ndetse no kumihanda irombereje y'ibisate byinshi n'imihanda y'imodoka",
@@ -1535,7 +1535,7 @@
   },
   {
     "id": 119,
-    "text": "Iminyururu n'ibindi byuma bifashisha\nbishobora kuvanwaho cyangwa binagana,\nhatabariwemo ibimenyetso byerekana\nibyerekezo bigomba gutungurwa ku\nkinyabiziga ku buryo igihe byizunguza\nbitarenga impande zihera uburumbarare\nbw'ikinyabiziga kandi ibyo byuma bifashisha\nntibigomba gukururuka ku butaka ariko ibyo\nntibibujijwe ku binyabiziga bikurikira:",
+    "text": "Iminyururu n'ibindi byuma bifashisha bishobora kuvanwaho cyangwa binagana, hatabariwemo ibimenyetso byerekana ibyerekezo bigomba gutungurwa ku kinyabiziga ku buryo igihe byizunguza bitarenga impande zihera uburumbarare bw'ikinyabiziga kandi ibyo byuma bifashisha ntibigomba gukururuka ku butaka ariko ibyo ntibibujijwe ku binyabiziga bikurikira:",
     "options": {
       "a": "imashini zihinga",
       "b": "ibinyabiziga bitwaye ibintu bidashobora gufata inkongi",
@@ -1548,7 +1548,7 @@
   },
   {
     "id": 120,
-    "text": "Ku binyabiziga cyangwa ibinyabiziga\nbikururana igice kirenga ku biziga\nntigishobora kurenga ibipimo bikurikira:",
+    "text": "Ku binyabiziga cyangwa ibinyabiziga bikururana igice kirenga ku biziga ntigishobora kurenga ibipimo bikurikira:",
     "options": {
       "a": "iby'inyuma : m3",
       "b": "iby'imbere: m2.70",
@@ -1561,7 +1561,7 @@
   },
   {
     "id": 121,
-    "text": "Uretse bibonewe uruhushya, ubundi\nbirabujijwe gushyira no gukomeza kugendesha\nimodoka cyangwa romoruki mu nzira\nnyabagendwa iyo uburemere bw'ibyikorewe\nburenze uburemere ntarengwa bwemewe\nn'ikarita iranga ikinyabiziga ariko ibyo\nntibikurikizwa ku binyabiziga bikurikira:",
+    "text": "Uretse bibonewe uruhushya, ubundi birabujijwe gushyira no gukomeza kugendesha imodoka cyangwa romoruki mu nzira nyabagendwa iyo uburemere bw'ibyikorewe burenze uburemere ntarengwa bwemewe n'ikarita iranga ikinyabiziga ariko ibyo ntibikurikizwa ku binyabiziga bikurikira:",
     "options": {
       "a": "ibinyabiziga bya police",
       "b": "ibinyabiziga bihinga",
@@ -1574,7 +1574,7 @@
   },
   {
     "id": 122,
-    "text": "Gushyira mu muhanda ku buryo\nbudasanzwe ibinyabiziga bikururana birenze\nbitatu bigomba gutangirwa uruhusa, uretse\nimashini ihinga iyo zigenda uregendo rutarenze\nkm 25, ibinyabiziga bikururana bitwaye\nibyamamazwa n'ibindi biteganwa n'iri teka\nariko igiteranyo cy'uburebure bw'ibyo\nbinyabiziga bikururana ntigishobora kurenga\nibipimo bikurikira:",
+    "text": "Gushyira mu muhanda ku buryo budasanzwe ibinyabiziga bikururana birenze bitatu bigomba gutangirwa uruhusa, uretse imashini ihinga iyo zigenda uregendo rutarenze km 25, ibinyabiziga bikururana bitwaye ibyamamazwa n'ibindi biteganwa n'iri teka ariko igiteranyo cy'uburebure bw'ibyo binyabiziga bikururana ntigishobora kurenga ibipimo bikurikira:",
     "options": {
       "a": "m50",
       "b": "m35",
@@ -1587,7 +1587,7 @@
   },
   {
     "id": 123,
-    "text": "Ibinyamitende itatu bifite moteri bigomba\nkugira amatara akurikira:",
+    "text": "Ibinyamitende itatu bifite moteri bigomba kugira amatara akurikira:",
     "options": {
       "a": "amatara abiri ndangambere n'amatara abiri ndanganyuma yerekana ko ikinyabiziga gihagaze",
       "b": "utugarurarumuri tubiri",
@@ -1600,7 +1600,7 @@
   },
   {
     "id": 124,
-    "text": "Ibyapa bibuza n'ibitegeka bikurikizwa\ngusa aha hakurikira:",
+    "text": "Ibyapa bibuza n'ibitegeka bikurikizwa gusa aha hakurikira:",
     "options": {
       "a": "mu masangano",
       "b": "mu gice cy'inzira nyabagendwa kiri hagati yaho bishinze n'inkomane ikurikiyeho ku ruhande rw'inzira bishinzeho",
@@ -1613,7 +1613,7 @@
   },
   {
     "id": 125,
-    "text": "Icyapa cy'inyongera kerekana aho\nbagobokera ibinyabiziga kirangwa n'amabara\nakurikira:",
+    "text": "Icyapa cy'inyongera kerekana aho bagobokera ibinyabiziga kirangwa n'amabara akurikira:",
     "options": {
       "a": "ubururu, umweru, umutuku",
       "b": "umweru, umukara, ubururu",
@@ -1626,7 +1626,7 @@
   },
   {
     "id": 126,
-    "text": "Icyapa cyerekana uburebure bw'igice\ncyatera ibyago cyangwa bw'ahantu amabwiriza\ny'icyo cyapa agomba gukurikizwa kirangwa\nn'ubuso n'ibimenyetso bikurikira:",
+    "text": "Icyapa cyerekana uburebure bw'igice cyatera ibyago cyangwa bw'ahantu amabwiriza y'icyo cyapa agomba gukurikizwa kirangwa n'ubuso n'ibimenyetso bikurikira:",
     "options": {
       "a": "ubuso umweru, ikimenyetso ubururu",
       "b": "ubuso ubururu, ikimenyetso umweru",
@@ -1639,7 +1639,7 @@
   },
   {
     "id": 127,
-    "text": "Umurongo w'umuhondo ucagaguye uciye\nku nkombe nyayo y'umuhanda, umusezero\nw'inzira y'abanyamaguru cyangwa\nw'inkengero y'umuhanda yegutse uvuga ibi\nbikurikira:",
+    "text": "Umurongo w'umuhondo ucagaguye uciye ku nkombe nyayo y'umuhanda, umusezero w'inzira y'abanyamaguru cyangwa w'inkengero y'umuhanda yegutse uvuga ibi bikurikira:",
     "options": {
       "a": "guhagarara umwanya muto birabujijwe ku burebure bw'uwo murongo",
       "b": "guhagarara umwanya muto n'umunini birabujijwe ku burebure bw'uwo murongo",
@@ -1652,7 +1652,7 @@
   },
   {
     "id": 128,
-    "text": "Ku binyabiziga cyangwa ibinyabiziga\nbikururana igice kirenga ku biziga\nntigishobora kurenga ibipimo bikurikira:",
+    "text": "Ku binyabiziga cyangwa ibinyabiziga bikururana igice kirenga ku biziga ntigishobora kurenga ibipimo bikurikira:",
     "options": {
       "a": "iby'inyuma m 3.40",
       "b": "iby'imbere m 2.50",
@@ -1665,7 +1665,7 @@
   },
   {
     "id": 129,
-    "text": "Mu migi no ku yindi mihanda y'igihugu\nigenwa na minisitiri ushinzwe gutwara abantu\nn'ibintu uburebure ntarengwa kuri buri\nmitambiko 3 ifungwaho ibiziga bine ni:",
+    "text": "Mu migi no ku yindi mihanda y'igihugu igenwa na minisitiri ushinzwe gutwara abantu n'ibintu uburebure ntarengwa kuri buri mitambiko 3 ifungwaho ibiziga bine ni:",
     "options": {
       "a": "toni 24",
       "b": "toni 10",
@@ -1678,7 +1678,7 @@
   },
   {
     "id": 130,
-    "text": "Iyo hagati y'uruhande rw'imbere rwa\nromoruki n'uruhande rw'inyuma\nrw'ikinyabiziga kiyikurura hari umwanya\nurenze m 3 ikibizirikanyije kigomba\nkugaragazwa ku buryo bukurikira iyo amatara\ny'ikinyabiziga agomba gucanwa:",
+    "text": "Iyo hagati y'uruhande rw'imbere rwa romoruki n'uruhande rw'inyuma rw'ikinyabiziga kiyikurura hari umwanya urenze m 3 ikibizirikanyije kigomba kugaragazwa ku buryo bukurikira iyo amatara y'ikinyabiziga agomba gucanwa:",
     "options": {
       "a": "agatambaro gatukura gafite nibura cm 50 z'uruhande",
       "b": "itara risa n'icunga rihishije rigaragara mu mbavu igihe ikibizirikanyije kimuritswe",
@@ -1691,7 +1691,7 @@
   },
   {
     "id": 131,
-    "text": "Itara ryo guhagarara ry'ibara ritukura\nrigomba kuba ridahumisha, kandi rigomba\nkugaragarira mu ntera ikurikira:",
+    "text": "Itara ryo guhagarara ry'ibara ritukura rigomba kuba ridahumisha, kandi rigomba kugaragarira mu ntera ikurikira:",
     "options": {
       "a": "nijoro igihe ijuru rikeye nibura muri m 200",
       "b": "ku manywa igihe cy'umucyo  nibura muri m50",
@@ -1704,7 +1704,7 @@
   },
   {
     "id": 132,
-    "text": "Birabujijwe kongera ku mpande\nz'ikinyabiziga kigendeshwa na moteri cyangwa\nvelomoteri ibi bikurikira:",
+    "text": "Birabujijwe kongera ku mpande z'ikinyabiziga kigendeshwa na moteri cyangwa velomoteri ibi bikurikira:",
     "options": {
       "a": "imitako",
       "b": "ibintu bifite imigongo cyangwa ibirenga ku mubyimba kandi bishobora gutera ibyago abandi bagenzi",
@@ -1717,7 +1717,7 @@
   },
   {
     "id": 133,
-    "text": "Ikintu cyose cyatuma hahindurwa\nibyanditswe bireba nyirikarita cyangwa\nibiranga ikinyabiziga kigomba kumenyeshwa\nibiro by'imisoro haba mu magambo cyangwa\nmu ibaruwa ishinganye. Ibyo bikorwa mu gihe\nkingana gute:",
+    "text": "Ikintu cyose cyatuma hahindurwa ibyanditswe bireba nyirikarita cyangwa ibiranga ikinyabiziga kigomba kumenyeshwa ibiro by'imisoro haba mu magambo cyangwa mu ibaruwa ishinganye. Ibyo bikorwa mu gihe kingana gute:",
     "options": {
       "a": "mu minsi 5",
       "b": "mu minsi 8",
@@ -1743,7 +1743,7 @@
   },
   {
     "id": 135,
-    "text": "Iyo ubugari bw'inzira nyabagendwa\nigenderwamo n'ibinyabiziga budahagije\nkugirango bibisikane nta nkomyi abagenzi\nbategetswe:",
+    "text": "Iyo ubugari bw'inzira nyabagendwa igenderwamo n'ibinyabiziga budahagije kugirango bibisikane nta nkomyi abagenzi bategetswe:",
     "options": {
       "a": "kunyura mu nzira z'impande z'abanyamaguru",
       "b": "guhagarara aho bageze",
@@ -1756,7 +1756,7 @@
   },
   {
     "id": 136,
-    "text": "Umuyobozi ugenda mu muhanda igihe\nubugari bwawo budatuma anyuranaho nta\nnkomyi ashobora kunyura mu kayira\nk'abanyamaguru ariko amaze kureba ibi\nbikurikira:",
+    "text": "Umuyobozi ugenda mu muhanda igihe ubugari bwawo budatuma anyuranaho nta nkomyi ashobora kunyura mu kayira k'abanyamaguru ariko amaze kureba ibi bikurikira:",
     "options": {
       "a": "umuvuduko w'abanyamaguru",
       "b": "ubugari bw'umuhanda",
@@ -1769,7 +1769,7 @@
   },
   {
     "id": 137,
-    "text": "Icyapa cyerekana umuvuduko ntarengwa\nikinyabiziga kitagomba kurenza gishyirwa ku\nbinyabiziga bifite uburebure ntarengwa\nbukurikira:",
+    "text": "Icyapa cyerekana umuvuduko ntarengwa ikinyabiziga kitagomba kurenza gishyirwa ku binyabiziga bifite uburebure ntarengwa bukurikira:",
     "options": {
       "a": "burenga toni 1",
       "b": "burenga toni 2",
@@ -1782,7 +1782,7 @@
   },
   {
     "id": 138,
-    "text": "Iyo nta mategeko awugabanya\nby'umwihariko, umuvuduko ntarengwa\nw'amapikipiki mu isaha ni:",
+    "text": "Iyo nta mategeko awugabanya by'umwihariko, umuvuduko ntarengwa w'amapikipiki mu isaha ni:",
     "options": {
       "a": "km 25",
       "b": "km 70",
@@ -1795,7 +1795,7 @@
   },
   {
     "id": 139,
-    "text": "Ahatari mu nsisiro umuvuduko ntarengwa\nwa velomoteri mu isaha ni:",
+    "text": "Ahatari mu nsisiro umuvuduko ntarengwa wa velomoteri mu isaha ni:",
     "options": {
       "a": "km 50",
       "b": "km 40",
@@ -1808,7 +1808,7 @@
   },
   {
     "id": 140,
-    "text": "Birabujijwe guhagarara akanya kanini\naha hakurikira:",
+    "text": "Birabujijwe guhagarara akanya kanini aha hakurikira:",
     "options": {
       "a": "mu duhanda tw'abanyamagare",
       "b": "mu duhanda twagenewe velomoteri",
@@ -1821,7 +1821,7 @@
   },
   {
     "id": 141,
-    "text": "Amatara maremare y'ikinyabiziga agomba\nkutamurika mu bihe bikurikira:",
+    "text": "Amatara maremare y'ikinyabiziga agomba kutamurika mu bihe bikurikira:",
     "options": {
       "a": "iyo umuhanda umurikiwe umuyobozi abasha kureba muri m 200",
       "b": "iyo ikinyabiziga kigiye kubisikana nikindi",
@@ -1834,7 +1834,7 @@
   },
   {
     "id": 142,
-    "text": "Ubugari bwa romoruki ikuruwe n'igare\ncyangwa velomoteri ntiburenza ibipimo\nbikurikira:",
+    "text": "Ubugari bwa romoruki ikuruwe n'igare cyangwa velomoteri ntiburenza ibipimo bikurikira:",
     "options": {
       "a": "cm 25",
       "b": "cm 125",
@@ -1847,7 +1847,7 @@
   },
   {
     "id": 143,
-    "text": "Uburyo bukoreshwa kugirango\nikinyabiziga kigende gahoro igihe feri idakora\nneza bwitwa:",
+    "text": "Uburyo bukoreshwa kugirango ikinyabiziga kigende gahoro igihe feri idakora neza bwitwa:",
     "options": {
       "a": "feri y'urugendo",
       "b": "feri yo guhagarara",
@@ -1860,7 +1860,7 @@
   },
   {
     "id": 144,
-    "text": "Nta mwanya n'umwe feri ifungiraho\nushobora kurekurana n'ibiziga keretse:",
+    "text": "Nta mwanya n'umwe feri ifungiraho ushobora kurekurana n'ibiziga keretse:",
     "options": {
       "a": "iyo bireba feri y'urugendo",
       "b": "iyo kurekurana ari ibyakanya gato",
@@ -1873,7 +1873,7 @@
   },
   {
     "id": 145,
-    "text": "Ikinyabiziga ntigishobora kugira amatara\narenze abiri y'ubwoko bumwe keretse\nkubyerekeye amatara akurikira:",
+    "text": "Ikinyabiziga ntigishobora kugira amatara arenze abiri y'ubwoko bumwe keretse kubyerekeye amatara akurikira:",
     "options": {
       "a": "itara ndangamubyimba",
       "b": "itara ryerekana icyerekezo",
@@ -1886,7 +1886,7 @@
   },
   {
     "id": 146,
-    "text": "Itara ndanganyuma rigomba gushyirwa\naha hakurikira:",
+    "text": "Itara ndanganyuma rigomba gushyirwa aha hakurikira:",
     "options": {
       "a": "ku nguni y'iburyo y'ikinyabiziga",
       "b": "ku gice cy'inyuma ku kinyabiziga",
@@ -1899,7 +1899,7 @@
   },
   {
     "id": 147,
-    "text": "Nibura ikinyabiziga gitegetswe kugira\nuduhanagurabirahuri dukurikira:",
+    "text": "Nibura ikinyabiziga gitegetswe kugira uduhanagurabirahuri dukurikira:",
     "options": {
       "a": "2",
       "b": "3",
@@ -1912,7 +1912,7 @@
   },
   {
     "id": 148,
-    "text": "Ibiziga by'ibinyabiziga bigendeshwa na\nmoteri n'ibya velomoteri kimwe n'ibya\nromoruki zabyo bigomba kuba byambaye\ninziga zihagwa zifite amano n'ubujyakuzimu\nbutari munsi ya milimetero imwe ku migongo\nyabyo yose, n'ubudodo bwabyo ntibugire\nahantu na hamwe bugaragara kdi ntibigire aho\nbyacitse bikomeye mu mpande zabyo. Ariko\nibyo ntibikurikizwa ku binyabiziga bikurikira:",
+    "text": "Ibiziga by'ibinyabiziga bigendeshwa na moteri n'ibya velomoteri kimwe n'ibya romoruki zabyo bigomba kuba byambaye inziga zihagwa zifite amano n'ubujyakuzimu butari munsi ya milimetero imwe ku migongo yabyo yose, n'ubudodo bwabyo ntibugire ahantu na hamwe bugaragara kdi ntibigire aho byacitse bikomeye mu mpande zabyo. Ariko ibyo ntibikurikizwa ku binyabiziga bikurikira:",
     "options": {
       "a": "ibinyabiziga bidapakiye kdi bitajya birenza umuvuduko  wa km 25 mu isaha ahateganye",
       "b": "ibinyabiziga bya police bijya ahatarenga km 25 uvuye aho biba",
@@ -1925,7 +1925,7 @@
   },
   {
     "id": 149,
-    "text": "Birabujijwe kugenza ibinyabiziga\nbigendeshwa na moteri na za romoruki\nzikururwa nabyo, iyo ibiziga byambaye inziga\nzidahagwa cyangwa inziga zikururuka zifite\numubyimba uri hasi ya cm 4. Ariko ibyo\nntibikurikizwa ku binyabiziga bikurikira:",
+    "text": "Birabujijwe kugenza ibinyabiziga bigendeshwa na moteri na za romoruki zikururwa nabyo, iyo ibiziga byambaye inziga zidahagwa cyangwa inziga zikururuka zifite umubyimba uri hasi ya cm 4. Ariko ibyo ntibikurikizwa ku binyabiziga bikurikira:",
     "options": {
       "a": "ku binyabiziga by'ingabo",
       "b": "ibinyabiziga bihinga iyo bigendeshwa mu karere katarenga km 25 uvuye aho ziba",
@@ -1938,7 +1938,7 @@
   },
   {
     "id": 150,
-    "text": "Imirongo yera iteganye n'umurongo\nugabanya umuhanda mo kabiri mu burebure\nbwawo ugaragaza:",
+    "text": "Imirongo yera iteganye n'umurongo ugabanya umuhanda mo kabiri mu burebure bwawo ugaragaza:",
     "options": {
       "a": "ahanyurwa n'amagare na velomoteri",
       "b": "ahanyurwa n'ingorofani n'ibinyamitende",
@@ -1951,7 +1951,7 @@
   },
   {
     "id": 151,
-    "text": "Iyo harimo indi myanya birabujijwe\ngutwara ku ntebe y'imbere y'imodoka abana\nbadafite imyaka ikurikira:",
+    "text": "Iyo harimo indi myanya birabujijwe gutwara ku ntebe y'imbere y'imodoka abana badafite imyaka ikurikira:",
     "options": {
       "a": "imyaka 10",
       "b": "imyaka 12",
@@ -1964,7 +1964,7 @@
   },
   {
     "id": 152,
-    "text": "Iyo ikinyabiziga kitagikora cyangwa\ncyoherejwe mu mahanga burundu ibyapa\nndanga bigomba gukurwaho bikoherezwa mu\nbiro by'imisoro, ibyo bikorwa mu gihe kingana\ngute:",
+    "text": "Iyo ikinyabiziga kitagikora cyangwa cyoherejwe mu mahanga burundu ibyapa ndanga bigomba gukurwaho bikoherezwa mu biro by'imisoro, ibyo bikorwa mu gihe kingana gute:",
     "options": {
       "a": "ibyumweru bibiri",
       "b": "amezi abiri",
@@ -1977,7 +1977,7 @@
   },
   {
     "id": 153,
-    "text": "Inkombe z'inzira nyabagendwa cyangwa\nz'umuhanda zishobora kugaragazwa\nn'ibikoresho ngarurarumuri ibyo bikoresho\nbigomba gushyirwaho ku buryo abagenzi\nbabibona ku buryo bukurikira:",
+    "text": "Inkombe z'inzira nyabagendwa cyangwa z'umuhanda zishobora kugaragazwa n'ibikoresho ngarurarumuri ibyo bikoresho bigomba gushyirwaho ku buryo abagenzi babibona ku buryo bukurikira:",
     "options": {
       "a": "babona gusa ibumoso bwabo ibyibara ryera",
       "b": "iburyo babona iby'ibara ritukura cyangwa risa n'icunga rihishije gusa",
@@ -1990,7 +1990,7 @@
   },
   {
     "id": 154,
-    "text": "Iyo kuyobya umuhanda ari ngombwa\nbigaragazwa kuva aho uhera no kuburebure\nbwawo n'icyapa gifite ubuso bw'amabara\nakurikira:",
+    "text": "Iyo kuyobya umuhanda ari ngombwa bigaragazwa kuva aho uhera no kuburebure bwawo n'icyapa gifite ubuso bw'amabara akurikira:",
     "options": {
       "a": "umukara",
       "b": "umweru",
@@ -2003,7 +2003,7 @@
   },
   {
     "id": 155,
-    "text": "Ku mihanda yagenwe na minisitiri ubifite\nmu nshingano ibyapa biburira n'ibyapa\nbyerekana bigomba kugaragazwa kuva bwije\nkugera bukeye n'urumuri rwihariye cyangwa\namatara ku mihanda cyangwa ibintu\nngarurarumuri. Igihe ijuru rikeye intera\ny'ahagaragara igomba kuba nibura:",
+    "text": "Ku mihanda yagenwe na minisitiri ubifite mu nshingano ibyapa biburira n'ibyapa byerekana bigomba kugaragazwa kuva bwije kugera bukeye n'urumuri rwihariye cyangwa amatara ku mihanda cyangwa ibintu ngarurarumuri. Igihe ijuru rikeye intera y'ahagaragara igomba kuba nibura:",
     "options": {
       "a": "m50",
       "b": "m120",
@@ -2016,7 +2016,7 @@
   },
   {
     "id": 156,
-    "text": "Ibizirikisho by'iminyururu cyangwa\nby'insinga kimwe n'ibindi by'ingoboka\nbikoreshwa gusa igihe nta kundi umuntu\nyabigenza kandi nta kindi bigiriwe uretse gusa\nkugirango ikinyabiziga kigere aho kigomba\ngukorerwa kandi nturenze na rimwe km 20 mu\nisaha, ibyo bizirikisho bigaragazwa ku buryo\nbukurikira:",
+    "text": "Ibizirikisho by'iminyururu cyangwa by'insinga kimwe n'ibindi by'ingoboka bikoreshwa gusa igihe nta kundi umuntu yabigenza kandi nta kindi bigiriwe uretse gusa kugirango ikinyabiziga kigere aho kigomba gukorerwa kandi nturenze na rimwe km 20 mu isaha, ibyo bizirikisho bigaragazwa ku buryo bukurikira:",
     "options": {
       "a": "agatambaro gatukura kuri cm 50 z'umuhanda",
       "b": "ikimenyetso cy'itara risa n'icunga rihishije",
@@ -2029,7 +2029,7 @@
   },
   {
     "id": 157,
-    "text": "Uretse mu mijyi, kuyindi mihanda\nyagenywe na minisiteri ushinzwe gutwara\nibintu n'abantu, uburemere ntarengwa\nbwemewe ku binyabiziga bifatanye bifite\nimitambiko itatu ni:",
+    "text": "Uretse mu mijyi, kuyindi mihanda yagenywe na minisiteri ushinzwe gutwara ibintu n'abantu, uburemere ntarengwa bwemewe ku binyabiziga bifatanye bifite imitambiko itatu ni:",
     "options": {
       "a": "toni 12",
       "b": "toni 16",
@@ -2042,7 +2042,7 @@
   },
   {
     "id": 158,
-    "text": "Uretse mu mujyi kuyindi mihanda\nyajyenwe na minisitiri ushinzwe gutwara\nabantu n'ibintu, uburemere ntarengwa ku\nbinyabiziga bifite imitambiko itatu cyangwa\nirenga hatarimo mukuzungu ni :",
+    "text": "Uretse mu mujyi kuyindi mihanda yajyenwe na minisitiri ushinzwe gutwara abantu n'ibintu, uburemere ntarengwa ku binyabiziga bifite imitambiko itatu cyangwa irenga hatarimo mukuzungu ni :",
     "options": {
       "a": "toni 10",
       "b": "toni 12",
@@ -2055,7 +2055,7 @@
   },
   {
     "id": 159,
-    "text": "Iyo nta mategeko awugabanya\nby'umwihariko umuvuduko ntarengwa ku\nmodoka zidafite ibizibuza kwiceka kuberako\nariko zakozwe ni:",
+    "text": "Iyo nta mategeko awugabanya by'umwihariko umuvuduko ntarengwa ku modoka zidafite ibizibuza kwiceka kuberako ariko zakozwe ni:",
     "options": {
       "a": "km 70 mu isaha",
       "b": "km 40 mu isaha",
@@ -2068,7 +2068,7 @@
   },
   {
     "id": 160,
-    "text": "Iyo nta mategeko awugabanya\nby'umwihariko umuvuduko ntarengwa ku\nmodoka zidafite ibizibuza kwiceka kuberako\nariko zakozwe ni:",
+    "text": "Iyo nta mategeko awugabanya by'umwihariko umuvuduko ntarengwa ku modoka zidafite ibizibuza kwiceka kuberako ariko zakozwe ni:",
     "options": {
       "a": "km 20 mu isaha",
       "b": "km 40 mu isaha",
@@ -2081,7 +2081,7 @@
   },
   {
     "id": 161,
-    "text": "Ikinyabiziga kibujijwe guhagarara akanya\nkanini aha hakurikira :",
+    "text": "Ikinyabiziga kibujijwe guhagarara akanya kanini aha hakurikira :",
     "options": {
       "a": "imbere y'ahantu nyabagendwa hinjirwa n'ahasohokerwa n'abantu benshi",
       "b": "mu muhanda aho ugabanyijemo ibisate bigaragazwa n'imirongo icagaguye",
@@ -2094,7 +2094,7 @@
   },
   {
     "id": 162,
-    "text": "Iyo kuva bwije kugeza bukeye cyangwa\nbitewe n'uko ibihe bimeze nk'igihe cy'ibihu\ncyangwa cy'imvura bitagishoboka kubona neza\nmuri m 200, udutsiko twose tw'abanyamaguru\nnk'imperekerane cyangwa udutsiko\ntw'abanyeshuri bari ku murongo bayobowe\nn'umwarimu, iyo bagenda mu muhanda ku\nisonga hakaba hari abantu barenze umwe\nbagomba kugaragazwa kuburyo bukurikira:",
+    "text": "Iyo kuva bwije kugeza bukeye cyangwa bitewe n'uko ibihe bimeze nk'igihe cy'ibihu cyangwa cy'imvura bitagishoboka kubona neza muri m 200, udutsiko twose tw'abanyamaguru nk'imperekerane cyangwa udutsiko tw'abanyeshuri bari ku murongo bayobowe n'umwarimu, iyo bagenda mu muhanda ku isonga hakaba hari abantu barenze umwe bagomba kugaragazwa kuburyo bukurikira:",
     "options": {
       "a": "imbere ni itara ry'umuhondo ritwariwe ibumoso",
       "b": "inyuma ni itara ryumutuku ritwariwe ibumoso n'umuntu uri ku murongo w'inyuma hafi y'umurongo ugabanya umuhanda mo kabiri",
@@ -2107,7 +2107,7 @@
   },
   {
     "id": 163,
-    "text": "Imburira zimurika zemerewe gukoreshwa\nkugirango bamenyeshe umuyobozi ko bagiye\nkumunyuraho aha hakurikira:",
+    "text": "Imburira zimurika zemerewe gukoreshwa kugirango bamenyeshe umuyobozi ko bagiye kumunyuraho aha hakurikira:",
     "options": {
       "a": "mu nsisiro cyangwa ahandi hose",
       "b": "ahegereye inyamaswa zikurura",
@@ -2120,7 +2120,7 @@
   },
   {
     "id": 164,
-    "text": "Ibinyabiziga bifite ubugari bufite ibipimo\nbikurikira bigomba kugira amatara\nndangaburumbarare",
+    "text": "Ibinyabiziga bifite ubugari bufite ibipimo bikurikira bigomba kugira amatara ndangaburumbarare",
     "options": {
       "a": "metero 3",
       "b": "metero 2 na cm 50",
@@ -2133,7 +2133,7 @@
   },
   {
     "id": 165,
-    "text": "Nta tara na rimwe cyangwa\nakagarurarumuri bishobora kuba bifunze\nkuburyo igice cyabyo cyo hasi cyane kimurika\nkiba kiri hasi y'ibipimo bikurikira kuva ku\nbutaka igihe ikinyabiziga kidapakiye:",
+    "text": "Nta tara na rimwe cyangwa akagarurarumuri bishobora kuba bifunze kuburyo igice cyabyo cyo hasi cyane kimurika kiba kiri hasi y'ibipimo bikurikira kuva ku butaka igihe ikinyabiziga kidapakiye:",
     "options": {
       "a": "cm 30",
       "b": "cm 20",
@@ -2146,7 +2146,7 @@
   },
   {
     "id": 166,
-    "text": "Ahari hejuru cyane y'ubuso bumurika\nh'amatara ndangambere na ndanganyuma\nntihashobora kuba aharenze ibipimo bikurikira\nhejuru y'ubutaka iyo ikinyabiziga kidapakiye:",
+    "text": "Ahari hejuru cyane y'ubuso bumurika h'amatara ndangambere na ndanganyuma ntihashobora kuba aharenze ibipimo bikurikira hejuru y'ubutaka iyo ikinyabiziga kidapakiye:",
     "options": {
       "a": "m1 na cm 50",
       "b": "m1 na cm 75",
@@ -2159,7 +2159,7 @@
   },
   {
     "id": 167,
-    "text": "Buri modoka cyangwa buri romoruki\nikuruwe n'iyo modoka bishobora kugira itara\nrisa n'icyatsi kibisi bituma umuyobozi\nyerekana ko yabonye ikimenyetso cy'uwitegura\nkumunyuraho. Iryo tara rigomba gushyirwa\naha hakurikira:",
+    "text": "Buri modoka cyangwa buri romoruki ikuruwe n'iyo modoka bishobora kugira itara risa n'icyatsi kibisi bituma umuyobozi yerekana ko yabonye ikimenyetso cy'uwitegura kumunyuraho. Iryo tara rigomba gushyirwa aha hakurikira:",
     "options": {
       "a": "hafi y'inguni y'ibumoso bw'ikinyabiziga",
       "b": "inyuma hafi y'impera y'ibumoso bw'ikinyabiziga",
@@ -2172,7 +2172,7 @@
   },
   {
     "id": 168,
-    "text": "Ubugari bw'imizigo yikorewe n'ipikipiki\nifite akanyabiziga ko kuruhande kimwe n'ubwa\nromoruki ikuruwe na bene icyo kinyabiziga\nntibushobora kurenza ibipimo bikurikira ku\nbugari bw'icyo kinyabiziga kidapakiye:",
+    "text": "Ubugari bw'imizigo yikorewe n'ipikipiki ifite akanyabiziga ko kuruhande kimwe n'ubwa romoruki ikuruwe na bene icyo kinyabiziga ntibushobora kurenza ibipimo bikurikira ku bugari bw'icyo kinyabiziga kidapakiye:",
     "options": {
       "a": "m 1.25",
       "b": "cm 30",
@@ -2185,7 +2185,7 @@
   },
   {
     "id": 169,
-    "text": "Mu gihe telefone yawe ihamagawe utwaye\nimodoka   wakora iki?",
+    "text": "Mu gihe telefone yawe ihamagawe utwaye imodoka wakora iki?",
     "options": {
       "a": "Kwitaba cyangwa guhagarara ako kanya",
       "b": "kutayitaba",
@@ -2198,7 +2198,7 @@
   },
   {
     "id": 170,
-    "text": "Mu gihe telefone yawe ihamagawe utwaye\nimodoka   wakora iki?",
+    "text": "Mu gihe telefone yawe ihamagawe utwaye imodoka wakora iki?",
     "options": {
       "a": "Kwitaba cyangwa guhagarara  ako kanya",
       "b": "kutayitaba",
@@ -2211,7 +2211,7 @@
   },
   {
     "id": 171,
-    "text": "Niki wakora mbere y'uko uhindura\nicyerekezo?",
+    "text": "Niki wakora mbere y'uko uhindura icyerekezo?",
     "options": {
       "a": "Gutanga ikimenyetso cy'ukuboko no gukoresha amatara ndangacyerekezo.",
       "b": "Itegereze neza niba icyapa kikwemerera guhindura icyerekezo.",
@@ -2224,7 +2224,7 @@
   },
   {
     "id": 172,
-    "text": "Niki muribi wakwirinda mugihe ushaka\nkunyuranaho?",
+    "text": "Niki muribi wakwirinda mugihe ushaka kunyuranaho?",
     "options": {
       "a": "Nyuma y'ikona ugategereza kubona uburyo bwo kunyuranaho.",
       "b": "Mumuhanda w'icyerekezo kimwe",
@@ -2237,7 +2237,7 @@
   },
   {
     "id": 173,
-    "text": "Niki wakora mugihe usanze mu\nbimenyetso bimurika harimo ibara\nry'umuhondo.",
+    "text": "Niki wakora mugihe usanze mu bimenyetso bimurika harimo ibara ry'umuhondo.",
     "options": {
       "a": "Kongera umuvuduko",
       "b": "Kugumana umuvuduko wari uriho.",
@@ -2250,7 +2250,7 @@
   },
   {
     "id": 174,
-    "text": "Mugihe ukurikiranye na\nromoruki,n'ukubera iki ugomba gusiga\numwanya uhagije hagati yawe nayo?",
+    "text": "Mugihe ukurikiranye na romoruki,n'ukubera iki ugomba gusiga umwanya uhagije hagati yawe nayo?",
     "options": {
       "a": "Bituma ubasha gukata ikorosi vuba.",
       "b": "Bifasha umuyobozi wa romoruki kukurebera mundorerwamo.",
@@ -2263,7 +2263,7 @@
   },
   {
     "id": 175,
-    "text": "Utegereje gukata iburyo kwiherezo\nry'umuhanda.ukingirijwe nimodoka\nihagaze.niki wakora?",
+    "text": "Utegereje gukata iburyo kwiherezo ry'umuhanda.ukingirijwe nimodoka ihagaze.niki wakora?",
     "options": {
       "a": "Guhagarara hanyuma ukagenda gake gake witonze kugezaho ureba neza.",
       "b": "Kwihuta wegera imbere aho ushobora kureba ugafunga ikindi cyerekezo.",
@@ -2276,7 +2276,7 @@
   },
   {
     "id": 176,
-    "text": "Mugihe uri murugendo rurerure\nmumuhanda urombereje w'ibice\nbyinshi.niki wakora mugihe wumva\nutangiye kugira ibitotsi?",
+    "text": "Mugihe uri murugendo rurerure mumuhanda urombereje w'ibice byinshi.niki wakora mugihe wumva utangiye kugira ibitotsi?",
     "options": {
       "a": "Gucuranga umuziki cyane.",
       "b": "Kwihuta cyane kugirango usoze urugendo vuba.",
@@ -2289,7 +2289,7 @@
   },
   {
     "id": 177,
-    "text": "Kuki ugomba gucana amatara mugihe\nhatangiye kwijima?",
+    "text": "Kuki ugomba gucana amatara mugihe hatangiye kwijima?",
     "options": {
       "a": "Kugirango akerekanamuvuduko kagaragare neza.",
       "b": "Kugirango abandi biborohere kukubona.",
@@ -2302,7 +2302,7 @@
   },
   {
     "id": 178,
-    "text": "Urimo kugenda munzira nyabagendwa ni\ngute wanyura k'umuyobozi w'igare?",
+    "text": "Urimo kugenda munzira nyabagendwa ni gute wanyura k'umuyobozi w'igare?",
     "options": {
       "a": "Kuvuza ihoni mugihe umunyuraho",
       "b": "Kumunyuraho umwegereye",
@@ -2315,7 +2315,7 @@
   },
   {
     "id": 179,
-    "text": "Niki wakora igihe utabona neza usubira\ninyuma ?",
+    "text": "Niki wakora igihe utabona neza usubira inyuma ?",
     "options": {
       "a": "Kumanura ikirahure cy'imodoka urebe inyuma",
       "b": "Gufungura umuryango  w'imodoka ureba inyuma",
@@ -2328,7 +2328,7 @@
   },
   {
     "id": 180,
-    "text": "Igihe ukurikiwe n'ikinyabiziga gitwara\nabarwayi  gicanye amatara y'intabaza\narabagirana.  Wakora iki ?",
+    "text": "Igihe ukurikiwe n'ikinyabiziga gitwara abarwayi gicanye amatara y'intabaza arabagirana. Wakora iki ?",
     "options": {
       "a": "Kugihigamira ako kanya ndetse  byaba ngombwa ugahagarara",
       "b": "Kongera umuvuduko kugirango ugisige",
@@ -2341,7 +2341,7 @@
   },
   {
     "id": 181,
-    "text": "Wifuza kugana ibumoso imbere yawe.\nkubera iki ushaka umwanya mwiza kandi\nuhagije?",
+    "text": "Wifuza kugana ibumoso imbere yawe. kubera iki ushaka umwanya mwiza kandi uhagije?",
     "options": {
       "a": "Kwemerera abandi bayobozi b'ibinyabiziga kugutambukaho",
       "b": "Kugirango ubone neza ikindi kerekezo ushaka gufata",
@@ -2354,7 +2354,7 @@
   },
   {
     "id": 182,
-    "text": "Utwaye ikinyabiziga inyuma ya\nromoruki.umuyobozi wayo akaguha\nikimenyetso cyo kumutambukaho iburyo\nkandi ugana  ibumoso, wakora iki ?",
+    "text": "Utwaye ikinyabiziga inyuma ya romoruki.umuyobozi wayo akaguha ikimenyetso cyo kumutambukaho iburyo kandi ugana ibumoso, wakora iki ?",
     "options": {
       "a": "Kugabanya umuvuduko ukareka akagenda",
       "b": "Gukomeza iburyo bwawe",
@@ -2367,7 +2367,7 @@
   },
   {
     "id": 183,
-    "text": "Wegereye inzira y'abanyamaguru\nugasanga bategereje kwambuka.\nUgomba gukora iki?",
+    "text": "Wegereye inzira y'abanyamaguru ugasanga bategereje kwambuka. Ugomba gukora iki?",
     "options": {
       "a": "Kureka abakuze n'abafite ubumuga bagatambuka mbere",
       "b": "Kugabanya umuvuduko witegura guhagarara",
@@ -2380,7 +2380,7 @@
   },
   {
     "id": 184,
-    "text": "Uri hafi kunyura k'umuyobozi\nw'ikinyamitende. Muri ibi byapa\nbikurikira nikihe wakwitondera?",
+    "text": "Uri hafi kunyura k'umuyobozi w'ikinyamitende. Muri ibi byapa bikurikira nikihe wakwitondera?",
     "options": {
       "a": "",
       "b": "",
@@ -2393,7 +2393,7 @@
   },
   {
     "id": 185,
-    "text": "Kumanywa urumuri rudahagije hatabona\nneza .Ni ayahe matara y'urugendo ugomba\ngukoresha.",
+    "text": "Kumanywa urumuri rudahagije hatabona neza .Ni ayahe matara y'urugendo ugomba gukoresha.",
     "options": {
       "a": "Amatara yo kubisika  na matara  kamena- bihu.",
       "b": "Amatara kamena-bihu y'imbere",
@@ -2406,7 +2406,7 @@
   },
   {
     "id": 186,
-    "text": "Niyihe mpamvu ituma  tugomba\nkugabanya umuvuduko mugihe  hari\nibihu ?",
+    "text": "Niyihe mpamvu ituma tugomba kugabanya umuvuduko mugihe hari ibihu ?",
     "options": {
       "a": "Igihe feri idakora",
       "b": "Igihe uhumishijwe n'amatara yo kubisikana",
@@ -2419,7 +2419,7 @@
   },
   {
     "id": 187,
-    "text": "Niki ugomba gukora igihe uhagaze ku\nmuhanda igihe cy'ibihu?",
+    "text": "Niki ugomba gukora igihe uhagaze ku muhanda igihe cy'ibihu?",
     "options": {
       "a": "Kureka amatara yo k,ubisikana na kamena-bihu akaguma yaka",
       "b": "Kureka amatara yo kubisikana akaguma yaka",
@@ -2443,7 +2443,7 @@
   },
   {
     "id": 189,
-    "text": "Icyapa gikurikira  kivuze iki?",
+    "text": "Icyapa gikurikira kivuze iki?",
     "options": {
       "a": "Ntihanyurwa",
       "b": "Birabujijwe guhagarara umwanya munini",
@@ -2456,7 +2456,7 @@
   },
   {
     "id": 190,
-    "text": "Inzira nyabagendwa ifite ibyerekezo\nbibiri, uruhande rw'ibumoso rudufasha iki ?",
+    "text": "Inzira nyabagendwa ifite ibyerekezo bibiri, uruhande rw'ibumoso rudufasha iki ?",
     "options": {
       "a": "Kunyuranaho gusa,  ntugaruke  iburyo bwawe",
       "b": "Kunyuranaho cyangwa ugakatira ibumoso",
@@ -2469,7 +2469,7 @@
   },
   {
     "id": 191,
-    "text": "Ni hehe byemewe kunyuranaho munzira\ny'icyerekezo kimwe?",
+    "text": "Ni hehe byemewe kunyuranaho munzira y'icyerekezo kimwe?",
     "options": {
       "a": "ku gisate kiri Ibumoso bw'umuhanda",
       "b": "Kunyuranaho ntibyemewe",
@@ -2482,7 +2482,7 @@
   },
   {
     "id": 192,
-    "text": "N'uwuhe muntu ushobora gusimbura\nibimenyetso byo mumuhanda, dutegetswe\nkubaha?",
+    "text": "N'uwuhe muntu ushobora gusimbura ibimenyetso byo mumuhanda, dutegetswe kubaha?",
     "options": {
       "a": "Umuyobozi w'ikinyamitende",
       "b": "Umunyamaguru",
@@ -2508,7 +2508,7 @@
   },
   {
     "id": 194,
-    "text": "Ibyapa  bitegeka bikozwe muyihe\nshusho?",
+    "text": "Ibyapa bitegeka bikozwe muyihe shusho?",
     "options": {
       "a": "",
       "b": "",
@@ -2521,7 +2521,7 @@
   },
   {
     "id": 195,
-    "text": "Nikihe cyapa cyerekena ko nta kinyabiziga\ngifite moteri cyemerewe kuhanyura?",
+    "text": "Nikihe cyapa cyerekena ko nta kinyabiziga gifite moteri cyemerewe kuhanyura?",
     "options": {
       "a": "",
       "b": "",
@@ -2534,7 +2534,7 @@
   },
   {
     "id": 196,
-    "text": "iki cyapa gisobanura iki  ?",
+    "text": "iki cyapa gisobanura iki ?",
     "options": {
       "a": "Uburenganzira bwo gutambuka mbere",
       "b": "Nta kinyabiziga kigendeshwa na  moteri",
@@ -2547,7 +2547,7 @@
   },
   {
     "id": 197,
-    "text": "Imbere yawe  iki cyapa kikubwiye iki ?",
+    "text": "Imbere yawe iki cyapa kikubwiye iki ?",
     "options": {
       "a": "Umuvuduko ntarengwa wemewe",
       "b": "Iherezo ry'ibyo wabuzwaga",
@@ -2690,7 +2690,7 @@
   },
   {
     "id": 208,
-    "text": "Icyapa gitanga uburenganzira bwo\ngutambuka mbere kigira iyihe shusho?",
+    "text": "Icyapa gitanga uburenganzira bwo gutambuka mbere kigira iyihe shusho?",
     "options": {
       "a": "",
       "b": "",
@@ -2742,7 +2742,7 @@
   },
   {
     "id": 212,
-    "text": "Mu bimenyetso bimurika itara ritukura\nrivuga iki ?",
+    "text": "Mu bimenyetso bimurika itara ritukura rivuga iki ?",
     "options": {
       "a": "Hagarara kereste niba  ushaka gukata ibumoso",
       "b": "Hagarara niba ubona ntabyago byaguteza",
@@ -2755,7 +2755,7 @@
   },
   {
     "id": 213,
-    "text": "Mubimenyetso bimurika  itara\nry'umuhondo risobanura iki ?",
+    "text": "Mubimenyetso bimurika itara ry'umuhondo risobanura iki ?",
     "options": {
       "a": "Itegure kugenda",
       "b": "Birabujijwe gutambuka umurongo wo guhagarara umwanya muto cg igihe uwo murongo udahari icyo kimenyetso ubwacyo",
@@ -2768,7 +2768,7 @@
   },
   {
     "id": 214,
-    "text": "Mubimenyetso bimurika  itara ry'icyatsi\nrisobanura iki ?",
+    "text": "Mubimenyetso bimurika itara ry'icyatsi risobanura iki ?",
     "options": {
       "a": "Kwitegura kugenda",
       "b": "Uburenganzira bwo kurenga icyo kimenyetso",
@@ -2781,7 +2781,7 @@
   },
   {
     "id": 215,
-    "text": "Umurongo ucagaguye wera mu muhanda\nusobanura iki?",
+    "text": "Umurongo ucagaguye wera mu muhanda usobanura iki?",
     "options": {
       "a": "Birabujijwe kuhahagarara",
       "b": "Wegereye ahaguteza ibyago",
@@ -2845,7 +2845,7 @@
   },
   {
     "id": 220,
-    "text": "Muri iri sangano ry'umuhanda  hari\nicyapa gisobanura “guhagarara” n'umurongo\nwera urombereje munzira .\nNiyihe mpamvu hari iki cyapa cyo\n“guhagarara” hano?",
+    "text": "Muri iri sangano ry'umuhanda hari icyapa gisobanura “guhagarara” n'umurongo wera urombereje munzira . Niyihe mpamvu hari iki cyapa cyo “guhagarara” hano?",
     "options": {
       "a": "Biragoye kubona neza mu muhanda munini",
       "b": "Umuvuduko mu muhanda munini wavanyweho",
@@ -2858,7 +2858,7 @@
   },
   {
     "id": 221,
-    "text": "Ni iki gikenewe muri ibi bikurikira\nkugirango ubashe gutwara imodoka mu\nmuhanda  biteganywa nitegeko",
+    "text": "Ni iki gikenewe muri ibi bikurikira kugirango ubashe gutwara imodoka mu muhanda biteganywa nitegeko",
     "options": {
       "a": "Uruhushya rwa burundu rwo gutwara ibinyabiziga rugifite agaciro",
       "b": "Ubwishingizi bw'ikinyabizaga bugifite agaciro",
@@ -2871,7 +2871,7 @@
   },
   {
     "id": 222,
-    "text": "Ikinyabiziga gishya gikenerwa gusuzumwa\nbwambere nyuma y'igihe kingana iki ?",
+    "text": "Ikinyabiziga gishya gikenerwa gusuzumwa bwambere nyuma y'igihe kingana iki ?",
     "options": {
       "a": "Nyuma y'umwaka umwe",
       "b": "Nyuma y'imyaka ibiri",
@@ -2884,7 +2884,7 @@
   },
   {
     "id": 223,
-    "text": "Ni ryari  ushobora kwakiriza icyarimwe\namatara  yose ndangacyerekezo y'ikinyabiziga\n?",
+    "text": "Ni ryari ushobora kwakiriza icyarimwe amatara yose ndangacyerekezo y'ikinyabiziga ?",
     "options": {
       "a": "Mu gihe ushaka kuburira abandi bakoresha umuhanda",
       "b": "Mu gihe ikinyabiziga cyawe gishobora guteza ibyago",
@@ -2897,7 +2897,7 @@
   },
   {
     "id": 224,
-    "text": "Ugeze ahabereye impanuka yo mumuhanda\nbwambere ugasanga abakomeretse bikomeye.\nwakiriza icyarimwe amatara y'ibyerekezo\nbyombi, niki kindi ushobora gukora?",
+    "text": "Ugeze ahabereye impanuka yo mumuhanda bwambere ugasanga abakomeretse bikomeye. wakiriza icyarimwe amatara y'ibyerekezo byombi, niki kindi ushobora gukora?",
     "options": {
       "a": "Guhagarika ibinyabiziga bindi no kubasaba ubufasha",
       "b": "A na b ni ibisubizo by'ukuri",
@@ -2909,7 +2909,7 @@
   },
   {
     "id": 225,
-    "text": "Umuyobozi w'ikinyabizaga cy'ikoreye\nibintu bishobora gufata inkongi, n'ikihe cyapa\ncyerekana ko ibyo atwaye biturika by'afata\ninkongi ?",
+    "text": "Umuyobozi w'ikinyabizaga cy'ikoreye ibintu bishobora gufata inkongi, n'ikihe cyapa cyerekana ko ibyo atwaye biturika by'afata inkongi ?",
     "options": {
       "a": "",
       "b": "",
@@ -2922,7 +2922,7 @@
   },
   {
     "id": 226,
-    "text": "Wakoze impanuka yo mu muhanda ,  ni\nikihe cyangombwa polisi ishobora kugusaba\nkucyerekana ?",
+    "text": "Wakoze impanuka yo mu muhanda , ni ikihe cyangombwa polisi ishobora kugusaba kucyerekana ?",
     "options": {
       "a": "Icyemezo cy'iyandikwa ryi ikinyabiziga",
       "b": "Uruhushya rwagateganyo",
@@ -2934,7 +2934,7 @@
   },
   {
     "id": 227,
-    "text": "Uhuye n'ingorane utwaye ikinyabiziga ,\nmu muhanda ufite ibyerekezo bibiri, ufite\nikimenyetso kiburira cya mpandeshatu .\nwagishyira mu ntera ingana iki uvuye aho\nikinyabiziga   cyahagaze",
+    "text": "Uhuye n'ingorane utwaye ikinyabiziga , mu muhanda ufite ibyerekezo bibiri, ufite ikimenyetso kiburira cya mpandeshatu . wagishyira mu ntera ingana iki uvuye aho ikinyabiziga cyahagaze",
     "options": {
       "a": "Metero 5",
       "b": "Metero 25",
@@ -2947,7 +2947,7 @@
   },
   {
     "id": 228,
-    "text": "Umuyobozi usunika ipikipiki agomba\ngufatwa nka:",
+    "text": "Umuyobozi usunika ipikipiki agomba gufatwa nka:",
     "options": {
       "a": "Umunyamaguru",
       "b": "Umuyobozi w'ikinyabiziga",
@@ -2960,7 +2960,7 @@
   },
   {
     "id": 229,
-    "text": "Icyapa gikoze mw'ishusho ya\nmpandeshatu kimenyesha:",
+    "text": "Icyapa gikoze mw'ishusho ya mpandeshatu kimenyesha:",
     "options": {
       "a": "ibibujijwe",
       "b": "ibitegetswe",
@@ -2985,7 +2985,7 @@
   },
   {
     "id": 231,
-    "text": "Urenze munsisiro ,ukahasanga ibyapa\nbibiri iburyo bwawe  bimenyesha ko irangira\nry'imirimo bitewe nicyo ibyo byapa\nbemenyesha  wagendera kuwuhe muvuduko ?",
+    "text": "Urenze munsisiro ,ukahasanga ibyapa bibiri iburyo bwawe bimenyesha ko irangira ry'imirimo bitewe nicyo ibyo byapa bemenyesha wagendera kuwuhe muvuduko ?",
     "options": {
       "a": "70 km/h",
       "b": "50 km/h",
@@ -3011,7 +3011,7 @@
   },
   {
     "id": 233,
-    "text": "igice kinzira nyabagendwa gikikijwe\nn'imirongo ibiri y'umweru iciyemo uduce\nkandi iteganye :",
+    "text": "igice kinzira nyabagendwa gikikijwe n'imirongo ibiri y'umweru iciyemo uduce kandi iteganye :",
     "options": {
       "a": "ahagenewe guhagarara umwanya munini n'umuto",
       "b": "ahagenewe abanayamaguru",
@@ -3024,7 +3024,7 @@
   },
   {
     "id": 234,
-    "text": "iki cyapa kibuza abayobozi bibinyabiziga\nkunyuranaho :",
+    "text": "iki cyapa kibuza abayobozi bibinyabiziga kunyuranaho :",
     "options": {
       "a": "iburyo",
       "b": "ibumoso",
@@ -3037,7 +3037,7 @@
   },
   {
     "id": 235,
-    "text": "Iki  cyapa kibuza kunyuranaho ibumoso\nku binyabiziga bikurikira :",
+    "text": "Iki cyapa kibuza kunyuranaho ibumoso ku binyabiziga bikurikira :",
     "options": {
       "a": "ku binyabiziga byose",
       "b": "ku binyabiziga byose bifite moteri",
@@ -3050,7 +3050,7 @@
   },
   {
     "id": 236,
-    "text": "iki kimenyetso cyaka kinyemerera\ngukomeza:",
+    "text": "iki kimenyetso cyaka kinyemerera gukomeza:",
     "options": {
       "a": "yego",
       "b": "yego ariko utanga inzira kubanyamaguru",
@@ -3063,7 +3063,7 @@
   },
   {
     "id": 237,
-    "text": "Mu muhanda ufite uruhererekane\nrw'amakoni, feri y'urugendo ikoreshwa ryari?",
+    "text": "Mu muhanda ufite uruhererekane rw'amakoni, feri y'urugendo ikoreshwa ryari?",
     "options": {
       "a": "Mbere ya buri koni",
       "b": "Muri buri koni",
@@ -3076,7 +3076,7 @@
   },
   {
     "id": 238,
-    "text": "Ni ikihe  cyapa muri ibi kintegeka gutanga\ninzira:",
+    "text": "Ni ikihe cyapa muri ibi kintegeka gutanga inzira:",
     "options": {
       "a": "Icyapa A19",
       "b": "Icyapa B5",
@@ -3102,7 +3102,7 @@
   },
   {
     "id": 240,
-    "text": "Uri umuyobozi wa  velomoteri, uhuye\nn'umwe munshuti zawe agusaba ko wa\nmutwara ukamusiga ku'wundi muhanda. ufite\nimyaka 18 ariko nta  ngofero  yindi yabigenewe\nufite. wamutwara?",
+    "text": "Uri umuyobozi wa velomoteri, uhuye n'umwe munshuti zawe agusaba ko wa mutwara ukamusiga ku'wundi muhanda. ufite imyaka 18 ariko nta ngofero yindi yabigenewe ufite. wamutwara?",
     "options": {
       "a": "yego",
       "b": "yego usibye urugendo rurerure",
@@ -3115,7 +3115,7 @@
   },
   {
     "id": 241,
-    "text": "Ni ikihe cyapa cy'inyemerera gutambuka\nmbere mu masangano y'umuhanda?",
+    "text": "Ni ikihe cyapa cy'inyemerera gutambuka mbere mu masangano y'umuhanda?",
     "options": {
       "a": "Icyapa B3",
       "b": "Icyapa A22 a",
@@ -3128,7 +3128,7 @@
   },
   {
     "id": 242,
-    "text": "Mbere yo kunyura kumuyobozi\nw'ikinyabiziga cy'imitende ibiri, ngomba\ngucana akaranga cyerekezo k'ibumoso?",
+    "text": "Mbere yo kunyura kumuyobozi w'ikinyabiziga cy'imitende ibiri, ngomba gucana akaranga cyerekezo k'ibumoso?",
     "options": {
       "a": "Yego buri gihe",
       "b": "Yego igihe hari  ikinyabiziga kinkurikiye",
@@ -3141,7 +3141,7 @@
   },
   {
     "id": 243,
-    "text": "Nshobora kunyuraho umuyobozi\nw'ikinyabiziga wahagaze imbere y'inzira\nyabanyamaguru?",
+    "text": "Nshobora kunyuraho umuyobozi w'ikinyabiziga wahagaze imbere y'inzira yabanyamaguru?",
     "options": {
       "a": "yego",
       "b": "yego nyuma yo kuvuza ihoni",
@@ -3167,7 +3167,7 @@
   },
   {
     "id": 245,
-    "text": "Mu gihe cy'impanuka mu muhanda\nn'ubundi bushotoranyi ni yihe nimero ya\ntelefone y'ubutabazi wahamagara :",
+    "text": "Mu gihe cy'impanuka mu muhanda n'ubundi bushotoranyi ni yihe nimero ya telefone y'ubutabazi wahamagara :",
     "options": {
       "a": "911",
       "b": "100",
@@ -3180,7 +3180,7 @@
   },
   {
     "id": 246,
-    "text": "Ugeze bwa mbere ahabereye impanuka yo\nmu muhanda harimo inkomere wakora iki ?",
+    "text": "Ugeze bwa mbere ahabereye impanuka yo mu muhanda harimo inkomere wakora iki ?",
     "options": {
       "a": "gusohora inkomere mu kinyabiziga",
       "b": "kubaha icyo kunywa",
@@ -3219,7 +3219,7 @@
   },
   {
     "id": 249,
-    "text": "Mbere yo kunyura ku kindi kinyabiziga, ni\nngombwa kumenya ko:",
+    "text": "Mbere yo kunyura ku kindi kinyabiziga, ni ngombwa kumenya ko:",
     "options": {
       "a": "Nta kindi kinyabiziga kinturutse inyuma",
       "b": "Umuhanda ubona neza, no kwitondera kunyuranaho",
@@ -3232,7 +3232,7 @@
   },
   {
     "id": 250,
-    "text": "Ikindi kinyabiziga kiguturutse inyuma\nkiguterera amatara y'urumuri rumyasa,\nwakora iki?",
+    "text": "Ikindi kinyabiziga kiguturutse inyuma kiguterera amatara y'urumuri rumyasa, wakora iki?",
     "options": {
       "a": "Kongera umuvuduko kugira ngo intera iri hagati yawe n'ukuri inyuma igumeho",
       "b": "Fata feri y'urugendo kugira ngo umwereke ko ugiye guhagarara",
@@ -3245,7 +3245,7 @@
   },
   {
     "id": 251,
-    "text": "Mu gihe Umuntu ufite ubumuga bwo\nkutabona yambuka umuhanda yitwaje inkoni\nyera y'abatabona:",
+    "text": "Mu gihe Umuntu ufite ubumuga bwo kutabona yambuka umuhanda yitwaje inkoni yera y'abatabona:",
     "options": {
       "a": "Umuyobozi w'ikinyabiziga agomba gufata iyo nkoni nk'icyapa kimumenyesha ko agomba guhagarara",
       "b": "Vuza ihoni ukomeze",
@@ -3283,7 +3283,7 @@
   },
   {
     "id": 254,
-    "text": "Telephone ngendanwa ntigomba\ngukoreshwa:",
+    "text": "Telephone ngendanwa ntigomba gukoreshwa:",
     "options": {
       "a": "Ahari ibimenyetso bimurika",
       "b": "Igihe utwaye ikinyabiziga Ku muvuduko wa 20km/h",
@@ -3296,7 +3296,7 @@
   },
   {
     "id": 255,
-    "text": "Kunyuranaho bibujijwe  gusa igihe:",
+    "text": "Kunyuranaho bibujijwe gusa igihe:",
     "options": {
       "a": "Igihe mu muhanda hagati hashushanyijemo umurongo w'umweru  ucagaguye.",
       "b": "Umuhanda ushushanyijwemo umurongo wera udacagaguye",
@@ -3309,7 +3309,7 @@
   },
   {
     "id": 256,
-    "text": "Mu gihe utwaye ikinyabiziga ni joro ucanye\namatara maremare ugahura n'ikindi\nkinyabiziga giturutse mu kindi cyerecyezo:",
+    "text": "Mu gihe utwaye ikinyabiziga ni joro ucanye amatara maremare ugahura n'ikindi kinyabiziga giturutse mu kindi cyerecyezo:",
     "options": {
       "a": "Gukomeza ibumoso",
       "b": "Kuzimya ucana amatara maremare n'amagufi",
@@ -3322,7 +3322,7 @@
   },
   {
     "id": 257,
-    "text": "Igihe umuyobozi w'inyamaswa, afite\ninyamaswa idatuje, asaba ko ibinyabiziga\nbihagarara:",
+    "text": "Igihe umuyobozi w'inyamaswa, afite inyamaswa idatuje, asaba ko ibinyabiziga bihagarara:",
     "options": {
       "a": "Umuyobozi w'ikinyabizigaagomba kuvuza ihoni  agukomeza",
       "b": "Umuyobozi w'ikinyabiziga agomba kugabanya umuvuduko",
@@ -3334,7 +3334,7 @@
   },
   {
     "id": 258,
-    "text": "Iyo mu muhanda hashushanyijemo\numurongo wera ucagaguye, ntugomba",
+    "text": "Iyo mu muhanda hashushanyijemo umurongo wera ucagaguye, ntugomba",
     "options": {
       "a": "Ntugomba kujya mu kindi gice cy'umuhanda",
       "b": "Agomba guhagarika ikinyabiziga",
@@ -3359,7 +3359,7 @@
   },
   {
     "id": 260,
-    "text": "Icyemezo cy'Isuzuma ry'ikinyabiziga\nkimara igihe kingana iki?",
+    "text": "Icyemezo cy'Isuzuma ry'ikinyabiziga kimara igihe kingana iki?",
     "options": {
       "a": "Amezi 6 kubinyabiziga bikora ubucuruzi",
       "b": "Amezi 12 ku binyabiziga  bidakora ubucuruzi",
@@ -3372,7 +3372,7 @@
   },
   {
     "id": 261,
-    "text": "N'iyihe myifatire myiza wagira ugeze aho\nabana bari hafi y'inzira nyabagendwa?",
+    "text": "N'iyihe myifatire myiza wagira ugeze aho abana bari hafi y'inzira nyabagendwa?",
     "options": {
       "a": "Itonde , witegereze ni biba ngongwa ubaburire unitegura kuba wahagarara.",
       "b": "Ihute urenge aho abo bana bari",
@@ -3385,7 +3385,7 @@
   },
   {
     "id": 262,
-    "text": "Umuyobozi w'ikinyabiziga yegereye aho\numwana w'umuhungu utwaye akagare k'abana\nasezera ku nshuti ye . N'iyihe myifatire myiza\nwagira imbere yabo?",
+    "text": "Umuyobozi w'ikinyabiziga yegereye aho umwana w'umuhungu utwaye akagare k'abana asezera ku nshuti ye . N'iyihe myifatire myiza wagira imbere yabo?",
     "options": {
       "a": "Ikomereze nkaho ataragera munzira nyabagendwa",
       "b": "Itegure kureka uwo mwana w'umuhungu atambuke, kuko yajya mu muhanda atitaye ku kinyabiziga cyawe",
@@ -3398,7 +3398,7 @@
   },
   {
     "id": 263,
-    "text": "Nk'umuyobozi w'ikinyabiziga, n'iyihe\nmyitwarire wagira?",
+    "text": "Nk'umuyobozi w'ikinyabiziga, n'iyihe myitwarire wagira?",
     "options": {
       "a": "Umuyobozi w'ikinyabiziga agomba gukomeza",
       "b": "Umuyobozi w'ikinyabiziga agomba kuguma mu ruhande rw'iburyo kugira ngo ahe inzira umumotari",
@@ -3411,7 +3411,7 @@
   },
   {
     "id": 264,
-    "text": "Umuyobozi w'ikinyabiziga ageze hafi\ny'inzira y'abanyamaguru yakwitwara ate?",
+    "text": "Umuyobozi w'ikinyabiziga ageze hafi y'inzira y'abanyamaguru yakwitwara ate?",
     "options": {
       "a": "Kugabanya umuvuduko mu gihe cyiza, ukitegura guhagarara",
       "b": "Gukomeza agendera ku muvuduko uri hejuru, mu gihe umunyamaguru ategereje",
@@ -3424,7 +3424,7 @@
   },
   {
     "id": 265,
-    "text": "Umuyobozi w'ikinyabiziga akurikiye\nibinyabiziga bibiri, yifuza kubinyuraho. N'iki\nyashingiraho mbere yo kubanyuraho?",
+    "text": "Umuyobozi w'ikinyabiziga akurikiye ibinyabiziga bibiri, yifuza kubinyuraho. N'iki yashingiraho mbere yo kubanyuraho?",
     "options": {
       "a": "Ugomba kuzinyuraho zombi",
       "b": "Sibyiza ko yazinyuraho atabasha kureba neza imbere ye",
@@ -3437,7 +3437,7 @@
   },
   {
     "id": 266,
-    "text": "N'iki umuyobozi w'ikinyabiziga yakora\nashaka gukatira iburyo?",
+    "text": "N'iki umuyobozi w'ikinyabiziga yakora ashaka gukatira iburyo?",
     "options": {
       "a": "Vuza ihoni umenyesha umunyegare ko ushaka gukatira iburyo",
       "b": "Kata ikoni mbere y'umunyegare",
@@ -3450,7 +3450,7 @@
   },
   {
     "id": 267,
-    "text": "N'ayahe matara umuyobozi w'ikinyabiziga\nagomba gukoresha mugihe cy'ibihu?",
+    "text": "N'ayahe matara umuyobozi w'ikinyabiziga agomba gukoresha mugihe cy'ibihu?",
     "options": {
       "a": "Amatara kamena bihu y'imbere n'ay'inyuma hamwe n'amatara magufi",
       "b": "Amatara kamenabihu y'imbere n'ay'inyuma",
@@ -3476,7 +3476,7 @@
   },
   {
     "id": 269,
-    "text": "Ni gute umuyobozi w'ikinyabiziga yanyura\nkumunyegare hano?",
+    "text": "Ni gute umuyobozi w'ikinyabiziga yanyura kumunyegare hano?",
     "options": {
       "a": "Aha umuyobozi w'ikinyabiziga ntashobora kumunyuraho",
       "b": "Atarenze umurongo wera ucagaguye",
@@ -3489,7 +3489,7 @@
   },
   {
     "id": 270,
-    "text": "N'iki umuyobozi w'ikinyabiziga yakora\naramutse ahumishijwe n'urumuri rw'amatara\nyikinyabiziga giturutse mu kindi cyerekezo?",
+    "text": "N'iki umuyobozi w'ikinyabiziga yakora aramutse ahumishijwe n'urumuri rw'amatara yikinyabiziga giturutse mu kindi cyerekezo?",
     "options": {
       "a": "humisha ikinyabiziga giturutse mu kindi cyerekezo ucana  amatara maremare.",
       "b": "Egera kunkombe y'iburyo bw'umuhanda nibinashobioka ugabanye umuvuduko.",
@@ -3502,7 +3502,7 @@
   },
   {
     "id": 271,
-    "text": "Niki ugomba gukora igihe wegereye\nikimenyetso kimurika kiva mucyatsi kijya\nmumuhondo?",
+    "text": "Niki ugomba gukora igihe wegereye ikimenyetso kimurika kiva mucyatsi kijya mumuhondo?",
     "options": {
       "a": "Ongera umuvuduko kugirango usoze ikoni",
       "b": "Komeza kuko itara ry'icyatsi rigiye kwaka.",
@@ -3515,7 +3515,7 @@
   },
   {
     "id": 272,
-    "text": "Niki umuyobozi w' ikinyabiziga akwiriye\nkumenya mugihe akurikiye umuyobozi\nwikinyamitende ibiri kandi imodoka y' umweru\niri gusubira inyuma ijya mumuhanda?",
+    "text": "Niki umuyobozi w' ikinyabiziga akwiriye kumenya mugihe akurikiye umuyobozi wikinyamitende ibiri kandi imodoka y' umweru iri gusubira inyuma ijya mumuhanda?",
     "options": {
       "a": "Umuyobozi wikinyabiziga gisubira inyuma azahagarara nabona umuyobozi w' ikinyabimitende ibiri",
       "b": "Umuyobozi w' ikinyamitende ibiri ashobora gusaba umuyobozi w' ikinyabiziga gisubira inyuma guhagarara",
@@ -3528,7 +3528,7 @@
   },
   {
     "id": 273,
-    "text": "Aha niki umuyobozi w' ikinyabiziga yakora\nmugihe  ashaka kujya iburyo?",
+    "text": "Aha niki umuyobozi w' ikinyabiziga yakora mugihe ashaka kujya iburyo?",
     "options": {
       "a": "Gukomeza hagati y' abanyamaguru babiri",
       "b": "kuvuza ihoni akongera umuvuduko",
@@ -3541,7 +3541,7 @@
   },
   {
     "id": 274,
-    "text": "Aha umuyobozi w' ikinyabiziga  ashobora\nkunyura kuri aba abanyamagare?",
+    "text": "Aha umuyobozi w' ikinyabiziga ashobora kunyura kuri aba abanyamagare?",
     "options": {
       "a": "Oya, umuyobozi ntashobora kureba imbere neza",
       "b": "Yego, kuko umurongo wera ucagaguye udashobora kuba udacagaguye.",
@@ -3567,7 +3567,7 @@
   },
   {
     "id": 276,
-    "text": "Muri ibi binyabiziga bine ni ikihe kiri mu\nburyo bwiza bwo gukata ikoni ry'iburyo kiva mu\nmuhanda munini kijya mu muto?",
+    "text": "Muri ibi binyabiziga bine ni ikihe kiri mu buryo bwiza bwo gukata ikoni ry'iburyo kiva mu muhanda munini kijya mu muto?",
     "options": {
       "a": "Ikinyabiziga cya mbere kiri mu buryo bwiza bwo gukata ikoni ry'iburyo",
       "b": "Ikinyabiziga cya kabiri  kiri mu buryo bwiza bwo gukata ikoni ry'iburyo",
@@ -3580,7 +3580,7 @@
   },
   {
     "id": 277,
-    "text": "Niki umuyobozi w'ikinyabiziga yakora mu\ngihe abonye icyapa kiburira cya mpande eshatu\ngitukura mu muhanda?",
+    "text": "Niki umuyobozi w'ikinyabiziga yakora mu gihe abonye icyapa kiburira cya mpande eshatu gitukura mu muhanda?",
     "options": {
       "a": "Hagarara utegereze amabwiriza",
       "b": "Umuyobozi w'ikinyabiziga agomba kugabanya umuvuduko ateganya icyago imbere ye",
@@ -3593,7 +3593,7 @@
   },
   {
     "id": 278,
-    "text": "Niki umuyobozi w'ikinyabiziga agomba\ngukora ahuye n'amatungo mu muhanda?",
+    "text": "Niki umuyobozi w'ikinyabiziga agomba gukora ahuye n'amatungo mu muhanda?",
     "options": {
       "a": "Kuvuza ihoni kugirango zihunge",
       "b": "Umuyobozi w'ikinyabiziga agomba kugabanya umuvuduko zigatambuka",
@@ -3606,7 +3606,7 @@
   },
   {
     "id": 279,
-    "text": "Niki umuyobozi w'ikinyabiziga yakora\nabonye otobisi iri kuva aho zagenewe\nguhagararwamo?",
+    "text": "Niki umuyobozi w'ikinyabiziga yakora abonye otobisi iri kuva aho zagenewe guhagararwamo?",
     "options": {
       "a": "Gukomeza iruhande kuko ufite uburenganzira bwo gukomeza",
       "b": "Gabanya umuvuduko maze ureke ikomeze",
@@ -3619,7 +3619,7 @@
   },
   {
     "id": 280,
-    "text": "Niki umuyobozi w'ikinyabiziga yakora\nmugihe ahuye n'ikinyabiziga cyakije  itara\nry'umuhondo rimyatsa?",
+    "text": "Niki umuyobozi w'ikinyabiziga yakora mugihe ahuye n'ikinyabiziga cyakije itara ry'umuhondo rimyatsa?",
     "options": {
       "a": "Mu gihe ikinyabiziga giturutse mu kindi cyerekezo kitagishoboye kugenda",
       "b": "Mu gihe ikinyabiziga ndakumirwa  giturutse mu kindi cyerekezo",
@@ -3632,7 +3632,7 @@
   },
   {
     "id": 281,
-    "text": "Umuyobozi w'ikinyabiziga yakara iki mu\ngihe anyuzweho nikindi kinyabiziga?",
+    "text": "Umuyobozi w'ikinyabiziga yakara iki mu gihe anyuzweho nikindi kinyabiziga?",
     "options": {
       "a": "Gukomezanya umuvuduko warufite",
       "b": "Kujya i buryo",
@@ -3645,7 +3645,7 @@
   },
   {
     "id": 282,
-    "text": "Umurongo w'umweru urombereje uciye\nhagati mu muhanda uvuze iki?",
+    "text": "Umurongo w'umweru urombereje uciye hagati mu muhanda uvuze iki?",
     "options": {
       "a": "Umuyobozi wese abujijwe kuwurenga",
       "b": "Abanyamitende wemerewe kunyuranaho",
@@ -3658,7 +3658,7 @@
   },
   {
     "id": 283,
-    "text": "Umuyobozi w'ikinyabiziga ugeze mu\nisangano ry'umuhanda ugenzurwa ni\nibimenyetso by'amatara yaka agasanga ataka\n(adakora), yakora iki?",
+    "text": "Umuyobozi w'ikinyabiziga ugeze mu isangano ry'umuhanda ugenzurwa ni ibimenyetso by'amatara yaka agasanga ataka (adakora), yakora iki?",
     "options": {
       "a": "Guca  mu isangano n'ubwitonzi nkaho ntakimenyetso kikuyobora kirimo, witondera abandi bayobozi b'ibinyabiziga",
       "b": "Gutwara neza ntagutinda mw'isangano",
@@ -3671,7 +3671,7 @@
   },
   {
     "id": 284,
-    "text": "Ni iki umuyobozi w'ikinyabiziga yakora\nahuye n'ishyo ry'amatungo munzira\nnyabagendwa?",
+    "text": "Ni iki umuyobozi w'ikinyabiziga yakora ahuye n'ishyo ry'amatungo munzira nyabagendwa?",
     "options": {
       "a": "Kuvuza ihoni kugirango ayo matungo atambuke",
       "b": "Umuyobozi w'ikinyabiziga agomba kugabanya umuvuduko no gutambukana ubwitonzi",
@@ -3684,7 +3684,7 @@
   },
   {
     "id": 285,
-    "text": "Umuyobozi w'ikinyabiziga yakora iki igihe\nageze ku  kazamuko gashinze cyane ?",
+    "text": "Umuyobozi w'ikinyabiziga yakora iki igihe ageze ku kazamuko gashinze cyane ?",
     "options": {
       "a": "Umuyobozi w'ikinyabiziga agomba kugabanya umuvuduko akaguma kuruhande rw'iburyo yirinda  ibyago",
       "b": "Gukandagira ikirenge cya amburiyage no kuvuza ihoni ryo kumunyesha",
@@ -3697,7 +3697,7 @@
   },
   {
     "id": 286,
-    "text": "Umuyobozi w'ikinyabiziga yakora iki ahuye\nn'ikinyabiziga  giturutse mukindi kerekezo,\ngicanye amatara  yumuhondo aburira ?",
+    "text": "Umuyobozi w'ikinyabiziga yakora iki ahuye n'ikinyabiziga giturutse mukindi kerekezo, gicanye amatara yumuhondo aburira ?",
     "options": {
       "a": "Umuyobozi w'ikinyabiziga agomba kugabanya umuvuduko no gutambukana ubwitonzi",
       "b": "Ikinyabiziga cy'ubutabazi",
@@ -3710,7 +3710,7 @@
   },
   {
     "id": 287,
-    "text": "Niki umuyobozi w'ikinyabiziga yakora\nageze hafi y'inzira ifunganye  igihe ahuye\nn'ikindi kinyabiziga giturutse mukindi\ncyerekezo?",
+    "text": "Niki umuyobozi w'ikinyabiziga yakora ageze hafi y'inzira ifunganye igihe ahuye n'ikindi kinyabiziga giturutse mukindi cyerekezo?",
     "options": {
       "a": "Agomba kuguma mumwanya yarimo agategereza gutambuka kwikindi kinyabiziga",
       "b": "kugabanya umuvuduko no gusiga umwanya uhagije hagati y'ibinyabiziga byombi",
@@ -3723,7 +3723,7 @@
   },
   {
     "id": 288,
-    "text": "Umuyobozi w' ikinyabiziga  agendera\ninyuma y'ikindi kinyabizaga  akaba adateganya\nkukinyuraho  yakora iki ?",
+    "text": "Umuyobozi w' ikinyabiziga agendera inyuma y'ikindi kinyabizaga akaba adateganya kukinyuraho yakora iki ?",
     "options": {
       "a": "kuguma yicyo kinyabiziga hagati mu muhanda",
       "b": "kuguma inyuma yacyo kugirango yemerere ibindi binyabiziga gutambuka",
@@ -3736,7 +3736,7 @@
   },
   {
     "id": 289,
-    "text": "Niryari amatara ndanga cyerekezo agomba\nkugaragazwa  kubandi bakoresha  umuhanda ?",
+    "text": "Niryari amatara ndanga cyerekezo agomba kugaragazwa kubandi bakoresha umuhanda ?",
     "options": {
       "a": "igihe gusa ari ngombwa  amenyesha ibindi binyabiziga bimukurikiye",
       "b": "igihe gusa aringombwa kuburira abandi bayobozi bava mukindi cyerekezo",
@@ -3749,7 +3749,7 @@
   },
   {
     "id": 290,
-    "text": "Gutinda gutanga ibimenyetso  ku muyobozi\nw'ikinyabiziga  ni gute bibangamira  abandi\nbakoresha umuhanda ?",
+    "text": "Gutinda gutanga ibimenyetso ku muyobozi w'ikinyabiziga ni gute bibangamira abandi bakoresha umuhanda ?",
     "options": {
       "a": "bigira ingaruka gusa kubaturuka mukindi cyerekezo",
       "b": "bishobora gutuma batabona igihe gihagije cyo gushyira mubikorwa  icyo amenyeshejwe",
@@ -3762,7 +3762,7 @@
   },
   {
     "id": 291,
-    "text": "Ni ubuhe buryo bwiza bwakurikizwa igihe\nhari umuntu wakomerekeye mu mpanuka yo\nmu muhanda ?",
+    "text": "Ni ubuhe buryo bwiza bwakurikizwa igihe hari umuntu wakomerekeye mu mpanuka yo mu muhanda ?",
     "options": {
       "a": "Ku mushyira kunkengero y'umuhanda",
       "b": "Kutamukuramo keretse mugihe hari ibyago byaterwa n'inkogi y'umuriro   cyangwa akaba ashobora kugongwa n'ikindi kinyabiziga no guhamagara ababishinzwe",
@@ -3775,7 +3775,7 @@
   },
   {
     "id": 292,
-    "text": "Niki umuyobozi w'ikinyabiziga yakora\nigihe agize uruhare mu mpanuka yo mu\nmuhanda , aho ntawakometese  ariko\nibinyabiziga bikaba  byateza icyago cyangwa\nbyafunze umuhanda ?",
+    "text": "Niki umuyobozi w'ikinyabiziga yakora igihe agize uruhare mu mpanuka yo mu muhanda , aho ntawakometese ariko ibinyabiziga bikaba byateza icyago cyangwa byafunze umuhanda ?",
     "options": {
       "a": "Gushushanya aho  zagonganiye no kuzishyira kuruhande",
       "b": "Gukuramo abagenze ugashyiraho icyapa cya mpandeshatu girukura kumodoka",
@@ -3788,7 +3788,7 @@
   },
   {
     "id": 293,
-    "text": "Igihe umuyobozi w'ikinyabiziga agendera\nmunzira y'icyerekezo kimwe akifuza gukata\nibumoso yakora iki?",
+    "text": "Igihe umuyobozi w'ikinyabiziga agendera munzira y'icyerekezo kimwe akifuza gukata ibumoso yakora iki?",
     "options": {
       "a": "gutwara yegera umurongo wo hagati mu muhanda yerekeza ibumoso",
       "b": "gutwara yegera uruhande rw'iburyo bw'umuhanda",
@@ -3801,7 +3801,7 @@
   },
   {
     "id": 294,
-    "text": "Umuyobozi w'ikinyabizaga uri kugendera\nmu muhanda w'ibyerekezo bibiri nuruhe\nruhande rw'umuhanda agomba gukoresha ?",
+    "text": "Umuyobozi w'ikinyabizaga uri kugendera mu muhanda w'ibyerekezo bibiri nuruhe ruhande rw'umuhanda agomba gukoresha ?",
     "options": {
       "a": "uruhande rw'ibumoso bw'umuhanda uretse igihe atawaye imashini zihinga cyangwa zikoreshwa indi mirimo",
       "b": "Mu  gice cy;umuhanda yumva ashaka",
@@ -3814,7 +3814,7 @@
   },
   {
     "id": 295,
-    "text": "Igihe umuyobozi w'ikinyabiziga atwaye mu\nmuhanda urombereje w'ibice byinshi  agomba\nkugendera mu kihe gice   cy'umuhanda ?",
+    "text": "Igihe umuyobozi w'ikinyabiziga atwaye mu muhanda urombereje w'ibice byinshi agomba kugendera mu kihe gice cy'umuhanda ?",
     "options": {
       "a": "Kugendera mugice icyo aricyo cyose kirimo ibinyabiziga bike",
       "b": "Kugendera kugice cy'ibumoso  keretse ushaka gusohokera iburyo",
@@ -3827,7 +3827,7 @@
   },
   {
     "id": 296,
-    "text": "Umuyobozi w'ikinyabiziga yakora iki igihe\nageze aho banyura bazenguruka?",
+    "text": "Umuyobozi w'ikinyabiziga yakora iki igihe ageze aho banyura bazenguruka?",
     "options": {
       "a": "Tanga inzira ku binyabiziga byamaze kwinjira aho banyura bazunguruka",
       "b": "Tanga  inzira  kubinyabiziga biremereye gusa",
@@ -3840,7 +3840,7 @@
   },
   {
     "id": 297,
-    "text": "Ni kihe cyerekezo umuyobozi w'ikinyabiziga\nyinjiriramo iyo ageze aho banyura bazenguruka\n?",
+    "text": "Ni kihe cyerekezo umuyobozi w'ikinyabiziga yinjiriramo iyo ageze aho banyura bazenguruka ?",
     "options": {
       "a": "ibumoso",
       "b": "ibumoso gusa igihe ayobowe ni kimenyetso kimurika",
@@ -3853,7 +3853,7 @@
   },
   {
     "id": 298,
-    "text": "Mbere yuko umuyobozi w'ikinyabiziga\nakata ibumoso mu  nzira nyabagendwa,  nihe\nikinyabiziga kigomba kuba kiri ?",
+    "text": "Mbere yuko umuyobozi w'ikinyabiziga akata ibumoso mu nzira nyabagendwa, nihe ikinyabiziga kigomba kuba kiri ?",
     "options": {
       "a": "Mu ruhande rw'iburyo bw'inzira nyabagendwa",
       "b": "Gusa iburyo bwo hagati y'inzira nyabagendwa",
@@ -3866,7 +3866,7 @@
   },
   {
     "id": 299,
-    "text": "Umuyobozi w'ikinyabiziga yakwitondera\niki mbere yuko y'injira  munzira  banyuramo\nbazengurutse ?",
+    "text": "Umuyobozi w'ikinyabiziga yakwitondera iki mbere yuko y'injira munzira banyuramo bazengurutse ?",
     "options": {
       "a": "ibinyabiziga bimuturuka inyuma umuvuduko bifite n'uburyo bimwegereye",
       "b": "ibinyabiziga biturutse ibumoso bwe n'umuvuduko bifite n'intera iri hagati ye nabyo",
@@ -3879,7 +3879,7 @@
   },
   {
     "id": 300,
-    "text": "Umuyobozi w'ikinyabiziga ugendera\ninyuma y'ikinyabaziga gitwara abagenzi\ngihagaze gikuramo cyangwa gishyiramo\nabagenzi agomba :",
+    "text": "Umuyobozi w'ikinyabiziga ugendera inyuma y'ikinyabaziga gitwara abagenzi gihagaze gikuramo cyangwa gishyiramo abagenzi agomba :",
     "options": {
       "a": "kunyuranaho ibumoso",
       "b": "gutegereza yihanganye",
@@ -3892,7 +3892,7 @@
   },
   {
     "id": 301,
-    "text": "Igihe ubonye icyapa  kigaragaza ishuli\nwakora iki?",
+    "text": "Igihe ubonye icyapa kigaragaza ishuli wakora iki?",
     "options": {
       "a": "kugabanya umuvuduko no gukomeza witonze",
       "b": "gukomeza n'umuvuduko uri hejuru  kuko umunyeshuli  agomba gutegereza",
@@ -3905,7 +3905,7 @@
   },
   {
     "id": 302,
-    "text": "Umubare w'abagenzi bemewe gutwarwa\nmukinyabiziga  wanditswe mu :",
+    "text": "Umubare w'abagenzi bemewe gutwarwa mukinyabiziga wanditswe mu :",
     "options": {
       "a": "icyemezo cy'iyandikwa ry'ikinyabiziga",
       "b": "inyemezabwishyu y'umusoro",
@@ -3931,7 +3931,7 @@
   },
   {
     "id": 304,
-    "text": "Umuyobozi w'ikinyabizaga ashobora\nkunyuranaho:",
+    "text": "Umuyobozi w'ikinyabizaga ashobora kunyuranaho:",
     "options": {
       "a": "ahamanuka",
       "b": "igihe umuhanda ari mugari",
@@ -3944,7 +3944,7 @@
   },
   {
     "id": 305,
-    "text": "Ugeze ahari inzira yabanyamaguru\nbarindiriye kwambuka. Ntibatangiye\nkwambuka , wakora iki?",
+    "text": "Ugeze ahari inzira yabanyamaguru barindiriye kwambuka. Ntibatangiye kwambuka , wakora iki?",
     "options": {
       "a": "kuvuza ihoni",
       "b": "kwihangana ugatagereza",
@@ -3957,7 +3957,7 @@
   },
   {
     "id": 306,
-    "text": "Igihe utwaye umuntu mu kinyabiziga cyawe,\nakibagirwa kwambara umukandara  wo\nkwirinda ibyago  ugomba:",
+    "text": "Igihe utwaye umuntu mu kinyabiziga cyawe, akibagirwa kwambara umukandara wo kwirinda ibyago ugomba:",
     "options": {
       "a": "gukuramo  umukandara  wo kwirinda ibyago wambaye mukawambara mwembi",
       "b": "kubyerengagiza wizeyeko  nta mpanuka muri bukore",
@@ -3970,7 +3970,7 @@
   },
   {
     "id": 307,
-    "text": "Igihe za otobisi zigenewe gutwara\nbanyeshuli zihagaze kugirango zibafate cyangwa\nbavemo  ugomba :",
+    "text": "Igihe za otobisi zigenewe gutwara banyeshuli zihagaze kugirango zibafate cyangwa bavemo ugomba :",
     "options": {
       "a": "kuvuza ihoni ugakomeza",
       "b": "gukomeza ugabanyije umuvuduko n'ubwitonzi  kuko bishoboka ko abanyeshuli bakwambuka bitunguranye",
@@ -3983,7 +3983,7 @@
   },
   {
     "id": 308,
-    "text": "Igihe imodoka iparitse ku nkengero\nz'umuhanda  mugihe cy' ijoro :",
+    "text": "Igihe imodoka iparitse ku nkengero z'umuhanda mugihe cy' ijoro :",
     "options": {
       "a": "Imodoka igomba kuba ifunze",
       "b": "Umuntu ufite uruhushya rwo gutwara ikinyabiziga agomba kuba yicaye mu mwanya w'umuyobozi",
@@ -3996,7 +3996,7 @@
   },
   {
     "id": 309,
-    "text": "Mu gihe hari undi muyobozi  w'ikinyabiziga\nugukurikiye watangiye kukunyuraho :",
+    "text": "Mu gihe hari undi muyobozi w'ikinyabiziga ugukurikiye watangiye kukunyuraho :",
     "options": {
       "a": "Ntugomba kugira undi muyobozi w'ikinyabiziga  unyuraho",
       "b": "Ugomba kunyura ku kindi kinyabiziga",
@@ -4009,7 +4009,7 @@
   },
   {
     "id": 310,
-    "text": "Utwaye ikinyabiziga mu muhanda ufite\nibyerekezo bibiri .ikinyabiziga imbere yawe\ncyiragenda buhoro, imbere yawe umuhanda  nta\nkibazo kunyuranaho, ugomba :",
+    "text": "Utwaye ikinyabiziga mu muhanda ufite ibyerekezo bibiri .ikinyabiziga imbere yawe cyiragenda buhoro, imbere yawe umuhanda nta kibazo kunyuranaho, ugomba :",
     "options": {
       "a": "kucyinyuraho bikorewe ibumoso",
       "b": "kucyinyuraho bikorewe iburyo",
@@ -4022,7 +4022,7 @@
   },
   {
     "id": 311,
-    "text": "Ibice by'umuhanda byera bigari biteganye\nn'umurongo ugabanya umuhanda mo ,kabiri\nbisobanura:",
+    "text": "Ibice by'umuhanda byera bigari biteganye n'umurongo ugabanya umuhanda mo ,kabiri bisobanura:",
     "options": {
       "a": "guhagara kw'ikinyabiziga",
       "b": "aho abanyamaguru bambukira",
@@ -4048,7 +4048,7 @@
   },
   {
     "id": 313,
-    "text": "Kuki\nabanyamaguru\nbatemerewe\nkwambuka umuhanda mw'ikoni cyangwa hafi\ny'imodoka ihagaze?",
+    "text": "Kuki abanyamaguru batemerewe kwambuka umuhanda mw'ikoni cyangwa hafi y'imodoka ihagaze?",
     "options": {
       "a": "ingaruka kubindi binyabiziga",
       "b": "ingaruka kubandi bakoresha umuhanda",
@@ -4074,7 +4074,7 @@
   },
   {
     "id": 315,
-    "text": "Umuyobozi w'ikinyabiziga igihe atwaye\nikinyabiziga  akagira umunaniro utuma\nyasinzira yakora iki ?",
+    "text": "Umuyobozi w'ikinyabiziga igihe atwaye ikinyabiziga akagira umunaniro utuma yasinzira yakora iki ?",
     "options": {
       "a": "Gufungura ikirahure cy'ikinyabiziga cyangwa gushyira ubukonje mu modoka  kugirango umwuka mwiza winjire mu kinyabiziga",
       "b": "Guhagarara akaruhuka  harimo no kugendagenda niba bishoboka",
@@ -4087,7 +4087,7 @@
   },
   {
     "id": 316,
-    "text": "Niki umuyobozi w'ikinyabiziga yakora igihe\natwaye ikinyabiziga mugihe cy'ibihu,imvura\nnyinshi, umwuzure  cyangwa umukungugu\nmwinshi ?",
+    "text": "Niki umuyobozi w'ikinyabiziga yakora igihe atwaye ikinyabiziga mugihe cy'ibihu,imvura nyinshi, umwuzure cyangwa umukungugu mwinshi ?",
     "options": {
       "a": "Kugendera mu tuyira turi kumpande zu muhanda, ucunga ibimenyetso  bigarura urumuri",
       "b": "Kugabanya umuvuduko hanyuma ugakoresha amatara magufi",
@@ -4100,7 +4100,7 @@
   },
   {
     "id": 317,
-    "text": "Muri ibi byapa ni ubuhe bwoko bw'ibyapa\nbitegeka  byo   mu muhanda?",
+    "text": "Muri ibi byapa ni ubuhe bwoko bw'ibyapa bitegeka byo mu muhanda?",
     "options": {
       "a": "ibiri mw'ishusho y'urukiramende n'umuzenguruko w'umuhondo",
       "b": "ibiri  mw'ishusho ya mpande eshatu mu n'uzenguruko mw'ibara ry'ubururu",
@@ -4113,7 +4113,7 @@
   },
   {
     "id": 318,
-    "text": "Ugeze mu masangano y'umuhanda  aho\nusanga ibimenyetso bimurika bidakora, wakora\niki igihe  umukozi ubifiye ububasha aguhaye iki\nkimenyesto ?",
+    "text": "Ugeze mu masangano y'umuhanda aho usanga ibimenyetso bimurika bidakora, wakora iki igihe umukozi ubifiye ububasha aguhaye iki kimenyesto ?",
     "options": {
       "a": "gukata ibumoso gusa",
       "b": "gukata iburyo gusa ugakomeza imbere",
@@ -4126,7 +4126,7 @@
   },
   {
     "id": 319,
-    "text": "Amatara ndangacyerekezo agomba\nkugaragara nijoro igihe ijuru rikeye mu ntera\nnibura ya:",
+    "text": "Amatara ndangacyerekezo agomba kugaragara nijoro igihe ijuru rikeye mu ntera nibura ya:",
     "options": {
       "a": "m 100",
       "b": "m 200",
@@ -4139,7 +4139,7 @@
   },
   {
     "id": 320,
-    "text": "Umurongo ucagaguye uvuga ko buri\nmuyobozi abujijwe kuwurenga uretse mu gihe:",
+    "text": "Umurongo ucagaguye uvuga ko buri muyobozi abujijwe kuwurenga uretse mu gihe:",
     "options": {
       "a": "Agomba kunyura ku kindi kinyabiziga",
       "b": "Gukatira ibumoso",
@@ -4152,7 +4152,7 @@
   },
   {
     "id": 321,
-    "text": "Igice cy'inzira nyabagendwa kigarukira\nkumirongo ibiri yera icagaguye ibangikanye\nkandi gifite ubugari   budahagije kugirango\nimodoka zitambuke neza kiba ari:",
+    "text": "Igice cy'inzira nyabagendwa kigarukira kumirongo ibiri yera icagaguye ibangikanye kandi gifite ubugari budahagije kugirango imodoka zitambuke neza kiba ari:",
     "options": {
       "a": "Inzira y'abanyamaguru",
       "b": "Agahanda k'amagare",
@@ -4165,7 +4165,7 @@
   },
   {
     "id": 322,
-    "text": "Icyapa kimenyesha kugendera mu muhanda\nubisikanirwamo gifite:",
+    "text": "Icyapa kimenyesha kugendera mu muhanda ubisikanirwamo gifite:",
     "options": {
       "a": "Ishusho y'uruziga mw'ibara ritukura, ubuso bwera n'ikirango cy'umukara",
       "b": "Ishusho ya mpandeshatu mw'ibara ritukura, ubuso bwera n'ikirango cy'umukara",
@@ -4178,7 +4178,7 @@
   },
   {
     "id": 323,
-    "text": "Ikinyabiziga kigendeshwa na moteri\nn'ikinyabiziga gikururwa n'inyamaswa\nntibishobora  gukurura :",
+    "text": "Ikinyabiziga kigendeshwa na moteri n'ikinyabiziga gikururwa n'inyamaswa ntibishobora gukurura :",
     "options": {
       "a": "Ibinyabiziga birenze kimwe",
       "b": "Ibinyabiziga bipakiye birenze bibiri",
@@ -4217,7 +4217,7 @@
   },
   {
     "id": 326,
-    "text": "Utugarurarumuri turi ku ruhande\nrw'imbere rw'ikinyabiziga tugomba gusa:",
+    "text": "Utugarurarumuri turi ku ruhande rw'imbere rw'ikinyabiziga tugomba gusa:",
     "options": {
       "a": "n'umuhondo",
       "b": "n'umutuku",
@@ -4269,7 +4269,7 @@
   },
   {
     "id": 330,
-    "text": "Umuyobozi\nubonye\nko\nhari\nundi\numukurikiye\nashaka\nkumunyuraho\nagomba\nkubahiriza ibi bikurikira :",
+    "text": "Umuyobozi ubonye ko hari undi umukurikiye ashaka kumunyuraho agomba kubahiriza ibi bikurikira :",
     "options": {
       "a": ") kwegera i ruhande rw'iburyo bw'umuhanda",
       "b": "kongera umuvuduko",
@@ -4334,7 +4334,7 @@
   },
   {
     "id": 335,
-    "text": "Iyo umuhanda ugabanijemo ibisate bibiri\nkandi\nugendwamo\nmu\nbyerekezo\nbyombi\numuyobozi abujijwe :",
+    "text": "Iyo umuhanda ugabanijemo ibisate bibiri kandi ugendwamo mu byerekezo byombi umuyobozi abujijwe :",
     "options": {
       "a": "kugendera mu gisate cy'iburyo",
       "b": "kunyuranaho",
@@ -4347,7 +4347,7 @@
   },
   {
     "id": 336,
-    "text": "Icyapa kimenyesha kugendera mu muhanda\nubisikanirwamo gifite:",
+    "text": "Icyapa kimenyesha kugendera mu muhanda ubisikanirwamo gifite:",
     "options": {
       "a": "Ishusho y'uruziga mw'ibara ritukura, ubuso bwera n'ikirango cy'umukara",
       "b": "Ishusho ya mpandeshatu mw'ibara ritukura, ubuso bwera n'ikirango cy'umukara",
@@ -4360,7 +4360,7 @@
   },
   {
     "id": 337,
-    "text": "Icyapa cyerekana inzira y'amatungo\nitegetswe giteye:",
+    "text": "Icyapa cyerekana inzira y'amatungo itegetswe giteye:",
     "options": {
       "a": "Uruziga mubuso bw'ubururu, ishusho y'inka mu ibara ry'umukara",
       "b": "Uruziga mu ibara ryera, ishusho y'inka mwibara ry'ubururu",
@@ -4373,7 +4373,7 @@
   },
   {
     "id": 338,
-    "text": "Icyapa cyerekana ko bibujijwe kuvuza\namahoni  kirangwa na :",
+    "text": "Icyapa cyerekana ko bibujijwe kuvuza amahoni kirangwa na :",
     "options": {
       "a": "ishusho y'uruziga, ubuso bw'ubururu, ikiranga cy'umukara",
       "b": "ishusho y'uruziga, ubuso bw'ubururu, ikiranga cy'umweru",
@@ -4386,7 +4386,7 @@
   },
   {
     "id": 339,
-    "text": "Ibyapa biburira nibyo gutambuka mbere\nbirangwa:",
+    "text": "Ibyapa biburira nibyo gutambuka mbere birangwa:",
     "options": {
       "a": ".ishusho mpandeshatu mw'ibara ritukura , ubuso bwera n' ikiranga mu ibara ry'umukara",
       "b": "ishusho mpandeshatu mw'ibara ritukura,ubuso bw'ubururu n'ikiranga mu ibara ry'umukara",
@@ -4399,7 +4399,7 @@
   },
   {
     "id": 340,
-    "text": "Ibyapa bibuza n'ibitegeka bikurikizwa gusa\n:",
+    "text": "Ibyapa bibuza n'ibitegeka bikurikizwa gusa :",
     "options": {
       "a": "Mumasangano",
       "b": "mu bimenyetso bimurika",
@@ -4412,7 +4412,7 @@
   },
   {
     "id": 341,
-    "text": "Ibyapa biburira bibereyeho kumenyesha\numugenzi :",
+    "text": "Ibyapa biburira bibereyeho kumenyesha umugenzi :",
     "options": {
       "a": ") ko hari icyago",
       "b": "icyago kidasobanuye ukundi",
@@ -4425,7 +4425,7 @@
   },
   {
     "id": 342,
-    "text": "Ibyapa by'inyongera bishobora\nkumenyesha.",
+    "text": "Ibyapa by'inyongera bishobora kumenyesha.",
     "options": {
       "a": "ibitegetswe byihariye gusa",
       "b": "ubugerure cyangwa amarengamategeko rusange cyangwa ibibujijwe ndetse n'ibitegetswe byihariye",
@@ -4438,7 +4438,7 @@
   },
   {
     "id": 343,
-    "text": "Ishusho y'icyapa\nkivuga''ugukikira”bitegetswe ni :",
+    "text": "Ishusho y'icyapa kivuga''ugukikira”bitegetswe ni :",
     "options": {
       "a": "mpandeshatu",
       "b": ") uruziga",
@@ -4451,7 +4451,7 @@
   },
   {
     "id": 344,
-    "text": "Icyapa kivuga “icyerekezo\ngitegetswe”kigizwe n'ikirango cy'ibara :",
+    "text": "Icyapa kivuga “icyerekezo gitegetswe”kigizwe n'ikirango cy'ibara :",
     "options": {
       "a": "umweru",
       "b": "umutuku",
@@ -4464,7 +4464,7 @@
   },
   {
     "id": 345,
-    "text": "Iki kimenyetso gitanzwe n'umukozi ubifitiye\nububasha cyo guhagarara :",
+    "text": "Iki kimenyetso gitanzwe n'umukozi ubifitiye ububasha cyo guhagarara :",
     "options": {
       "a": "ku bakoresha umuhanda ba muturutse imbere",
       "b": "ku bakoresha umuhanda bose bamuturutse imbere n'inyuma",
@@ -4477,7 +4477,7 @@
   },
   {
     "id": 346,
-    "text": "Ibi byapa byo mu muhanda birambuza\nkunyuranaho ibumoso ?",
+    "text": "Ibi byapa byo mu muhanda birambuza kunyuranaho ibumoso ?",
     "options": {
       "a": "yego",
       "b": "yego, iyo ufite umuvuduo wa 90km/h",
@@ -4490,7 +4490,7 @@
   },
   {
     "id": 347,
-    "text": "Umuhanda urombereje w'ibice byinshi.\nNdashaka kunyura kuri izi kamyo ebyiri  mugihe\ngito ibumoso icyarimwe , biremewe ?",
+    "text": "Umuhanda urombereje w'ibice byinshi. Ndashaka kunyura kuri izi kamyo ebyiri mugihe gito ibumoso icyarimwe , biremewe ?",
     "options": {
       "a": "yego,",
       "b": "oya",
@@ -4503,7 +4503,7 @@
   },
   {
     "id": 348,
-    "text": "K'umuyobozi w'ivatiri, iki cyapa kivuze\niki ?",
+    "text": "K'umuyobozi w'ivatiri, iki cyapa kivuze iki ?",
     "options": {
       "a": "kirambuza gutwara ku muvuduko utarengeje 5km/h",
       "b": "ntaburenganzira kimpa, mugihe gikurikizwa ku binyabiziga bifite hejuru y atoni 5",
@@ -4529,7 +4529,7 @@
   },
   {
     "id": 350,
-    "text": "Umuhanda wambukiranya inzira ya\ngariyamoshi",
+    "text": "Umuhanda wambukiranya inzira ya gariyamoshi",
     "options": {
       "a": "nshobora gukomeza nkambuka umuhanda kubera ko uruzitiro rufunguye",
       "b": "ngomba guhagarara munsi yitara ry'umutuku rimyatsa",
@@ -4542,7 +4542,7 @@
   },
   {
     "id": 351,
-    "text": "Kuri iki cyapa  cyo mu muhanda cyambere\nkintegeka ?",
+    "text": "Kuri iki cyapa cyo mu muhanda cyambere kintegeka ?",
     "options": {
       "a": "Kugendera k'umuvuduko  uri hejuru ya 30km/h",
       "b": "kutarenza umuvuduko wa 30km/h",
@@ -4555,7 +4555,7 @@
   },
   {
     "id": 352,
-    "text": "Mpagaze mu murongo  wo guhagarara\numwanya muto",
+    "text": "Mpagaze mu murongo wo guhagarara umwanya muto",
     "options": {
       "a": "Nshobora gukata ibumoso",
       "c": "Nshobora gukata ibumoso  cyangwa iburyo",
@@ -4580,7 +4580,7 @@
   },
   {
     "id": 354,
-    "text": "Ndashaka kugata ibumoso. Imodoka\ny'icyatsi yaje irahagarara. Ninde ufite\nuburenganzira bwo gutambuka mbere?",
+    "text": "Ndashaka kugata ibumoso. Imodoka y'icyatsi yaje irahagarara. Ninde ufite uburenganzira bwo gutambuka mbere?",
     "options": {
       "a": "mfite uburenganzira bwo gutambuka mbere",
       "b": "imodoka y'icyatsi ifite uburenganzira bwo gutambuka mbere",
@@ -4593,7 +4593,7 @@
   },
   {
     "id": 355,
-    "text": "Mfite uburenganzira bwo gutambuka muri\niri sangano ?",
+    "text": "Mfite uburenganzira bwo gutambuka muri iri sangano ?",
     "options": {
       "a": "yego, niba ukata ibumoso",
       "b": "Oya niba ukata iburyo",
@@ -4606,7 +4606,7 @@
   },
   {
     "id": 356,
-    "text": "Ndi kumuvuduko wa 20km/h. nshobora\ngukomeza muri iri sangano ry'umuhanda?",
+    "text": "Ndi kumuvuduko wa 20km/h. nshobora gukomeza muri iri sangano ry'umuhanda?",
     "options": {
       "a": "oya",
       "b": "yago, nshobora gukata iburyo",
@@ -4619,7 +4619,7 @@
   },
   {
     "id": 357,
-    "text": "Umuyobozi wikinyabiziga aritegura\nkunyuraho ibumoso :",
+    "text": "Umuyobozi wikinyabiziga aritegura kunyuraho ibumoso :",
     "options": {
       "a": "nshobora kumunyuraho nyuze iburyo",
       "b": "sinshobora kumunyura",
@@ -4645,7 +4645,7 @@
   },
   {
     "id": 359,
-    "text": "Ndashaka gupariki ikinyabiga iburyo\nkunzira y'abanyamaguru",
+    "text": "Ndashaka gupariki ikinyabiga iburyo kunzira y'abanyamaguru",
     "options": {
       "a": "biremewe munsi yicyi cyapa",
       "b": "biremewe imbere y'icyi cyapa",
@@ -4684,7 +4684,7 @@
   },
   {
     "id": 362,
-    "text": "Iki cyapa gisobanura iki aho banyura\nbazengurutse ?",
+    "text": "Iki cyapa gisobanura iki aho banyura bazengurutse ?",
     "options": {
       "a": "Tanga inzira ku binyabiziga biri mu muhanda munini",
       "b": "Tanga inzira ku binyabiziga biturutse i bumoso",
@@ -4905,7 +4905,7 @@
   },
   {
     "id": 379,
-    "text": "Mu byapa bikurikira , ni ikihe cyerekana\numuhanda  udakomeza:",
+    "text": "Mu byapa bikurikira , ni ikihe cyerekana umuhanda udakomeza:",
     "options": {
       "a": "Icyapa  C1",
       "b": "Icyapa E14",
@@ -4931,7 +4931,7 @@
   },
   {
     "id": 381,
-    "text": "Muri ibi byapa bikurikira ni ikihe\ncyerekana ko umuyobozi ukibonye yemerewe\ngutambuka mbere y'abaturutse aho agana mu\nnzira ifunganye:",
+    "text": "Muri ibi byapa bikurikira ni ikihe cyerekana ko umuyobozi ukibonye yemerewe gutambuka mbere y'abaturutse aho agana mu nzira ifunganye:",
     "options": {
       "a": "Icyapa B6",
       "b": "Icyapa A19",
@@ -4970,7 +4970,7 @@
   },
   {
     "id": 384,
-    "text": "Ni ikihe icyapa gisobanura umuhanda\nw'icyerekezo kimwe:",
+    "text": "Ni ikihe icyapa gisobanura umuhanda w'icyerekezo kimwe:",
     "options": {
       "a": "Icyapa D1a",
       "b": "Icyapa E13a",
@@ -5035,7 +5035,7 @@
   },
   {
     "id": 389,
-    "text": "Mu gihe  utwaye ikinyabiziga uva kuri A\nugana kuri B,  Iki kimenyetso kiri mu muhanda\nkivuze iki ?",
+    "text": "Mu gihe utwaye ikinyabiziga uva kuri A ugana kuri B, Iki kimenyetso kiri mu muhanda kivuze iki ?",
     "options": {
       "a": "Umuyobozi ashobora kurenga umurongo wera udacagaguye mugihe  cyo guhindukira gusa",
       "b": "Umuyobozi w'ikinyabiziga abujijwe kunyuranaho, uretse gusa abayobozi b'ibinyamitende nibo bashobora kurenga umurongo wera udacagaguye",
@@ -5048,7 +5048,7 @@
   },
   {
     "id": 390,
-    "text": "Mu gihe  utwaye ikinyabiziga uva kuri A\nugana kuri B,  Iki kimenyetso kiri mu muhanda\nkivuze iki ?",
+    "text": "Mu gihe utwaye ikinyabiziga uva kuri A ugana kuri B, Iki kimenyetso kiri mu muhanda kivuze iki ?",
     "options": {
       "a": "Umuyobozi w'ikinyabiziga ashobora kunyuranaho arenze umurongo wera udacagaguye",
       "b": "Umuyobozi w'ikinyabiziga abujijwe kunyuranaho arenze imirongo yera",
