@@ -1,5 +1,5 @@
 use crate::state::AppState;
-use amategeko_core::{QuestionResult, QuizMode, Strings};
+use amategeko_core::{t, Language, QuestionResult, QuizMode};
 use gpui::InteractiveElement as _;
 use gpui_kit::base::StyledExt;
 use gpui_kit::component::button::{Button, ButtonVariants};
@@ -34,39 +34,50 @@ impl ResultsView {
         let theme = cx.theme();
         let colors = theme.colors;
 
-        let result =
-            match &state.last_result {
-                Some(res) => res,
-                None => {
-                    return div()
-                        .id("results_empty_scroll")
-                        .flex()
-                        .flex_col()
-                        .items_center()
-                        .justify_center()
-                        .size_full()
-                        .p_6()
-                        .gap_4()
-                        .child(
-                            div()
-                                .text_lg()
-                                .font_bold()
-                                .text_color(colors.foreground)
-                                .child("Nta bisubizo by'ikizamini bihari."),
-                        )
-                        .child(div().text_sm().text_color(colors.muted_foreground).child(
-                            "Tangira ikizamini gishya kugira ngo ubone ibisubizo byawe hano.",
-                        ))
-                        .child(
-                            Button::new("home_empty_btn")
-                                .primary()
-                                .label("Gusubira Ahabanza")
-                                .on_click(cx.listener(move |this, _, window, cx| {
-                                    on_home(this, window, cx);
-                                })),
-                        );
-                }
-            };
+        let lang = state.settings.language;
+        let q_lang = state.settings.question_language;
+        let show_both = state.settings.show_both_languages;
+
+        let result = match &state.last_result {
+            Some(res) => res,
+            None => {
+                return div()
+                    .id("results_empty_scroll")
+                    .flex()
+                    .flex_col()
+                    .items_center()
+                    .justify_center()
+                    .size_full()
+                    .p_6()
+                    .gap_4()
+                    .child(
+                        div()
+                            .text_lg()
+                            .font_bold()
+                            .text_color(colors.foreground)
+                            .child(if lang == Language::En {
+                                "No quiz results available."
+                            } else {
+                                "Nta bisubizo by'ikizamini bihari."
+                            }),
+                    )
+                    .child(div().text_sm().text_color(colors.muted_foreground).child(
+                        if lang == Language::En {
+                            "Start a new quiz to view your results here."
+                        } else {
+                            "Tangira ikizamini gishya kugira ngo ubone ibisubizo byawe hano."
+                        },
+                    ))
+                    .child(
+                        Button::new("home_empty_btn")
+                            .primary()
+                            .label(t("nav.home", lang))
+                            .on_click(cx.listener(move |this, _, window, cx| {
+                                on_home(this, window, cx);
+                            })),
+                    );
+            }
+        };
 
         let score = result.score;
         let total = result.total;
@@ -75,11 +86,11 @@ impl ResultsView {
         let percentage = (score * 100).checked_div(total).unwrap_or(0);
 
         let mode_label = match result.mode {
-            QuizMode::Byoroshye => Strings::MODE_EASY_TITLE,
-            QuizMode::Hagati => Strings::MODE_MEDIUM_TITLE,
-            QuizMode::Bikomeye => Strings::MODE_HARD_TITLE,
-            QuizMode::WeakPractice => Strings::HOME_WEAK_TITLE,
-            QuizMode::RetryWrong => Strings::RESULTS_RETRY_WRONG,
+            QuizMode::Byoroshye => t("mode.easy.title", lang),
+            QuizMode::Hagati => t("mode.medium.title", lang),
+            QuizMode::Bikomeye => t("mode.hard.title", lang),
+            QuizMode::WeakPractice => t("home.weak_title", lang),
+            QuizMode::RetryWrong => t("results.retry_wrong", lang),
         };
 
         let mins = result.duration_seconds / 60;
@@ -174,9 +185,9 @@ impl ResultsView {
                                 colors.danger
                             })
                             .child(if is_passed {
-                                Strings::RESULTS_PASSED
+                                t("results.passed", lang)
                             } else {
-                                Strings::RESULTS_FAILED
+                                t("results.failed", lang)
                             }),
                     )
                     // Mode + Time + Pass threshold metadata row
@@ -198,7 +209,11 @@ impl ResultsView {
                                     .bg(colors.background)
                                     .border_1()
                                     .border_color(colors.border)
-                                    .child(format!("Uburyo: {}", mode_label)),
+                                    .child(format!(
+                                        "{}: {}",
+                                        if lang == Language::En { "Mode" } else { "Uburyo" },
+                                        mode_label
+                                    )),
                             )
                             .child(
                                 div()
@@ -208,7 +223,10 @@ impl ResultsView {
                                     .bg(colors.background)
                                     .border_1()
                                     .border_color(colors.border)
-                                    .child(format!("Igihe: {}", duration_str)),
+                                    .child(
+                                        t("results.duration", lang)
+                                            .replace("{duration}", &duration_str),
+                                    ),
                             )
                             .child(
                                 div()
@@ -218,7 +236,11 @@ impl ResultsView {
                                     .bg(colors.background)
                                     .border_1()
                                     .border_color(colors.border)
-                                    .child(format!("Gutsinda: {}/{}", pass_mark, total)),
+                                    .child(
+                                        t("results.pass_mark", lang)
+                                            .replace("{pass_mark}", &pass_mark.to_string())
+                                            .replace("{total}", &total.to_string()),
+                                    ),
                             ),
                     )
                     // Action Buttons Row
@@ -236,7 +258,7 @@ impl ResultsView {
                                 el.child(
                                     Button::new("retry_wrong_btn")
                                         .primary()
-                                        .label(Strings::RESULTS_RETRY_WRONG)
+                                        .label(t("results.retry_wrong", lang))
                                         .icon(IconName::RotateCw)
                                         .on_click(cx.listener(move |this, _, window, cx| {
                                             on_retry_wrong(this, window, cx);
@@ -247,7 +269,7 @@ impl ResultsView {
                             .child(
                                 Button::new("new_quiz_btn")
                                     .secondary()
-                                    .label(Strings::RESULTS_NEW_QUIZ)
+                                    .label(t("results.new_quiz", lang))
                                     .icon(IconName::Play)
                                     .on_click(cx.listener(move |this, _, window, cx| {
                                         on_new_quiz(this, window, cx);
@@ -257,7 +279,7 @@ impl ResultsView {
                             .child(
                                 Button::new("home_btn")
                                     .outline()
-                                    .label("Ahabanza")
+                                    .label(t("nav.home", lang))
                                     .icon(IconName::LayoutDashboard)
                                     .on_click(cx.listener(move |this, _, window, cx| {
                                         on_home(this, window, cx);
@@ -298,7 +320,9 @@ impl ResultsView {
                             } else {
                                 colors.foreground
                             })
-                            .child(format!("Byose ({})", total))
+                            .child(
+                                t("results.filter_all", lang).replace("{count}", &total.to_string()),
+                            )
                             .on_click(cx.listener(move |this, _, window, cx| {
                                 on_set_filter(this, ResultFilter::All, window, cx);
                             })),
@@ -329,7 +353,10 @@ impl ResultsView {
                             } else {
                                 colors.foreground
                             })
-                            .child(format!("Iby'ukuri ({})", correct_count))
+                            .child(
+                                t("results.filter_correct", lang)
+                                    .replace("{count}", &correct_count.to_string()),
+                            )
                             .on_click(cx.listener(move |this, _, window, cx| {
                                 on_set_filter(this, ResultFilter::Correct, window, cx);
                             })),
@@ -360,7 +387,10 @@ impl ResultsView {
                             } else {
                                 colors.foreground
                             })
-                            .child(format!("Ibyakosheje ({})", wrong_count))
+                            .child(
+                                t("results.filter_wrong", lang)
+                                    .replace("{count}", &wrong_count.to_string()),
+                            )
                             .on_click(cx.listener(move |this, _, window, cx| {
                                 on_set_filter(this, ResultFilter::Wrong, window, cx);
                             })),
@@ -390,7 +420,8 @@ impl ResultsView {
                             IconName::CircleX
                         };
 
-                        let mut sorted_keys: Vec<&String> = q.options.keys().collect();
+                        let opts = q.options_for(q_lang);
+                        let mut sorted_keys: Vec<&String> = opts.keys().collect();
                         sorted_keys.sort();
 
                         div()
@@ -432,27 +463,72 @@ impl ResultsView {
                                                     .size(px(18.0))
                                                     .text_color(status_color),
                                             )
-                                            // Question Number + Text Snippet
+                                            // Question Number + Badges + Text Snippet
                                             .child(
                                                 div()
                                                     .flex()
                                                     .flex_col()
                                                     .child(
                                                         div()
-                                                            .text_sm()
-                                                            .font_bold()
-                                                            .text_color(colors.foreground)
-                                                            .child(format!(
-                                                                "{}. Ikibazo cya {}",
-                                                                orig_idx + 1,
-                                                                q.id
-                                                            )),
+                                                            .flex()
+                                                            .flex_row()
+                                                            .items_center()
+                                                            .gap_2()
+                                                            .child(
+                                                                div()
+                                                                    .text_sm()
+                                                                    .font_bold()
+                                                                    .text_color(colors.foreground)
+                                                                    .child(if lang == Language::En {
+                                                                        format!("{}. Question #{}", orig_idx + 1, q.id)
+                                                                    } else {
+                                                                        format!("{}. Ikibazo cya {}", orig_idx + 1, q.id)
+                                                                    }),
+                                                            )
+                                                            // Language badge if q_lang != lang (SPEC 15.4)
+                                                            .when(q_lang != lang, |b| {
+                                                                b.child(
+                                                                    div()
+                                                                        .px_1p5()
+                                                                        .py_0p5()
+                                                                        .rounded_md()
+                                                                        .bg(colors.accent)
+                                                                        .child(
+                                                                            div()
+                                                                                .text_xs()
+                                                                                .font_bold()
+                                                                                .text_color(colors.foreground)
+                                                                                .child(match q_lang {
+                                                                                    Language::En => t("badge.lang.en", lang),
+                                                                                    Language::Rw => t("badge.lang.rw", lang),
+                                                                                }),
+                                                                        ),
+                                                                )
+                                                            })
+                                                            // Draft badge if status is draft (SPEC 15.2)
+                                                            .when(q.is_draft_translation() && q_lang == Language::En, |b| {
+                                                                b.child(
+                                                                    div()
+                                                                        .px_1p5()
+                                                                        .py_0p5()
+                                                                        .rounded_md()
+                                                                        .bg(colors.warning)
+                                                                        .child(
+                                                                            div()
+                                                                                .text_xs()
+                                                                                .font_bold()
+                                                                                .text_color(colors.primary_foreground)
+                                                                                .child(t("badge.unofficial_translation", lang)),
+                                                                        ),
+                                                                )
+                                                            }),
                                                     )
                                                     .when(!is_expanded, |snip| {
-                                                        let snippet = if q.text.len() > 65 {
-                                                            format!("{}...", &q.text[..60])
+                                                        let q_text = q.text_for(q_lang);
+                                                        let snippet = if q_text.len() > 65 {
+                                                            format!("{}...", &q_text[..60])
                                                         } else {
-                                                            q.text.clone()
+                                                            q_text.to_string()
                                                         };
                                                         snip.child(
                                                             div()
@@ -484,13 +560,31 @@ impl ResultsView {
                                         .pt_2()
                                         .border_t_1()
                                         .border_color(colors.border)
-                                        // Full question text
+                                        // Full question text + optional secondary
                                         .child(
                                             div()
-                                                .text_sm()
-                                                .font_medium()
-                                                .text_color(colors.foreground)
-                                                .child(q.text.clone()),
+                                                .flex()
+                                                .flex_col()
+                                                .gap_1()
+                                                .child(
+                                                    div()
+                                                        .text_sm()
+                                                        .font_medium()
+                                                        .text_color(colors.foreground)
+                                                        .child(q.text_for(q_lang).to_string()),
+                                                )
+                                                .when(show_both, |bilingual| {
+                                                    if let Some(sec_text) = q.secondary_text_for(q_lang) {
+                                                        bilingual.child(
+                                                            div()
+                                                                .text_xs()
+                                                                .text_color(colors.muted_foreground)
+                                                                .child(sec_text.to_string()),
+                                                        )
+                                                    } else {
+                                                        bilingual
+                                                    }
+                                                }),
                                         )
                                         // Sign image (if present)
                                         .when(q.has_image, |el| {
@@ -524,37 +618,58 @@ impl ResultsView {
                                                     .text_xs()
                                                     .font_semibold()
                                                     .text_color(colors.warning)
-                                                    .child("Ntiwasubije iki kibazo."),
+                                                    .child(t("results.unanswered", lang)),
                                             )
                                         })
                                         // Options review
                                         .child(div().flex().flex_col().gap_2().children(
                                             sorted_keys.into_iter().map(|key| {
                                                 let opt_text =
-                                                    q.options.get(key).cloned().unwrap_or_default();
+                                                    opts.get(key).cloned().unwrap_or_default();
+                                                let sec_opt = if show_both {
+                                                    q.secondary_option_for(q_lang, key).map(|s| s.to_string())
+                                                } else {
+                                                    None
+                                                };
                                                 let is_user_choice = user_ans == Some(key.as_str());
                                                 let is_correct_choice = correct_ans == key;
+
+                                                let your_ans_correct = if lang == Language::En {
+                                                    "Your answer (Correct)"
+                                                } else {
+                                                    "Igisubizo cyawe (Cy'ukuri)"
+                                                };
+                                                let your_ans_wrong = if lang == Language::En {
+                                                    "Your answer (Incorrect)"
+                                                } else {
+                                                    "Igisubizo cyawe (Siko)"
+                                                };
+                                                let right_ans = if lang == Language::En {
+                                                    "Correct answer"
+                                                } else {
+                                                    "Igisubizo cy'ukuri"
+                                                };
 
                                                 let (opt_bg, opt_border, badge_text, badge_color) =
                                                     if is_user_choice && is_correct_choice {
                                                         (
                                                             colors.success,
                                                             colors.success,
-                                                            Some("Igisubizo cyawe (Cy'ukuri)"),
+                                                            Some(your_ans_correct),
                                                             colors.success,
                                                         )
                                                     } else if is_user_choice && !is_correct_choice {
                                                         (
                                                             colors.danger,
                                                             colors.danger,
-                                                            Some("Igisubizo cyawe (Siko)"),
+                                                            Some(your_ans_wrong),
                                                             colors.danger,
                                                         )
                                                     } else if is_correct_choice {
                                                         (
                                                             colors.success,
                                                             colors.success,
-                                                            Some("Igisubizo cy'ukuri"),
+                                                            Some(right_ans),
                                                             colors.success,
                                                         )
                                                     } else {
@@ -602,10 +717,23 @@ impl ResultsView {
                                                             )
                                                             .child(
                                                                 div()
-                                                                    .text_xs()
-                                                                    .text_color(colors.foreground)
                                                                     .flex_1()
-                                                                    .child(opt_text),
+                                                                    .flex_col()
+                                                                    .gap_0p5()
+                                                                    .child(
+                                                                        div()
+                                                                            .text_xs()
+                                                                            .text_color(colors.foreground)
+                                                                            .child(opt_text),
+                                                                    )
+                                                                    .when_some(sec_opt, |el, sec| {
+                                                                        el.child(
+                                                                            div()
+                                                                                .text_xs()
+                                                                                .text_color(colors.muted_foreground)
+                                                                                .child(sec),
+                                                                        )
+                                                                    }),
                                                             ),
                                                     )
                                                     .when_some(badge_text, |b, txt| {

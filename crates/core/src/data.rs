@@ -1,11 +1,28 @@
 use crate::error::{AppError, Result};
-use crate::models::{Question, QuestionStat, QuizMode};
+use crate::models::{Language, Question, QuestionStat, QuizMode};
 use rand::seq::SliceRandom;
 use rand::thread_rng;
-use std::collections::{HashMap, HashSet};
+use serde::Deserialize;
+use std::collections::{BTreeMap, HashMap, HashSet};
 
 pub static BUNDLED_QUESTIONS_JSON: &str = include_str!("../../../assets/questions.json");
+pub static BUNDLED_QUESTIONS_EN_JSON: &str = include_str!("../../../assets/questions_en.json");
 pub static BUNDLED_OVERRIDES_JSON: &str = include_str!("../../../assets/overrides.json");
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct TranslatedQuestion {
+    pub id: u32,
+    pub text: String,
+    pub options: BTreeMap<String, String>,
+    #[serde(default)]
+    pub status: Option<String>,
+    #[serde(default)]
+    pub correct: Option<String>,
+    #[serde(default)]
+    pub image: Option<String>,
+    #[serde(default)]
+    pub has_image: Option<bool>,
+}
 
 #[derive(Debug, Clone)]
 pub struct QuestionBank {
@@ -15,11 +32,23 @@ pub struct QuestionBank {
 
 impl QuestionBank {
     pub fn load_bundled() -> Result<Self> {
-        Self::from_json_strings(BUNDLED_QUESTIONS_JSON, BUNDLED_OVERRIDES_JSON)
+        Self::from_json_strings(
+            BUNDLED_QUESTIONS_JSON,
+            BUNDLED_QUESTIONS_EN_JSON,
+            BUNDLED_OVERRIDES_JSON,
+        )
     }
 
-    pub fn from_json_strings(questions_json: &str, overrides_json: &str) -> Result<Self> {
-        let mut questions: Vec<Question> = serde_json::from_str(questions_json)?;
+    pub fn from_rw_json_strings(questions_rw_json: &str, overrides_json: &str) -> Result<Self> {
+        Self::from_json_strings(questions_rw_json, "[]", overrides_json)
+    }
+
+    pub fn from_json_strings(
+        questions_rw_json: &str,
+        questions_en_json: &str,
+        overrides_json: &str,
+    ) -> Result<Self> {
+        let mut questions: Vec<Question> = serde_json::from_str(questions_rw_json)?;
 
         // Apply manual overrides if any
         if !overrides_json.trim().is_empty() && overrides_json.trim() != "{}" {
@@ -34,9 +63,8 @@ impl QuestionBank {
             }
         }
 
-        // Validate questions
-        let mut by_id = HashMap::with_capacity(questions.len());
-        for (idx, q) in questions.iter().enumerate() {
+        // Validate basic Kinyarwanda questions
+        for q in &questions {
             if q.text.trim().is_empty() {
                 return Err(AppError::InvalidData(format!(
                     "Ikibazo #{} ntigifite inyandiko",
@@ -57,6 +85,47 @@ impl QuestionBank {
                     "Ikibazo #{} gifite igisubizo cy'ukuri '{}' kidahari mu mahitamo",
                     q.id, q.correct
                 )));
+            }
+        }
+
+        // Parse English translations if provided
+        let mut en_by_id: HashMap<u32, TranslatedQuestion> = HashMap::new();
+        if !questions_en_json.trim().is_empty() && questions_en_json.trim() != "[]" {
+            let en_questions: Vec<TranslatedQuestion> = serde_json::from_str(questions_en_json)
+                .map_err(|e| {
+                    AppError::InvalidData(format!("English questions parsing error: {e}"))
+                })?;
+            for eq in en_questions {
+                en_by_id.insert(eq.id, eq);
+            }
+        }
+
+        // Merge by ID: default question language = English; fallback = Kinyarwanda
+        let mut by_id = HashMap::with_capacity(questions.len());
+        for (idx, q) in questions.iter_mut().enumerate() {
+            // Save original Kinyarwanda text & options
+            let rw_text = q.text.clone();
+            let rw_options = q.options.clone();
+            q.text_rw = Some(rw_text.clone());
+            q.options_rw = Some(rw_options.clone());
+
+            if let Some(en_q) = en_by_id.remove(&q.id) {
+                if !en_q.text.trim().is_empty() {
+                    q.text_en = Some(en_q.text.clone());
+                    q.options_en = Some(en_q.options.clone());
+                    q.status_en = en_q.status;
+
+                    // Set default question language to English
+                    q.text = en_q.text;
+                    q.options = en_q.options;
+                } else {
+                    q.text_en = None;
+                    q.options_en = None;
+                }
+            } else {
+                // English missing: falls back to Kinyarwanda
+                q.text_en = None;
+                q.options_en = None;
             }
 
             by_id.insert(q.id, idx);
@@ -81,7 +150,7 @@ impl QuestionBank {
         self.by_id.get(&id).and_then(|&idx| self.questions.get(idx))
     }
 
-    /// Search and filter question bank
+    /// Search and filter question bank across text and language variations
     pub fn search(
         &self,
         query: &str,
@@ -90,6 +159,29 @@ impl QuestionBank {
         mistakes_only: bool,
         starred_ids: &HashSet<u32>,
         question_stats: &HashMap<u32, QuestionStat>,
+    ) -> Vec<&Question> {
+        self.search_for_lang(
+            query,
+            has_image_only,
+            starred_only,
+            mistakes_only,
+            starred_ids,
+            question_stats,
+            Language::En,
+        )
+    }
+
+    /// Search and filter question bank for a specific question language
+    #[allow(clippy::too_many_arguments)]
+    pub fn search_for_lang(
+        &self,
+        query: &str,
+        has_image_only: bool,
+        starred_only: bool,
+        mistakes_only: bool,
+        starred_ids: &HashSet<u32>,
+        question_stats: &HashMap<u32, QuestionStat>,
+        lang: Language,
     ) -> Vec<&Question> {
         let q_clean = query.trim().to_lowercase();
         let query_number: Option<u32> = q_clean.parse().ok();
@@ -131,13 +223,31 @@ impl QuestionBank {
                     return true;
                 }
 
-                if q.text.to_lowercase().contains(&q_clean) {
+                // Search in active question language
+                let text = q.text_for(lang).to_lowercase();
+                if text.contains(&q_clean) {
                     return true;
                 }
 
-                for opt_text in q.options.values() {
+                let opts = q.options_for(lang);
+                for opt_text in opts.values() {
                     if opt_text.to_lowercase().contains(&q_clean) {
                         return true;
+                    }
+                }
+
+                // Fallback search across both languages
+                if let Some(sec_text) = q.secondary_text_for(lang) {
+                    if sec_text.to_lowercase().contains(&q_clean) {
+                        return true;
+                    }
+                }
+
+                if let Some(sec_opts) = q.secondary_options_for(lang) {
+                    for opt_text in sec_opts.values() {
+                        if opt_text.to_lowercase().contains(&q_clean) {
+                            return true;
+                        }
                     }
                 }
 

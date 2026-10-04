@@ -1,5 +1,5 @@
 use crate::state::AppState;
-use amategeko_core::{Attempt, QuizMode, QuizTimer, Strings, TimerState};
+use amategeko_core::{t, Attempt, Language, QuizMode, QuizTimer, TimerState};
 use gpui::InteractiveElement as _;
 use gpui_kit::base::StyledExt;
 use gpui_kit::component::{ActiveTheme, Icon, IconName};
@@ -30,6 +30,10 @@ impl QuizView {
         let theme = cx.theme();
         let colors = theme.colors;
 
+        let lang = state.settings.language;
+        let q_lang = state.settings.question_language;
+        let show_both = state.settings.show_both_languages;
+
         let attempt = match &state.current_attempt {
             Some(att) => att,
             None => {
@@ -39,12 +43,13 @@ impl QuizView {
                     .items_center()
                     .justify_center()
                     .size_full()
-                    .child(
-                        div()
-                            .text_base()
-                            .text_color(colors.foreground)
-                            .child("Nta kizamini kiri gukorwa."),
-                    );
+                    .child(div().text_base().text_color(colors.foreground).child(
+                        if lang == Language::En {
+                            "No active quiz."
+                        } else {
+                            "Nta kizamini kiri gukorwa."
+                        },
+                    ));
             }
         };
 
@@ -55,7 +60,7 @@ impl QuizView {
         let total_questions = attempt.total_questions();
         let current_q = match attempt.current_question() {
             Some(q) => q,
-            None => return div().child("Ikibazo ntikibonetse"),
+            None => return div().child("Question not found"),
         };
 
         let user_ans = attempt.current_answer().cloned();
@@ -63,7 +68,13 @@ impl QuizView {
         let is_flagged = attempt.is_current_flagged();
         let is_starred = state.progress.is_starred(current_q.id);
 
-        let mode_label = attempt.mode.title_kinyarwanda();
+        let mode_label = match attempt.mode {
+            QuizMode::Byoroshye => t("mode.easy.title", lang),
+            QuizMode::Hagati => t("mode.medium.title", lang),
+            QuizMode::Bikomeye => t("mode.hard.title", lang),
+            QuizMode::WeakPractice => t("home.weak_title", lang),
+            QuizMode::RetryWrong => t("results.retry_wrong", lang),
+        };
 
         let mode_text_color = match attempt.mode {
             QuizMode::Byoroshye => colors.success,
@@ -89,11 +100,11 @@ impl QuizView {
         let is_hard = attempt.mode == QuizMode::Bikomeye;
 
         let next_btn_label = if is_hard {
-            Strings::QUIZ_CONFIRM_ANSWER
+            t("quiz.confirm_answer", lang)
         } else if is_last {
-            Strings::QUIZ_FINISH
+            t("quiz.finish", lang)
         } else {
-            Strings::QUIZ_NEXT
+            t("quiz.next", lang)
         };
 
         div()
@@ -149,10 +160,10 @@ impl QuizView {
                                             .text_xs()
                                             .font_medium()
                                             .text_color(colors.muted_foreground)
-                                            .child(Strings::DIALOG_ABANDON_CONFIRM),
+                                            .child(t("dialog.abandon.confirm", lang)),
                                     ),
                             )
-                            // Mode Pill Badge (e.g. Byoroshye in green)
+                            // Mode Pill Badge
                             .child(
                                 div()
                                     .px_3()
@@ -167,14 +178,14 @@ impl QuizView {
                                             .child(mode_label),
                                     ),
                             )
-                            // Question Counter: Ikibazo 7 / 20
+                            // Question Counter
                             .child(
                                 div()
                                     .text_base()
                                     .font_bold()
                                     .text_color(colors.foreground)
                                     .child(
-                                        Strings::QUIZ_QUESTION_PROGRESS
+                                        t("quiz.question_progress", lang)
                                             .replace("{current}", &(current_idx + 1).to_string())
                                             .replace("{total}", &total_questions.to_string()),
                                     ),
@@ -373,7 +384,7 @@ impl QuizView {
                             ),
                     ),
             )
-            // Segmented Progress Bar (Matches mockup across all modes!)
+            // Segmented Progress Bar
             .child(
                 div()
                     .flex()
@@ -387,7 +398,6 @@ impl QuizView {
                         let is_cur = i == current_idx;
                         let ans = attempt.answers.get(&i);
                         let seg_color = if is_cur {
-                            // Current question is a thick bright white highlight
                             colors.foreground
                         } else if let Some(user_a) = ans {
                             if attempt.mode.provides_instant_feedback() {
@@ -482,7 +492,7 @@ impl QuizView {
                                                             .text_sm()
                                                             .font_medium()
                                                             .text_color(colors.foreground)
-                                                            .child(Strings::QUIZ_NO_IMAGE),
+                                                            .child(t("quiz.no_image", lang)),
                                                     )
                                             }),
                                     )
@@ -505,7 +515,7 @@ impl QuizView {
                                                 div()
                                                     .text_xs()
                                                     .text_color(colors.muted_foreground)
-                                                    .child(Strings::QUIZ_SHORTCUT_HINT),
+                                                    .child(t("quiz.shortcut_hint", lang)),
                                             ),
                                     ),
                             )
@@ -516,13 +526,63 @@ impl QuizView {
                                     .flex_col()
                                     .flex_1()
                                     .gap_4()
-                                    // Question text
+                                    // Question text + optional draft badge + optional secondary translation
                                     .child(
                                         div()
-                                            .text_xl()
-                                            .font_bold()
-                                            .text_color(colors.foreground)
-                                            .child(current_q.text.clone()),
+                                            .flex()
+                                            .flex_col()
+                                            .gap_1p5()
+                                            .when(
+                                                current_q.is_draft_translation()
+                                                    && q_lang == Language::En,
+                                                |b| {
+                                                    b.child(
+                                                        div()
+                                                            .flex()
+                                                            .flex_row()
+                                                            .items_center()
+                                                            .gap_1()
+                                                            .px_2()
+                                                            .py_0p5()
+                                                            .rounded_md()
+                                                            .bg(colors.warning)
+                                                            .child(
+                                                                div()
+                                                                    .text_xs()
+                                                                    .font_bold()
+                                                                    .text_color(
+                                                                        colors.primary_foreground,
+                                                                    )
+                                                                    .child(t(
+                                                                        "badge.unofficial_translation",
+                                                                        lang,
+                                                                    )),
+                                                            ),
+                                                    )
+                                                },
+                                            )
+                                            .child(
+                                                div()
+                                                    .text_xl()
+                                                    .font_bold()
+                                                    .text_color(colors.foreground)
+                                                    .child(current_q.text_for(q_lang).to_string()),
+                                            )
+                                            .when(show_both, |bilingual| {
+                                                if let Some(sec_text) =
+                                                    current_q.secondary_text_for(q_lang)
+                                                {
+                                                    bilingual.child(
+                                                        div()
+                                                            .text_sm()
+                                                            .font_normal()
+                                                            .text_color(colors.muted_foreground)
+                                                            .child(sec_text.to_string()),
+                                                    )
+                                                } else {
+                                                    bilingual
+                                                }
+                                            }),
                                     )
                                     // Subtitle / Feedback
                                     .child({
@@ -541,12 +601,12 @@ impl QuizView {
                                                     IconName::CircleX
                                                 };
                                                 let exp_text = if is_correct {
-                                                    Strings::QUIZ_EASY_CORRECT.replace(
+                                                    t("quiz.easy_correct", lang).replace(
                                                         "{option}",
                                                         &current_q.correct.to_uppercase(),
                                                     )
                                                 } else {
-                                                    Strings::QUIZ_EASY_WRONG.replace(
+                                                    t("quiz.easy_wrong", lang).replace(
                                                         "{option}",
                                                         &current_q.correct.to_uppercase(),
                                                     )
@@ -572,30 +632,43 @@ impl QuizView {
                                                 div()
                                                     .text_sm()
                                                     .text_color(colors.muted_foreground)
-                                                    .child(Strings::QUIZ_EASY_HINT)
+                                                    .child(t("quiz.easy_hint", lang))
                                             }
                                         } else {
                                             div()
                                                 .text_sm()
                                                 .text_color(colors.muted_foreground)
-                                                .child(Strings::QUIZ_HARD_NO_SELECTION)
+                                                .child(t("quiz.hard_no_selection", lang))
                                         }
                                     })
                                     // Options list
-                                    .child(div().flex().flex_col().gap_3().children(
-                                        current_q.options.iter().map(|(letter, opt_text)| {
+                                    .child(div().flex().flex_col().gap_3().children({
+                                        let opts = current_q.options_for(q_lang);
+                                        let mut keys: Vec<&String> = opts.keys().collect();
+                                        keys.sort();
+                                        keys.into_iter().map(|letter| {
+                                            let opt_text =
+                                                opts.get(letter).cloned().unwrap_or_default();
+                                            let sec_opt = if show_both {
+                                                current_q
+                                                    .secondary_option_for(q_lang, letter)
+                                                    .map(|s| s.to_string())
+                                            } else {
+                                                None
+                                            };
                                             Self::render_option_card(
                                                 attempt,
                                                 letter,
-                                                opt_text,
+                                                &opt_text,
+                                                sec_opt.as_deref(),
                                                 &current_q.correct,
                                                 user_ans.as_deref(),
                                                 is_locked,
                                                 cx,
                                                 on_select_option,
                                             )
-                                        }),
-                                    ))
+                                        })
+                                    }))
                                     // Bottom Navigation inside Right Column
                                     .child(
                                         div()
@@ -639,7 +712,7 @@ impl QuizView {
                                                             .text_sm()
                                                             .font_medium()
                                                             .text_color(colors.foreground)
-                                                            .child(Strings::QUIZ_PREVIOUS),
+                                                            .child(t("quiz.previous", lang)),
                                                     ),
                                             )
                                             // Right Actions: Simbuka (Skip) & Ibikurikira (Next) / Soza (Finish)
@@ -677,7 +750,10 @@ impl QuizView {
                                                                         .text_color(
                                                                             colors.foreground,
                                                                         )
-                                                                        .child(Strings::QUIZ_SKIP),
+                                                                        .child(t(
+                                                                            "quiz.skip",
+                                                                            lang,
+                                                                        )),
                                                                 ),
                                                         )
                                                     })
@@ -737,6 +813,7 @@ impl QuizView {
         attempt: &Attempt,
         letter: &str,
         text: &str,
+        secondary_text: Option<&str>,
         correct_letter: &str,
         user_selection: Option<&str>,
         is_locked: bool,
@@ -874,15 +951,28 @@ impl QuizView {
                             .child(letter.to_uppercase()),
                     ),
             )
-            // Option text
+            // Option text (primary + optional secondary)
             .child(
                 div()
                     .flex_1()
+                    .flex_col()
+                    .gap_0p5()
                     .px_3()
-                    .text_sm()
-                    .font_medium()
-                    .text_color(text_color)
-                    .child(text.to_string()),
+                    .child(
+                        div()
+                            .text_sm()
+                            .font_medium()
+                            .text_color(text_color)
+                            .child(text.to_string()),
+                    )
+                    .when_some(secondary_text, |el, sec| {
+                        el.child(
+                            div()
+                                .text_xs()
+                                .text_color(colors.muted_foreground)
+                                .child(sec.to_string()),
+                        )
+                    }),
             )
             // Feedback icon
             .children(

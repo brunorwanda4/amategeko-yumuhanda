@@ -5,7 +5,7 @@ use crate::ui::quiz::QuizView;
 use crate::ui::results::{ResultFilter, ResultsView};
 use crate::ui::settings::{SettingsAction, SettingsView};
 use crate::ui::stats::StatsView;
-use amategeko_core::{QuizEngine, QuizMode, Strings};
+use amategeko_core::{t, QuizEngine, QuizMode};
 use gpui::FocusHandle;
 use gpui::InteractiveElement as _;
 use gpui_kit::assets::IconName;
@@ -47,6 +47,7 @@ impl Render for ShellView {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let theme = cx.theme();
         let colors = theme.colors;
+
         let window_width = window.bounds().size.width;
         let is_desktop = window_width >= px(700.0);
 
@@ -333,6 +334,19 @@ impl Render for ShellView {
                             this.state.clear_history();
                             this.settings_confirm_clear = false;
                         }
+                        SettingsAction::SetInterfaceLanguage(lang) => {
+                            this.state.settings.language = lang;
+                            this.state.save_settings(this.state.settings.clone());
+                        }
+                        SettingsAction::SetQuestionLanguage(lang) => {
+                            this.state.settings.question_language = lang;
+                            this.state.save_settings(this.state.settings.clone());
+                        }
+                        SettingsAction::ToggleShowBothLanguages => {
+                            this.state.settings.show_both_languages =
+                                !this.state.settings.show_both_languages;
+                            this.state.save_settings(this.state.settings.clone());
+                        }
                     }
                     cx.notify();
                 },
@@ -343,7 +357,7 @@ impl Render for ShellView {
         let root = if is_desktop {
             // Desktop Layout: Left Sidebar + Content
             // Focus Mode in Quiz hides the sidebar for a pure, distraction-free reading experience
-            let show_sidebar = !is_in_quiz || !self.focus_mode;
+            let show_sidebar = !(is_in_quiz && self.focus_mode);
 
             div()
                 .flex()
@@ -516,6 +530,7 @@ impl ShellView {
         let theme = cx.theme();
         let colors = theme.colors;
         let active = &self.state.active_screen;
+        let lang = self.state.settings.language;
 
         div()
             .flex()
@@ -557,7 +572,7 @@ impl ShellView {
                     .gap_1()
                     .child(self.render_desktop_nav_item(
                         "nav_home",
-                        Strings::NAV_HOME,
+                        t("nav.home", lang),
                         IconName::House,
                         matches!(active, Screen::Home),
                         Screen::Home,
@@ -565,7 +580,7 @@ impl ShellView {
                     ))
                     .child(self.render_desktop_nav_item(
                         "nav_quiz",
-                        Strings::NAV_QUIZ,
+                        t("nav.quiz", lang),
                         IconName::Play,
                         matches!(active, Screen::Quiz),
                         Screen::Quiz,
@@ -573,7 +588,7 @@ impl ShellView {
                     ))
                     .child(self.render_desktop_nav_item(
                         "nav_questions",
-                        Strings::NAV_QUESTIONS,
+                        t("nav.questions", lang),
                         IconName::BookOpen,
                         matches!(active, Screen::Questions),
                         Screen::Questions,
@@ -581,7 +596,7 @@ impl ShellView {
                     ))
                     .child(self.render_desktop_nav_item(
                         "nav_stats",
-                        Strings::NAV_STATS,
+                        t("nav.stats", lang),
                         IconName::ChartPie,
                         matches!(active, Screen::Stats | Screen::Results),
                         Screen::Stats,
@@ -589,7 +604,7 @@ impl ShellView {
                     ))
                     .child(self.render_desktop_nav_item(
                         "nav_settings",
-                        Strings::NAV_SETTINGS,
+                        t("nav.settings", lang),
                         IconName::Settings,
                         matches!(active, Screen::Settings),
                         Screen::Settings,
@@ -650,14 +665,15 @@ impl ShellView {
     fn render_mobile_top_bar(&self, cx: &mut Context<Self>) -> impl IntoElement {
         let theme = cx.theme();
         let colors = theme.colors;
+        let lang = self.state.settings.language;
 
         let title = match self.state.active_screen {
-            Screen::Home => Strings::APP_TITLE,
-            Screen::Quiz => Strings::NAV_QUIZ,
-            Screen::Results => Strings::RESULTS_TITLE,
-            Screen::Questions => Strings::NAV_QUESTIONS,
-            Screen::Stats => Strings::NAV_STATS,
-            Screen::Settings => Strings::NAV_SETTINGS,
+            Screen::Home => t("app.title", lang),
+            Screen::Quiz => t("nav.quiz", lang),
+            Screen::Results => t("results.title", lang),
+            Screen::Questions => t("nav.questions", lang),
+            Screen::Stats => t("nav.stats", lang),
+            Screen::Settings => t("nav.settings", lang),
         };
 
         div()
@@ -683,6 +699,7 @@ impl ShellView {
         let theme = cx.theme();
         let colors = theme.colors;
         let active = &self.state.active_screen;
+        let lang = self.state.settings.language;
 
         div()
             .flex()
@@ -696,7 +713,7 @@ impl ShellView {
             .bg(colors.secondary)
             .child(self.render_mobile_nav_item(
                 "m_home",
-                Strings::NAV_HOME,
+                t("nav.home", lang),
                 IconName::House,
                 matches!(active, Screen::Home),
                 Screen::Home,
@@ -704,7 +721,7 @@ impl ShellView {
             ))
             .child(self.render_mobile_nav_item(
                 "m_quiz",
-                Strings::NAV_QUIZ,
+                t("nav.quiz", lang),
                 IconName::Play,
                 matches!(active, Screen::Quiz),
                 Screen::Quiz,
@@ -712,7 +729,7 @@ impl ShellView {
             ))
             .child(self.render_mobile_nav_item(
                 "m_questions",
-                Strings::NAV_QUESTIONS,
+                t("nav.questions", lang),
                 IconName::BookOpen,
                 matches!(active, Screen::Questions),
                 Screen::Questions,
@@ -720,7 +737,7 @@ impl ShellView {
             ))
             .child(self.render_mobile_nav_item(
                 "m_stats",
-                Strings::NAV_STATS,
+                t("nav.stats", lang),
                 IconName::ChartPie,
                 matches!(active, Screen::Stats | Screen::Results),
                 Screen::Stats,
@@ -728,7 +745,7 @@ impl ShellView {
             ))
             .child(self.render_mobile_nav_item(
                 "m_settings",
-                Strings::NAV_SETTINGS,
+                t("nav.settings", lang),
                 IconName::Settings,
                 matches!(active, Screen::Settings),
                 Screen::Settings,

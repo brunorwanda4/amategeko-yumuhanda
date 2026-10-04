@@ -14,7 +14,7 @@ pub mod timer;
 
 pub use data::QuestionBank;
 pub use error::{AppError, Result};
-pub use i18n::Strings;
+pub use i18n::{t, tf, I18n, Strings};
 pub use models::*;
 pub use platform::{Clock, InMemoryStorage, MockClock, Storage, SystemClock};
 pub use quiz::QuizEngine;

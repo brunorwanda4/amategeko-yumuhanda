@@ -1,6 +1,30 @@
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashMap, HashSet};
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
+#[serde(rename_all = "lowercase")]
+pub enum Language {
+    #[default]
+    En,
+    Rw,
+}
+
+impl Language {
+    pub fn code(&self) -> &'static str {
+        match self {
+            Language::En => "en",
+            Language::Rw => "rw",
+        }
+    }
+
+    pub fn display_name(&self) -> &'static str {
+        match self {
+            Language::En => "English",
+            Language::Rw => "Ikinyarwanda",
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Question {
     pub id: u32,
@@ -9,6 +33,93 @@ pub struct Question {
     pub correct: String,
     pub image: Option<String>,
     pub has_image: bool,
+    #[serde(default)]
+    pub text_en: Option<String>,
+    #[serde(default)]
+    pub options_en: Option<BTreeMap<String, String>>,
+    #[serde(default)]
+    pub text_rw: Option<String>,
+    #[serde(default)]
+    pub options_rw: Option<BTreeMap<String, String>>,
+    #[serde(default)]
+    pub status_en: Option<String>,
+}
+
+impl Question {
+    /// Returns the question text in the specified language, falling back to Kinyarwanda if English is missing.
+    pub fn text_for(&self, lang: Language) -> &str {
+        match lang {
+            Language::En => {
+                if let Some(en) = &self.text_en {
+                    en.as_str()
+                } else if let Some(rw) = &self.text_rw {
+                    rw.as_str()
+                } else {
+                    &self.text
+                }
+            }
+            Language::Rw => {
+                if let Some(rw) = &self.text_rw {
+                    rw.as_str()
+                } else {
+                    &self.text
+                }
+            }
+        }
+    }
+
+    /// Returns secondary question text when "Show both languages" is enabled.
+    pub fn secondary_text_for(&self, primary_lang: Language) -> Option<&str> {
+        match primary_lang {
+            Language::En => self.text_rw.as_deref().or(Some(&self.text)),
+            Language::Rw => self.text_en.as_deref(),
+        }
+    }
+
+    /// Returns options in the specified language, falling back to Kinyarwanda if English is missing.
+    pub fn options_for(&self, lang: Language) -> &BTreeMap<String, String> {
+        match lang {
+            Language::En => {
+                if let Some(opts) = &self.options_en {
+                    opts
+                } else if let Some(opts) = &self.options_rw {
+                    opts
+                } else {
+                    &self.options
+                }
+            }
+            Language::Rw => {
+                if let Some(opts) = &self.options_rw {
+                    opts
+                } else {
+                    &self.options
+                }
+            }
+        }
+    }
+
+    /// Returns secondary options when "Show both languages" is enabled.
+    pub fn secondary_options_for(
+        &self,
+        primary_lang: Language,
+    ) -> Option<&BTreeMap<String, String>> {
+        match primary_lang {
+            Language::En => self.options_rw.as_ref().or(Some(&self.options)),
+            Language::Rw => self.options_en.as_ref(),
+        }
+    }
+
+    /// Returns secondary option text for a specific letter (a, b, c, d).
+    pub fn secondary_option_for(&self, primary_lang: Language, letter: &str) -> Option<&str> {
+        self.secondary_options_for(primary_lang)
+            .and_then(|opts| opts.get(letter))
+            .map(|s| s.as_str())
+    }
+
+    /// Whether the English question has draft status.
+    pub fn is_draft_translation(&self) -> bool {
+        self.status_en.as_deref() == Some("draft")
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -26,6 +137,19 @@ pub enum QuizMode {
 }
 
 impl QuizMode {
+    pub fn title(&self, lang: Language) -> &'static str {
+        match lang {
+            Language::En => match self {
+                QuizMode::Byoroshye => "Easy",
+                QuizMode::Hagati => "Medium",
+                QuizMode::Bikomeye => "Hard",
+                QuizMode::WeakPractice => "Review Mistakes",
+                QuizMode::RetryWrong => "Retry Mistakes",
+            },
+            Language::Rw => self.title_kinyarwanda(),
+        }
+    }
+
     pub fn title_kinyarwanda(&self) -> &'static str {
         match self {
             QuizMode::Byoroshye => "Byoroshye",
@@ -75,6 +199,12 @@ pub struct Settings {
     pub desktop_shortcuts_enabled: bool,
     pub hard_weight_images: bool,
     pub study_hide_answers: bool,
+    #[serde(default)]
+    pub language: Language,
+    #[serde(default)]
+    pub question_language: Language,
+    #[serde(default)]
+    pub show_both_languages: bool,
 }
 
 impl Default for Settings {
@@ -89,6 +219,9 @@ impl Default for Settings {
             desktop_shortcuts_enabled: true,
             hard_weight_images: true,
             study_hide_answers: false,
+            language: Language::En,
+            question_language: Language::En,
+            show_both_languages: false,
         }
     }
 }

@@ -1,5 +1,5 @@
 use crate::state::AppState;
-use amategeko_core::{QuizMode, StatsCalculator, Strings};
+use amategeko_core::{t, QuizMode, StatsCalculator};
 use gpui::InteractiveElement as _;
 use gpui_kit::assets::IconName;
 use gpui_kit::base::StyledExt;
@@ -21,6 +21,7 @@ impl HomeView {
         let theme = cx.theme();
         let colors = theme.colors;
         let stats_summary = StatsCalculator::compute_summary(&state.progress);
+        let lang = state.settings.language;
 
         let is_desktop = window_width >= px(700.0);
 
@@ -41,11 +42,12 @@ impl HomeView {
         };
 
         div()
-            .id("home_scroll")
+            .id("home_view_root")
             .flex()
             .flex_col()
             .size_full()
             .overflow_y_scroll()
+            .bg(colors.background)
             .p_4()
             .when(is_desktop, |el| el.p_8())
             // Max width wrapper for clean desktop centering
@@ -68,25 +70,33 @@ impl HomeView {
                                     .text_2xl()
                                     .font_bold()
                                     .text_color(colors.foreground)
-                                    .child("Murakaza neza"),
+                                    .child(t("home.welcome", lang)),
                             )
                             .child(
                                 div()
                                     .text_sm()
                                     .text_color(colors.muted_foreground)
-                                    .child("Hitamo uko ushaka kwitoza uyu munsi"),
+                                    .child(t("home.choose_mode", lang)),
                             ),
                     )
                     // In-Progress Attempt Banner (if an attempt is active)
                     .children(state.current_attempt.as_ref().map(|att| {
                         let answered = att.answered_count();
                         let total = att.total_questions();
-                        let mode_title = att.mode.title_kinyarwanda();
+                        let mode_title = match att.mode {
+                            QuizMode::Byoroshye => t("mode.easy.title", lang),
+                            QuizMode::Hagati => t("mode.medium.title", lang),
+                            QuizMode::Bikomeye => t("mode.hard.title", lang),
+                            QuizMode::WeakPractice => t("home.weak_title", lang),
+                            QuizMode::RetryWrong => t("results.retry_wrong", lang),
+                        };
 
                         div()
                             .flex()
                             .flex_col()
-                            .when(is_desktop, |el| el.flex_row().items_center().justify_between())
+                            .when(is_desktop, |el| {
+                                el.flex_row().items_center().justify_between()
+                            })
                             .gap_3()
                             .p_4()
                             .rounded_xl()
@@ -103,13 +113,13 @@ impl HomeView {
                                             .text_base()
                                             .font_bold()
                                             .text_color(colors.primary)
-                                            .child(Strings::HOME_RESUME_TITLE),
+                                            .child(t("home.resume_title", lang)),
                                     )
                                     .child(
                                         div()
                                             .text_xs()
                                             .text_color(colors.muted_foreground)
-                                            .child(format!("{mode_title}: {answered}/{total} ibibazo byasubijwe")),
+                                            .child(format!("{mode_title}: {answered}/{total}")),
                                     ),
                             )
                             .child(
@@ -139,7 +149,7 @@ impl HomeView {
                                                     .text_sm()
                                                     .font_semibold()
                                                     .text_color(colors.primary_foreground)
-                                                    .child(Strings::HOME_RESUME_BTN),
+                                                    .child(t("home.resume_btn", lang)),
                                             ),
                                     )
                                     .child(
@@ -165,7 +175,7 @@ impl HomeView {
                                                     .text_sm()
                                                     .font_medium()
                                                     .text_color(colors.foreground)
-                                                    .child(Strings::HOME_DISCARD_BTN),
+                                                    .child(t("home.discard_btn", lang)),
                                             ),
                                     ),
                             )
@@ -177,11 +187,12 @@ impl HomeView {
                             .gap_4()
                             .when(is_desktop, |el| el.flex_row())
                             .when(!is_desktop, |el| el.flex_col())
-                            // Card 1: Byoroshye
+                            // Card 1: Easy
                             .child(Self::render_mode_card(
                                 QuizMode::Byoroshye,
-                                "Byoroshye",
-                                "Wiga uko ukunze. Igisubizo kigaragara ako kanya, nta mwanya ugenwe.",
+                                t("mode.easy.title", lang),
+                                t("mode.easy.desc", lang),
+                                t("home.start", lang),
                                 IconName::GraduationCap,
                                 gpui::rgb(0x22c55e),
                                 gpui::rgba(0x0e2f1bff),
@@ -189,11 +200,12 @@ impl HomeView {
                                 cx,
                                 on_start_mode,
                             ))
-                            // Card 2: Hagati
+                            // Card 2: Medium
                             .child(Self::render_mode_card(
                                 QuizMode::Hagati,
-                                "Hagati",
-                                "Ikizamini nyacyo: ibibazo 20 mu minota 20. Ibisubizo biboneka ku iherezo.",
+                                t("mode.medium.title", lang),
+                                t("mode.medium.desc", lang),
+                                t("home.start", lang),
                                 IconName::Clock,
                                 gpui::rgb(0xf59e0b),
                                 gpui::rgba(0x382405ff),
@@ -201,11 +213,12 @@ impl HomeView {
                                 cx,
                                 on_start_mode,
                             ))
-                            // Card 3: Bikomeye
+                            // Card 3: Hard
                             .child(Self::render_mode_card(
                                 QuizMode::Bikomeye,
-                                "Bikomeye",
-                                "Ibibazo 20 mu minota 12. Nta gusubira inyuma, nta gusimbuka.",
+                                t("mode.hard.title", lang),
+                                t("mode.hard.desc", lang),
+                                t("home.start", lang),
                                 IconName::Flame,
                                 gpui::rgb(0xef4444),
                                 gpui::rgba(0x3b1115ff),
@@ -222,27 +235,29 @@ impl HomeView {
                             .when(is_desktop, |el| el.flex_row())
                             .when(!is_desktop, |el| el.flex_col())
                             .child(Self::render_stat_tile(
-                                "Ibibazo byose",
+                                t("questions.filter_all", lang),
                                 &total_questions.to_string(),
                                 cx,
                             ))
                             .child(Self::render_stat_tile(
-                                "Ikizamini giheruka",
+                                t("results.title", lang),
                                 &last_score_display,
                                 cx,
                             ))
                             .child(Self::render_stat_tile(
-                                "Impuzandengo",
+                                t("stats.pass_rate", lang),
                                 &pass_rate_display,
                                 cx,
                             )),
                     )
-                    // Bottom Practice Card: Ibibazo nakosheje
+                    // Bottom Practice Card: Frequently Missed Questions
                     .child(
                         div()
                             .flex()
                             .flex_col()
-                            .when(is_desktop, |el| el.flex_row().items_center().justify_between())
+                            .when(is_desktop, |el| {
+                                el.flex_row().items_center().justify_between()
+                            })
                             .gap_4()
                             .p_5()
                             .rounded_xl()
@@ -280,17 +295,17 @@ impl HomeView {
                                                     .text_base()
                                                     .font_bold()
                                                     .text_color(colors.foreground)
-                                                    .child("Ibibazo nakosheje"),
+                                                    .child(t("home.weak_title", lang)),
                                             )
                                             .child(
                                                 div()
                                                     .text_xs()
                                                     .text_color(colors.muted_foreground)
-                                                    .child("Subiramo ibibazo wakunze kwibeshyaho"),
+                                                    .child(t("home.weak_desc", lang)),
                                             ),
                                     ),
                             )
-                            // Right side: Action Button "Kora ibi bibazo ->"
+                            // Right side: Action Button
                             .child(
                                 div()
                                     .id("start_weak_practice_btn")
@@ -306,7 +321,10 @@ impl HomeView {
                                     .border_color(colors.border)
                                     .bg(gpui::rgba(0x1a1e24ff))
                                     .cursor_pointer()
-                                    .hover(|el| el.bg(gpui::rgba(0x252a32ff)).border_color(gpui::rgba(0x3e4552ff)))
+                                    .hover(|el| {
+                                        el.bg(gpui::rgba(0x252a32ff))
+                                            .border_color(gpui::rgba(0x3e4552ff))
+                                    })
                                     .on_click(cx.listener(move |this, _, window, cx| {
                                         on_start_mode(this, QuizMode::WeakPractice, window, cx);
                                     }))
@@ -315,7 +333,7 @@ impl HomeView {
                                             .text_sm()
                                             .font_semibold()
                                             .text_color(colors.foreground)
-                                            .child("Kora ibi bibazo"),
+                                            .child(t("home.weak_btn", lang)),
                                     )
                                     .child(
                                         Icon::new(IconName::ArrowRight)
@@ -332,6 +350,7 @@ impl HomeView {
         mode: QuizMode,
         title: &'static str,
         desc: &'static str,
+        start_label: &'static str,
         icon: IconName,
         icon_color: impl Into<gpui::Hsla>,
         badge_bg: impl Into<gpui::Hsla>,
@@ -343,6 +362,7 @@ impl HomeView {
         let colors = theme.colors;
 
         div()
+            .id(format!("card_mode_{title}"))
             .flex()
             .flex_col()
             .flex_1()
@@ -386,7 +406,7 @@ impl HomeView {
                     .min_h(px(44.0))
                     .child(desc),
             )
-            // Bottom Action Button: Tangira
+            // Bottom Action Button: Start
             .child(
                 div().mt_6().w_full().child(
                     div()
@@ -421,7 +441,7 @@ impl HomeView {
                                 .text_sm()
                                 .font_semibold()
                                 .text_color(colors.foreground)
-                                .child("Tangira"),
+                                .child(start_label),
                         ),
                 ),
             )
