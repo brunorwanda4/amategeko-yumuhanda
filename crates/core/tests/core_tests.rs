@@ -250,6 +250,33 @@ fn test_deadline_timer() {
 }
 
 #[test]
+fn test_easy_elapsed_timer_starts_at_zero_and_resumes() {
+    let bank = QuestionBank::load_bundled().expect("Failed to load bundled questions");
+    let settings = Settings::default();
+    let stats = HashMap::new();
+    let started_at = 10_000;
+    let attempt = QuizEngine::start_quiz(&bank, QuizMode::Byoroshye, &settings, &stats, started_at)
+        .expect("Quiz start failed");
+
+    assert_eq!(
+        QuizTimer::state(&attempt, started_at, false),
+        TimerState::None
+    );
+    assert_eq!(
+        QuizTimer::state(&attempt, started_at, true),
+        TimerState::Elapsed(0)
+    );
+
+    let saved = serde_json::to_string(&attempt).expect("Attempt should serialize");
+    let restored: Attempt = serde_json::from_str(&saved).expect("Attempt should deserialize");
+    assert_eq!(restored.start_time_secs, started_at);
+    assert_eq!(
+        QuizTimer::state(&restored, started_at + 125, true),
+        TimerState::Elapsed(125)
+    );
+}
+
+#[test]
 fn test_timer_levels_thresholds_20min_and_12min() {
     assert_eq!(WARNING_THRESHOLD_PERCENT, 25);
     assert_eq!(ERROR_THRESHOLD_PERCENT, 10);
@@ -452,6 +479,7 @@ fn test_i18n_parity_and_timer_strings() {
 #[test]
 fn test_settings_defaults_and_language() {
     let settings = Settings::default();
+    assert!(!settings.easy_show_timer);
     assert_eq!(settings.language, Language::En);
     assert_eq!(settings.question_language, Language::En);
     assert!(!settings.show_both_languages);

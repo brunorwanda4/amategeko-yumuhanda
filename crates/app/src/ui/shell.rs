@@ -15,6 +15,7 @@ use gpui_kit::assets::IconName;
 use gpui_kit::base::StyledExt;
 use gpui_kit::component::alert::Alert;
 use gpui_kit::component::button::{Button, ButtonVariants};
+use gpui_kit::component::tooltip::Tooltip;
 use gpui_kit::component::{ActiveTheme, Icon};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
@@ -982,7 +983,9 @@ impl ShellView {
         div()
             .flex()
             .flex_col()
-            .w(px(160.0))
+            .w(px(200.0))
+            .flex_none()
+            .overflow_hidden()
             .h_full()
             .border_r_1()
             .border_color(colors.border)
@@ -1091,11 +1094,21 @@ impl ShellView {
                     .flex_row()
                     .items_center()
                     .justify_between()
+                    .w_full()
+                    .min_w_0()
+                    .overflow_hidden()
                     .px_3()
                     .py_2()
                     .rounded_xl()
                     .cursor_pointer()
                     .hover(|el| el.bg(colors.sidebar_accent))
+                    .tooltip({
+                        let tooltip = self
+                            .registry
+                            .tooltip_for_action(ShortcutAction::ShowHelp, lang, true, shortcuts_on)
+                            .unwrap_or_else(|| t("shortcuts.title", lang).to_string());
+                        move |window, cx| Tooltip::new(tooltip.clone()).build(window, cx)
+                    })
                     .on_click(cx.listener(|this, _, _, cx| {
                         this.show_help_dialog = !this.show_help_dialog;
                         cx.notify();
@@ -1106,6 +1119,8 @@ impl ShellView {
                             .flex_row()
                             .items_center()
                             .gap_2()
+                            .min_w_0()
+                            .overflow_hidden()
                             .child(
                                 Icon::new(IconName::BookOpen)
                                     .size(px(16.0))
@@ -1113,6 +1128,10 @@ impl ShellView {
                             )
                             .child(
                                 div()
+                                    .min_w_0()
+                                    .overflow_hidden()
+                                    .whitespace_nowrap()
+                                    .text_ellipsis()
                                     .text_xs()
                                     .font_medium()
                                     .text_color(colors.muted_foreground)
@@ -1159,6 +1178,22 @@ impl ShellView {
         } else {
             colors.foreground
         };
+        let shortcut_action = match &target_screen {
+            Screen::Home => ShortcutAction::NavHome,
+            Screen::Quiz => ShortcutAction::NavQuiz,
+            Screen::Questions => ShortcutAction::NavQuestions,
+            Screen::Stats | Screen::Results => ShortcutAction::NavStats,
+            Screen::Settings => ShortcutAction::NavSettings,
+        };
+        let tooltip = self
+            .registry
+            .tooltip_for_action(
+                shortcut_action,
+                self.state.settings.language,
+                true,
+                self.state.settings.desktop_shortcuts_enabled,
+            )
+            .unwrap_or_else(|| label.to_string());
 
         div()
             .id(id)
@@ -1166,12 +1201,16 @@ impl ShellView {
             .flex_row()
             .items_center()
             .justify_between()
+            .w_full()
+            .min_w_0()
+            .overflow_hidden()
             .px_3()
             .py_2()
             .rounded_lg()
             .bg(bg_color)
             .cursor_pointer()
             .hover(|el| el.bg(colors.sidebar_accent))
+            .tooltip(move |window, cx| Tooltip::new(tooltip.clone()).build(window, cx))
             .on_click(cx.listener(move |this, _, _, cx| {
                 this.state.navigate(target_screen.clone());
                 cx.notify();
@@ -1182,9 +1221,20 @@ impl ShellView {
                     .flex_row()
                     .items_center()
                     .gap_2p5()
-                    .child(Icon::new(icon).size(px(16.0)).text_color(text_color))
+                    .min_w_0()
+                    .overflow_hidden()
+                    .child(
+                        Icon::new(icon)
+                            .size(px(16.0))
+                            .flex_none()
+                            .text_color(text_color),
+                    )
                     .child(
                         div()
+                            .min_w_0()
+                            .overflow_hidden()
+                            .whitespace_nowrap()
+                            .text_ellipsis()
                             .text_xs()
                             .font_semibold()
                             .text_color(text_color)

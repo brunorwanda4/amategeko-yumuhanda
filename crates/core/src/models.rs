@@ -210,7 +210,7 @@ pub struct Settings {
 impl Default for Settings {
     fn default() -> Self {
         Self {
-            easy_show_timer: true,
+            easy_show_timer: false,
             medium_duration_mins: 20,
             hard_duration_mins: 12,
             pass_mark: 12,
