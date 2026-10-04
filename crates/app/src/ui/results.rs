@@ -144,24 +144,17 @@ impl ResultsView {
             .collect();
 
         div()
-            .id("results_scroll_view")
-            .track_scroll(scroll_handle)
+            .id("results_view_root")
             .flex()
             .flex_col()
             .size_full()
-            .overflow_y_scroll()
             .bg(colors.background)
             .p_6()
-            .gap_5()
-            .child(vertical_scrollbar(
-                "results_scrollbar",
-                scroll_handle,
-                is_desktop,
-                reveal_scrollbar,
-            ))
-            // Page Heading
+            .gap_4()
+            // 1. Page Heading
             .child(
                 div()
+                    .flex_none()
                     .text_2xl()
                     .font_bold()
                     .text_color(colors.foreground)
@@ -171,9 +164,10 @@ impl ResultsView {
                         "Ibisubizo"
                     }),
             )
-            // Score Summary Card
+            // 2. Score Summary Card
             .child(
                 div()
+                    .flex_none()
                     .flex()
                     .flex_row()
                     .items_center()
@@ -343,9 +337,10 @@ impl ResultsView {
                             ),
                     ),
             )
-            // Filter Pills Row
+            // 3. Filter Pills Row
             .child(
                 div()
+                    .flex_none()
                     .flex()
                     .flex_row()
                     .items_center()
@@ -523,17 +518,27 @@ impl ResultsView {
                             )
                     }),
             )
-            // Question Review List Container
+            // 4. Question Review List Container - SCROLLABLE with its own vertical scrollbar
             .child(
                 div()
+                    .id("results_scroll_view")
+                    .track_scroll(scroll_handle)
+                    .relative()
                     .flex()
                     .flex_col()
-                    .w_full()
+                    .flex_1()
+                    .min_h(px(180.0))
+                    .overflow_y_scroll()
                     .rounded_2xl()
                     .border_1()
                     .border_color(colors.border)
                     .bg(colors.secondary)
-                    .overflow_hidden()
+                    .child(vertical_scrollbar(
+                        "results_scrollbar",
+                        scroll_handle,
+                        is_desktop,
+                        reveal_scrollbar,
+                    ))
                     .when(filtered_questions.is_empty(), |container| {
                         container.child(
                             div()
@@ -909,15 +914,16 @@ impl ResultsView {
                         },
                     )),
             )
-            // Bottom Action Buttons
+            // 5. Bottom Action Buttons
             .child(
                 div()
+                    .flex_none()
                     .flex()
                     .flex_row()
                     .flex_wrap()
                     .items_center()
                     .gap_3()
-                    .pt_2()
+                    .pt_1()
                     // Try again button
                     .child({
                         let label = if lang == Language::En {

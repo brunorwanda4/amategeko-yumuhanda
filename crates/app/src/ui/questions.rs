@@ -894,17 +894,5 @@ impl QuestionsView {
                             })
                     })),
             )
-            // Footer Performance Note
-            .child(
-                div()
-                    .pt_1()
-                    .pb_1()
-                    .text_xs()
-                    .text_color(colors.muted_foreground)
-                    .child(
-                        t("questions.performance_footer", lang)
-                            .replace("{total}", &total_questions.to_string()),
-                    ),
-            )
     }
 }

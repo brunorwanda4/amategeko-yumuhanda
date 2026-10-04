@@ -159,6 +159,7 @@ impl ShellView {
 
         let questions_scroll_handle = gpui::ScrollHandle::default();
         let stats_scroll_handle = gpui::ScrollHandle::default();
+        let results_scroll_handle = gpui::ScrollHandle::default();
         let initial_screen = state.active_screen.clone();
         let now = Instant::now();
 
@@ -192,6 +193,10 @@ impl ShellView {
                     stats_scroll_handle
                         .set_offset(gpui::point(gpui::px(0.0), gpui::px(-initial_scroll.abs())));
                 }
+                Screen::Results => {
+                    results_scroll_handle
+                        .set_offset(gpui::point(gpui::px(0.0), gpui::px(-initial_scroll.abs())));
+                }
                 _ => {}
             }
         }
@@ -216,7 +221,7 @@ impl ShellView {
             stats_scroll_handle,
             home_scroll_handle: gpui::ScrollHandle::default(),
             quiz_scroll_handle: gpui::ScrollHandle::default(),
-            results_scroll_handle: gpui::ScrollHandle::default(),
+            results_scroll_handle,
             settings_scroll_handle: gpui::ScrollHandle::default(),
             sidebar_scroll_handle: gpui::ScrollHandle::default(),
             help_dialog_scroll_handle: gpui::ScrollHandle::default(),
@@ -273,6 +278,10 @@ impl ShellView {
                 }
                 if s_scroll > 0.0 {
                     map.insert("stats".to_string(), s_scroll);
+                }
+                let r_scroll = self.results_scroll_handle.offset().y.as_f32().abs();
+                if r_scroll > 0.0 {
+                    map.insert("results".to_string(), r_scroll);
                 }
                 map
             },
@@ -520,6 +529,7 @@ impl Render for ShellView {
                 cx,
                 |this, filter, _, cx| {
                     this.results_filter = filter;
+                    this.results_scroll_handle.set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
                     this.save_dev_state();
                     cx.notify();
                 },
@@ -1066,14 +1076,17 @@ impl Render for ShellView {
                         }
                         ShortcutAction::FilterResultsAll => {
                             this.results_filter = ResultFilter::All;
+                            this.results_scroll_handle.set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
                             cx.notify();
                         }
                         ShortcutAction::FilterResultsCorrect => {
                             this.results_filter = ResultFilter::Correct;
+                            this.results_scroll_handle.set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
                             cx.notify();
                         }
                         ShortcutAction::FilterResultsWrong => {
                             this.results_filter = ResultFilter::Mistakes;
+                            this.results_scroll_handle.set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
                             cx.notify();
                         }
                         ShortcutAction::FocusSearch => {
@@ -1159,7 +1172,7 @@ impl Render for ShellView {
                 }),
             );
 
-        if is_in_quiz || active_screen == Screen::Questions {
+        if is_in_quiz || active_screen == Screen::Questions || active_screen == Screen::Results {
             window.focus(&self.focus_handle, cx);
         }
 
