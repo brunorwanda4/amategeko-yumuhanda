@@ -3,6 +3,7 @@
 //! This crate contains NO GPUI dependencies, making it pure Rust, 100% unit-testable
 //! and trivial to cross-compile for all targets.
 
+pub mod about;
 pub mod data;
 pub mod error;
 pub mod i18n;
@@ -13,6 +14,7 @@ pub mod stats;
 pub mod timer;
 pub mod window;
 
+pub use about::{ProjectCredit, APP_VERSION, PROJECT_CREDIT};
 pub use data::QuestionBank;
 pub use error::{AppError, Result};
 pub use i18n::{t, tf, I18n, Strings};

@@ -1,4 +1,5 @@
 use crate::state::AppState;
+use crate::ui::footer::AppFooter;
 use amategeko_core::{t, Language, ThemeMode};
 use gpui::InteractiveElement as _;
 use gpui_kit::base::Disableable as _;
@@ -619,6 +620,9 @@ impl SettingsView {
                             }),
                     ),
             )
+            .when(is_desktop, |settings| {
+                settings.child(AppFooter::render(true, px(720.0), lang, cx))
+            })
     }
 
     fn render_divider(colors: &ThemeColor) -> impl IntoElement {

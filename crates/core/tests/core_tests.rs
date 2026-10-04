@@ -361,6 +361,15 @@ fn test_timer_resume_past_threshold_reports_correct_level() {
 }
 
 #[test]
+fn test_project_credit_and_version_metadata() {
+    assert_eq!(PROJECT_CREDIT.name, "Rwanda Bruno");
+    assert_eq!(PROJECT_CREDIT.url, "https://github.com/brunorwanda4");
+    assert_eq!(APP_VERSION, env!("CARGO_PKG_VERSION"));
+    assert_eq!(t("about.built_by", Language::En), "Built by");
+    assert_eq!(t("about.built_by", Language::Rw), "Byakozwe na");
+}
+
+#[test]
 fn test_i18n_parity_and_timer_strings() {
     let rw_content = include_str!("../../../assets/i18n/rw.json");
     let en_content = include_str!("../../../assets/i18n/en.json");

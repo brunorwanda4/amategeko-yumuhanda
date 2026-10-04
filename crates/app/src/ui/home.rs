@@ -1,4 +1,5 @@
 use crate::state::AppState;
+use crate::ui::footer::AppFooter;
 use amategeko_core::{t, QuizMode, StatsCalculator};
 use gpui::InteractiveElement as _;
 use gpui_kit::assets::IconName;
@@ -343,6 +344,7 @@ impl HomeView {
                             ),
                     ),
             )
+            .child(AppFooter::render(is_desktop, px(1040.0), lang, cx))
     }
 
     #[allow(clippy::too_many_arguments)]
