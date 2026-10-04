@@ -558,7 +558,7 @@ impl QuizView {
 
                                 div()
                                     .id(format!("progress_seg_{i}"))
-                                    .debug_selector(move || format!("progress_seg_{i}").into())
+                                    .debug_selector(move || format!("progress_seg_{i}"))
                                     .flex_1()
                                     .h(px(4.0))
                                     .rounded_full()

@@ -25,7 +25,9 @@ pub use i18n::{t, tf, I18n, Strings};
 pub use models::*;
 pub use platform::{Clock, InMemoryStorage, MockClock, Storage, SystemClock};
 pub use quiz::QuizEngine;
-pub use stats::{MostMissedQuestion, StatsCalculator, StatsSummary};
+pub use stats::{
+    MostMissedQuestion, RecentAttemptStat, StatsCalculator, StatsFilter, StatsSummary,
+};
 pub use timer::{
     level, QuizTimer, TimerLevel, TimerState, TimerTracker, ERROR_THRESHOLD_PERCENT,
     WARNING_THRESHOLD_PERCENT,

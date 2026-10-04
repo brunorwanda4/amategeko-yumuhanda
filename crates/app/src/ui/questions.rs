@@ -440,7 +440,7 @@ impl QuestionsView {
 
                         div()
                             .id(format!("q_card_{}", q_id))
-                            .debug_selector(move || format!("q_card_{}", q_id).into())
+                            .debug_selector(move || format!("q_card_{}", q_id))
                             .flex_shrink_0()
                             .flex()
                             .flex_col()

@@ -8,7 +8,7 @@ use crate::ui::scroll::{configure_scrollbar_motion, vertical_scrollbar, Scrollba
 use crate::ui::settings::{SettingsAction, SettingsView};
 use crate::ui::stats::StatsView;
 use amategeko_core::{
-    t, QuizEngine, QuizMode, QuizTimer, Strings, TimerLevel, TimerState, TimerTracker,
+    t, QuizEngine, QuizMode, QuizTimer, StatsFilter, Strings, TimerLevel, TimerState, TimerTracker,
 };
 use gpui::FocusHandle;
 use gpui::InteractiveElement as _;
@@ -74,6 +74,7 @@ pub struct ShellView {
     pub questions_expanded: HashSet<u32>,
     pub questions_revealed: HashMap<u32, String>,
     pub settings_confirm_clear: bool,
+    pub stats_confirm_clear: bool,
     pub focus_mode: bool,
     pub focus_handle: FocusHandle,
     pub registry: ShortcutRegistry,
@@ -210,6 +211,7 @@ impl ShellView {
             questions_expanded: HashSet::new(),
             questions_revealed: HashMap::new(),
             settings_confirm_clear: false,
+            stats_confirm_clear: false,
             focus_mode: false,
             focus_handle: cx.focus_handle(),
             registry: ShortcutRegistry::new(),
@@ -529,7 +531,8 @@ impl Render for ShellView {
                 cx,
                 |this, filter, _, cx| {
                     this.results_filter = filter;
-                    this.results_scroll_handle.set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
+                    this.results_scroll_handle
+                        .set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
                     this.save_dev_state();
                     cx.notify();
                 },
@@ -624,14 +627,25 @@ impl Render for ShellView {
                 is_desktop,
                 &self.stats_scroll_handle,
                 reveal_scrollbar,
+                StatsFilter::parse_str(&self.stats_filter),
+                self.stats_confirm_clear,
                 cx,
+                |this, filter, _, cx| {
+                    this.stats_filter = filter.as_str().to_string();
+                    this.save_dev_state();
+                    cx.notify();
+                },
+                |this, confirm, _, cx| {
+                    this.stats_confirm_clear = confirm;
+                    cx.notify();
+                },
                 |this, _, cx| {
-                    this.state.start_quiz(QuizMode::WeakPractice);
+                    this.state.clear_history();
                     this.save_dev_state();
                     cx.notify();
                 },
                 |this, _, cx| {
-                    this.state.start_quiz(QuizMode::Byoroshye);
+                    this.state.start_quiz(QuizMode::WeakPractice);
                     this.save_dev_state();
                     cx.notify();
                 },
@@ -901,6 +915,8 @@ impl Render for ShellView {
                                 this.show_help_dialog = false;
                             } else if this.show_finish_confirm_dialog {
                                 this.show_finish_confirm_dialog = false;
+                            } else if this.stats_confirm_clear {
+                                this.stats_confirm_clear = false;
                             } else if this.settings_confirm_clear {
                                 this.settings_confirm_clear = false;
                             } else if this.questions_search_focused {
@@ -1076,17 +1092,20 @@ impl Render for ShellView {
                         }
                         ShortcutAction::FilterResultsAll => {
                             this.results_filter = ResultFilter::All;
-                            this.results_scroll_handle.set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
+                            this.results_scroll_handle
+                                .set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
                             cx.notify();
                         }
                         ShortcutAction::FilterResultsCorrect => {
                             this.results_filter = ResultFilter::Correct;
-                            this.results_scroll_handle.set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
+                            this.results_scroll_handle
+                                .set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
                             cx.notify();
                         }
                         ShortcutAction::FilterResultsWrong => {
                             this.results_filter = ResultFilter::Mistakes;
-                            this.results_scroll_handle.set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
+                            this.results_scroll_handle
+                                .set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
                             cx.notify();
                         }
                         ShortcutAction::FocusSearch => {
@@ -1161,8 +1180,17 @@ impl Render for ShellView {
                             this.questions_revealed.clear();
                             cx.notify();
                         }
-                        ShortcutAction::FilterStats(_) => {
-                            // Stats screen filter controls are not built yet; skipped per task instructions.
+                        ShortcutAction::FilterStats(idx) => {
+                            let new_filter = match idx {
+                                1 => StatsFilter::All,
+                                2 => StatsFilter::Easy,
+                                3 => StatsFilter::Medium,
+                                4 => StatsFilter::Hard,
+                                _ => StatsFilter::All,
+                            };
+                            this.stats_filter = new_filter.as_str().to_string();
+                            this.save_dev_state();
+                            cx.notify();
                         }
                         ShortcutAction::SaveSettings => {
                             this.state.save_settings(this.state.settings.clone());
@@ -1172,7 +1200,11 @@ impl Render for ShellView {
                 }),
             );
 
-        if is_in_quiz || active_screen == Screen::Questions || active_screen == Screen::Results {
+        if is_in_quiz
+            || active_screen == Screen::Questions
+            || active_screen == Screen::Results
+            || active_screen == Screen::Stats
+        {
             window.focus(&self.focus_handle, cx);
         }
 

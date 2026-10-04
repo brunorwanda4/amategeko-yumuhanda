@@ -222,7 +222,8 @@ fn hard_mode_quiz_finishes_before_time_and_shows_results(cx: &mut TestAppContext
         .current_attempt
         .as_mut()
         .unwrap()
-        .answers.insert(total - 1, "c".into());
+        .answers
+        .insert(total - 1, "c".into());
 
     let (view, cx) = cx.add_window_view(move |_, cx| ShellView::new(state, cx));
     let cx: &mut VisualTestContext = cx;
@@ -250,4 +251,40 @@ fn hard_mode_quiz_finishes_before_time_and_shows_results(cx: &mut TestAppContext
     );
     let has_result = view.read_with(cx, |this, _| this.state.last_result.is_some());
     assert!(has_result, "last_result must be populated");
+}
+
+#[gpui::test]
+fn stats_view_in_shell_renders_empty_and_switches_filters(cx: &mut TestAppContext) {
+    cx.update(gpui_kit::init);
+    let storage = Arc::new(InMemoryStorage::new());
+    let clock = Arc::new(MockClock::new(1_000));
+    let mut state = AppState::new(storage, clock);
+    state.navigate(Screen::Stats);
+
+    let (view, cx) = cx.add_window_view(move |_, cx| ShellView::new(state, cx));
+    let cx: &mut VisualTestContext = cx;
+    draw_context(cx);
+
+    assert_eq!(
+        view.read_with(cx, |this, _| this.state.active_screen.clone()),
+        Screen::Stats
+    );
+
+    // Test switching filter via shortcuts 1, 2, 3, 4
+    for (key, expected_filter) in [("2", "easy"), ("3", "medium"), ("4", "hard"), ("1", "all")] {
+        cx.simulate_event(gpui::KeyDownEvent {
+            keystroke: gpui::Keystroke {
+                modifiers: gpui::Modifiers::default(),
+                key: key.to_string(),
+                key_char: None,
+            },
+            is_held: false,
+            prefer_character_input: false,
+        });
+        draw_context(cx);
+        assert_eq!(
+            view.read_with(cx, |this, _| this.stats_filter.clone()),
+            expected_filter
+        );
+    }
 }
