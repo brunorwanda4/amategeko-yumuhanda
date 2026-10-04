@@ -2,10 +2,11 @@ use crate::state::AppState;
 use crate::ui::scroll::vertical_scrollbar;
 use amategeko_core::{t, Language, QuestionResult, QuizMode};
 use gpui::InteractiveElement as _;
+use gpui_kit::assets::IconName;
 use gpui_kit::base::StyledExt;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::tooltip::Tooltip;
-use gpui_kit::component::{ActiveTheme, Icon, IconName};
+use gpui_kit::component::{ActiveTheme, Icon};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
 use std::collections::HashSet;
@@ -13,6 +14,8 @@ use std::collections::HashSet;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ResultFilter {
     All,
+    Mistakes,
+    Unanswered,
     Correct,
     Wrong,
 }
@@ -92,7 +95,6 @@ impl ResultsView {
 
         let score = result.score;
         let total = result.total;
-        let pass_mark = result.pass_mark;
         let is_passed = result.passed;
         let percentage = (score * 100).checked_div(total).unwrap_or(0);
 
@@ -108,8 +110,22 @@ impl ResultsView {
         let secs = result.duration_seconds % 60;
         let duration_str = format!("{:02}:{:02}", mins, secs);
 
-        let wrong_count = total.saturating_sub(score);
-        let correct_count = score;
+        let correct_count = result
+            .question_results
+            .iter()
+            .filter(|qr| qr.is_correct)
+            .count();
+        let unanswered_count = result
+            .question_results
+            .iter()
+            .filter(|qr| qr.user_answer.is_none())
+            .count();
+        let wrong_answered_count = result
+            .question_results
+            .iter()
+            .filter(|qr| !qr.is_correct && qr.user_answer.is_some())
+            .count();
+        let total_mistakes = (total as usize).saturating_sub(score as usize);
         let shortcuts_active = is_desktop && state.settings.desktop_shortcuts_enabled;
 
         // Filter question results
@@ -119,8 +135,11 @@ impl ResultsView {
             .enumerate()
             .filter(|(_, qr)| match filter {
                 ResultFilter::All => true,
+                ResultFilter::Mistakes | ResultFilter::Wrong => {
+                    !qr.is_correct && qr.user_answer.is_some()
+                }
+                ResultFilter::Unanswered => qr.user_answer.is_none(),
                 ResultFilter::Correct => qr.is_correct,
-                ResultFilter::Wrong => !qr.is_correct,
             })
             .collect();
 
@@ -132,43 +151,46 @@ impl ResultsView {
             .size_full()
             .overflow_y_scroll()
             .bg(colors.background)
-            .p_4()
-            .gap_4()
+            .p_6()
+            .gap_5()
             .child(vertical_scrollbar(
                 "results_scrollbar",
                 scroll_handle,
                 is_desktop,
                 reveal_scrollbar,
             ))
-            // Top Header: Score Card
+            // Page Heading
+            .child(
+                div()
+                    .text_2xl()
+                    .font_bold()
+                    .text_color(colors.foreground)
+                    .child(if lang == Language::En {
+                        "Results"
+                    } else {
+                        "Ibisubizo"
+                    }),
+            )
+            // Score Summary Card
             .child(
                 div()
                     .flex()
-                    .flex_col()
+                    .flex_row()
                     .items_center()
-                    .justify_center()
                     .p_6()
                     .rounded_2xl()
                     .border_1()
-                    .border_color(if is_passed {
-                        colors.success
-                    } else {
-                        colors.danger
-                    })
+                    .border_color(colors.border)
                     .bg(colors.secondary)
-                    .gap_3()
-                    // Score circular badge
+                    .gap_6()
+                    // Circular score gauge
                     .child(
                         div()
                             .flex()
                             .flex_col()
-                            .w_full()
-                            .min_w_0()
-                            .overflow_hidden()
                             .items_center()
                             .justify_center()
-                            .w(px(110.0))
-                            .h(px(110.0))
+                            .size(px(88.0))
                             .rounded_full()
                             .border_4()
                             .border_color(if is_passed {
@@ -181,667 +203,854 @@ impl ResultsView {
                                 div()
                                     .text_2xl()
                                     .font_extrabold()
-                                    .text_color(if is_passed {
-                                        colors.success
-                                    } else {
-                                        colors.danger
-                                    })
-                                    .child(format!("{}/{}", score, total)),
+                                    .text_color(colors.foreground)
+                                    .child(format!("{score}")),
                             )
                             .child(
                                 div()
                                     .text_xs()
-                                    .font_bold()
+                                    .font_medium()
                                     .text_color(colors.muted_foreground)
-                                    .child(format!("{}%", percentage)),
+                                    .child(format!("/ {total}")),
                             ),
                     )
-                    // Status text
-                    .child(
-                        div()
-                            .text_xl()
-                            .font_bold()
-                            .text_color(if is_passed {
-                                colors.success
-                            } else {
-                                colors.danger
-                            })
-                            .child(if is_passed {
-                                t("results.passed", lang)
-                            } else {
-                                t("results.failed", lang)
-                            }),
-                    )
-                    // Mode + Time + Pass threshold metadata row
+                    // Score metadata info
                     .child(
                         div()
                             .flex()
-                            .flex_row()
-                            .flex_wrap()
-                            .items_center()
-                            .justify_center()
-                            .gap_3()
-                            .text_xs()
-                            .text_color(colors.muted_foreground)
+                            .flex_col()
+                            .gap_1p5()
+                            // Score percentage + Passed / Failed pill
                             .child(
                                 div()
-                                    .px_2()
-                                    .py_1()
-                                    .rounded_md()
-                                    .bg(colors.background)
-                                    .border_1()
-                                    .border_color(colors.border)
-                                    .child(format!(
-                                        "{}: {}",
-                                        if lang == Language::En { "Mode" } else { "Uburyo" },
-                                        mode_label
-                                    )),
-                            )
-                            .child(
-                                div()
-                                    .px_2()
-                                    .py_1()
-                                    .rounded_md()
-                                    .bg(colors.background)
-                                    .border_1()
-                                    .border_color(colors.border)
+                                    .flex()
+                                    .flex_row()
+                                    .items_center()
+                                    .gap_3()
                                     .child(
-                                        t("results.duration", lang)
-                                            .replace("{duration}", &duration_str),
+                                        div()
+                                            .text_3xl()
+                                            .font_bold()
+                                            .text_color(colors.foreground)
+                                            .child(format!("{percentage}%")),
+                                    )
+                                    .child(
+                                        div()
+                                            .px_2p5()
+                                            .py_0p5()
+                                            .rounded_full()
+                                            .bg(if is_passed {
+                                                colors.success.opacity(0.15)
+                                            } else {
+                                                colors.danger.opacity(0.15)
+                                            })
+                                            .child(
+                                                div()
+                                                    .text_xs()
+                                                    .font_semibold()
+                                                    .text_color(if is_passed {
+                                                        colors.success
+                                                    } else {
+                                                        colors.danger
+                                                    })
+                                                    .child(if is_passed {
+                                                        if lang == Language::En {
+                                                            "Passed"
+                                                        } else {
+                                                            "Watsinze"
+                                                        }
+                                                    } else if lang == Language::En {
+                                                        "Failed"
+                                                    } else {
+                                                        "Ntiwatsinze"
+                                                    }),
+                                            ),
                                     ),
                             )
+                            // Subtitle: Mode · Time used: 16:48
                             .child(
                                 div()
-                                    .px_2()
-                                    .py_1()
-                                    .rounded_md()
-                                    .bg(colors.background)
-                                    .border_1()
-                                    .border_color(colors.border)
+                                    .text_sm()
+                                    .text_color(colors.muted_foreground)
+                                    .child(if lang == Language::En {
+                                        format!("{mode_label} · Time used: {duration_str}")
+                                    } else {
+                                        format!("{mode_label} · Igihe cyakoreshejwe: {duration_str}")
+                                    }),
+                            )
+                            // Badges row: Correct, Wrong, Unanswered
+                            .child(
+                                div()
+                                    .flex()
+                                    .flex_row()
+                                    .items_center()
+                                    .gap_2()
+                                    .pt_1()
                                     .child(
-                                        t("results.pass_mark", lang)
-                                            .replace("{pass_mark}", &pass_mark.to_string())
-                                            .replace("{total}", &total.to_string()),
+                                        div()
+                                            .px_3()
+                                            .py_1()
+                                            .rounded_full()
+                                            .bg(colors.success.opacity(0.12))
+                                            .child(
+                                                div()
+                                                    .text_xs()
+                                                    .font_medium()
+                                                    .text_color(colors.success)
+                                                    .child(if lang == Language::En {
+                                                        format!("Correct {correct_count}")
+                                                    } else {
+                                                        format!("Iby'ukuri {correct_count}")
+                                                    }),
+                                            ),
+                                    )
+                                    .child(
+                                        div()
+                                            .px_3()
+                                            .py_1()
+                                            .rounded_full()
+                                            .bg(colors.danger.opacity(0.12))
+                                            .child(
+                                                div()
+                                                    .text_xs()
+                                                    .font_medium()
+                                                    .text_color(colors.danger)
+                                                    .child(if lang == Language::En {
+                                                        format!("Wrong {wrong_answered_count}")
+                                                    } else {
+                                                        format!("Ibyakosheje {wrong_answered_count}")
+                                                    }),
+                                            ),
+                                    )
+                                    .child(
+                                        div()
+                                            .px_3()
+                                            .py_1()
+                                            .rounded_full()
+                                            .bg(colors.muted_foreground.opacity(0.12))
+                                            .child(
+                                                div()
+                                                    .text_xs()
+                                                    .font_medium()
+                                                    .text_color(colors.muted_foreground)
+                                                    .child(if lang == Language::En {
+                                                        format!("Unanswered {unanswered_count}")
+                                                    } else {
+                                                        format!("Ibitashubijwe {unanswered_count}")
+                                                    }),
+                                            ),
                                     ),
                             ),
-                    )
-                    // Action Buttons Row
-                    .child(
-                        div()
-                            .flex()
-                            .flex_row()
-                            .flex_wrap()
-                            .items_center()
-                            .justify_center()
-                            .gap_3()
-                            .pt_2()
-                            // Retry wrong button (if any mistakes)
-                            .when(wrong_count > 0, |el| {
-                                let mut btn = Button::new("retry_wrong_btn")
-                                    .primary()
-                                    .label(t("results.retry_wrong", lang))
-                                    .icon(IconName::RotateCw);
-                                if shortcuts_active {
-                                    btn = btn.tooltip(format!("{} (W)", t("results.retry_wrong", lang)));
-                                }
-                                el.child(
-                                    btn.on_click(cx.listener(move |this, _, window, cx| {
-                                        on_retry_wrong(this, window, cx);
-                                    })),
-                                )
-                            })
-                            // New quiz button
-                            .child({
-                                let mut btn = Button::new("new_quiz_btn")
-                                    .secondary()
-                                    .label(t("results.new_quiz", lang))
-                                    .icon(IconName::Play);
-                                if shortcuts_active {
-                                    btn = btn.tooltip(format!("{} (R)", t("results.new_quiz", lang)));
-                                }
-                                btn.on_click(cx.listener(move |this, _, window, cx| {
-                                    on_new_quiz(this, window, cx);
-                                }))
-                            })
-                            // Home button
-                            .child({
-                                let mut btn = Button::new("home_btn")
-                                    .outline()
-                                    .label(t("nav.home", lang))
-                                    .icon(IconName::LayoutDashboard);
-                                if shortcuts_active {
-                                    btn = btn.tooltip(format!("{} (Esc)", t("nav.home", lang)));
-                                }
-                                btn.on_click(cx.listener(move |this, _, window, cx| {
-                                    on_home(this, window, cx);
-                                }))
-                            }),
                     ),
             )
-            // Filter Chips Section
+            // Filter Pills Row
             .child(
                 div()
                     .flex()
                     .flex_row()
                     .items_center()
-                    .gap_2()
-                    .child(
-                        // All filter chip
+                    .gap_3()
+                    // All 20
+                    .child({
+                        let is_active = filter == ResultFilter::All;
+                        let hint = format!(
+                            "{} (1/A)",
+                            if lang == Language::En {
+                                "All"
+                            } else {
+                                "Byose"
+                            }
+                        );
                         div()
                             .id("filter_all_chip")
-                            .when(shortcuts_active, |el| {
-                                let hint = format!("{} (A)", t("results.filter_all", lang).replace("{count}", &total.to_string()));
-                                el.tooltip(move |window, cx| Tooltip::new(hint.clone()).build(window, cx))
-                            })
-                            .px_3()
-                            .py_1p5()
-                            .rounded_full()
                             .cursor_pointer()
+                            .px_4()
+                            .py_2()
+                            .rounded_xl()
                             .border_1()
-                            .border_color(if filter == ResultFilter::All {
-                                colors.primary
-                            } else {
+                            .border_color(if is_active {
                                 colors.border
-                            })
-                            .bg(if filter == ResultFilter::All {
-                                colors.primary
                             } else {
+                                colors.border.opacity(0.3)
+                            })
+                            .bg(if is_active {
                                 colors.secondary
-                            })
-                            .text_xs()
-                            .font_semibold()
-                            .text_color(if filter == ResultFilter::All {
-                                colors.primary_foreground
                             } else {
-                                colors.foreground
+                                colors.background
                             })
-                            .child(
-                                t("results.filter_all", lang).replace("{count}", &total.to_string()),
-                            )
+                            .hover(|h| h.bg(colors.accent.opacity(0.3)))
+                            .when(shortcuts_active, |el| {
+                                el.tooltip(move |window, cx| {
+                                    Tooltip::new(hint.clone()).build(window, cx)
+                                })
+                            })
                             .on_click(cx.listener(move |this, _, window, cx| {
                                 on_set_filter(this, ResultFilter::All, window, cx);
-                            })),
-                    )
-                    .child(
-                        // Correct filter chip
-                        div()
-                            .id("filter_correct_chip")
-                            .when(shortcuts_active, |el| {
-                                let hint = format!("{} (C)", t("results.filter_correct", lang).replace("{count}", &correct_count.to_string()));
-                                el.tooltip(move |window, cx| Tooltip::new(hint.clone()).build(window, cx))
-                            })
-                            .px_3()
-                            .py_1p5()
-                            .rounded_full()
-                            .cursor_pointer()
-                            .border_1()
-                            .border_color(if filter == ResultFilter::Correct {
-                                colors.success
-                            } else {
-                                colors.border
-                            })
-                            .bg(if filter == ResultFilter::Correct {
-                                colors.success
-                            } else {
-                                colors.secondary
-                            })
-                            .text_xs()
-                            .font_semibold()
-                            .text_color(if filter == ResultFilter::Correct {
-                                colors.primary_foreground
-                            } else {
-                                colors.foreground
-                            })
+                            }))
                             .child(
-                                t("results.filter_correct", lang)
-                                    .replace("{count}", &correct_count.to_string()),
+                                div()
+                                    .text_sm()
+                                    .font_medium()
+                                    .text_color(if is_active {
+                                        colors.foreground
+                                    } else {
+                                        colors.muted_foreground
+                                    })
+                                    .child(format!(
+                                        "{} {}",
+                                        if lang == Language::En {
+                                            "All"
+                                        } else {
+                                            "Byose"
+                                        },
+                                        total
+                                    )),
                             )
-                            .on_click(cx.listener(move |this, _, window, cx| {
-                                on_set_filter(this, ResultFilter::Correct, window, cx);
-                            })),
-                    )
-                    .child(
-                        // Wrong filter chip
+                    })
+                    // Mistakes 5
+                    .child({
+                        let is_active =
+                            filter == ResultFilter::Mistakes || filter == ResultFilter::Wrong;
+                        let hint = format!(
+                            "{} (2/X)",
+                            if lang == Language::En {
+                                "Mistakes"
+                            } else {
+                                "Amakosa"
+                            }
+                        );
                         div()
                             .id("filter_wrong_chip")
-                            .when(shortcuts_active, |el| {
-                                let hint = format!("{} (X)", t("results.filter_wrong", lang).replace("{count}", &wrong_count.to_string()));
-                                el.tooltip(move |window, cx| Tooltip::new(hint.clone()).build(window, cx))
-                            })
-                            .px_3()
-                            .py_1p5()
-                            .rounded_full()
                             .cursor_pointer()
+                            .px_4()
+                            .py_2()
+                            .rounded_xl()
                             .border_1()
-                            .border_color(if filter == ResultFilter::Wrong {
-                                colors.danger
-                            } else {
+                            .border_color(if is_active {
                                 colors.border
-                            })
-                            .bg(if filter == ResultFilter::Wrong {
-                                colors.danger
                             } else {
+                                colors.border.opacity(0.3)
+                            })
+                            .bg(if is_active {
                                 colors.secondary
-                            })
-                            .text_xs()
-                            .font_semibold()
-                            .text_color(if filter == ResultFilter::Wrong {
-                                colors.primary_foreground
                             } else {
-                                colors.foreground
+                                colors.background
                             })
-                            .child(
-                                t("results.filter_wrong", lang)
-                                    .replace("{count}", &wrong_count.to_string()),
-                            )
+                            .hover(|h| h.bg(colors.accent.opacity(0.3)))
+                            .when(shortcuts_active, |el| {
+                                el.tooltip(move |window, cx| {
+                                    Tooltip::new(hint.clone()).build(window, cx)
+                                })
+                            })
                             .on_click(cx.listener(move |this, _, window, cx| {
-                                on_set_filter(this, ResultFilter::Wrong, window, cx);
-                            })),
-                    ),
+                                on_set_filter(this, ResultFilter::Mistakes, window, cx);
+                            }))
+                            .child(
+                                div()
+                                    .text_sm()
+                                    .font_medium()
+                                    .text_color(if is_active {
+                                        colors.foreground
+                                    } else {
+                                        colors.muted_foreground
+                                    })
+                                    .child(format!(
+                                        "{} {}",
+                                        if lang == Language::En {
+                                            "Mistakes"
+                                        } else {
+                                            "Amakosa"
+                                        },
+                                        wrong_answered_count
+                                    )),
+                            )
+                    })
+                    // Unanswered 1
+                    .child({
+                        let is_active = filter == ResultFilter::Unanswered;
+                        let hint = format!(
+                            "{} (3)",
+                            if lang == Language::En {
+                                "Unanswered"
+                            } else {
+                                "Ibitashubijwe"
+                            }
+                        );
+                        div()
+                            .id("filter_unanswered_chip")
+                            .cursor_pointer()
+                            .px_4()
+                            .py_2()
+                            .rounded_xl()
+                            .border_1()
+                            .border_color(if is_active {
+                                colors.border
+                            } else {
+                                colors.border.opacity(0.3)
+                            })
+                            .bg(if is_active {
+                                colors.secondary
+                            } else {
+                                colors.background
+                            })
+                            .hover(|h| h.bg(colors.accent.opacity(0.3)))
+                            .when(shortcuts_active, |el| {
+                                el.tooltip(move |window, cx| {
+                                    Tooltip::new(hint.clone()).build(window, cx)
+                                })
+                            })
+                            .on_click(cx.listener(move |this, _, window, cx| {
+                                on_set_filter(this, ResultFilter::Unanswered, window, cx);
+                            }))
+                            .child(
+                                div()
+                                    .text_sm()
+                                    .font_medium()
+                                    .text_color(if is_active {
+                                        colors.foreground
+                                    } else {
+                                        colors.muted_foreground
+                                    })
+                                    .child(format!(
+                                        "{} {}",
+                                        if lang == Language::En {
+                                            "Unanswered"
+                                        } else {
+                                            "Ibitashubijwe"
+                                        },
+                                        unanswered_count
+                                    )),
+                            )
+                    }),
             )
-            // Question Review List
+            // Question Review List Container
             .child(
                 div()
                     .flex()
                     .flex_col()
-                    .gap_3()
-                    .children(filtered_questions.into_iter().map(|(orig_idx, qr)| {
-                        let is_expanded = expanded.contains(&orig_idx);
-                        let q = &qr.question;
-                        let is_correct = qr.is_correct;
-                        let user_ans = qr.user_answer.as_deref();
-                        let correct_ans = &qr.correct_answer;
+                    .w_full()
+                    .rounded_2xl()
+                    .border_1()
+                    .border_color(colors.border)
+                    .bg(colors.secondary)
+                    .overflow_hidden()
+                    .when(filtered_questions.is_empty(), |container| {
+                        container.child(
+                            div()
+                                .flex()
+                                .items_center()
+                                .justify_center()
+                                .p_8()
+                                .text_sm()
+                                .text_color(colors.muted_foreground)
+                                .child(if lang == Language::En {
+                                    "No questions match this filter."
+                                } else {
+                                    "Nta bibazo bihuye n'iri yungurura."
+                                }),
+                        )
+                    })
+                    .children(filtered_questions.into_iter().enumerate().map(
+                        |(list_idx, (orig_idx, qr))| {
+                            let is_expanded = expanded.contains(&orig_idx);
+                            let q = &qr.question;
+                            let is_correct = qr.is_correct;
+                            let user_ans = qr.user_answer.as_deref();
+                            let correct_ans = &qr.correct_answer;
 
-                        let status_color = if is_correct {
-                            colors.success
-                        } else {
-                            colors.danger
-                        };
-                        let status_icon = if is_correct {
-                            IconName::Check
-                        } else {
-                            IconName::CircleX
-                        };
+                            let opts = q.options_for(q_lang);
+                            let mut sorted_keys: Vec<&String> = opts.keys().collect();
+                            sorted_keys.sort();
 
-                        let opts = q.options_for(q_lang);
-                        let mut sorted_keys: Vec<&String> = opts.keys().collect();
-                        sorted_keys.sort();
-
-                        div()
-                            .id(format!("result_card_{}", orig_idx))
-                            .flex()
-                            .flex_col()
-                            .rounded_xl()
-                            .border_1()
-                            .border_color(if is_expanded {
-                                status_color
-                            } else {
-                                colors.border
-                            })
-                            .bg(colors.secondary)
-                            .p_3()
-                            .gap_3()
-                            // Card Header Row (Tappable to toggle expand)
-                            .child(
-                                div()
-                                    .id(format!("result_header_{}", orig_idx))
-                                    .flex()
-                                    .flex_row()
-                                    .items_center()
-                                    .justify_between()
-                                    .w_full()
-                                    .min_w_0()
-                                    .overflow_hidden()
-                                    .cursor_pointer()
-                                    .on_click(cx.listener(move |this, _, window, cx| {
-                                        on_toggle_expand(this, orig_idx, window, cx);
-                                    }))
-                                    .child(
+                            div()
+                                .id(format!("result_card_{orig_idx}"))
+                                .flex()
+                                .flex_col()
+                                .w_full()
+                                .when(list_idx > 0, |el| {
+                                    el.border_t_1().border_color(colors.border)
+                                })
+                                // Card Header (Click to toggle expand)
+                                .child(
+                                    div()
+                                        .id(format!("result_header_{orig_idx}"))
+                                        .flex()
+                                        .flex_row()
+                                        .items_start()
+                                        .justify_between()
+                                        .p_4()
+                                        .gap_4()
+                                        .cursor_pointer()
+                                        .hover(|h| h.bg(colors.accent.opacity(0.15)))
+                                        .on_click(cx.listener(move |this, _, window, cx| {
+                                            on_toggle_expand(this, orig_idx, window, cx);
+                                        }))
+                                        .child(
+                                            div()
+                                                .flex()
+                                                .flex_row()
+                                                .items_start()
+                                                .gap_3()
+                                                .flex_1()
+                                                .min_w_0()
+                                                // Question Index Number (e.g. "1.")
+                                                .child(
+                                                    div()
+                                                        .text_sm()
+                                                        .font_medium()
+                                                        .text_color(colors.muted_foreground)
+                                                        .child(format!("{}.", orig_idx + 1)),
+                                                )
+                                                // Main details column
+                                                .child(
+                                                    div()
+                                                        .flex()
+                                                        .flex_col()
+                                                        .gap_2()
+                                                        .flex_1()
+                                                        .min_w_0()
+                                                        // Question Text
+                                                        .child(
+                                                            div()
+                                                                .text_sm()
+                                                                .font_medium()
+                                                                .text_color(colors.foreground)
+                                                                .child(
+                                                                    q.text_for(q_lang).to_string(),
+                                                                ),
+                                                        )
+                                                        // Badges Row
+                                                        .child(
+                                                            div()
+                                                                .flex()
+                                                                .flex_row()
+                                                                .flex_wrap()
+                                                                .items_center()
+                                                                .gap_2()
+                                                                // User answer badge
+                                                                .when_some(user_ans, |row, ans| {
+                                                                    row.child(
+                                                                        div()
+                                                                            .px_2p5()
+                                                                            .py_0p5()
+                                                                            .rounded_md()
+                                                                            .bg(if is_correct {
+                                                                                colors.success.opacity(0.15)
+                                                                            } else {
+                                                                                colors.danger.opacity(0.15)
+                                                                            })
+                                                                            .child(
+                                                                                div()
+                                                                                    .text_xs()
+                                                                                    .font_medium()
+                                                                                    .text_color(
+                                                                                        if is_correct
+                                                                                        {
+                                                                                            colors.success
+                                                                                        } else {
+                                                                                            colors.danger
+                                                                                        },
+                                                                                    )
+                                                                                    .child(if lang == Language::En {
+                                                                                        format!("Your answer: {ans}")
+                                                                                    } else {
+                                                                                        format!("Igisubizo cyawe: {ans}")
+                                                                                    }),
+                                                                            ),
+                                                                    )
+                                                                })
+                                                                // Unanswered badge
+                                                                .when(user_ans.is_none(), |row| {
+                                                                    row.child(
+                                                                        div()
+                                                                            .px_2p5()
+                                                                            .py_0p5()
+                                                                            .rounded_md()
+                                                                            .bg(colors.muted_foreground.opacity(0.15))
+                                                                            .child(
+                                                                                div()
+                                                                                    .text_xs()
+                                                                                    .font_medium()
+                                                                                    .text_color(
+                                                                                        colors
+                                                                                            .muted_foreground,
+                                                                                    )
+                                                                                    .child(if lang == Language::En {
+                                                                                        "Unanswered"
+                                                                                    } else {
+                                                                                        "Ntiwasubije"
+                                                                                    }),
+                                                                            ),
+                                                                    )
+                                                                })
+                                                                // Correct answer badge (when mistake/unanswered)
+                                                                .when(!is_correct, |row| {
+                                                                    row.child(
+                                                                        div()
+                                                                            .px_2p5()
+                                                                            .py_0p5()
+                                                                            .rounded_md()
+                                                                            .bg(colors.success.opacity(0.15))
+                                                                            .child(
+                                                                                div()
+                                                                                    .text_xs()
+                                                                                    .font_medium()
+                                                                                    .text_color(
+                                                                                        colors.success,
+                                                                                    )
+                                                                                    .child(if lang == Language::En {
+                                                                                        format!("Correct: {correct_ans}")
+                                                                                    } else {
+                                                                                        format!("Icy'ukuri: {correct_ans}")
+                                                                                    }),
+                                                                            ),
+                                                                    )
+                                                                })
+                                                                // Image badge
+                                                                .when(q.has_image, |row| {
+                                                                    row.child(
+                                                                        div()
+                                                                            .px_2p5()
+                                                                            .py_0p5()
+                                                                            .rounded_md()
+                                                                            .bg(colors.primary.opacity(0.15))
+                                                                            .child(
+                                                                                div()
+                                                                                    .text_xs()
+                                                                                    .font_medium()
+                                                                                    .text_color(
+                                                                                        colors.primary,
+                                                                                    )
+                                                                                    .child(if lang == Language::En {
+                                                                                        "Image"
+                                                                                    } else {
+                                                                                        "Ishusho"
+                                                                                    }),
+                                                                            ),
+                                                                    )
+                                                                }),
+                                                        ),
+                                                ),
+                                        )
+                                        // Right: Status circle icon + chevron
+                                        .child(
+                                            div()
+                                                .flex()
+                                                .flex_row()
+                                                .items_center()
+                                                .gap_3()
+                                                .flex_none()
+                                                .child(if is_correct {
+                                                    Icon::new(IconName::CircleCheck)
+                                                        .size(px(20.0))
+                                                        .text_color(colors.success)
+                                                } else if user_ans.is_some() {
+                                                    Icon::new(IconName::CircleX)
+                                                        .size(px(20.0))
+                                                        .text_color(colors.danger)
+                                                } else {
+                                                    Icon::new(IconName::CircleAlert)
+                                                        .size(px(20.0))
+                                                        .text_color(colors.muted_foreground)
+                                                })
+                                                .child(
+                                                    Icon::new(if is_expanded {
+                                                        IconName::ChevronUp
+                                                    } else {
+                                                        IconName::ChevronDown
+                                                    })
+                                                    .size(px(18.0))
+                                                    .text_color(colors.muted_foreground),
+                                                ),
+                                        ),
+                                )
+                                // Expanded content
+                                .when(is_expanded, |body| {
+                                    body.child(
                                         div()
                                             .flex()
-                                            .flex_row()
-                                            .items_center()
-                                            .gap_2()
-                                            .flex_1()
-                                            .min_w_0()
-                                            .overflow_hidden()
-                                            // Status Icon (Check or Cross)
+                                            .flex_col()
+                                            .px_4()
+                                            .pb_4()
+                                            .gap_3()
+                                            // Sign image if available
+                                            .when(q.has_image, |img_el| {
+                                                img_el.child(
+                                                    div()
+                                                        .flex()
+                                                        .items_center()
+                                                        .justify_center()
+                                                        .p_3()
+                                                        .rounded_xl()
+                                                        .border_1()
+                                                        .border_color(colors.border)
+                                                        .bg(colors.background)
+                                                        .child(
+                                                            img(format!(
+                                                                "assets/images/q{}.png",
+                                                                q.id
+                                                            ))
+                                                            .max_h(px(160.0))
+                                                            .rounded_lg(),
+                                                        ),
+                                                )
+                                            })
+                                            // Secondary translation if enabled
+                                            .when(show_both, |bilingual| {
+                                                if let Some(sec_text) =
+                                                    q.secondary_text_for(q_lang)
+                                                {
+                                                    bilingual.child(
+                                                        div()
+                                                            .text_xs()
+                                                            .text_color(colors.muted_foreground)
+                                                            .child(sec_text.to_string()),
+                                                    )
+                                                } else {
+                                                    bilingual
+                                                }
+                                            })
+                                            // Options list
                                             .child(
-                                                Icon::new(status_icon)
-                                                    .size(px(18.0))
-                                                    .flex_none()
-                                                    .text_color(status_color),
-                                            )
-                                            // Question Number + Badges + Text Snippet
-                                            .child(
-                                                div()
-                                                    .flex()
-                                                    .flex_col()
-                                                    .min_w_0()
-                                                    .overflow_hidden()
-                                                    .child(
+                                                div().flex().flex_col().gap_2().children(
+                                                    sorted_keys.into_iter().map(|key| {
+                                                        let opt_text = opts
+                                                            .get(key)
+                                                            .cloned()
+                                                            .unwrap_or_default();
+                                                        let is_user_choice =
+                                                            user_ans == Some(key.as_str());
+                                                        let is_correct_choice = correct_ans == key;
+
+                                                        let (
+                                                            opt_bg,
+                                                            opt_border,
+                                                            text_color,
+                                                            right_icon,
+                                                        ) = if is_user_choice && !is_correct_choice
+                                                        {
+                                                            (
+                                                                colors.danger.opacity(0.12),
+                                                                colors.danger,
+                                                                colors.danger,
+                                                                Some(
+                                                                    Icon::new(IconName::CircleX)
+                                                                        .size(px(18.0))
+                                                                        .text_color(colors.danger),
+                                                                ),
+                                                            )
+                                                        } else if is_correct_choice {
+                                                            (
+                                                                colors.success.opacity(0.12),
+                                                                colors.success,
+                                                                colors.success,
+                                                                Some(
+                                                                    Icon::new(IconName::CircleCheck)
+                                                                        .size(px(18.0))
+                                                                        .text_color(colors.success),
+                                                                ),
+                                                            )
+                                                        } else {
+                                                            (
+                                                                colors.background.opacity(0.4),
+                                                                colors.border,
+                                                                colors.foreground,
+                                                                None,
+                                                            )
+                                                        };
+
                                                         div()
                                                             .flex()
                                                             .flex_row()
                                                             .items_center()
-                                                            .gap_2()
-                                                            .child(
-                                                                div()
-                                                                    .text_sm()
-                                                                    .font_bold()
-                                                                    .text_color(colors.foreground)
-                                                                    .child(if lang == Language::En {
-                                                                        format!("{}. Question #{}", orig_idx + 1, q.id)
-                                                                    } else {
-                                                                        format!("{}. Ikibazo cya {}", orig_idx + 1, q.id)
-                                                                    }),
-                                                            )
-                                                            // Language badge if q_lang != lang (SPEC 15.4)
-                                                            .when(q_lang != lang, |b| {
-                                                                b.child(
-                                                                    div()
-                                                                        .px_1p5()
-                                                                        .py_0p5()
-                                                                        .rounded_md()
-                                                                        .bg(colors.accent)
-                                                                        .child(
-                                                                            div()
-                                                                                .text_xs()
-                                                                                .font_bold()
-                                                                                .text_color(colors.foreground)
-                                                                                .child(match q_lang {
-                                                                                    Language::En => t("badge.lang.en", lang),
-                                                                                    Language::Rw => t("badge.lang.rw", lang),
-                                                                                }),
-                                                                        ),
-                                                                )
-                                                            })
-                                                            // Draft badge if status is draft (SPEC 15.2)
-                                                            .when(q.is_draft_translation() && q_lang == Language::En, |b| {
-                                                                b.child(
-                                                                    div()
-                                                                        .px_1p5()
-                                                                        .py_0p5()
-                                                                        .rounded_md()
-                                                                        .bg(colors.warning)
-                                                                        .child(
-                                                                            div()
-                                                                                .text_xs()
-                                                                                .font_bold()
-                                                                                .text_color(colors.primary_foreground)
-                                                                                .child(t("badge.unofficial_translation", lang)),
-                                                                        ),
-                                                                )
-                                                            }),
-                                                    )
-                                                    .when(!is_expanded, |snip| {
-                                                        snip.child(
-                                                            div()
-                                                                .w_full()
-                                                                .min_w_0()
-                                                                .overflow_hidden()
-                                                                .whitespace_normal()
-                                                                .text_xs()
-                                                                .text_color(colors.muted_foreground)
-                                                                .child(q.text_for(q_lang).to_string()),
-                                                        )
-                                                    }),
-                                            ),
-                                    )
-                                    // Expand / Collapse Chevron
-                                    .child(
-                                        Icon::new(if is_expanded {
-                                            IconName::ChevronUp
-                                        } else {
-                                            IconName::ChevronDown
-                                        })
-                                        .size(px(16.0))
-                                        .flex_none()
-                                        .text_color(colors.muted_foreground),
-                                    ),
-                            )
-                            // Card Body (Visible when expanded)
-                            .when(is_expanded, |body| {
-                                body.child(
-                                    div()
-                                        .flex()
-                                        .flex_col()
-                                        .w_full()
-                                        .min_w_0()
-                                        .overflow_hidden()
-                                        .gap_3()
-                                        .pt_2()
-                                        .border_t_1()
-                                        .border_color(colors.border)
-                                        // Full question text + optional secondary
-                                        .child(
-                                            div()
-                                                .flex()
-                                                .flex_col()
-                                                .w_full()
-                                                .min_w_0()
-                                                .overflow_hidden()
-                                                .gap_1()
-                                                .child(
-                                                    div()
-                                                        .w_full()
-                                                        .min_w_0()
-                                                        .overflow_hidden()
-                                                        .whitespace_normal()
-                                                        .text_sm()
-                                                        .font_medium()
-                                                        .text_color(colors.foreground)
-                                                        .child(q.text_for(q_lang).to_string()),
-                                                )
-                                                .when(show_both, |bilingual| {
-                                                    if let Some(sec_text) = q.secondary_text_for(q_lang) {
-                                                        bilingual.child(
-                                                            div()
-                                                                .w_full()
-                                                                .min_w_0()
-                                                                .overflow_hidden()
-                                                                .whitespace_normal()
-                                                                .text_xs()
-                                                                .text_color(colors.muted_foreground)
-                                                                .child(sec_text.to_string()),
-                                                        )
-                                                    } else {
-                                                        bilingual
-                                                    }
-                                                }),
-                                        )
-                                        // Sign image (if present)
-                                        .when(q.has_image, |el| {
-                                            el.child(
-                                                div()
-                                                    .flex()
-                                                    .items_center()
-                                                    .justify_center()
-                                                    .p_2()
-                                                    .rounded_lg()
-                                                    .border_1()
-                                                    .border_color(colors.border)
-                                                    .bg(colors.background)
-                                                    .child(
-                                                        img(format!("assets/images/q{}.png", q.id))
-                                                            .max_h(px(140.0))
-                                                            .rounded_md(),
-                                                    ),
-                                            )
-                                        })
-                                        // Unanswered notice
-                                        .when(user_ans.is_none(), |el| {
-                                            el.child(
-                                                div()
-                                                    .px_3()
-                                                    .py_2()
-                                                    .rounded_lg()
-                                                    .bg(colors.background)
-                                                    .border_1()
-                                                    .border_color(colors.warning)
-                                                    .text_xs()
-                                                    .font_semibold()
-                                                    .text_color(colors.warning)
-                                                    .child(t("results.unanswered", lang)),
-                                            )
-                                        })
-                                        // Options review
-                                        .child(div().flex().flex_col().w_full().min_w_0().overflow_hidden().gap_2().children(
-                                            sorted_keys.into_iter().map(|key| {
-                                                let opt_text =
-                                                    opts.get(key).cloned().unwrap_or_default();
-                                                let sec_opt = if show_both {
-                                                    q.secondary_option_for(q_lang, key).map(|s| s.to_string())
-                                                } else {
-                                                    None
-                                                };
-                                                let is_user_choice = user_ans == Some(key.as_str());
-                                                let is_correct_choice = correct_ans == key;
-
-                                                let your_ans_correct = if lang == Language::En {
-                                                    "Your answer (Correct)"
-                                                } else {
-                                                    "Igisubizo cyawe (Cy'ukuri)"
-                                                };
-                                                let your_ans_wrong = if lang == Language::En {
-                                                    "Your answer (Incorrect)"
-                                                } else {
-                                                    "Igisubizo cyawe (Siko)"
-                                                };
-                                                let right_ans = if lang == Language::En {
-                                                    "Correct answer"
-                                                } else {
-                                                    "Igisubizo cy'ukuri"
-                                                };
-
-                                                let (opt_bg, opt_border, badge_text, badge_color) =
-                                                    if is_user_choice && is_correct_choice {
-                                                        (
-                                                            colors.success,
-                                                            colors.success,
-                                                            Some(your_ans_correct),
-                                                            colors.success,
-                                                        )
-                                                    } else if is_user_choice && !is_correct_choice {
-                                                        (
-                                                            colors.danger,
-                                                            colors.danger,
-                                                            Some(your_ans_wrong),
-                                                            colors.danger,
-                                                        )
-                                                    } else if is_correct_choice {
-                                                        (
-                                                            colors.success,
-                                                            colors.success,
-                                                            Some(right_ans),
-                                                            colors.success,
-                                                        )
-                                                    } else {
-                                                        (
-                                                            colors.background,
-                                                            colors.border,
-                                                            None,
-                                                            colors.muted_foreground,
-                                                        )
-                                                    };
-
-                                                div()
-                                                    .flex()
-                                                    .flex_col()
-                                                    .w_full()
-                                                    .min_w_0()
-                                                    .overflow_hidden()
-                                                    .p_2p5()
-                                                    .rounded_lg()
-                                                    .border_1()
-                                                    .border_color(opt_border)
-                                                    .bg(if is_user_choice || is_correct_choice {
-                                                        colors.background
-                                                    } else {
-                                                        opt_bg
-                                                    })
-                                                    .gap_1()
-                                                    .child(
-                                                        div()
-                                                            .flex()
-                                                            .flex_row()
-                                                            .items_start()
+                                                            .justify_between()
                                                             .w_full()
-                                                            .min_w_0()
-                                                            .overflow_hidden()
-                                                            .gap_2()
+                                                            .px_4()
+                                                            .py_3()
+                                                            .rounded_xl()
+                                                            .border_1()
+                                                            .border_color(opt_border)
+                                                            .bg(opt_bg)
+                                                            .gap_3()
                                                             .child(
                                                                 div()
-                                                                    .size(px(24.0))
-                                                                    .flex_none()
                                                                     .flex()
-                                                                    .items_center()
-                                                                    .justify_center()
-                                                                    .rounded_md()
-                                                                    .border_1()
-                                                                    .border_color(opt_border)
-                                                                    .text_xs()
-                                                                    .font_bold()
-                                                                    .text_color(
-                                                                        if is_correct_choice {
-                                                                            colors.success
-                                                                        } else if is_user_choice {
-                                                                            colors.danger
-                                                                        } else {
-                                                                            colors.foreground
-                                                                        },
-                                                                    )
-                                                                    .child(format!("{})", key)),
-                                                            )
-                                                            .child(
-                                                                div()
+                                                                    .flex_row()
+                                                                    .items_start()
+                                                                    .gap_3()
                                                                     .flex_1()
-                                                                    .flex_col()
                                                                     .min_w_0()
-                                                                    .overflow_hidden()
-                                                                    .gap_0p5()
                                                                     .child(
                                                                         div()
-                                                                            .w_full()
-                                                                            .min_w_0()
-                                                                            .overflow_hidden()
-                                                                            .whitespace_normal()
-                                                                            .text_xs()
-                                                                            .text_color(colors.foreground)
-                                                                            .child(opt_text),
+                                                                            .text_sm()
+                                                                            .font_bold()
+                                                                            .text_color(text_color)
+                                                                            .child(format!(
+                                                                                "{key})"
+                                                                            )),
                                                                     )
-                                                                    .when_some(sec_opt, |el, sec| {
-                                                                        el.child(
-                                                                            div()
-                                                                                .w_full()
-                                                                                .min_w_0()
-                                                                                .overflow_hidden()
-                                                                                .whitespace_normal()
-                                                                                .text_xs()
-                                                                                .text_color(colors.muted_foreground)
-                                                                                .child(sec),
-                                                                        )
-                                                                    }),
-                                                            ),
-                                                    )
-                                                    .when_some(badge_text, |b, txt| {
-                                                        b.child(
-                                                            div()
-                                                                .w_full()
-                                                                .min_w_0()
-                                                                .overflow_hidden()
-                                                                .whitespace_normal()
-                                                                .text_xs()
-                                                                .font_semibold()
-                                                                .text_color(badge_color)
-                                                                .child(txt),
-                                                        )
-                                                    })
-                                            }),
-                                        )),
-                                )
+                                                                    .child(
+                                                                        div()
+                                                                            .flex_1()
+                                                                            .min_w_0()
+                                                                            .text_sm()
+                                                                            .text_color(text_color)
+                                                                            .child(opt_text),
+                                                                    ),
+                                                            )
+                                                            .when_some(right_icon, |row, icon| {
+                                                                row.child(icon)
+                                                            })
+                                                    }),
+                                                ),
+                                            ),
+                                    )
+                                })
+                        },
+                    )),
+            )
+            // Bottom Action Buttons
+            .child(
+                div()
+                    .flex()
+                    .flex_row()
+                    .flex_wrap()
+                    .items_center()
+                    .gap_3()
+                    .pt_2()
+                    // Try again button
+                    .child({
+                        let label = if lang == Language::En {
+                            "Try again"
+                        } else {
+                            "Subiramo ikizamini"
+                        };
+                        let tooltip_txt = if shortcuts_active {
+                            format!("{label} (R)")
+                        } else {
+                            label.to_string()
+                        };
+                        div()
+                            .id("new_quiz_btn")
+                            .flex()
+                            .flex_row()
+                            .items_center()
+                            .gap_2()
+                            .px_4()
+                            .py_2p5()
+                            .rounded_xl()
+                            .border_1()
+                            .border_color(colors.border)
+                            .bg(colors.secondary)
+                            .cursor_pointer()
+                            .hover(|h| h.bg(colors.accent))
+                            .tooltip(move |window, cx| {
+                                Tooltip::new(tooltip_txt.clone()).build(window, cx)
                             })
-                    })),
+                            .on_click(cx.listener(move |this, _, window, cx| {
+                                on_new_quiz(this, window, cx);
+                            }))
+                            .child(
+                                Icon::new(IconName::RotateCw)
+                                    .size(px(16.0))
+                                    .text_color(colors.foreground),
+                            )
+                            .child(
+                                div()
+                                    .text_sm()
+                                    .font_medium()
+                                    .text_color(colors.foreground)
+                                    .child(label),
+                            )
+                    })
+                    // Retry mistakes button
+                    .when(total_mistakes > 0, |row| {
+                        let label = if lang == Language::En {
+                            format!("Retry my mistakes ({total_mistakes})")
+                        } else {
+                            format!("Subiramo amakosa ({total_mistakes})")
+                        };
+                        let tooltip_txt = if shortcuts_active {
+                            format!("{label} (W)")
+                        } else {
+                            label.clone()
+                        };
+                        row.child(
+                            div()
+                                .id("retry_wrong_btn")
+                                .flex()
+                                .flex_row()
+                                .items_center()
+                                .gap_2()
+                                .px_4()
+                                .py_2p5()
+                                .rounded_xl()
+                                .border_1()
+                                .border_color(colors.border)
+                                .bg(colors.secondary)
+                                .cursor_pointer()
+                                .hover(|h| h.bg(colors.accent))
+                                .tooltip(move |window, cx| {
+                                    Tooltip::new(tooltip_txt.clone()).build(window, cx)
+                                })
+                                .on_click(cx.listener(move |this, _, window, cx| {
+                                    on_retry_wrong(this, window, cx);
+                                }))
+                                .child(
+                                    Icon::new(IconName::Target)
+                                        .size(px(16.0))
+                                        .text_color(colors.foreground),
+                                )
+                                .child(
+                                    div()
+                                        .text_sm()
+                                        .font_medium()
+                                        .text_color(colors.foreground)
+                                        .child(label),
+                                ),
+                        )
+                    })
+                    // Home button
+                    .child({
+                        let label = t("nav.home", lang);
+                        let tooltip_txt = if shortcuts_active {
+                            format!("{label} (Esc)")
+                        } else {
+                            label.to_string()
+                        };
+                        div()
+                            .id("home_btn")
+                            .flex()
+                            .flex_row()
+                            .items_center()
+                            .gap_2()
+                            .px_4()
+                            .py_2p5()
+                            .rounded_xl()
+                            .border_1()
+                            .border_color(colors.border)
+                            .bg(colors.secondary)
+                            .cursor_pointer()
+                            .hover(|h| h.bg(colors.accent))
+                            .tooltip(move |window, cx| {
+                                Tooltip::new(tooltip_txt.clone()).build(window, cx)
+                            })
+                            .on_click(cx.listener(move |this, _, window, cx| {
+                                on_home(this, window, cx);
+                            }))
+                            .child(
+                                Icon::new(IconName::House)
+                                    .size(px(16.0))
+                                    .text_color(colors.foreground),
+                            )
+                            .child(
+                                div()
+                                    .text_sm()
+                                    .font_medium()
+                                    .text_color(colors.foreground)
+                                    .child(label),
+                            )
+                    }),
             )
     }
 }

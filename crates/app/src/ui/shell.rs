@@ -148,7 +148,8 @@ impl ShellView {
             .and_then(|d| d.results_filter.as_deref())
             .map(|s| match s {
                 "correct" => ResultFilter::Correct,
-                "wrong" => ResultFilter::Wrong,
+                "wrong" | "mistakes" => ResultFilter::Mistakes,
+                "unanswered" => ResultFilter::Unanswered,
                 _ => ResultFilter::All,
             })
             .unwrap_or(ResultFilter::All);
@@ -259,7 +260,8 @@ impl ShellView {
             results_filter: Some(match self.results_filter {
                 ResultFilter::All => "all".to_string(),
                 ResultFilter::Correct => "correct".to_string(),
-                ResultFilter::Wrong => "wrong".to_string(),
+                ResultFilter::Mistakes | ResultFilter::Wrong => "mistakes".to_string(),
+                ResultFilter::Unanswered => "unanswered".to_string(),
             }),
             scroll_position: scroll,
             scroll_positions: {
@@ -1071,7 +1073,7 @@ impl Render for ShellView {
                             cx.notify();
                         }
                         ShortcutAction::FilterResultsWrong => {
-                            this.results_filter = ResultFilter::Wrong;
+                            this.results_filter = ResultFilter::Mistakes;
                             cx.notify();
                         }
                         ShortcutAction::FocusSearch => {
