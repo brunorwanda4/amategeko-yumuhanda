@@ -1,3 +1,4 @@
+use crate::ui::scroll::vertical_scrollbar;
 use amategeko_core::{t, Attempt, Language, QuizMode};
 use gpui::InteractiveElement as _;
 use gpui::*;
@@ -750,6 +751,8 @@ impl ShortcutRegistry {
     pub fn render_help_dialog<V: 'static>(
         &self,
         lang: Language,
+        scroll_handle: &ScrollHandle,
+        reveal_scrollbar: bool,
         cx: &mut Context<V>,
         on_close: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
     ) -> AnyElement {
@@ -1044,12 +1047,19 @@ impl ShortcutRegistry {
                     .child(
                         div()
                             .id("shortcuts_dialog_scroll_list")
+                            .track_scroll(scroll_handle)
                             .flex()
                             .flex_col()
                             .gap_3()
                             .max_h(px(400.0))
                             .overflow_y_scroll()
-                            .pr_2()
+                            .pr_3()
+                            .child(vertical_scrollbar(
+                                "shortcuts_dialog_scrollbar",
+                                scroll_handle,
+                                true,
+                                reveal_scrollbar,
+                            ))
                             .children(group_els),
                     )
                     .child(

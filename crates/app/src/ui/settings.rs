@@ -1,5 +1,6 @@
 use crate::state::AppState;
 use crate::ui::footer::AppFooter;
+use crate::ui::scroll::vertical_scrollbar;
 use amategeko_core::{t, Language, ThemeMode};
 use gpui::InteractiveElement as _;
 use gpui_kit::base::Disableable as _;
@@ -41,6 +42,8 @@ impl SettingsView {
     pub fn render<V: 'static>(
         state: &AppState,
         is_desktop: bool,
+        scroll_handle: &ScrollHandle,
+        reveal_scrollbar: bool,
         confirm_clear: bool,
         cx: &mut Context<V>,
         on_action: impl Fn(&mut V, SettingsAction, &mut Window, &mut Context<V>) + 'static + Copy,
@@ -52,6 +55,7 @@ impl SettingsView {
 
         div()
             .id("settings_scroll_view")
+            .track_scroll(scroll_handle)
             .flex()
             .flex_col()
             .size_full()
@@ -59,6 +63,12 @@ impl SettingsView {
             .bg(colors.background)
             .p_4()
             .when(is_desktop, |el| el.p_6())
+            .child(vertical_scrollbar(
+                "settings_scrollbar",
+                scroll_handle,
+                is_desktop,
+                reveal_scrollbar,
+            ))
             .child(
                 div()
                     .flex()
@@ -602,21 +612,16 @@ impl SettingsView {
                                     })),
                             )
                             .child({
-                                let save_hint = if is_desktop && s.desktop_shortcuts_enabled {
-                                    if cfg!(target_os = "macos") {
-                                        format!("{} (Cmd+S)", t("settings.save_btn", lang))
-                                    } else {
-                                        format!("{} (Ctrl+S)", t("settings.save_btn", lang))
-                                    }
-                                } else {
-                                    t("settings.save_btn", lang).to_string()
-                                };
-                                Button::new("btn_save_settings")
+                                let mut btn = Button::new("btn_save_settings")
                                     .primary()
-                                    .label(save_hint)
-                                    .on_click(cx.listener(move |this, _, window, cx| {
-                                        on_action(this, SettingsAction::SaveSettings, window, cx);
-                                    }))
+                                    .label(t("settings.save_btn", lang));
+                                if is_desktop && s.desktop_shortcuts_enabled {
+                                    let shortcut_str = if cfg!(target_os = "macos") { "Cmd+S" } else { "Ctrl+S" };
+                                    btn = btn.tooltip(format!("{} ({shortcut_str})", t("settings.save_btn", lang)));
+                                }
+                                btn.on_click(cx.listener(move |this, _, window, cx| {
+                                    on_action(this, SettingsAction::SaveSettings, window, cx);
+                                }))
                             }),
                     ),
             )

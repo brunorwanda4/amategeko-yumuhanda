@@ -4,6 +4,7 @@ use crate::ui::home::HomeView;
 use crate::ui::questions::{QuestionsFilter, QuestionsView};
 use crate::ui::quiz::QuizView;
 use crate::ui::results::{ResultFilter, ResultsView};
+use crate::ui::scroll::{configure_scrollbar_motion, vertical_scrollbar};
 use crate::ui::settings::{SettingsAction, SettingsView};
 use crate::ui::stats::StatsView;
 use amategeko_core::{
@@ -20,7 +21,7 @@ use gpui_kit::component::{ActiveTheme, Icon};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
 use std::collections::{HashMap, HashSet};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 #[derive(Clone, Copy)]
 struct TimerBanner {
@@ -82,6 +83,17 @@ pub struct ShellView {
     pub questions_selected_idx: usize,
     pub questions_scroll_handle: gpui::ScrollHandle,
     pub stats_scroll_handle: gpui::ScrollHandle,
+    home_scroll_handle: gpui::ScrollHandle,
+    quiz_scroll_handle: gpui::ScrollHandle,
+    results_scroll_handle: gpui::ScrollHandle,
+    settings_scroll_handle: gpui::ScrollHandle,
+    sidebar_scroll_handle: gpui::ScrollHandle,
+    help_dialog_scroll_handle: gpui::ScrollHandle,
+    finish_dialog_scroll_handle: gpui::ScrollHandle,
+    last_scrollbar_screen: Screen,
+    scrollbar_reveal_until: Instant,
+    last_dialog_visibility: (bool, bool),
+    dialog_scrollbar_reveal_until: Instant,
     pub stats_filter: String,
     #[cfg(debug_assertions)]
     last_saved_scroll: f32,
@@ -94,6 +106,7 @@ pub struct ShellView {
 
 impl ShellView {
     pub fn new(state: AppState, cx: &mut Context<Self>) -> Self {
+        configure_scrollbar_motion(cx);
         let timer_task = cx.spawn(async move |this, cx| loop {
             cx.background_executor().timer(Duration::from_secs(1)).await;
             if this
@@ -145,6 +158,8 @@ impl ShellView {
 
         let questions_scroll_handle = gpui::ScrollHandle::default();
         let stats_scroll_handle = gpui::ScrollHandle::default();
+        let initial_screen = state.active_screen.clone();
+        let now = Instant::now();
 
         #[cfg(debug_assertions)]
         let initial_scroll = dev_state.as_ref().map(|d| d.scroll_position).unwrap_or(0.0);
@@ -182,6 +197,17 @@ impl ShellView {
             questions_selected_idx: 0,
             questions_scroll_handle,
             stats_scroll_handle,
+            home_scroll_handle: gpui::ScrollHandle::default(),
+            quiz_scroll_handle: gpui::ScrollHandle::default(),
+            results_scroll_handle: gpui::ScrollHandle::default(),
+            settings_scroll_handle: gpui::ScrollHandle::default(),
+            sidebar_scroll_handle: gpui::ScrollHandle::default(),
+            help_dialog_scroll_handle: gpui::ScrollHandle::default(),
+            finish_dialog_scroll_handle: gpui::ScrollHandle::default(),
+            last_scrollbar_screen: initial_screen,
+            scrollbar_reveal_until: now + Duration::from_secs(1),
+            last_dialog_visibility: (false, false),
+            dialog_scrollbar_reveal_until: now,
             stats_filter: initial_stats_filter,
             #[cfg(debug_assertions)]
             last_saved_scroll: initial_scroll,
@@ -316,11 +342,27 @@ impl Render for ShellView {
 
         let active_screen = self.state.active_screen.clone();
         let is_in_quiz = active_screen == Screen::Quiz;
+        let now = Instant::now();
+        if active_screen != self.last_scrollbar_screen {
+            self.last_scrollbar_screen = active_screen.clone();
+            self.scrollbar_reveal_until = now + Duration::from_secs(1);
+        }
+        let reveal_scrollbar = now < self.scrollbar_reveal_until;
+        let dialog_visibility = (self.show_help_dialog, self.show_finish_confirm_dialog);
+        if dialog_visibility != self.last_dialog_visibility {
+            self.last_dialog_visibility = dialog_visibility;
+            if dialog_visibility.0 || dialog_visibility.1 {
+                self.dialog_scrollbar_reveal_until = now + Duration::from_secs(1);
+            }
+        }
+        let reveal_dialog_scrollbar = now < self.dialog_scrollbar_reveal_until;
 
         let content = match active_screen {
             Screen::Home => HomeView::render(
                 &self.state,
                 window_width,
+                &self.home_scroll_handle,
+                reveal_scrollbar,
                 cx,
                 |this, mode, _, cx| {
                     this.state.start_quiz(mode);
@@ -343,6 +385,8 @@ impl Render for ShellView {
                 &self.state,
                 is_desktop,
                 self.focus_mode,
+                &self.quiz_scroll_handle,
+                reveal_scrollbar,
                 cx,
                 |this, opt, _, cx| {
                     this.state.record_current_answer(opt);
@@ -437,6 +481,8 @@ impl Render for ShellView {
             Screen::Results => ResultsView::render(
                 &self.state,
                 is_desktop,
+                &self.results_scroll_handle,
+                reveal_scrollbar,
                 self.results_filter,
                 &self.results_expanded,
                 cx,
@@ -474,19 +520,29 @@ impl Render for ShellView {
                 &self.state,
                 is_desktop,
                 &self.questions_scroll_handle,
+                reveal_scrollbar,
                 self.questions_filter,
                 &self.questions_search,
+                self.questions_search_focused,
                 self.state.settings.study_hide_answers,
                 &self.questions_expanded,
                 &self.questions_revealed,
                 cx,
                 |this, filter, _, cx| {
                     this.questions_filter = filter;
+                    this.questions_search_focused = false;
                     this.save_dev_state();
                     cx.notify();
                 },
                 |this, search, _, cx| {
                     this.questions_search = search;
+                    cx.notify();
+                },
+                |this, focused, window, cx| {
+                    this.questions_search_focused = focused;
+                    if focused {
+                        window.focus(&this.focus_handle, cx);
+                    }
                     cx.notify();
                 },
                 |this, hide, _, cx| {
@@ -519,6 +575,7 @@ impl Render for ShellView {
                 &self.state,
                 is_desktop,
                 &self.stats_scroll_handle,
+                reveal_scrollbar,
                 cx,
                 |this, _, cx| {
                     this.state.start_quiz(QuizMode::WeakPractice);
@@ -535,6 +592,8 @@ impl Render for ShellView {
             Screen::Settings => SettingsView::render(
                 &self.state,
                 is_desktop,
+                &self.settings_scroll_handle,
+                reveal_scrollbar,
                 self.settings_confirm_clear,
                 cx,
                 |this, action, window, cx| {
@@ -656,7 +715,9 @@ impl Render for ShellView {
                 .flex_row()
                 .size_full()
                 .bg(colors.background)
-                .when(show_sidebar, |el| el.child(self.render_desktop_sidebar(cx)))
+                .when(show_sidebar, |el| {
+                    el.child(self.render_desktop_sidebar(reveal_scrollbar, cx))
+                })
                 .child(div().flex_1().size_full().overflow_hidden().child(content))
         } else {
             // Mobile Layout: Top App Bar + Content + Bottom Bar (hidden in quiz)
@@ -729,20 +790,40 @@ impl Render for ShellView {
 
                     if is_typing {
                         let key = event.keystroke.key.as_str();
+                        let is_ctrl =
+                            event.keystroke.modifiers.control || event.keystroke.modifiers.platform;
+                        let is_alt = event.keystroke.modifiers.alt;
+
                         if key.eq_ignore_ascii_case("backspace") {
-                            this.questions_search.pop();
+                            if is_ctrl {
+                                this.questions_search.clear();
+                            } else {
+                                this.questions_search.pop();
+                            }
                             cx.notify();
                             return;
-                        } else if key.eq_ignore_ascii_case("escape") {
+                        } else if key.eq_ignore_ascii_case("escape")
+                            || key.eq_ignore_ascii_case("enter")
+                        {
                             this.questions_search_focused = false;
                             cx.notify();
                             return;
+                        } else if key.eq_ignore_ascii_case("space") || key == " " {
+                            this.questions_search.push(' ');
+                            cx.notify();
+                            return;
+                        } else if let Some(char_str) = &event.keystroke.key_char {
+                            if !is_ctrl && !is_alt && !char_str.chars().any(|c| c.is_control()) {
+                                this.questions_search.push_str(char_str);
+                                cx.notify();
+                                return;
+                            }
                         } else if key.chars().count() == 1 {
-                            let ch = key.chars().next().unwrap();
-                            let is_mod = event.keystroke.modifiers.control
-                                || event.keystroke.modifiers.alt
-                                || event.keystroke.modifiers.platform;
-                            if !ch.is_control() && !is_mod {
+                            let mut ch = key.chars().next().unwrap();
+                            if !ch.is_control() && !is_ctrl && !is_alt {
+                                if event.keystroke.modifiers.shift {
+                                    ch = ch.to_ascii_uppercase();
+                                }
                                 this.questions_search.push(ch);
                                 cx.notify();
                                 return;
@@ -947,6 +1028,7 @@ impl Render for ShellView {
                         }
                         ShortcutAction::FocusSearch => {
                             this.questions_search_focused = true;
+                            window.focus(&this.focus_handle, cx);
                             cx.notify();
                         }
                         ShortcutAction::MoveUp => {
@@ -1033,13 +1115,16 @@ impl Render for ShellView {
 
         // Dialog overlays
         let help_dialog = if is_desktop && self.show_help_dialog {
-            Some(
-                self.registry
-                    .render_help_dialog(language, cx, |this, _, cx| {
-                        this.show_help_dialog = false;
-                        cx.notify();
-                    }),
-            )
+            Some(self.registry.render_help_dialog(
+                language,
+                &self.help_dialog_scroll_handle,
+                reveal_dialog_scrollbar,
+                cx,
+                |this, _, cx| {
+                    this.show_help_dialog = false;
+                    cx.notify();
+                },
+            ))
         } else {
             None
         };
@@ -1066,15 +1151,25 @@ impl Render for ShellView {
                     .child(
                         div()
                             .id("finish_confirm_dialog_container")
+                            .track_scroll(&self.finish_dialog_scroll_handle)
                             .flex()
                             .flex_col()
                             .w(px(440.0))
+                            .max_h(relative(0.9))
+                            .overflow_y_scroll()
                             .p_6()
+                            .pr_7()
                             .rounded_2xl()
                             .border_1()
                             .border_color(colors.border)
                             .bg(colors.background)
                             .gap_4()
+                            .child(vertical_scrollbar(
+                                "finish_dialog_scrollbar",
+                                &self.finish_dialog_scroll_handle,
+                                is_desktop,
+                                reveal_dialog_scrollbar,
+                            ))
                             .on_mouse_down(gpui::MouseButton::Left, |_, _, _| {})
                             .child(
                                 div()
@@ -1133,26 +1228,37 @@ impl Render for ShellView {
 }
 
 impl ShellView {
-    fn render_desktop_sidebar(&self, cx: &mut Context<Self>) -> impl IntoElement {
+    fn render_desktop_sidebar(
+        &self,
+        reveal_scrollbar: bool,
+        cx: &mut Context<Self>,
+    ) -> impl IntoElement {
         let theme = cx.theme();
         let colors = theme.colors;
         let active = &self.state.active_screen;
         let lang = self.state.settings.language;
         let shortcuts_on = self.state.settings.desktop_shortcuts_enabled;
-        let mod_name = crate::shortcuts::KeyCombo::primary_modifier_name();
 
         div()
+            .id("desktop_sidebar_scroll")
+            .track_scroll(&self.sidebar_scroll_handle)
             .flex()
             .flex_col()
             .w(px(200.0))
             .flex_none()
-            .overflow_hidden()
+            .overflow_y_scroll()
             .h_full()
             .border_r_1()
             .border_color(colors.border)
             .bg(colors.sidebar)
             .p_3()
             .gap_4()
+            .child(vertical_scrollbar(
+                "desktop_sidebar_scrollbar",
+                &self.sidebar_scroll_handle,
+                true,
+                reveal_scrollbar,
+            ))
             // App Title in Sidebar
             .child(
                 div()
@@ -1187,11 +1293,6 @@ impl ShellView {
                         IconName::House,
                         matches!(active, Screen::Home),
                         Screen::Home,
-                        if shortcuts_on {
-                            Some(if mod_name == "Cmd" { "Cmd+1" } else { "Ctrl+1" })
-                        } else {
-                            None
-                        },
                         cx,
                     ))
                     .child(self.render_desktop_nav_item(
@@ -1200,11 +1301,6 @@ impl ShellView {
                         IconName::Play,
                         matches!(active, Screen::Quiz),
                         Screen::Quiz,
-                        if shortcuts_on {
-                            Some(if mod_name == "Cmd" { "Cmd+2" } else { "Ctrl+2" })
-                        } else {
-                            None
-                        },
                         cx,
                     ))
                     .child(self.render_desktop_nav_item(
@@ -1213,11 +1309,6 @@ impl ShellView {
                         IconName::BookOpen,
                         matches!(active, Screen::Questions),
                         Screen::Questions,
-                        if shortcuts_on {
-                            Some(if mod_name == "Cmd" { "Cmd+3" } else { "Ctrl+3" })
-                        } else {
-                            None
-                        },
                         cx,
                     ))
                     .child(self.render_desktop_nav_item(
@@ -1226,11 +1317,6 @@ impl ShellView {
                         IconName::ChartPie,
                         matches!(active, Screen::Stats | Screen::Results),
                         Screen::Stats,
-                        if shortcuts_on {
-                            Some(if mod_name == "Cmd" { "Cmd+4" } else { "Ctrl+4" })
-                        } else {
-                            None
-                        },
                         cx,
                     ))
                     .child(self.render_desktop_nav_item(
@@ -1239,11 +1325,6 @@ impl ShellView {
                         IconName::Settings,
                         matches!(active, Screen::Settings),
                         Screen::Settings,
-                        if shortcuts_on {
-                            Some(if mod_name == "Cmd" { "Cmd+5" } else { "Ctrl+5" })
-                        } else {
-                            None
-                        },
                         cx,
                     )),
             )
@@ -1254,7 +1335,6 @@ impl ShellView {
                     .flex()
                     .flex_row()
                     .items_center()
-                    .justify_between()
                     .w_full()
                     .min_w_0()
                     .overflow_hidden()
@@ -1298,24 +1378,10 @@ impl ShellView {
                                     .text_color(colors.muted_foreground)
                                     .child(t("shortcuts.title", lang)),
                             ),
-                    )
-                    .child(
-                        div()
-                            .px_1p5()
-                            .py_0p5()
-                            .rounded_md()
-                            .bg(colors.background)
-                            .border_1()
-                            .border_color(colors.border)
-                            .text_xs()
-                            .font_bold()
-                            .text_color(colors.muted_foreground)
-                            .child("?"),
                     ),
             )
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn render_desktop_nav_item(
         &self,
         id: &'static str,
@@ -1323,7 +1389,6 @@ impl ShellView {
         icon: IconName,
         is_active: bool,
         target_screen: Screen,
-        shortcut_badge: Option<&'static str>,
         cx: &mut Context<Self>,
     ) -> impl IntoElement {
         let theme = cx.theme();
@@ -1361,7 +1426,6 @@ impl ShellView {
             .flex()
             .flex_row()
             .items_center()
-            .justify_between()
             .w_full()
             .min_w_0()
             .overflow_hidden()
@@ -1403,21 +1467,6 @@ impl ShellView {
                             .child(label),
                     ),
             )
-            .when_some(shortcut_badge, |el, badge| {
-                el.child(
-                    div()
-                        .px_1p5()
-                        .py_0p5()
-                        .rounded_md()
-                        .bg(colors.background)
-                        .border_1()
-                        .border_color(colors.border)
-                        .text_xs()
-                        .font_bold()
-                        .text_color(colors.muted_foreground)
-                        .child(badge),
-                )
-            })
     }
 
     fn render_mobile_top_bar(&self, cx: &mut Context<Self>) -> impl IntoElement {

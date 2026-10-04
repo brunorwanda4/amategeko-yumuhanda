@@ -1,5 +1,6 @@
 use crate::state::AppState;
 use crate::ui::footer::AppFooter;
+use crate::ui::scroll::vertical_scrollbar;
 use amategeko_core::{t, QuizMode, StatsCalculator};
 use gpui::InteractiveElement as _;
 use gpui_kit::assets::IconName;
@@ -7,6 +8,7 @@ use gpui_kit::base::StyledExt;
 use gpui_kit::component::{ActiveTheme, Icon};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
+use gpui_kit::component::tooltip::Tooltip;
 
 pub struct HomeView;
 
@@ -14,6 +16,8 @@ impl HomeView {
     pub fn render<V: 'static>(
         state: &AppState,
         window_width: Pixels,
+        scroll_handle: &ScrollHandle,
+        reveal_scrollbar: bool,
         cx: &mut Context<V>,
         on_start_mode: impl Fn(&mut V, QuizMode, &mut Window, &mut Context<V>) + 'static + Copy,
         on_resume: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
@@ -25,6 +29,7 @@ impl HomeView {
         let lang = state.settings.language;
 
         let is_desktop = window_width >= px(700.0);
+        let shortcuts_active = is_desktop && state.settings.desktop_shortcuts_enabled;
 
         // Stats values matching the design
         let total_questions = state.bank.len();
@@ -44,6 +49,7 @@ impl HomeView {
 
         div()
             .id("home_view_root")
+            .track_scroll(scroll_handle)
             .flex()
             .flex_col()
             .size_full()
@@ -51,6 +57,12 @@ impl HomeView {
             .bg(colors.background)
             .p_4()
             .when(is_desktop, |el| el.p_8())
+            .child(vertical_scrollbar(
+                "home_scrollbar",
+                scroll_handle,
+                is_desktop,
+                reveal_scrollbar,
+            ))
             // Max width wrapper for clean desktop centering
             .child(
                 div()
@@ -142,6 +154,10 @@ impl HomeView {
                                             .bg(colors.primary)
                                             .cursor_pointer()
                                             .hover(|el| el.opacity(0.9))
+                                            .when(shortcuts_active, |el| {
+                                                let hint = format!("{} (Enter)", t("home.resume_btn", lang));
+                                                el.tooltip(move |window, cx| Tooltip::new(hint.clone()).build(window, cx))
+                                            })
                                             .on_click(cx.listener(move |this, _, window, cx| {
                                                 on_resume(this, window, cx);
                                             }))
@@ -198,6 +214,7 @@ impl HomeView {
                                 gpui::rgb(0x22c55e),
                                 gpui::rgba(0x0e2f1bff),
                                 is_desktop,
+                                shortcuts_active,
                                 cx,
                                 on_start_mode,
                             ))
@@ -211,6 +228,7 @@ impl HomeView {
                                 gpui::rgb(0xf59e0b),
                                 gpui::rgba(0x382405ff),
                                 is_desktop,
+                                shortcuts_active,
                                 cx,
                                 on_start_mode,
                             ))
@@ -224,6 +242,7 @@ impl HomeView {
                                 gpui::rgb(0xef4444),
                                 gpui::rgba(0x3b1115ff),
                                 is_desktop,
+                                shortcuts_active,
                                 cx,
                                 on_start_mode,
                             )),
@@ -357,11 +376,24 @@ impl HomeView {
         icon_color: impl Into<gpui::Hsla>,
         badge_bg: impl Into<gpui::Hsla>,
         is_desktop: bool,
+        shortcuts_active: bool,
         cx: &mut Context<V>,
         on_start_mode: impl Fn(&mut V, QuizMode, &mut Window, &mut Context<V>) + 'static + Copy,
     ) -> impl IntoElement {
         let theme = cx.theme();
         let colors = theme.colors;
+
+        let shortcut_key = match mode {
+            QuizMode::Byoroshye => Some("1"),
+            QuizMode::Hagati => Some("2"),
+            QuizMode::Bikomeye => Some("3"),
+            _ => None,
+        };
+        let tooltip_hint = if shortcuts_active {
+            shortcut_key.map(|k| format!("{start_label} ({k})"))
+        } else {
+            None
+        };
 
         div()
             .id(format!("card_mode_{title}"))
@@ -429,6 +461,9 @@ impl HomeView {
                         .hover(|el| {
                             el.bg(gpui::rgba(0x252a32ff))
                                 .border_color(gpui::rgba(0x3e4552ff))
+                        })
+                        .when_some(tooltip_hint, |el, hint| {
+                            el.tooltip(move |window, cx| Tooltip::new(hint.clone()).build(window, cx))
                         })
                         .on_click(cx.listener(move |this, _, window, cx| {
                             on_start_mode(this, mode, window, cx);

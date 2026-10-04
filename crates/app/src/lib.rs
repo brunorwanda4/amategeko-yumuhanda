@@ -32,4 +32,5 @@ pub fn apply_theme(
             Theme::change(GpuiThemeMode::Dark, window, cx);
         }
     }
+    ui::scroll::configure_scrollbar_motion(cx);
 }

@@ -1,4 +1,5 @@
 use crate::state::AppState;
+use crate::ui::scroll::vertical_scrollbar;
 use amategeko_core::{t, Language, QuizMode, StatsCalculator};
 use gpui::InteractiveElement as _;
 use gpui_kit::base::StyledExt;
@@ -14,6 +15,7 @@ impl StatsView {
         state: &AppState,
         is_desktop: bool,
         scroll_handle: &gpui::ScrollHandle,
+        reveal_scrollbar: bool,
         cx: &mut Context<V>,
         on_start_weak_practice: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
         on_start_quiz: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
@@ -39,6 +41,12 @@ impl StatsView {
             .bg(colors.background)
             .p_4()
             .gap_4()
+            .child(vertical_scrollbar(
+                "stats_scrollbar",
+                scroll_handle,
+                is_desktop,
+                reveal_scrollbar,
+            ))
             // Title Header
             .child(
                 div()

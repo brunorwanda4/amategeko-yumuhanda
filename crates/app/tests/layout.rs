@@ -6,6 +6,7 @@ use std::sync::Arc;
 struct QuizLayoutHarness {
     state: AppState,
     is_desktop: bool,
+    scroll_handle: gpui::ScrollHandle,
 }
 
 impl Render for QuizLayoutHarness {
@@ -13,6 +14,8 @@ impl Render for QuizLayoutHarness {
         QuizView::render(
             &self.state,
             self.is_desktop,
+            false,
+            &self.scroll_handle,
             false,
             cx,
             |_, _, _, _| {},
@@ -85,6 +88,7 @@ fn longest_question_and_option_fit_minimum_and_desktop_widths(cx: &mut TestAppCo
                 cx.open_window(size(px(width), px(900.0)), move |_, _| QuizLayoutHarness {
                     state: state_with_longest_text(language),
                     is_desktop: width >= 900.0,
+                    scroll_handle: gpui::ScrollHandle::default(),
                 });
             cx.run_until_parked();
             let mut visual = VisualTestContext::from_window(window.into(), cx);

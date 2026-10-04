@@ -1,4 +1,5 @@
 use crate::state::AppState;
+use crate::ui::scroll::vertical_scrollbar;
 use amategeko_core::{t, Language, QuestionResult, QuizMode};
 use gpui::InteractiveElement as _;
 use gpui_kit::base::StyledExt;
@@ -6,6 +7,7 @@ use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{ActiveTheme, Icon, IconName};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
+use gpui_kit::component::tooltip::Tooltip;
 use std::collections::HashSet;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -21,7 +23,9 @@ impl ResultsView {
     #[allow(clippy::too_many_arguments)]
     pub fn render<V: 'static>(
         state: &AppState,
-        _is_desktop: bool,
+        is_desktop: bool,
+        scroll_handle: &ScrollHandle,
+        reveal_scrollbar: bool,
         filter: ResultFilter,
         expanded: &HashSet<usize>,
         cx: &mut Context<V>,
@@ -43,6 +47,7 @@ impl ResultsView {
             None => {
                 return div()
                     .id("results_empty_scroll")
+                    .track_scroll(scroll_handle)
                     .flex()
                     .flex_col()
                     .items_center()
@@ -50,6 +55,12 @@ impl ResultsView {
                     .size_full()
                     .p_6()
                     .gap_4()
+                    .child(vertical_scrollbar(
+                        "results_empty_scrollbar",
+                        scroll_handle,
+                        is_desktop,
+                        reveal_scrollbar,
+                    ))
                     .child(
                         div()
                             .text_lg()
@@ -99,6 +110,7 @@ impl ResultsView {
 
         let wrong_count = total.saturating_sub(score);
         let correct_count = score;
+        let shortcuts_active = is_desktop && state.settings.desktop_shortcuts_enabled;
 
         // Filter question results
         let filtered_questions: Vec<(usize, &QuestionResult)> = result
@@ -114,6 +126,7 @@ impl ResultsView {
 
         div()
             .id("results_scroll_view")
+            .track_scroll(scroll_handle)
             .flex()
             .flex_col()
             .size_full()
@@ -121,6 +134,12 @@ impl ResultsView {
             .bg(colors.background)
             .p_4()
             .gap_4()
+            .child(vertical_scrollbar(
+                "results_scrollbar",
+                scroll_handle,
+                is_desktop,
+                reveal_scrollbar,
+            ))
             // Top Header: Score Card
             .child(
                 div()
@@ -258,36 +277,45 @@ impl ResultsView {
                             .pt_2()
                             // Retry wrong button (if any mistakes)
                             .when(wrong_count > 0, |el| {
+                                let mut btn = Button::new("retry_wrong_btn")
+                                    .primary()
+                                    .label(t("results.retry_wrong", lang))
+                                    .icon(IconName::RotateCw);
+                                if shortcuts_active {
+                                    btn = btn.tooltip(format!("{} (W)", t("results.retry_wrong", lang)));
+                                }
                                 el.child(
-                                    Button::new("retry_wrong_btn")
-                                        .primary()
-                                        .label(t("results.retry_wrong", lang))
-                                        .icon(IconName::RotateCw)
-                                        .on_click(cx.listener(move |this, _, window, cx| {
-                                            on_retry_wrong(this, window, cx);
-                                        })),
+                                    btn.on_click(cx.listener(move |this, _, window, cx| {
+                                        on_retry_wrong(this, window, cx);
+                                    })),
                                 )
                             })
                             // New quiz button
-                            .child(
-                                Button::new("new_quiz_btn")
+                            .child({
+                                let mut btn = Button::new("new_quiz_btn")
                                     .secondary()
                                     .label(t("results.new_quiz", lang))
-                                    .icon(IconName::Play)
-                                    .on_click(cx.listener(move |this, _, window, cx| {
-                                        on_new_quiz(this, window, cx);
-                                    })),
-                            )
+                                    .icon(IconName::Play);
+                                if shortcuts_active {
+                                    btn = btn.tooltip(format!("{} (R)", t("results.new_quiz", lang)));
+                                }
+                                btn.on_click(cx.listener(move |this, _, window, cx| {
+                                    on_new_quiz(this, window, cx);
+                                }))
+                            })
                             // Home button
-                            .child(
-                                Button::new("home_btn")
+                            .child({
+                                let mut btn = Button::new("home_btn")
                                     .outline()
                                     .label(t("nav.home", lang))
-                                    .icon(IconName::LayoutDashboard)
-                                    .on_click(cx.listener(move |this, _, window, cx| {
-                                        on_home(this, window, cx);
-                                    })),
-                            ),
+                                    .icon(IconName::LayoutDashboard);
+                                if shortcuts_active {
+                                    btn = btn.tooltip(format!("{} (Esc)", t("nav.home", lang)));
+                                }
+                                btn.on_click(cx.listener(move |this, _, window, cx| {
+                                    on_home(this, window, cx);
+                                }))
+                            }),
                     ),
             )
             // Filter Chips Section
@@ -301,6 +329,10 @@ impl ResultsView {
                         // All filter chip
                         div()
                             .id("filter_all_chip")
+                            .when(shortcuts_active, |el| {
+                                let hint = format!("{} (A)", t("results.filter_all", lang).replace("{count}", &total.to_string()));
+                                el.tooltip(move |window, cx| Tooltip::new(hint.clone()).build(window, cx))
+                            })
                             .px_3()
                             .py_1p5()
                             .rounded_full()
@@ -334,6 +366,10 @@ impl ResultsView {
                         // Correct filter chip
                         div()
                             .id("filter_correct_chip")
+                            .when(shortcuts_active, |el| {
+                                let hint = format!("{} (C)", t("results.filter_correct", lang).replace("{count}", &correct_count.to_string()));
+                                el.tooltip(move |window, cx| Tooltip::new(hint.clone()).build(window, cx))
+                            })
                             .px_3()
                             .py_1p5()
                             .rounded_full()
@@ -368,6 +404,10 @@ impl ResultsView {
                         // Wrong filter chip
                         div()
                             .id("filter_wrong_chip")
+                            .when(shortcuts_active, |el| {
+                                let hint = format!("{} (X)", t("results.filter_wrong", lang).replace("{count}", &wrong_count.to_string()));
+                                el.tooltip(move |window, cx| Tooltip::new(hint.clone()).build(window, cx))
+                            })
                             .px_3()
                             .py_1p5()
                             .rounded_full()

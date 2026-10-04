@@ -1,8 +1,10 @@
 use crate::state::AppState;
+use crate::ui::scroll::vertical_scrollbar;
 use amategeko_core::{t, Attempt, Language, QuizMode, QuizTimer, TimerLevel, TimerState};
 use gpui::InteractiveElement as _;
 use gpui_kit::assets::IconName;
 use gpui_kit::base::StyledExt;
+use gpui_kit::component::tooltip::Tooltip;
 use gpui_kit::component::{ActiveTheme, Icon};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
@@ -16,6 +18,8 @@ impl QuizView {
         state: &AppState,
         is_desktop: bool,
         is_focus_mode: bool,
+        scroll_handle: &ScrollHandle,
+        reveal_scrollbar: bool,
         cx: &mut Context<V>,
         on_select_option: impl Fn(&mut V, &str, &mut Window, &mut Context<V>) + 'static + Copy,
         on_next: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
@@ -356,18 +360,19 @@ impl QuizView {
                                 } else {
                                     colors.muted_foreground
                                 };
+                                let flag_tooltip = if shortcuts_active {
+                                    format!("{} (F)", t("quiz.flag", lang))
+                                } else {
+                                    t("quiz.flag", lang).to_string()
+                                };
                                 el.child(
                                     div()
                                         .id("flag_btn")
                                         .flex()
                                         .items_center()
                                         .justify_center()
-                                        .when(!shortcuts_active, |btn| {
-                                            btn.w(px(36.0)).h(px(36.0))
-                                        })
-                                        .when(shortcuts_active, |btn| {
-                                            btn.h(px(36.0)).px_2().gap_1p5()
-                                        })
+                                        .w(px(36.0))
+                                        .h(px(36.0))
                                         .rounded_lg()
                                         .border_1()
                                         .border_color(if is_flagged {
@@ -378,6 +383,9 @@ impl QuizView {
                                         .bg(colors.secondary)
                                         .cursor_pointer()
                                         .hover(|btn| btn.bg(colors.accent))
+                                        .tooltip(move |window, cx| {
+                                            Tooltip::new(flag_tooltip.clone()).build(window, cx)
+                                        })
                                         .on_click(cx.listener(move |this, _, window, cx| {
                                             on_toggle_flag(this, window, cx);
                                         }))
@@ -385,20 +393,16 @@ impl QuizView {
                                             Icon::new(IconName::TriangleAlert)
                                                 .size(px(17.0))
                                                 .text_color(flag_color),
-                                        )
-                                        .when(shortcuts_active, |btn| {
-                                            btn.child(
-                                                div()
-                                                    .text_xs()
-                                                    .font_semibold()
-                                                    .text_color(colors.muted_foreground)
-                                                    .child("F"),
-                                            )
-                                        }),
+                                        ),
                                 )
                             })
                             // Focus / Fullscreen mode toggle
-                            .child(
+                            .child({
+                                let focus_tooltip = if is_focus_mode {
+                                    t("quiz.focus_exit", lang).to_string()
+                                } else {
+                                    t("quiz.focus_mode", lang).to_string()
+                                };
                                 div()
                                     .id("focus_mode_btn")
                                     .flex()
@@ -420,6 +424,9 @@ impl QuizView {
                                     })
                                     .cursor_pointer()
                                     .hover(|el| el.bg(colors.accent))
+                                    .tooltip(move |window, cx| {
+                                        Tooltip::new(focus_tooltip.clone()).build(window, cx)
+                                    })
                                     .on_click(cx.listener(move |this, _, window, cx| {
                                         on_toggle_focus(this, window, cx);
                                     }))
@@ -437,23 +444,22 @@ impl QuizView {
                                                 colors.foreground
                                             },
                                         ),
-                                    ),
-                            )
+                                    )
+                            })
                             // Star / Bookmark toggle
-                            .child(
+                            .child({
+                                let star_tooltip = if shortcuts_active && attempt.mode == QuizMode::Byoroshye {
+                                    format!("{} (B)", t("quiz.star", lang))
+                                } else {
+                                    t("quiz.star", lang).to_string()
+                                };
                                 div()
                                     .id("star_btn")
                                     .flex()
                                     .items_center()
                                     .justify_center()
-                                    .when(
-                                        !shortcuts_active || attempt.mode != QuizMode::Byoroshye,
-                                        |btn| btn.w(px(36.0)).h(px(36.0)),
-                                    )
-                                    .when(
-                                        shortcuts_active && attempt.mode == QuizMode::Byoroshye,
-                                        |btn| btn.h(px(36.0)).px_2().gap_1p5(),
-                                    )
+                                    .w(px(36.0))
+                                    .h(px(36.0))
                                     .rounded_lg()
                                     .border_1()
                                     .border_color(if is_starred {
@@ -464,25 +470,16 @@ impl QuizView {
                                     .bg(colors.secondary)
                                     .cursor_pointer()
                                     .hover(|el| el.bg(colors.accent))
+                                    .tooltip(move |window, cx| {
+                                        Tooltip::new(star_tooltip.clone()).build(window, cx)
+                                    })
                                     .on_click(cx.listener(move |this, _, window, cx| {
                                         on_toggle_star(this, q_id, window, cx);
                                     }))
                                     .child(
                                         Icon::new(star_icon).size(px(18.0)).text_color(star_color),
                                     )
-                                    .when(
-                                        shortcuts_active && attempt.mode == QuizMode::Byoroshye,
-                                        |btn| {
-                                            btn.child(
-                                                div()
-                                                    .text_xs()
-                                                    .font_semibold()
-                                                    .text_color(colors.muted_foreground)
-                                                    .child("B"),
-                                            )
-                                        },
-                                    ),
-                            ),
+                            }),
                     )
             )
             // Time Remaining Bar (Medium and Hard)
@@ -571,12 +568,20 @@ impl QuizView {
             .child(
                 div()
                     .id("quiz_content_scroll")
+                    .track_scroll(scroll_handle)
                     .flex()
                     .flex_col()
                     .flex_1()
                     .overflow_y_scroll()
                     .px_6()
+                    .pr_7()
                     .py_4()
+                    .child(vertical_scrollbar(
+                        "quiz_scrollbar",
+                        scroll_handle,
+                        is_desktop,
+                        reveal_scrollbar,
+                    ))
                     .child(
                         div()
                             .w_full()
@@ -623,30 +628,6 @@ impl QuizView {
                                                     .rounded_xl(),
                                                 ),
                                         )
-                                        // Shortcut navigation indicator
-                                        .when(shortcuts_active, |col| {
-                                            col.child(
-                                                div()
-                                                    .flex()
-                                                    .flex_row()
-                                                    .items_center()
-                                                    .gap_2()
-                                                    .mt_3()
-                                                    .px_1()
-                                                    .child(
-                                                        svg()
-                                                            .path("icons/keyboard.svg")
-                                                            .size(px(14.0))
-                                                            .text_color(colors.muted_foreground),
-                                                    )
-                                                    .child(
-                                                        div()
-                                                            .text_xs()
-                                                            .text_color(colors.muted_foreground)
-                                                            .child(t("quiz.shortcut_hint", lang)),
-                                                    ),
-                                            )
-                                        }),
                                 )
                             })
                             // RIGHT / MAIN COLUMN: Question Text, Hint / Feedback, Options, Bottom Actions
@@ -825,6 +806,8 @@ impl QuizView {
                                                 &current_q.correct,
                                                 user_ans.as_deref(),
                                                 is_locked,
+                                                lang,
+                                                shortcuts_active,
                                                 cx,
                                                 on_select_option,
                                             )
@@ -840,7 +823,12 @@ impl QuizView {
                                             .mt_4()
                                             .pt_2()
                                             // Previous button (Left)
-                                            .child(
+                                            .child({
+                                                let prev_tooltip = if shortcuts_active && !is_hard {
+                                                    format!("{} (←)", t("quiz.previous", lang))
+                                                } else {
+                                                    t("quiz.previous", lang).to_string()
+                                                };
                                                 div()
                                                     .id("quiz_prev_btn")
                                                     .flex()
@@ -853,6 +841,9 @@ impl QuizView {
                                                     .border_1()
                                                     .border_color(colors.border)
                                                     .bg(colors.secondary)
+                                                    .tooltip(move |window, cx| {
+                                                        Tooltip::new(prev_tooltip.clone()).build(window, cx)
+                                                    })
                                                     .when(!is_first, |el| {
                                                         el.cursor_pointer()
                                                             .hover(|h| h.bg(colors.accent))
@@ -875,22 +866,7 @@ impl QuizView {
                                                             .text_color(colors.foreground)
                                                             .child(t("quiz.previous", lang)),
                                                     )
-                                                    .when(shortcuts_active && !is_hard, |el| {
-                                                        el.child(
-                                                            div()
-                                                                .text_xs()
-                                                                .font_semibold()
-                                                                .px_1p5()
-                                                                .py_0p5()
-                                                                .rounded_md()
-                                                                .bg(colors.muted.opacity(0.4))
-                                                                .border_1()
-                                                                .border_color(colors.border)
-                                                                .text_color(colors.muted_foreground)
-                                                                .child("←"),
-                                                        )
-                                                    }),
-                                            )
+                                            })
                                             // Right Actions: Simbuka (Skip) & Ibikurikira (Next) / Soza (Finish)
                                             .child(
                                                 div()
@@ -900,6 +876,13 @@ impl QuizView {
                                                     .gap_3()
                                                     // Skip button
                                                     .when(!is_hard && !is_last, |row| {
+                                                        let skip_tooltip = if shortcuts_active
+                                                            && attempt.mode == QuizMode::Byoroshye
+                                                        {
+                                                            format!("{} (S)", t("quiz.skip", lang))
+                                                        } else {
+                                                            t("quiz.skip", lang).to_string()
+                                                        };
                                                         row.child(
                                                             div()
                                                                 .id("quiz_skip_btn")
@@ -915,6 +898,9 @@ impl QuizView {
                                                                 .bg(colors.secondary)
                                                                 .cursor_pointer()
                                                                 .hover(|h| h.bg(colors.accent))
+                                                                .tooltip(move |window, cx| {
+                                                                    Tooltip::new(skip_tooltip.clone()).build(window, cx)
+                                                                })
                                                                 .on_click(cx.listener(
                                                                     move |this, _, window, cx| {
                                                                         on_skip(this, window, cx);
@@ -931,38 +917,27 @@ impl QuizView {
                                                                             "quiz.skip",
                                                                             lang,
                                                                         )),
-                                                                )
-                                                                .when(
-                                                                    shortcuts_active
-                                                                        && attempt.mode
-                                                                            == QuizMode::Byoroshye,
-                                                                    |el| {
-                                                                        el.child(
-                                                                            div()
-                                                                                .text_xs()
-                                                                                .font_semibold()
-                                                                                .px_1p5()
-                                                                                .py_0p5()
-                                                                                .rounded_md()
-                                                                                .bg(colors
-                                                                                    .muted
-                                                                                    .opacity(0.4))
-                                                                                .border_1()
-                                                                                .border_color(
-                                                                                    colors.border,
-                                                                                )
-                                                                                .text_color(
-                                                                                    colors
-                                                                                        .muted_foreground,
-                                                                                )
-                                                                                .child("S"),
-                                                                        )
-                                                                    },
                                                                 ),
                                                         )
                                                     })
                                                     // Next / Finish / Confirm button
-                                                    .child(
+                                                    .child({
+                                                        let next_shortcut_hint = if is_last
+                                                            && attempt.mode == QuizMode::Hagati
+                                                        {
+                                                            if cfg!(target_os = "macos") {
+                                                                "Cmd+Enter"
+                                                            } else {
+                                                                "Ctrl+Enter"
+                                                            }
+                                                        } else {
+                                                            "Enter"
+                                                        };
+                                                        let next_tooltip = if shortcuts_active {
+                                                            format!("{next_btn_label} ({next_shortcut_hint})")
+                                                        } else {
+                                                            next_btn_label.to_string()
+                                                        };
                                                         div()
                                                             .id("quiz_next_btn")
                                                             .flex()
@@ -977,6 +952,9 @@ impl QuizView {
                                                             .bg(colors.secondary)
                                                             .cursor_pointer()
                                                             .hover(|h| h.bg(colors.accent))
+                                                            .tooltip(move |window, cx| {
+                                                                Tooltip::new(next_tooltip.clone()).build(window, cx)
+                                                            })
                                                             .on_click(cx.listener(
                                                                 move |this, _, window, cx| {
                                                                     if is_hard {
@@ -999,69 +977,14 @@ impl QuizView {
                                                                     .text_color(colors.foreground)
                                                                     .child(next_btn_label),
                                                             )
-                                                            .when(shortcuts_active, |el| {
-                                                                let hint = if is_last
-                                                                    && attempt.mode
-                                                                        == QuizMode::Hagati
-                                                                {
-                                                                    if cfg!(target_os = "macos") {
-                                                                        "Cmd+Enter"
-                                                                    } else {
-                                                                        "Ctrl+Enter"
-                                                                    }
-                                                                } else {
-                                                                    "Enter"
-                                                                };
-                                                                el.child(
-                                                                    div()
-                                                                        .text_xs()
-                                                                        .font_semibold()
-                                                                        .px_1p5()
-                                                                        .py_0p5()
-                                                                        .rounded_md()
-                                                                        .bg(colors
-                                                                            .muted
-                                                                            .opacity(0.4))
-                                                                        .border_1()
-                                                                        .border_color(colors.border)
-                                                                        .text_color(
-                                                                            colors.muted_foreground,
-                                                                        )
-                                                                        .child(hint),
-                                                                )
-                                                            })
                                                             .child(
                                                                 Icon::new(IconName::ArrowRight)
                                                                     .size(px(16.0))
                                                                     .text_color(colors.foreground),
-                                                            ),
-                                                    ),
+                                                            )
+                                                    }),
                                             ),
                                     )
-                                    // Shortcut navigation indicator (shown below navigation when there is no image column)
-                                    .when(!current_q.has_image && shortcuts_active, |col| {
-                                        col.child(
-                                            div()
-                                                .flex()
-                                                .flex_row()
-                                                .items_center()
-                                                .gap_2()
-                                                .mt_2()
-                                                .px_1()
-                                                .child(
-                                                    svg()
-                                                        .path("icons/keyboard.svg")
-                                                        .size(px(14.0))
-                                                        .text_color(colors.muted_foreground),
-                                                )
-                                                .child(
-                                                    div()
-                                                        .text_xs()
-                                                        .text_color(colors.muted_foreground)
-                                                        .child(t("quiz.shortcut_hint", lang)),
-                                                ),
-                                        )
-                                    }),
                             ),
                     ),
             )
@@ -1076,6 +999,8 @@ impl QuizView {
         correct_letter: &str,
         user_selection: Option<&str>,
         is_locked: bool,
+        lang: Language,
+        shortcuts_active: bool,
         cx: &mut Context<V>,
         on_select_option: impl Fn(&mut V, &str, &mut Window, &mut Context<V>) + 'static + Copy,
     ) -> impl IntoElement {
@@ -1189,6 +1114,11 @@ impl QuizView {
             .when(!is_locked, |el| {
                 el.cursor_pointer()
                     .hover(|e| e.bg(colors.accent).border_color(colors.primary))
+            })
+            .when(shortcuts_active && !is_locked, |el| {
+                let hint = letter.to_uppercase();
+                let tooltip = format!("{}: {hint}", t("shortcuts.choose_option", lang));
+                el.tooltip(move |window, cx| Tooltip::new(tooltip.clone()).build(window, cx))
             })
             .on_click(cx.listener(move |this, _, window, cx| {
                 if !is_locked {

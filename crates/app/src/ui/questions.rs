@@ -1,9 +1,11 @@
 use crate::state::AppState;
+use crate::ui::scroll::vertical_scrollbar;
 use amategeko_core::{t, Language, Question};
 use gpui::InteractiveElement as _;
 use gpui_kit::base::StyledExt;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::switch::Switch;
+use gpui_kit::component::tooltip::Tooltip;
 use gpui_kit::component::{ActiveTheme, Icon, IconName};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
@@ -23,16 +25,19 @@ impl QuestionsView {
     #[allow(clippy::too_many_arguments)]
     pub fn render<V: 'static>(
         state: &AppState,
-        _is_desktop: bool,
+        is_desktop: bool,
         scroll_handle: &gpui::ScrollHandle,
+        reveal_scrollbar: bool,
         filter: QuestionsFilter,
         search_query: &str,
+        is_search_focused: bool,
         hide_answers: bool,
         expanded: &HashSet<u32>,
         revealed: &HashMap<u32, String>,
         cx: &mut Context<V>,
         on_set_filter: impl Fn(&mut V, QuestionsFilter, &mut Window, &mut Context<V>) + 'static + Copy,
         on_set_search: impl Fn(&mut V, String, &mut Window, &mut Context<V>) + 'static + Copy,
+        on_focus_search: impl Fn(&mut V, bool, &mut Window, &mut Context<V>) + 'static + Copy,
         on_toggle_hide_answers: impl Fn(&mut V, bool, &mut Window, &mut Context<V>) + 'static + Copy,
         on_toggle_star: impl Fn(&mut V, u32, &mut Window, &mut Context<V>) + 'static + Copy,
         on_toggle_expand: impl Fn(&mut V, u32, &mut Window, &mut Context<V>) + 'static + Copy,
@@ -44,6 +49,7 @@ impl QuestionsView {
         let lang = state.settings.language;
         let q_lang = state.settings.question_language;
         let show_both = state.settings.show_both_languages;
+        let shortcuts_active = is_desktop && state.settings.desktop_shortcuts_enabled;
 
         let has_image_only = filter == QuestionsFilter::HasImage;
         let starred_only = filter == QuestionsFilter::Starred;
@@ -61,11 +67,6 @@ impl QuestionsView {
 
         let total_questions = state.bank.len();
         let visible_count = filtered_questions.len();
-        let display_search = if search_query.is_empty() {
-            t("questions.search_placeholder", lang).to_string()
-        } else {
-            search_query.to_string()
-        };
 
         let filter_buttons = [
             (
@@ -129,6 +130,15 @@ impl QuestionsView {
             // Search Input Row
             .child(
                 div()
+                    .id("questions_search_input")
+                    .when(shortcuts_active, |el| {
+                        let mod_name = crate::shortcuts::KeyCombo::primary_modifier_name();
+                        let search_hint = format!("Search (/ or {mod_name}+F)");
+                        el.tooltip(move |window, cx| {
+                            Tooltip::new(search_hint.clone()).build(window, cx)
+                        })
+                    })
+                    .cursor_text()
                     .flex()
                     .flex_row()
                     .items_center()
@@ -137,23 +147,73 @@ impl QuestionsView {
                     .py_2p5()
                     .rounded_lg()
                     .border_1()
-                    .border_color(colors.border)
+                    .border_color(if is_search_focused {
+                        colors.primary
+                    } else {
+                        colors.border
+                    })
                     .bg(colors.secondary)
+                    .on_click(cx.listener(move |this, _, window, cx| {
+                        on_focus_search(this, true, window, cx);
+                    }))
                     .child(
                         Icon::new(IconName::Search)
                             .size(px(16.0))
-                            .text_color(colors.muted_foreground),
+                            .text_color(if is_search_focused {
+                                colors.primary
+                            } else {
+                                colors.muted_foreground
+                            }),
                     )
                     .child(
                         div()
                             .flex_1()
-                            .text_sm()
-                            .text_color(if search_query.is_empty() {
-                                colors.muted_foreground
-                            } else {
-                                colors.foreground
+                            .flex()
+                            .flex_row()
+                            .items_center()
+                            .gap_0p5()
+                            .overflow_hidden()
+                            .when(search_query.is_empty(), |el| {
+                                if is_search_focused {
+                                    el.child(
+                                        div()
+                                            .w(px(1.5))
+                                            .h(px(16.0))
+                                            .bg(colors.primary)
+                                            .rounded_sm(),
+                                    )
+                                    .child(
+                                        div()
+                                            .text_sm()
+                                            .text_color(colors.muted_foreground)
+                                            .child(t("questions.search_placeholder", lang)),
+                                    )
+                                } else {
+                                    el.child(
+                                        div()
+                                            .text_sm()
+                                            .text_color(colors.muted_foreground)
+                                            .child(t("questions.search_placeholder", lang)),
+                                    )
+                                }
                             })
-                            .child(display_search),
+                            .when(!search_query.is_empty(), |el| {
+                                el.child(
+                                    div()
+                                        .text_sm()
+                                        .text_color(colors.foreground)
+                                        .child(search_query.to_string()),
+                                )
+                                .when(is_search_focused, |el| {
+                                    el.child(
+                                        div()
+                                            .w(px(1.5))
+                                            .h(px(16.0))
+                                            .bg(colors.primary)
+                                            .rounded_sm(),
+                                    )
+                                })
+                            }),
                     )
                     .when(!search_query.is_empty(), |el| {
                         el.child(
@@ -161,6 +221,8 @@ impl QuestionsView {
                                 .id("clear_search_btn")
                                 .cursor_pointer()
                                 .p_1()
+                                .rounded_md()
+                                .hover(|el| el.bg(colors.background))
                                 .child(
                                     Icon::new(IconName::CircleX)
                                         .size(px(16.0))
@@ -168,9 +230,49 @@ impl QuestionsView {
                                 )
                                 .on_click(cx.listener(move |this, _, window, cx| {
                                     on_set_search(this, String::new(), window, cx);
+                                    on_focus_search(this, true, window, cx);
                                 })),
                         )
-                    }),
+                    })
+                    .when(search_query.is_empty(), |el| {
+                        let mod_name = crate::shortcuts::KeyCombo::primary_modifier_name();
+                        el.child(
+                            div()
+                                .id("search_shortcut_hints")
+                                .flex()
+                                .flex_row()
+                                .items_center()
+                                .gap_1p5()
+                                .child(
+                                    div()
+                                        .id("shortcut_hint_slash")
+                                        .px_1p5()
+                                        .py_0p5()
+                                        .rounded_md()
+                                        .bg(colors.background)
+                                        .border_1()
+                                        .border_color(colors.border)
+                                        .text_xs()
+                                        .font_medium()
+                                        .text_color(colors.muted_foreground)
+                                        .child("/"),
+                                )
+                                .child(
+                                    div()
+                                        .id("shortcut_hint_mod_f")
+                                        .px_1p5()
+                                        .py_0p5()
+                                        .rounded_md()
+                                        .bg(colors.background)
+                                        .border_1()
+                                        .border_color(colors.border)
+                                        .text_xs()
+                                        .font_medium()
+                                        .text_color(colors.muted_foreground)
+                                        .child(format!("{mod_name}+F")),
+                                ),
+                        )
+                    })
             )
             // Filter Buttons Row (Byose, Ibifite ishushyo, Ibyo nakosheje, Inyenyeri)
             .child(
@@ -222,10 +324,17 @@ impl QuestionsView {
             // Flashcard Toggle Row: "Hisha ibisubizo" + Switch
             .child(
                 div()
+                    .id("hide_answers_toggle_row")
                     .flex()
                     .flex_row()
                     .items_center()
                     .gap_3()
+                    .when(shortcuts_active, |el| {
+                        let hint = format!("{} (H)", t("questions.hide_answers", lang));
+                        el.tooltip(move |window, cx| {
+                            Tooltip::new(hint.clone()).build(window, cx)
+                        })
+                    })
                     .child(
                         div()
                             .text_sm()
@@ -249,7 +358,14 @@ impl QuestionsView {
                     .flex_col()
                     .flex_1()
                     .overflow_y_scroll()
+                    .pr_2()
                     .gap_2p5()
+                    .child(vertical_scrollbar(
+                        "questions_scrollbar",
+                        scroll_handle,
+                        is_desktop,
+                        reveal_scrollbar,
+                    ))
                     // Empty state when search or filter returns no questions
                     .when(filtered_questions.is_empty(), |el| {
                         el.child(
@@ -345,6 +461,16 @@ impl QuestionsView {
                                     .min_w_0()
                                     .overflow_hidden()
                                     .cursor_pointer()
+                                    .when(shortcuts_active, |el| {
+                                        let hint = if is_expanded {
+                                            "Collapse (Enter)"
+                                        } else {
+                                            "Expand (Enter)"
+                                        };
+                                        el.tooltip(move |window, cx| {
+                                            Tooltip::new(hint).build(window, cx)
+                                        })
+                                    })
                                     .on_click(cx.listener(move |this, _, window, cx| {
                                         on_toggle_expand(this, q_id, window, cx);
                                     }))
@@ -477,6 +603,16 @@ impl QuestionsView {
                                                     })
                                                     .cursor_pointer()
                                                     .hover(|el| el.bg(colors.accent))
+                                                    .when(shortcuts_active, |el| {
+                                                        let hint = if is_starred {
+                                                            "Unstar (B)"
+                                                        } else {
+                                                            "Star (B)"
+                                                        };
+                                                        el.tooltip(move |window, cx| {
+                                                            Tooltip::new(hint).build(window, cx)
+                                                        })
+                                                    })
                                                     .on_click(cx.listener(move |this, _, window, cx| {
                                                         on_toggle_star(this, q_id, window, cx);
                                                     }))
