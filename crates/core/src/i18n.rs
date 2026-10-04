@@ -42,6 +42,8 @@ impl Strings {
     pub const QUIZ_UNFLAG: &'static str = "Kura ikimenyetso";
     pub const QUIZ_STAR: &'static str = "Bika ikibazo";
     pub const QUIZ_UNSTAR: &'static str = "Kura mu bibitswe";
+    pub const QUIZ_NO_IMAGE: &'static str = "Ishusho y'icyapa iza hano";
+    pub const QUIZ_SHORTCUT_HINT: &'static str = "A-D cyangwa 1-4 uhitamo; Enter ugakomeza";
 
     // Quiz Feedback (Easy mode)
     pub const QUIZ_EASY_HINT: &'static str = "Kanda igisubizo kugira ngo ubone niba ari cyo";

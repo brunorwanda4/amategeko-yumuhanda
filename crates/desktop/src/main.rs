@@ -47,7 +47,7 @@ fn main() {
 
             cx.open_window(options, |window, cx| {
                 amategeko_app::apply_theme(initial_theme, Some(window), cx);
-                let shell = cx.new(|_| ShellView::new(app_state));
+                let shell = cx.new(|cx| ShellView::new(app_state, cx));
                 cx.new(|cx| Root::new(shell, window, cx))
             })
             .expect("Failed to open desktop window");
