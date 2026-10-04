@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "text": "Every vehicle or combination of vehicles\nin motion must have:",
+    "text": "Every vehicle or combination of vehicles in motion must have:",
     "options": {
       "a": "A driver",
       "b": "An attendant",
@@ -14,7 +14,7 @@
   },
   {
     "id": 2,
-    "text": "The term \"path\" means a narrow\npublic way reserved exclusively for:",
+    "text": "The term \"path\" means a narrow public way reserved exclusively for:",
     "options": {
       "a": "Pedestrians",
       "b": "Two-wheeled vehicles",
@@ -27,7 +27,7 @@
   },
   {
     "id": 3,
-    "text": "A broken line warning of the approach\nto a continuous line may be supplemented\nby white direction arrows. These\ndirection arrows indicate:",
+    "text": "A broken line warning of the approach to a continuous line may be supplemented by white direction arrows. These direction arrows indicate:",
     "options": {
       "a": "The traffic lane drivers must follow",
       "b": "The approach to a continuous line",
@@ -40,7 +40,7 @@
   },
   {
     "id": 4,
-    "text": "Areas of the road indicated by\nluminous signals where vehicles cannot travel:",
+    "text": "Areas of the road indicated by luminous signals where vehicles cannot travel:",
     "options": {
       "a": "Parallel / Side-by-side",
       "b": "In a single line",
@@ -53,7 +53,7 @@
   },
   {
     "id": 5,
-    "text": "The following vehicles must undergo\nan annual vehicle inspection:",
+    "text": "The following vehicles must undergo an annual vehicle inspection:",
     "options": {
       "a": "Public passenger transport vehicles",
       "b": "Vehicles intended for the transport of goods exceeding 3.5 tonnes",
@@ -66,7 +66,7 @@
   },
   {
     "id": 6,
-    "text": "The width of a trailer towed by a\nthree-wheeled vehicle must not exceed\nthe following dimensions:",
+    "text": "The width of a trailer towed by a three-wheeled vehicle must not exceed the following dimensions:",
     "options": {
       "a": "75 cm",
       "b": "125 cm",
@@ -79,7 +79,7 @@
   },
   {
     "id": 7,
-    "text": "The length of the following vehicles\nmust not exceed 11 meters:",
+    "text": "The length of the following vehicles must not exceed 11 meters:",
     "options": {
       "a": "Vehicles with a single axle connecting wheels",
       "b": "Vehicles with two consecutive axles along their width",
@@ -92,7 +92,7 @@
   },
   {
     "id": 8,
-    "text": "A vehicle is prohibited from parking (standing for a long time)\nin the following places:",
+    "text": "A vehicle is prohibited from parking (standing for a long time) in the following places:",
     "options": {
       "a": "Less than 1 meter in front of or behind a stopped or parked vehicle",
       "b": "Where dedicated prohibition signs are present",
@@ -118,7 +118,7 @@
   },
   {
     "id": 10,
-    "text": "A sign indicating the maximum speed\nthat a vehicle must not exceed is displayed only\non vehicles with the following maximum weight:",
+    "text": "A sign indicating the maximum speed that a vehicle must not exceed is displayed only on vehicles with the following maximum weight:",
     "options": {
       "a": "Exceeding 1 tonne",
       "b": "Exceeding 2 tonnes",
@@ -131,7 +131,7 @@
   },
   {
     "id": 11,
-    "text": "Outside built-up areas, the maximum hourly\nspeed for a moped is:",
+    "text": "Outside built-up areas, the maximum hourly speed for a moped is:",
     "options": {
       "a": "50 km/h",
       "b": "40 km/h",
@@ -144,7 +144,7 @@
   },
   {
     "id": 12,
-    "text": "When the road width does not allow safe\novertaking, a driver may use a pedestrian\npath only after considering the following:",
+    "text": "When the road width does not allow safe overtaking, a driver may use a pedestrian path only after considering the following:",
     "options": {
       "a": "The speed of pedestrians",
       "b": "The width of the roadway",
@@ -157,7 +157,7 @@
   },
   {
     "id": 13,
-    "text": "Regarding vehicle lighting, illumination,\nand direction indicators: It is prohibited to add\nother lights or reflectors beyond what is required,\nexcept for the following lights:",
+    "text": "Regarding vehicle lighting, illumination, and direction indicators: It is prohibited to add other lights or reflectors beyond what is required, except for the following lights:",
     "options": {
       "a": "Position lights",
       "b": "Interior vehicle lights",
@@ -170,7 +170,7 @@
   },
   {
     "id": 14,
-    "text": "Unless special regulations lower it,\nthe maximum speed for motorcycles per hour is:",
+    "text": "Unless special regulations lower it, the maximum speed for motorcycles per hour is:",
     "options": {
       "a": "25 km/h",
       "b": "70 km/h",
@@ -183,7 +183,7 @@
   },
   {
     "id": 15,
-    "text": "The braking system used to slow down\na vehicle when the primary brake fails is called:",
+    "text": "The braking system used to slow down a vehicle when the primary brake fails is called:",
     "options": {
       "a": "Service brake (foot brake)",
       "b": "Parking brake (handbrake)",
@@ -196,7 +196,7 @@
   },
   {
     "id": 16,
-    "text": "A motor vehicle is required to have\nat least how many windscreen wipers:",
+    "text": "A motor vehicle is required to have at least how many windscreen wipers:",
     "options": {
       "a": "2",
       "b": "3",
@@ -209,7 +209,7 @@
   },
   {
     "id": 17,
-    "text": "High beam headlights must be switched off\nin the following situations:",
+    "text": "High beam headlights must be switched off in the following situations:",
     "options": {
       "a": "When the road is illuminated such that the driver can see 20 meters ahead",
       "b": "When a vehicle is about to cross paths with incoming traffic",
@@ -222,7 +222,7 @@
   },
   {
     "id": 18,
-    "text": "A vehicle cannot have more than two lights\nof the same type, except for the following lights:",
+    "text": "A vehicle cannot have more than two lights of the same type, except for the following lights:",
     "options": {
       "a": "Profile / outline marker lights",
       "b": "Direction indicator lights",
@@ -235,7 +235,7 @@
   },
   {
     "id": 19,
-    "text": "The width of a trailer towed by a bicycle\nor moped must not exceed the following dimensions:",
+    "text": "The width of a trailer towed by a bicycle or moped must not exceed the following dimensions:",
     "options": {
       "a": "25 cm",
       "b": "125 cm",
@@ -248,7 +248,7 @@
   },
   {
     "id": 20,
-    "text": "Vehicles operated as taxis waiting for\npassengers on a public road may be fitted\nwith a light indicating that the vehicle is\nunoccupied/available. That light must be fitted\nin the following manner:",
+    "text": "Vehicles operated as taxis waiting for passengers on a public road may be fitted with a light indicating that the vehicle is unoccupied/available. That light must be fitted in the following manner:",
     "options": {
       "a": "A green light placed at the front of the vehicle",
       "b": "A green light placed on the left side",
@@ -261,7 +261,7 @@
   },
   {
     "id": 21,
-    "text": "Buses designated for school transport may be\nfitted with two flashing amber/orange lights\nto indicate they are stopped and that other\ndrivers should exercise caution. These lights\nmust be positioned as follows:",
+    "text": "Buses designated for school transport may be fitted with two flashing amber/orange lights to indicate they are stopped and that other drivers should exercise caution. These lights must be positioned as follows:",
     "options": {
       "a": "Two lights placed at the rear",
       "b": "Two lights placed at the front",
@@ -274,7 +274,7 @@
   },
   {
     "id": 22,
-    "text": "The red brake (stop) light must be visible\nin clear weather at a minimum distance of:",
+    "text": "The red brake (stop) light must be visible in clear weather at a minimum distance of:",
     "options": {
       "a": "100 meters by day and 20 meters at night",
       "b": "150 meters by day and 50 meters at night",
@@ -287,7 +287,7 @@
   },
   {
     "id": 23,
-    "text": "When an unladen vehicle's speed can\nexceed 50 km/h on level ground, it must be\nequipped with a horn audible at a distance of:",
+    "text": "When an unladen vehicle's speed can exceed 50 km/h on level ground, it must be equipped with a horn audible at a distance of:",
     "options": {
       "a": "100 meters",
       "b": "200 meters",
@@ -300,7 +300,7 @@
   },
   {
     "id": 24,
-    "text": "It is prohibited to operate motor vehicles\nand their trailers if the wheels are fitted with\nsolid tires or crawler tracks with a thickness\nbelow 4 cm. However, this does not apply to\nthe following vehicles:",
+    "text": "It is prohibited to operate motor vehicles and their trailers if the wheels are fitted with solid tires or crawler tracks with a thickness below 4 cm. However, this does not apply to the following vehicles:",
     "options": {
       "a": "Military vehicles traveling at no more than 25 km/h",
       "b": "Agricultural vehicles",
@@ -313,7 +313,7 @@
   },
   {
     "id": 25,
-    "text": "A part of the public road bounded by two\nparallel broken white lines with insufficient\nwidth for regular cars to pass is designated as:",
+    "text": "A part of the public road bounded by two parallel broken white lines with insufficient width for regular cars to pass is designated as:",
     "options": {
       "a": "Bicycle and moped lane",
       "b": "Handcart path",
@@ -326,7 +326,7 @@
   },
   {
     "id": 26,
-    "text": "The width of a trailer must not exceed the\nwidth of the towing vehicle when towed by\nthe following vehicles:",
+    "text": "The width of a trailer must not exceed the width of the towing vehicle when towed by the following vehicles:",
     "options": {
       "a": "A bicycle",
       "b": "A moped",
@@ -339,7 +339,7 @@
   },
   {
     "id": 27,
-    "text": "When other seats are available, it is prohibited\nto carry children in the front seat of a car\nunless they have reached the age of:",
+    "text": "When other seats are available, it is prohibited to carry children in the front seat of a car unless they have reached the age of:",
     "options": {
       "a": "10 years",
       "b": "12 years",
@@ -352,7 +352,7 @@
   },
   {
     "id": 28,
-    "text": "The sign giving priority over incoming\noncoming traffic has the following colors:",
+    "text": "The sign giving priority over incoming oncoming traffic has the following colors:",
     "options": {
       "a": "White background",
       "b": "Red and black symbol",
@@ -365,7 +365,7 @@
   },
   {
     "id": 29,
-    "text": "When does the priority-to-the-right rule\napply at an intersection:",
+    "text": "When does the priority-to-the-right rule apply at an intersection:",
     "options": {
       "a": "When there is no priority sign present",
       "b": "When traffic light signals are not working",
@@ -378,7 +378,7 @@
   },
   {
     "id": 30,
-    "text": "Luminous traffic signals governing vehicular traffic\nare placed on the right side of the road. However,\nthey may also be placed on the left or overhead:",
+    "text": "Luminous traffic signals governing vehicular traffic are placed on the right side of the road. However, they may also be placed on the left or overhead:",
     "options": {
       "a": "According to the direction intended for the concerned road users",
       "b": "According to what the signs intend to show",
@@ -391,7 +391,7 @@
   },
   {
     "id": 31,
-    "text": "When a flashing yellow light is used at\nan intersection of roads of equal priority, where\nis it installed:",
+    "text": "When a flashing yellow light is used at an intersection of roads of equal priority, where is it installed:",
     "options": {
       "a": "On each approach",
       "b": "In the center of the intersection",
@@ -404,7 +404,7 @@
   },
   {
     "id": 32,
-    "text": "The edges of the public roadway or highway\nmay be marked by reflectorized markers. These\nmarkers must be arranged so road users see:",
+    "text": "The edges of the public roadway or highway may be marked by reflectorized markers. These markers must be arranged so road users see:",
     "options": {
       "a": "Only red reflectors on their left",
       "b": "Only orange/amber reflectors on their right",
@@ -417,7 +417,7 @@
   },
   {
     "id": 33,
-    "text": "The following vehicles must undergo\nan inspection once every 6 months:",
+    "text": "The following vehicles must undergo an inspection once every 6 months:",
     "options": {
       "a": "Public passenger transport vehicles",
       "b": "Vehicles intended for the transport of goods exceeding 3.5 tonnes",
@@ -430,7 +430,7 @@
   },
   {
     "id": 34,
-    "text": "When a road diversion is necessary, it is marked\nfrom its start and along its length by a sign\nwith the following background color:",
+    "text": "When a road diversion is necessary, it is marked from its start and along its length by a sign with the following background color:",
     "options": {
       "a": "Blue",
       "b": "White",
@@ -443,7 +443,7 @@
   },
   {
     "id": 35,
-    "text": "On roads, the following signs must be\ndisplayed uniformly:",
+    "text": "On roads, the following signs must be displayed uniformly:",
     "options": {
       "a": "Direction signs and mandatory signs",
       "b": "Warning signs and mandatory signs",
@@ -456,7 +456,7 @@
   },
   {
     "id": 36,
-    "text": "Which brake enables a vehicle to slow down\nand stop in a safe, quick, and effective manner,\nregardless of load condition and whether on a\ndownhill or uphill slope:",
+    "text": "Which brake enables a vehicle to slow down and stop in a safe, quick, and effective manner, regardless of load condition and whether on a downhill or uphill slope:",
     "options": {
       "a": "Service brake (foot brake)",
       "b": "Emergency / secondary brake",
@@ -469,7 +469,7 @@
   },
   {
     "id": 37,
-    "text": "Chains or wire tow cables and other emergency\ntowing devices used only in emergencies and solely\nto bring the vehicle to a repair facility at a\nspeed never exceeding 20 km/h, must be marked as follows:",
+    "text": "Chains or wire tow cables and other emergency towing devices used only in emergencies and solely to bring the vehicle to a repair facility at a speed never exceeding 20 km/h, must be marked as follows:",
     "options": {
       "a": "A red cloth across 50 cm of the road",
       "b": "An orange/amber light signal",
@@ -482,7 +482,7 @@
   },
   {
     "id": 38,
-    "text": "Except in cities, on other roads designated by\nthe minister responsible for transport, the maximum\nauthorized weight for vehicles with three or more\naxles excluding articulated semi-trailers is:",
+    "text": "Except in cities, on other roads designated by the minister responsible for transport, the maximum authorized weight for vehicles with three or more axles excluding articulated semi-trailers is:",
     "options": {
       "a": "10 tonnes",
       "b": "12 tonnes",
@@ -495,7 +495,7 @@
   },
   {
     "id": 39,
-    "text": "The width of cargo carried by three-wheeled\nand four-wheeled cycles (with or without motor)\nas well as trailers towed by them must not exceed\nthe following limits:",
+    "text": "The width of cargo carried by three-wheeled and four-wheeled cycles (with or without motor) as well as trailers towed by them must not exceed the following limits:",
     "options": {
       "a": "30 cm beyond the unladen width of the vehicle",
       "b": "An absolute maximum width of 2 meters and 50 centimeters",
@@ -508,7 +508,7 @@
   },
   {
     "id": 40,
-    "text": "Overtaking vehicles other than two-wheelers\nis prohibited in the following places:",
+    "text": "Overtaking vehicles other than two-wheelers is prohibited in the following places:",
     "options": {
       "a": "Near a bridge where the road is narrow",
       "b": "Near a pedestrian crossing",
@@ -521,7 +521,7 @@
   },
   {
     "id": 41,
-    "text": "Unless special regulations lower it, the\nmaximum speed for public transport vehicles is:",
+    "text": "Unless special regulations lower it, the maximum speed for public transport vehicles is:",
     "options": {
       "a": "60 km/h",
       "b": "40 km/h",
@@ -534,7 +534,7 @@
   },
   {
     "id": 42,
-    "text": "Unless special regulations lower it, the maximum\nspeed for rental vehicles or taxis with a maximum\nauthorized weight not exceeding 3,500 kg is:",
+    "text": "Unless special regulations lower it, the maximum speed for rental vehicles or taxis with a maximum authorized weight not exceeding 3,500 kg is:",
     "options": {
       "a": "60 km/h",
       "b": "40 km/h",
@@ -547,7 +547,7 @@
   },
   {
     "id": 43,
-    "text": "A vehicle is prohibited from parking (standing for a long time)\nin the following places:",
+    "text": "A vehicle is prohibited from parking (standing for a long time) in the following places:",
     "options": {
       "a": "In front of entrances and exits used by many people",
       "b": "On a roadway divided into lanes marked by solid lines",
@@ -560,7 +560,7 @@
   },
   {
     "id": 44,
-    "text": "From dusk to dawn or when weather conditions\n(such as fog or heavy rain) prevent visibility beyond\n200 m, any pedestrian group such as a procession or\na column of students led by a teacher moving on the\nroadway in more than single file must be signaled as follows:",
+    "text": "From dusk to dawn or when weather conditions (such as fog or heavy rain) prevent visibility beyond 200 m, any pedestrian group such as a procession or a column of students led by a teacher moving on the roadway in more than single file must be signaled as follows:",
     "options": {
       "a": "At the front, an amber/yellow light carried on the left",
       "b": "At the rear, a white light carried on the left by the person in the rear rank closest to the center line",
@@ -573,7 +573,7 @@
   },
   {
     "id": 45,
-    "text": "Pavements/sidewalks and raised sidewalks on the\nsides of the roadway are reserved for pedestrians\nunder the following conditions:",
+    "text": "Pavements/sidewalks and raised sidewalks on the sides of the roadway are reserved for pedestrians under the following conditions:",
     "options": {
       "a": "When there are special regulations indicated by signs",
       "b": "When they are not dispersed and led by a teacher",
@@ -586,7 +586,7 @@
   },
   {
     "id": 46,
-    "text": "Flashing headlight signals are permitted to alert\na driver ahead that you are about to overtake them\nin the following locations:",
+    "text": "Flashing headlight signals are permitted to alert a driver ahead that you are about to overtake them in the following locations:",
     "options": {
       "a": "In built-up areas only",
       "b": "Near draught/towing animals",
@@ -599,7 +599,7 @@
   },
   {
     "id": 47,
-    "text": "The maximum permissible weight cannot exceed\n1/2 of the towing vehicle's weight plus the driver's\nweight for the following trailers:",
+    "text": "The maximum permissible weight cannot exceed 1/2 of the towing vehicle's weight plus the driver's weight for the following trailers:",
     "options": {
       "a": "A trailer equipped with a service brake",
       "b": "A trailer without a service brake",
@@ -612,7 +612,7 @@
   },
   {
     "id": 48,
-    "text": "Vehicles with the following width must be\nequipped with clearance/width marker lights:",
+    "text": "Vehicles with the following width must be equipped with clearance/width marker lights:",
     "options": {
       "a": "2 meters and 10 cm",
       "b": "2 meters and 50 cm",
@@ -625,7 +625,7 @@
   },
   {
     "id": 49,
-    "text": "No light or reflector may be mounted such that\nthe lowest point of its illuminating surface is below\nthe following height from the ground when the vehicle is unladen:",
+    "text": "No light or reflector may be mounted such that the lowest point of its illuminating surface is below the following height from the ground when the vehicle is unladen:",
     "options": {
       "a": "30 cm",
       "b": "40 cm",
@@ -638,7 +638,7 @@
   },
   {
     "id": 50,
-    "text": "When a vehicle has two or more lights of the same\ntype, they must be of the same color and intensity\nand arranged symmetrically in relation to the vehicle's\nlongitudinal median axis. However, this does not apply to:",
+    "text": "When a vehicle has two or more lights of the same type, they must be of the same color and intensity and arranged symmetrically in relation to the vehicle's longitudinal median axis. However, this does not apply to:",
     "options": {
       "a": "Outline/profile marker lights",
       "b": "Clearance/width marker lights",
@@ -651,7 +651,7 @@
   },
   {
     "id": 51,
-    "text": "The highest point of the illuminating surface of\nfront and rear position lights must not exceed the\nfollowing height above ground when the vehicle is unladen:",
+    "text": "The highest point of the illuminating surface of front and rear position lights must not exceed the following height above ground when the vehicle is unladen:",
     "options": {
       "a": "1 m and 50 cm",
       "b": "1 m and 75 cm",
@@ -664,7 +664,7 @@
   },
   {
     "id": 52,
-    "text": "When is a vehicle permitted to travel on the\nroadway with its engine off or out of gear (in neutral):",
+    "text": "When is a vehicle permitted to travel on the roadway with its engine off or out of gear (in neutral):",
     "options": {
       "a": "When going downhill",
       "b": "When being towed by another vehicle",
@@ -677,7 +677,7 @@
   },
   {
     "id": 53,
-    "text": "A broad continuous white line may be marked on\nthe roadway to designate the following:",
+    "text": "A broad continuous white line may be marked on the roadway to designate the following:",
     "options": {
       "a": "The fictitious edge of the roadway",
       "b": "Short and long parking areas",
@@ -690,7 +690,7 @@
   },
   {
     "id": 54,
-    "text": "Every motor vehicle or trailer towed by it may have\na green light allowing the driver to signal that they\nhave noticed a vehicle intending to overtake them.\nThat light must be placed:",
+    "text": "Every motor vehicle or trailer towed by it may have a green light allowing the driver to signal that they have noticed a vehicle intending to overtake them. That light must be placed:",
     "options": {
       "a": "Near the front-left corner of the vehicle",
       "b": "At the rear near the right edge of the vehicle",
@@ -703,7 +703,7 @@
   },
   {
     "id": 55,
-    "text": "The following vehicles must be fitted with a\nspeedometer placed clearly in the driver's line of sight\nand maintained in good working condition:",
+    "text": "The following vehicles must be fitted with a speedometer placed clearly in the driver's line of sight and maintained in good working condition:",
     "options": {
       "a": "Vehicles with a minimum speed of 60 km/h",
       "b": "Vehicles capable of exceeding 40 km/h",
@@ -716,7 +716,7 @@
   },
   {
     "id": 56,
-    "text": "The width of loads carried by a motorcycle without\na sidecar, as well as a trailer towed by such vehicle,\nmust not exceed:",
+    "text": "The width of loads carried by a motorcycle without a sidecar, as well as a trailer towed by such vehicle, must not exceed:",
     "options": {
       "a": "1.25 m",
       "b": "30 cm",
@@ -729,7 +729,7 @@
   },
   {
     "id": 57,
-    "text": "The following vehicles must be equipped with a\nflashing blue light visible from all directions:",
+    "text": "The following vehicles must be equipped with a flashing blue light visible from all directions:",
     "options": {
       "a": "Vehicles with a width exceeding 2 m and 10 cm",
       "b": "National police vehicles",
@@ -742,7 +742,7 @@
   },
   {
     "id": 58,
-    "text": "Agricultural vehicles and special machinery used by\npublic contractors, when traveling on public roads at\nnight or when visibility is under 200 m, may be indicated\nat the rear by 2 red lights provided they do not exceed:",
+    "text": "Agricultural vehicles and special machinery used by public contractors, when traveling on public roads at night or when visibility is under 200 m, may be indicated at the rear by 2 red lights provided they do not exceed:",
     "options": {
       "a": "A maximum speed of 20 km/h",
       "b": "A total length including load not exceeding 6 m",
@@ -755,7 +755,7 @@
   },
   {
     "id": 59,
-    "text": "When a trailer is attached to a cycle, moped, or\nmotorcycle without a sidecar (other than an unattended\ncycle or moped), and its bulk or load obscures the towing\nvehicle's light when visibility is under 200 m, it must\nbe indicated by:",
+    "text": "When a trailer is attached to a cycle, moped, or motorcycle without a sidecar (other than an unattended cycle or moped), and its bulk or load obscures the towing vehicle's light when visibility is under 200 m, it must be indicated by:",
     "options": {
       "a": "A white, yellow, or orange light at the rear of the trailer",
       "b": "A green, yellow, or orange light at the rear of the trailer",
@@ -768,7 +768,7 @@
   },
   {
     "id": 60,
-    "text": "For a vehicle or combination of vehicles, the\noverhang beyond the wheels must not exceed:",
+    "text": "For a vehicle or combination of vehicles, the overhang beyond the wheels must not exceed:",
     "options": {
       "a": "3 m and 50 cm at the rear",
       "b": "1 m and 70 cm at the front",
@@ -781,7 +781,7 @@
   },
   {
     "id": 61,
-    "text": "When vehicle lights must be illuminated and the load\nprojects more than 1 meter beyond the rear of the vehicle,\nthe rearmost part of the load must be indicated by:",
+    "text": "When vehicle lights must be illuminated and the load projects more than 1 meter beyond the rear of the vehicle, the rearmost part of the load must be indicated by:",
     "options": {
       "a": "A red light or red reflector during the day",
       "b": "A red flag at least 50 cm on a side at night",
@@ -794,7 +794,7 @@
   },
   {
     "id": 62,
-    "text": "When the load consists of cereals, coffee, unseeded cotton,\nstraw, grass, branches, or loose fodder (other than packaged bales),\nits total width may reach up to:",
+    "text": "When the load consists of cereals, coffee, unseeded cotton, straw, grass, branches, or loose fodder (other than packaged bales), its total width may reach up to:",
     "options": {
       "a": "2.50 m",
       "b": "2.75 m",
@@ -807,7 +807,7 @@
   },
   {
     "id": 63,
-    "text": "Except in cities, on other roads designated by the\nminister responsible for transport, the maximum authorized\nweight for coupled vehicles with three axles is:",
+    "text": "Except in cities, on other roads designated by the minister responsible for transport, the maximum authorized weight for coupled vehicles with three axles is:",
     "options": {
       "a": "20 tonnes",
       "b": "16 tonnes",
@@ -820,7 +820,7 @@
   },
   {
     "id": 64,
-    "text": "Every motor vehicle or trailer towed by it may have a\nlight allowing the driver to signal that they have seen\nthe overtaking signal from behind. That light has the color:",
+    "text": "Every motor vehicle or trailer towed by it may have a light allowing the driver to signal that they have seen the overtaking signal from behind. That light has the color:",
     "options": {
       "a": "Yellow",
       "b": "Green",
@@ -833,7 +833,7 @@
   },
   {
     "id": 65,
-    "text": "A vehicle or vehicle combination having two consecutive\naxles along its width (axles rotating on their pivot),\nmust not exceed the following length:",
+    "text": "A vehicle or vehicle combination having two consecutive axles along its width (axles rotating on their pivot), must not exceed the following length:",
     "options": {
       "a": "11 m",
       "b": "10 m",
@@ -846,7 +846,7 @@
   },
   {
     "id": 66,
-    "text": "Which type of brake keeps a vehicle stationary\nregardless of load on a gradient (up or down) of 16%,\nwith its braking components mechanically locked even\nwhen the driver is absent:",
+    "text": "Which type of brake keeps a vehicle stationary regardless of load on a gradient (up or down) of 16%, with its braking components mechanically locked even when the driver is absent:",
     "options": {
       "a": "Parking brake",
       "b": "Service brake",
@@ -859,7 +859,7 @@
   },
   {
     "id": 67,
-    "text": "Reflectors positioned on the sides of a vehicle\nmust have the following color:",
+    "text": "Reflectors positioned on the sides of a vehicle must have the following color:",
     "options": {
       "a": "White",
       "b": "Yellow / Amber",
@@ -872,7 +872,7 @@
   },
   {
     "id": 68,
-    "text": "Trailers with a maximum width of 80 cm may be\nfitted with only one reflector when towed by:",
+    "text": "Trailers with a maximum width of 80 cm may be fitted with only one reflector when towed by:",
     "options": {
       "a": "A moped",
       "b": "A motorcycle without a sidecar",
@@ -885,7 +885,7 @@
   },
   {
     "id": 69,
-    "text": "White or yellow high beam headlights must illuminate\nat night in clear weather at least 100 m ahead of the vehicle.\nHowever, for vehicles with an engine not exceeding 125 cc,\nthat distance must be at least:",
+    "text": "White or yellow high beam headlights must illuminate at night in clear weather at least 100 m ahead of the vehicle. However, for vehicles with an engine not exceeding 125 cc, that distance must be at least:",
     "options": {
       "a": "200 m",
       "b": "100 m",
@@ -898,7 +898,7 @@
   },
   {
     "id": 70,
-    "text": "When passing an obstacle that pedestrians must bypass on the\nroadway, drivers must leave at least 1 meter between themselves\nand the obstacle. If this cannot be respected and a pedestrian\nis nearby, the driver must bypass it at a speed not exceeding:",
+    "text": "When passing an obstacle that pedestrians must bypass on the roadway, drivers must leave at least 1 meter between themselves and the obstacle. If this cannot be respected and a pedestrian is nearby, the driver must bypass it at a speed not exceeding:",
     "options": {
       "a": "10 km/h",
       "b": "20 km/h",
@@ -911,7 +911,7 @@
   },
   {
     "id": 71,
-    "text": "Stopping briefly and parking are strictly prohibited\nespecially in the following places:",
+    "text": "Stopping briefly and parking are strictly prohibited especially in the following places:",
     "options": {
       "a": "Everywhere on one-way streets",
       "b": "On the side opposite to another stopped or parked vehicle",
@@ -924,7 +924,7 @@
   },
   {
     "id": 72,
-    "text": "Front and rear position lights on vehicles not exceeding\n6 m in length and 2 m in width (including load, with no trailer)\nmay be replaced by the following lights when parked in built-up\nareas along the edge of the roadway:",
+    "text": "Front and rear position lights on vehicles not exceeding 6 m in length and 2 m in width (including load, with no trailer) may be replaced by the following lights when parked in built-up areas along the edge of the roadway:",
     "options": {
       "a": "Low beam headlights",
       "b": "Clearance / width marker lights",
@@ -937,7 +937,7 @@
   },
   {
     "id": 73,
-    "text": "From dusk to dawn or in fog/rain when visibility drops\nbelow 200 m, military formations in column or groups of\npedestrians/students led by an instructor marching on the roadway\nin more than single file must be signaled as follows:",
+    "text": "From dusk to dawn or in fog/rain when visibility drops below 200 m, military formations in column or groups of pedestrians/students led by an instructor marching on the roadway in more than single file must be signaled as follows:",
     "options": {
       "a": "At the front, a white light carried on the left side by the person in the front rank closest to the median dividing line",
       "b": "At the rear, a yellow light carried on the left side by the person in the rear rank closest to the median dividing line",
@@ -950,7 +950,7 @@
   },
   {
     "id": 74,
-    "text": "The load carried by bicycles, mopeds, motorcycles, and\nthree- or four-wheelers (with or without motor) must not\noverhang the rear by more than:",
+    "text": "The load carried by bicycles, mopeds, motorcycles, and three- or four-wheelers (with or without motor) must not overhang the rear by more than:",
     "options": {
       "a": "20 cm",
       "b": "30 cm",
@@ -976,7 +976,7 @@
   },
   {
     "id": 76,
-    "text": "No lamp or reflector may be mounted so that its lowest\nilluminating point is less than 40 cm above the ground when\nthe vehicle is unladen, except for:",
+    "text": "No lamp or reflector may be mounted so that its lowest illuminating point is less than 40 cm above the ground when the vehicle is unladen, except for:",
     "options": {
       "a": "Fog lights",
       "b": "Reversing lights",
@@ -989,7 +989,7 @@
   },
   {
     "id": 77,
-    "text": "When illuminated by high beam headlights at night in clear\nweather, retro-reflectors must be visible to a driver at a distance of:",
+    "text": "When illuminated by high beam headlights at night in clear weather, retro-reflectors must be visible to a driver at a distance of:",
     "options": {
       "a": "100 meters",
       "b": "150 meters",
@@ -1002,7 +1002,7 @@
   },
   {
     "id": 78,
-    "text": "Motor vehicles (excluding mopeds and unladen vehicles whose\nspeed cannot exceed 50 km/h on level ground) must have an audible\nwarning device (horn) audible at a distance of:",
+    "text": "Motor vehicles (excluding mopeds and unladen vehicles whose speed cannot exceed 50 km/h on level ground) must have an audible warning device (horn) audible at a distance of:",
     "options": {
       "a": "200 meters",
       "b": "150 meters",
@@ -1015,7 +1015,7 @@
   },
   {
     "id": 79,
-    "text": "Outside built-up areas, danger warning signs and priority\nsigns must be placed at the following distance from the danger spot:",
+    "text": "Outside built-up areas, danger warning signs and priority signs must be placed at the following distance from the danger spot:",
     "options": {
       "a": "150 to 200 meters",
       "b": "100 to 150 meters",
@@ -1028,7 +1028,7 @@
   },
   {
     "id": 80,
-    "text": "The edges of the public roadway may be indicated by\nreflectors. These devices must be positioned so that road users see:",
+    "text": "The edges of the public roadway may be indicated by reflectors. These devices must be positioned so that road users see:",
     "options": {
       "a": "On their right, red or orange/amber reflectors",
       "b": "On their left, white reflectors",
@@ -1041,7 +1041,7 @@
   },
   {
     "id": 81,
-    "text": "Outside built-up areas, any driver of a vehicle or combination\nwith a permissible weight exceeding 3,500 kg or overall length\nexceeding 10 m must leave enough space ahead for overtaking vehicles\nto pull in safely, except in the following cases:",
+    "text": "Outside built-up areas, any driver of a vehicle or combination with a permissible weight exceeding 3,500 kg or overall length exceeding 10 m must leave enough space ahead for overtaking vehicles to pull in safely, except in the following cases:",
     "options": {
       "a": "During heavy traffic and on road sections where overtaking is prohibited",
       "b": "When traffic is dense",
@@ -1054,7 +1054,7 @@
   },
   {
     "id": 82,
-    "text": "Pneumatic tires of motor vehicles, mopeds, and their trailers\nmust have tread grooves with a minimum depth across the entire tread\nof not less than 1 mm, without exposed cords or severe sidewall damage.\nHowever, this rule does not apply to:",
+    "text": "Pneumatic tires of motor vehicles, mopeds, and their trailers must have tread grooves with a minimum depth across the entire tread of not less than 1 mm, without exposed cords or severe sidewall damage. However, this rule does not apply to:",
     "options": {
       "a": "1 m",
       "b": "2 m",
@@ -1067,7 +1067,7 @@
   },
   {
     "id": 83,
-    "text": "The sign indicating a bus stop for large passenger transport\nvehicles has a background color of:",
+    "text": "The sign indicating a bus stop for large passenger transport vehicles has a background color of:",
     "options": {
       "a": "Blue",
       "b": "White",
@@ -1080,7 +1080,7 @@
   },
   {
     "id": 84,
-    "text": "The sign indicating a dead-end street (no through road) features\na symbol with the following colors:",
+    "text": "The sign indicating a dead-end street (no through road) features a symbol with the following colors:",
     "options": {
       "a": "Black and red",
       "b": "Black and white",
@@ -1093,7 +1093,7 @@
   },
   {
     "id": 85,
-    "text": "Every motor vehicle designed for passenger transport with\nfewer than 6 seats including the driver must have safety belts for:",
+    "text": "Every motor vehicle designed for passenger transport with fewer than 6 seats including the driver must have safety belts for:",
     "options": {
       "a": "The driver",
       "b": "The front seat passenger",
@@ -1106,7 +1106,7 @@
   },
   {
     "id": 86,
-    "text": "Except for military vehicles, any motor vehicle equipped\nwith armor plating or offensive/defensive capabilities cannot operate\non public roads without special authorization issued by:",
+    "text": "Except for military vehicles, any motor vehicle equipped with armor plating or offensive/defensive capabilities cannot operate on public roads without special authorization issued by:",
     "options": {
       "a": "National Police",
       "b": "The Minister responsible for Transport",
@@ -1119,7 +1119,7 @@
   },
   {
     "id": 87,
-    "text": "When a herd consists of more than 4 large livestock or\nmore than 6 small livestock on a public road when visibility is\nunder 200 m, it must be indicated as follows:",
+    "text": "When a herd consists of more than 4 large livestock or more than 6 small livestock on a public road when visibility is under 200 m, it must be indicated as follows:",
     "options": {
       "a": "A white or orange light at the front of the herd",
       "b": "A red or yellow light carried at the rear of the herd",
@@ -1132,7 +1132,7 @@
   },
   {
     "id": 88,
-    "text": "Vehicles moving in convoy cannot exceed a total line length\nof 500 m. If longer, they must be broken into subgroups not exceeding\n50 m with at least 50 m between them. However, this does not apply to:",
+    "text": "Vehicles moving in convoy cannot exceed a total line length of 500 m. If longer, they must be broken into subgroups not exceeding 50 m with at least 50 m between them. However, this does not apply to:",
     "options": {
       "a": "Police convoy vehicles",
       "b": "Military vehicle convoys in built-up areas",
@@ -1145,7 +1145,7 @@
   },
   {
     "id": 89,
-    "text": "When an animal-drawn vehicle tows another vehicle and the\nlength of the towed convoy exceeds 18 m excluding the first vehicle,\nthe following is required:",
+    "text": "When an animal-drawn vehicle tows another vehicle and the length of the towed convoy exceeds 18 m excluding the first vehicle, the following is required:",
     "options": {
       "a": "An attendant for the second vehicle",
       "b": "Two attendants",
@@ -1158,7 +1158,7 @@
   },
   {
     "id": 90,
-    "text": "The following vehicles are not required to display signaling\ndevices when crossing or traveling along the side of a road:",
+    "text": "The following vehicles are not required to display signaling devices when crossing or traveling along the side of a road:",
     "options": {
       "a": "Children's pushchairs / vehicles",
       "b": "Invalid carriages / wheelchairs",
@@ -1171,7 +1171,7 @@
   },
   {
     "id": 91,
-    "text": "An additional panel indicating a campsite or equestrian site\nfeatures the following colors:",
+    "text": "An additional panel indicating a campsite or equestrian site features the following colors:",
     "options": {
       "a": "Blue, white, and black",
       "b": "Black, white, and yellow",
@@ -1184,7 +1184,7 @@
   },
   {
     "id": 92,
-    "text": "The sign indicating the start of a multi-lane expressway/motorway\nregulations is characterized by symbols of the following colors:",
+    "text": "The sign indicating the start of a multi-lane expressway/motorway regulations is characterized by symbols of the following colors:",
     "options": {
       "a": "White and black",
       "b": "White and red",
@@ -1197,7 +1197,7 @@
   },
   {
     "id": 93,
-    "text": "When road works significantly or slightly disrupt traffic\non a public highway, the work zone is marked by:",
+    "text": "When road works significantly or slightly disrupt traffic on a public highway, the work zone is marked by:",
     "options": {
       "a": "A white square sign measuring 0.30 m on each side",
       "b": "A barrier placed on the far right edge",
@@ -1210,7 +1210,7 @@
   },
   {
     "id": 94,
-    "text": "When road works require drivers to leave their normal lane to\ncontinue their journey, the mandatory path is marked by a sign placed\nat the end of the works on the traffic side with:",
+    "text": "When road works require drivers to leave their normal lane to continue their journey, the mandatory path is marked by a sign placed at the end of the works on the traffic side with:",
     "options": {
       "a": "Blue background and white symbol",
       "b": "Red border, white background, and black symbol",
@@ -1223,7 +1223,7 @@
   },
   {
     "id": 95,
-    "text": "The sign indicating special traffic regulations in a port or\nairport area is designed as follows:",
+    "text": "The sign indicating special traffic regulations in a port or airport area is designed as follows:",
     "options": {
       "a": "Triangular shape, white background, black symbol",
       "b": "Rectangular shape, blue background, white symbol",
@@ -1236,7 +1236,7 @@
   },
   {
     "id": 96,
-    "text": "At night in clear weather, the registration number plate light\nmust make the numbers readable from a minimum distance of:",
+    "text": "At night in clear weather, the registration number plate light must make the numbers readable from a minimum distance of:",
     "options": {
       "a": "150 m",
       "b": "50 m",
@@ -1249,7 +1249,7 @@
   },
   {
     "id": 97,
-    "text": "Signs indicating temporary danger and guiding traffic during\nan accident or road works feature the following colors:",
+    "text": "Signs indicating temporary danger and guiding traffic during an accident or road works feature the following colors:",
     "options": {
       "a": "White and black",
       "b": "White and yellow",
@@ -1275,7 +1275,7 @@
   },
   {
     "id": 99,
-    "text": "From dusk to dawn or when visibility is under 200 m on public roads,\nif a trailer towed by a moped or solo motorcycle hides the towing vehicle's\nlight, the trailer must be indicated at the rear by:",
+    "text": "From dusk to dawn or when visibility is under 200 m on public roads, if a trailer towed by a moped or solo motorcycle hides the towing vehicle's light, the trailer must be indicated at the rear by:",
     "options": {
       "a": "A white light",
       "b": "A yellow light",
@@ -1301,7 +1301,7 @@
   },
   {
     "id": 101,
-    "text": "When a handcart or its cargo obstructs the driver's forward view,\nthe person operating it must:",
+    "text": "When a handcart or its cargo obstructs the driver's forward view, the person operating it must:",
     "options": {
       "a": "Find an escort/attendant",
       "b": "Pull (draw) the cart instead of pushing it",
@@ -1314,7 +1314,7 @@
   },
   {
     "id": 102,
-    "text": "Unless special local regulations or road markings dictate otherwise,\nevery stopped or parked vehicle or animal must be positioned:",
+    "text": "Unless special local regulations or road markings dictate otherwise, every stopped or parked vehicle or animal must be positioned:",
     "options": {
       "a": "On the right side according to the travel direction, except on one-way streets",
       "b": "As close as possible to the pedestrian sidewalk/curb, with wheel distance not exceeding 50 cm",
@@ -1327,7 +1327,7 @@
   },
   {
     "id": 103,
-    "text": "When a vehicle is stopped at night such that approaching drivers\ncannot readily perceive the obstruction, an advance warning device must\nbe placed at a visible distance, except for:",
+    "text": "When a vehicle is stopped at night such that approaching drivers cannot readily perceive the obstruction, an advance warning device must be placed at a visible distance, except for:",
     "options": {
       "a": "Mopeds",
       "b": "Solo motorcycles without a sidecar",
@@ -1340,7 +1340,7 @@
   },
   {
     "id": 104,
-    "text": "Scattered pedestrians or unorganized groups not led by an instructor\nmust use sidewalks and raised verges. The central median strip separating\ntwo roadways may only be used by:",
+    "text": "Scattered pedestrians or unorganized groups not led by an instructor must use sidewalks and raised verges. The central median strip separating two roadways may only be used by:",
     "options": {
       "a": "Pedestrians wishing to pause briefly while crossing the street",
       "b": "Large pedestrian groups",
@@ -1353,7 +1353,7 @@
   },
   {
     "id": 105,
-    "text": "Vehicles traveling in an convoy cannot exceed a total line length\nof 500 m. If longer, the convoy may be divided into groups whose line\nlength does not exceed:",
+    "text": "Vehicles traveling in an convoy cannot exceed a total line length of 500 m. If longer, the convoy may be divided into groups whose line length does not exceed:",
     "options": {
       "a": "50 m",
       "b": "100 m",
@@ -1366,7 +1366,7 @@
   },
   {
     "id": 106,
-    "text": "Signs indicating a level railway crossing must always be illuminated\nor reflectorized to be visible in clear weather from at least:",
+    "text": "Signs indicating a level railway crossing must always be illuminated or reflectorized to be visible in clear weather from at least:",
     "options": {
       "a": "200 m",
       "b": "250 m",
@@ -1379,7 +1379,7 @@
   },
   {
     "id": 107,
-    "text": "Bollards located at the ends of pedestrian refuges in the roadway,\nas well as channelizing islands designed to ease traffic flow, are painted with:",
+    "text": "Bollards located at the ends of pedestrian refuges in the roadway, as well as channelizing islands designed to ease traffic flow, are painted with:",
     "options": {
       "a": "Reflective yellow paint",
       "b": "Reflective white paint",
@@ -1392,7 +1392,7 @@
   },
   {
     "id": 108,
-    "text": "To extricate a vehicle stuck in deep mud or severe slippery conditions,\nthe following method may be used:",
+    "text": "To extricate a vehicle stuck in deep mud or severe slippery conditions, the following method may be used:",
     "options": {
       "a": "Tires may be fitted with metal studs",
       "b": "Tires may be fitted with anti-skid chains",
@@ -1405,7 +1405,7 @@
   },
   {
     "id": 109,
-    "text": "When a load consists of cereals, coffee, charcoal, or unbaled animal fodder,\nits width can reach up to 2.75 m; but if transported within 25 km of loading\noutside built-up areas, its width may reach:",
+    "text": "When a load consists of cereals, coffee, charcoal, or unbaled animal fodder, its width can reach up to 2.75 m; but if transported within 25 km of loading outside built-up areas, its width may reach:",
     "options": {
       "a": "4 m",
       "b": "3 m and 50 cm",
@@ -1418,7 +1418,7 @@
   },
   {
     "id": 110,
-    "text": "In towns and on national roads designated by the minister responsible\nfor transport, the maximum load capacity for any truck cannot exceed:",
+    "text": "In towns and on national roads designated by the minister responsible for transport, the maximum load capacity for any truck cannot exceed:",
     "options": {
       "a": "10 tonnes",
       "b": "16 tonnes",
@@ -1431,7 +1431,7 @@
   },
   {
     "id": 111,
-    "text": "When local topography causes the distance between a warning sign and\na hazard to be significantly less than 150 m, this distance is indicated on\nan additional panel shaped as:",
+    "text": "When local topography causes the distance between a warning sign and a hazard to be significantly less than 150 m, this distance is indicated on an additional panel shaped as:",
     "options": {
       "a": "A square with a white background",
       "b": "A rectangle with a white background",
@@ -1444,7 +1444,7 @@
   },
   {
     "id": 112,
-    "text": "At night in clear weather, passing (low beam) headlights of white\nor yellow color must illuminate the road ahead for at least:",
+    "text": "At night in clear weather, passing (low beam) headlights of white or yellow color must illuminate the road ahead for at least:",
     "options": {
       "a": "100 m",
       "b": "50 m",
@@ -1457,7 +1457,7 @@
   },
   {
     "id": 113,
-    "text": "Any change that modifies the details of the vehicle owner or vehicle\nidentity must be notified to the revenue/tax authority either verbally or by\nregistered mail within what timeframe:",
+    "text": "Any change that modifies the details of the vehicle owner or vehicle identity must be notified to the revenue/tax authority either verbally or by registered mail within what timeframe:",
     "options": {
       "a": "Within 2 months",
       "b": "Within one month",
@@ -1470,7 +1470,7 @@
   },
   {
     "id": 114,
-    "text": "To mark a particularly dangerous place, a flashing yellow light is used,\nsignifying permission to proceed with increased caution. What effect does\nthis light have on standard priority rules:",
+    "text": "To mark a particularly dangerous place, a flashing yellow light is used, signifying permission to proceed with increased caution. What effect does this light have on standard priority rules:",
     "options": {
       "a": "It changes nothing regarding right-of-way rules",
       "b": "Those facing it gain priority to pass first",
@@ -1483,7 +1483,7 @@
   },
   {
     "id": 115,
-    "text": "Trailers with a maximum width of 80 cm may have only one\nreflector when towed by the following vehicles:",
+    "text": "Trailers with a maximum width of 80 cm may have only one reflector when towed by the following vehicles:",
     "options": {
       "a": "A moped",
       "b": "A motorcycle with a sidecar",
@@ -1496,7 +1496,7 @@
   },
   {
     "id": 116,
-    "text": "White or yellow high beams must illuminate ahead at night in clear weather\nfor at least what distance on vehicles with an engine displacement not exceeding 125 cc:",
+    "text": "White or yellow high beams must illuminate ahead at night in clear weather for at least what distance on vehicles with an engine displacement not exceeding 125 cc:",
     "options": {
       "a": "100 m",
       "b": "75 m",
@@ -1509,7 +1509,7 @@
   },
   {
     "id": 117,
-    "text": "From dusk to dawn or when visibility drops below 200 m, vehicles or loads\nexceeding 2.50 m in width traveling on public roads must be signaled by:",
+    "text": "From dusk to dawn or when visibility drops below 200 m, vehicles or loads exceeding 2.50 m in width traveling on public roads must be signaled by:",
     "options": {
       "a": "Two red lights at the rear",
       "b": "When necessary, at the outermost edges of the load/vehicle, an amber or yellow clearance marker light",
@@ -1522,7 +1522,7 @@
   },
   {
     "id": 118,
-    "text": "The part of the roadway located beyond the broad continuous white line\nmarking the outer edge of the roadway is reserved for:",
+    "text": "The part of the roadway located beyond the broad continuous white line marking the outer edge of the roadway is reserved for:",
     "options": {
       "a": "Short stops only",
       "b": "Short stops and parking, including on expressways and motorways",
@@ -1535,7 +1535,7 @@
   },
   {
     "id": 119,
-    "text": "Chains and loose metal fittings (excluding direction indicators) must be fastened\nso they do not swing beyond the vehicle's clearance profile or drag on the ground.\nHowever, this is not prohibited for:",
+    "text": "Chains and loose metal fittings (excluding direction indicators) must be fastened so they do not swing beyond the vehicle's clearance profile or drag on the ground. However, this is not prohibited for:",
     "options": {
       "a": "Agricultural machinery",
       "b": "Vehicles carrying non-flammable goods",
@@ -1548,7 +1548,7 @@
   },
   {
     "id": 120,
-    "text": "On a vehicle or coupled vehicle combination, the body overhang beyond the\naxles must not exceed:",
+    "text": "On a vehicle or coupled vehicle combination, the body overhang beyond the axles must not exceed:",
     "options": {
       "a": "Rear: 3 m",
       "b": "Front: 2.70 m",
@@ -1561,7 +1561,7 @@
   },
   {
     "id": 121,
-    "text": "Except with special authorization, operating a vehicle or trailer on a\npublic road whose laden weight exceeds the maximum registered permissible weight\nis prohibited, except for:",
+    "text": "Except with special authorization, operating a vehicle or trailer on a public road whose laden weight exceeds the maximum registered permissible weight is prohibited, except for:",
     "options": {
       "a": "Police vehicles",
       "b": "Agricultural vehicles",
@@ -1574,7 +1574,7 @@
   },
   {
     "id": 122,
-    "text": "Special authorization is required to operate a road train consisting of more than\nthree coupled vehicles (except agricultural tractors traveling under 25 km, fairground\ntrains, etc.). The total overall length of such a vehicle train cannot exceed:",
+    "text": "Special authorization is required to operate a road train consisting of more than three coupled vehicles (except agricultural tractors traveling under 25 km, fairground trains, etc.). The total overall length of such a vehicle train cannot exceed:",
     "options": {
       "a": "50 m",
       "b": "35 m",
@@ -1613,7 +1613,7 @@
   },
   {
     "id": 125,
-    "text": "The supplementary panel indicating a vehicle repair / breakdown service station\nis characterized by the colors:",
+    "text": "The supplementary panel indicating a vehicle repair / breakdown service station is characterized by the colors:",
     "options": {
       "a": "Blue, white, red",
       "b": "White, black, blue",
@@ -1626,7 +1626,7 @@
   },
   {
     "id": 126,
-    "text": "The sign indicating the length of a hazardous section or the distance over\nwhich a regulation applies features the following background and symbols:",
+    "text": "The sign indicating the length of a hazardous section or the distance over which a regulation applies features the following background and symbols:",
     "options": {
       "a": "White background, blue symbol",
       "b": "Blue background, white symbol",
@@ -1639,7 +1639,7 @@
   },
   {
     "id": 127,
-    "text": "A broken yellow line marked along the actual edge of the roadway, sidewalk curb,\nor raised shoulder indicates:",
+    "text": "A broken yellow line marked along the actual edge of the roadway, sidewalk curb, or raised shoulder indicates:",
     "options": {
       "a": "Brief stopping is prohibited along the length of that line",
       "b": "Both stopping and parking are prohibited along that line",
@@ -1652,7 +1652,7 @@
   },
   {
     "id": 128,
-    "text": "For a vehicle or combination of vehicles, the overhang beyond the wheels\ncannot exceed:",
+    "text": "For a vehicle or combination of vehicles, the overhang beyond the wheels cannot exceed:",
     "options": {
       "a": "Rear: 3.40 m",
       "b": "Front: 2.50 m",
@@ -1665,7 +1665,7 @@
   },
   {
     "id": 129,
-    "text": "In towns and on national roads designated by the minister responsible for\ntransport, the maximum permissible weight on any tri-axle group fitted with 4 wheels each is:",
+    "text": "In towns and on national roads designated by the minister responsible for transport, the maximum permissible weight on any tri-axle group fitted with 4 wheels each is:",
     "options": {
       "a": "24 tonnes",
       "b": "10 tonnes",
@@ -1678,7 +1678,7 @@
   },
   {
     "id": 130,
-    "text": "When the distance between the front of a trailer and the rear of the towing\nvehicle exceeds 3 m, the coupling device must be signaled as follows when vehicle lights are on:",
+    "text": "When the distance between the front of a trailer and the rear of the towing vehicle exceeds 3 m, the coupling device must be signaled as follows when vehicle lights are on:",
     "options": {
       "a": "A red flag at least 50 cm on each side",
       "b": "An orange/amber light visible from the side when the coupling is illuminated",
@@ -1717,7 +1717,7 @@
   },
   {
     "id": 133,
-    "text": "Any change requiring modification of the logbook/registration certificate\nmust be declared to the tax authorities verbally or by registered mail within:",
+    "text": "Any change requiring modification of the logbook/registration certificate must be declared to the tax authorities verbally or by registered mail within:",
     "options": {
       "a": "5 days",
       "b": "8 days",
@@ -1743,7 +1743,7 @@
   },
   {
     "id": 135,
-    "text": "When the width of the roadway is insufficient for two vehicles to pass safely,\ndrivers are required to:",
+    "text": "When the width of the roadway is insufficient for two vehicles to pass safely, drivers are required to:",
     "options": {
       "a": "Drive on the pedestrian sidewalks",
       "b": "Stop immediately where they are",
@@ -1756,7 +1756,7 @@
   },
   {
     "id": 136,
-    "text": "When the road width prevents easy overtaking, a driver may drive on the\npedestrian walkway only after verifying:",
+    "text": "When the road width prevents easy overtaking, a driver may drive on the pedestrian walkway only after verifying:",
     "options": {
       "a": "The speed of pedestrians",
       "b": "The width of the roadway",
@@ -1769,7 +1769,7 @@
   },
   {
     "id": 137,
-    "text": "A sign indicating the maximum speed limit for a vehicle is affixed to\nvehicles having a maximum weight of:",
+    "text": "A sign indicating the maximum speed limit for a vehicle is affixed to vehicles having a maximum weight of:",
     "options": {
       "a": "Exceeding 1 tonne",
       "b": "Exceeding 2 tonnes",
@@ -1782,7 +1782,7 @@
   },
   {
     "id": 138,
-    "text": "Unless special speed regulations apply, the general speed limit for\nmotorcycles is:",
+    "text": "Unless special speed regulations apply, the general speed limit for motorcycles is:",
     "options": {
       "a": "25 km/h",
       "b": "70 km/h",
@@ -1912,7 +1912,7 @@
   },
   {
     "id": 148,
-    "text": "Pneumatic tires of motor vehicles, mopeds, and their trailers must have tread grooves\nat least 1 mm deep without exposed cords or severe sidewall cuts. This does not apply to:",
+    "text": "Pneumatic tires of motor vehicles, mopeds, and their trailers must have tread grooves at least 1 mm deep without exposed cords or severe sidewall cuts. This does not apply to:",
     "options": {
       "a": "Unladen vehicles whose speed cannot exceed 25 km/h on level ground",
       "b": "Police vehicles traveling under 25 km from base",
@@ -1925,7 +1925,7 @@
   },
   {
     "id": 149,
-    "text": "Operating motor vehicles and trailers with solid tires or crawler tracks under 4 cm thick\nis prohibited, except for:",
+    "text": "Operating motor vehicles and trailers with solid tires or crawler tracks under 4 cm thick is prohibited, except for:",
     "options": {
       "a": "Military vehicles",
       "b": "Agricultural vehicles operated within 25 km from their base",
@@ -1951,7 +1951,7 @@
   },
   {
     "id": 151,
-    "text": "When other seats are available, carrying children in the front seat is prohibited\nif they are under:",
+    "text": "When other seats are available, carrying children in the front seat is prohibited if they are under:",
     "options": {
       "a": "10 years old",
       "b": "12 years old",
@@ -1964,7 +1964,7 @@
   },
   {
     "id": 152,
-    "text": "When a vehicle is scrapped or permanently exported, its license plates must be removed\nand returned to the revenue authority within:",
+    "text": "When a vehicle is scrapped or permanently exported, its license plates must be removed and returned to the revenue authority within:",
     "options": {
       "a": "Two weeks",
       "b": "Two months",
@@ -1990,7 +1990,7 @@
   },
   {
     "id": 154,
-    "text": "When a detour/diversion is required, it is indicated along its length by a sign\nwith the background color:",
+    "text": "When a detour/diversion is required, it is indicated along its length by a sign with the background color:",
     "options": {
       "a": "Black",
       "b": "White",
@@ -2003,7 +2003,7 @@
   },
   {
     "id": 155,
-    "text": "On designated roads, warning and indication signs must be lighted or reflectorized from\ndusk to dawn to remain visible in clear weather from at least:",
+    "text": "On designated roads, warning and indication signs must be lighted or reflectorized from dusk to dawn to remain visible in clear weather from at least:",
     "options": {
       "a": "50 m",
       "b": "120 m",
@@ -2016,7 +2016,7 @@
   },
   {
     "id": 156,
-    "text": "Emergency tow chains or cables used to haul a disabled vehicle to a garage at no more\nthan 20 km/h must be signaled with:",
+    "text": "Emergency tow chains or cables used to haul a disabled vehicle to a garage at no more than 20 km/h must be signaled with:",
     "options": {
       "a": "A red cloth across 50 cm of the road",
       "b": "An orange/amber warning light",
@@ -2029,7 +2029,7 @@
   },
   {
     "id": 157,
-    "text": "Except in cities, on designated roads, the maximum authorized weight for\ncoupled 3-axle vehicles is:",
+    "text": "Except in cities, on designated roads, the maximum authorized weight for coupled 3-axle vehicles is:",
     "options": {
       "a": "12 tonnes",
       "b": "16 tonnes",
@@ -2042,7 +2042,7 @@
   },
   {
     "id": 158,
-    "text": "Except in cities, on designated roads, the maximum weight for vehicles with\nthree or more axles (excluding articulated semi-trailers) is:",
+    "text": "Except in cities, on designated roads, the maximum weight for vehicles with three or more axles (excluding articulated semi-trailers) is:",
     "options": {
       "a": "10 tonnes",
       "b": "12 tonnes",
@@ -2055,7 +2055,7 @@
   },
   {
     "id": 159,
-    "text": "Unless special speed regulations apply, vehicles without suspension or shock-absorbing devices\nhave a maximum speed limit of:",
+    "text": "Unless special speed regulations apply, vehicles without suspension or shock-absorbing devices have a maximum speed limit of:",
     "options": {
       "a": "70 km/h",
       "b": "40 km/h",
@@ -2068,7 +2068,7 @@
   },
   {
     "id": 160,
-    "text": "Unless special speed regulations apply, vehicles built without shock absorption / suspension\nhave a maximum speed limit of:",
+    "text": "Unless special speed regulations apply, vehicles built without shock absorption / suspension have a maximum speed limit of:",
     "options": {
       "a": "20 km/h",
       "b": "40 km/h",
@@ -2094,7 +2094,7 @@
   },
   {
     "id": 162,
-    "text": "From dusk to dawn or in fog/rain when visibility drops below 200 m, pedestrian groups\n(processions or students in ranks led by an instructor) moving in the roadway with more than\none file must be signaled as follows:",
+    "text": "From dusk to dawn or in fog/rain when visibility drops below 200 m, pedestrian groups (processions or students in ranks led by an instructor) moving in the roadway with more than one file must be signaled as follows:",
     "options": {
       "a": "At the front, a yellow light carried on the left",
       "b": "At the rear, a red light carried on the left side by the person in the rear rank closest to the center line",
@@ -2133,7 +2133,7 @@
   },
   {
     "id": 165,
-    "text": "No lamp or reflector may have its lowest illuminating surface mounted lower\nthan what height from the ground when unladen:",
+    "text": "No lamp or reflector may have its lowest illuminating surface mounted lower than what height from the ground when unladen:",
     "options": {
       "a": "30 cm",
       "b": "20 cm",
@@ -2146,7 +2146,7 @@
   },
   {
     "id": 166,
-    "text": "The top edge of the illuminating surface of front and rear position lights\nmust not exceed what height from the ground when unladen:",
+    "text": "The top edge of the illuminating surface of front and rear position lights must not exceed what height from the ground when unladen:",
     "options": {
       "a": "1 m and 50 cm",
       "b": "1 m and 75 cm",
@@ -2159,7 +2159,7 @@
   },
   {
     "id": 167,
-    "text": "A motor vehicle or trailer may be fitted with a green light to indicate acknowledgment\nof an overtaking signal. That light must be located:",
+    "text": "A motor vehicle or trailer may be fitted with a green light to indicate acknowledgment of an overtaking signal. That light must be located:",
     "options": {
       "a": "Near the front-left corner of the vehicle",
       "b": "At the rear near the outer left edge of the vehicle",
@@ -2172,7 +2172,7 @@
   },
   {
     "id": 168,
-    "text": "The load width on a motorcycle with a sidecar (and any trailer towed by it)\nmust not overhang the unladen vehicle width by more than:",
+    "text": "The load width on a motorcycle with a sidecar (and any trailer towed by it) must not overhang the unladen vehicle width by more than:",
     "options": {
       "a": "1.25 m",
       "b": "30 cm",
@@ -2263,7 +2263,7 @@
   },
   {
     "id": 175,
-    "text": "You are waiting to turn right at the end of a road, but your view is blocked\nby a parked car. What should you do?",
+    "text": "You are waiting to turn right at the end of a road, but your view is blocked by a parked car. What should you do?",
     "options": {
       "a": "Stop, then edge forward slowly and cautiously until you have a clear view",
       "b": "Accelerate forward into the view to block incoming traffic",
@@ -2354,7 +2354,7 @@
   },
   {
     "id": 182,
-    "text": "Driving behind a large truck, the driver signals you to pass on the right\nwhile you intend to go left. What should you do?",
+    "text": "Driving behind a large truck, the driver signals you to pass on the right while you intend to go left. What should you do?",
     "options": {
       "a": "Slow down and let the vehicle proceed",
       "b": "Continue on your right",
@@ -2845,7 +2845,7 @@
   },
   {
     "id": 220,
-    "text": "At this intersection there is a STOP sign and a solid white transverse line on the road.\nWhy is there a STOP sign here?",
+    "text": "At this intersection there is a STOP sign and a solid white transverse line on the road. Why is there a STOP sign here?",
     "options": {
       "a": "Visibility into the main road is restricted",
       "b": "Speed limits on the main road were removed",
@@ -2897,7 +2897,7 @@
   },
   {
     "id": 224,
-    "text": "You arrive first at a road accident scene with serious casualties. You activate\nyour hazard warning lights; what else should you do?",
+    "text": "You arrive first at a road accident scene with serious casualties. You activate your hazard warning lights; what else should you do?",
     "options": {
       "a": "Stop other vehicles and request their assistance",
       "b": "A and B are correct answers",
@@ -2909,7 +2909,7 @@
   },
   {
     "id": 225,
-    "text": "For a vehicle transporting flammable goods, which sign indicates that the carried goods\nare explosive or flammable?",
+    "text": "For a vehicle transporting flammable goods, which sign indicates that the carried goods are explosive or flammable?",
     "options": {
       "a": "Sign A",
       "b": "Sign B",
@@ -2934,7 +2934,7 @@
   },
   {
     "id": 227,
-    "text": "You break down on a two-way road and have a reflective warning triangle. At what distance\nfrom the stopped vehicle should you place it?",
+    "text": "You break down on a two-way road and have a reflective warning triangle. At what distance from the stopped vehicle should you place it?",
     "options": {
       "a": "5 meters",
       "b": "25 meters",
@@ -2985,7 +2985,7 @@
   },
   {
     "id": 231,
-    "text": "Leaving a built-up area, you see two signs on your right indicating the end of road works.\nAccording to what these signs indicate, what speed can you drive at?",
+    "text": "Leaving a built-up area, you see two signs on your right indicating the end of road works. According to what these signs indicate, what speed can you drive at?",
     "options": {
       "a": "70 km/h",
       "b": "50 km/h",
@@ -3102,7 +3102,7 @@
   },
   {
     "id": 240,
-    "text": "You are riding a moped and meet a friend who asks for a lift to another road.\nYou are 18 years old, but do not have an extra crash helmet. Can you carry them?",
+    "text": "You are riding a moped and meet a friend who asks for a lift to another road. You are 18 years old, but do not have an extra crash helmet. Can you carry them?",
     "options": {
       "a": "Yes",
       "b": "Yes, except for a long trip",
@@ -3385,7 +3385,7 @@
   },
   {
     "id": 262,
-    "text": "A driver approaches a young boy on a small bicycle waving goodbye to a friend.\nWhat is the best reaction?",
+    "text": "A driver approaches a young boy on a small bicycle waving goodbye to a friend. What is the best reaction?",
     "options": {
       "a": "Proceed as if he has not reached the road",
       "b": "Prepare to let the boy cross, as he might dart into the road oblivious to your vehicle",
@@ -3515,7 +3515,7 @@
   },
   {
     "id": 272,
-    "text": "What should a driver keep in mind when following a two-wheeler while a white car\nis reversing out into the roadway?",
+    "text": "What should a driver keep in mind when following a two-wheeler while a white car is reversing out into the roadway?",
     "options": {
       "a": "The reversing driver will stop upon seeing the two-wheeler",
       "b": "The two-wheeler rider may ask the reversing driver to stop",
@@ -3567,7 +3567,7 @@
   },
   {
     "id": 276,
-    "text": "Among these four vehicles, which one is in the correct position to turn right\nfrom the main road into a minor road?",
+    "text": "Among these four vehicles, which one is in the correct position to turn right from the main road into a minor road?",
     "options": {
       "a": "The first vehicle is in the correct position to turn right",
       "b": "The second vehicle is in the correct position to turn right",
@@ -3658,7 +3658,7 @@
   },
   {
     "id": 283,
-    "text": "A driver arrives at an intersection controlled by traffic lights and finds them not working.\nWhat should they do?",
+    "text": "A driver arrives at an intersection controlled by traffic lights and finds them not working. What should they do?",
     "options": {
       "a": "Proceed through the intersection cautiously as an uncontrolled junction, watching for other drivers",
       "b": "Drive fast without delaying in the junction",
@@ -3775,7 +3775,7 @@
   },
   {
     "id": 292,
-    "text": "What should a driver do if involved in a minor traffic accident where no one is injured\nbut the vehicles obstruct traffic or create a hazard?",
+    "text": "What should a driver do if involved in a minor traffic accident where no one is injured but the vehicles obstruct traffic or create a hazard?",
     "options": {
       "a": "Mark the vehicle positions on the ground and move them to the side of the road",
       "b": "Disembark passengers and place a red triangle on the car",
@@ -3879,7 +3879,7 @@
   },
   {
     "id": 300,
-    "text": "A driver traveling behind a public passenger vehicle stopped to pick up\nor drop off passengers must:",
+    "text": "A driver traveling behind a public passenger vehicle stopped to pick up or drop off passengers must:",
     "options": {
       "a": "Overtake on the left",
       "b": "Wait patiently",
@@ -3944,7 +3944,7 @@
   },
   {
     "id": 305,
-    "text": "You approach a pedestrian crossing where pedestrians are waiting to cross\nbut have not stepped into the road yet. What should you do?",
+    "text": "You approach a pedestrian crossing where pedestrians are waiting to cross but have not stepped into the road yet. What should you do?",
     "options": {
       "a": "Honk your horn",
       "b": "Wait patiently and yield to them",
@@ -4009,7 +4009,7 @@
   },
   {
     "id": 310,
-    "text": "Driving on a two-way road, the vehicle ahead is moving slowly and the road ahead\nis completely clear. You must:",
+    "text": "Driving on a two-way road, the vehicle ahead is moving slowly and the road ahead is completely clear. You must:",
     "options": {
       "a": "Overtake it on the left",
       "b": "Overtake it on the right",
@@ -4113,7 +4113,7 @@
   },
   {
     "id": 318,
-    "text": "You arrive at an intersection where traffic lights are off. What should you do\nwhen an authorized traffic officer gives this hand signal?",
+    "text": "You arrive at an intersection where traffic lights are off. What should you do when an authorized traffic officer gives this hand signal?",
     "options": {
       "a": "Turn left only",
       "b": "Turn right only and proceed forward",
@@ -4152,7 +4152,7 @@
   },
   {
     "id": 321,
-    "text": "A part of the roadway bounded by two parallel broken white lines with insufficient\nwidth for automobiles is designated as:",
+    "text": "A part of the roadway bounded by two parallel broken white lines with insufficient width for automobiles is designated as:",
     "options": {
       "a": "Pedestrian sidewalk",
       "b": "Cycle track / cycle lane",
@@ -4490,7 +4490,7 @@
   },
   {
     "id": 347,
-    "text": "Multi-lane expressway: I want to overtake both of these trucks at once on the left.\nIs it permitted?",
+    "text": "Multi-lane expressway: I want to overtake both of these trucks at once on the left. Is it permitted?",
     "options": {
       "a": "Yes",
       "b": "No",
@@ -4931,7 +4931,7 @@
   },
   {
     "id": 381,
-    "text": "Which of the following signs indicates that the driver seeing it has priority\nover oncoming vehicles in a narrow passage?",
+    "text": "Which of the following signs indicates that the driver seeing it has priority over oncoming vehicles in a narrow passage?",
     "options": {
       "a": "Sign B6",
       "b": "Sign A19",

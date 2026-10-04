@@ -1,3 +1,7 @@
+fn normalize_whitespace(s: &str) -> String {
+    s.split_whitespace().collect::<Vec<_>>().join(" ")
+}
+
 use crate::error::{AppError, Result};
 use crate::models::{Language, Question, QuestionStat, QuizMode};
 use rand::seq::SliceRandom;
@@ -49,6 +53,9 @@ impl QuestionBank {
         overrides_json: &str,
     ) -> Result<Self> {
         let mut questions: Vec<Question> = serde_json::from_str(questions_rw_json)?;
+        for q in &mut questions {
+            q.text = normalize_whitespace(&q.text);
+        }
 
         // Apply manual overrides if any
         if !overrides_json.trim().is_empty() && overrides_json.trim() != "{}" {
@@ -91,10 +98,13 @@ impl QuestionBank {
         // Parse English translations if provided
         let mut en_by_id: HashMap<u32, TranslatedQuestion> = HashMap::new();
         if !questions_en_json.trim().is_empty() && questions_en_json.trim() != "[]" {
-            let en_questions: Vec<TranslatedQuestion> = serde_json::from_str(questions_en_json)
+            let mut en_questions: Vec<TranslatedQuestion> = serde_json::from_str(questions_en_json)
                 .map_err(|e| {
                     AppError::InvalidData(format!("English questions parsing error: {e}"))
                 })?;
+            for eq in &mut en_questions {
+                eq.text = normalize_whitespace(&eq.text);
+            }
             for eq in en_questions {
                 en_by_id.insert(eq.id, eq);
             }
