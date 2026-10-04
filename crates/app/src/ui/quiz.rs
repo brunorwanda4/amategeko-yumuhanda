@@ -581,8 +581,7 @@ impl QuizView {
                         div()
                             .w_full()
                             .when(current_q.has_image, |el| el.max_w(px(1120.0)))
-                            .when(!current_q.has_image, |el| el.max_w(px(800.0)))
-                            .mx_auto()
+                                                        .mx_auto()
                             .flex()
                             .when(is_desktop && current_q.has_image, |el| {
                                 el.flex_row().items_start().gap_8()

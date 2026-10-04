@@ -32,20 +32,96 @@ fn main() {
         .run(move |cx: &mut App| {
             gpui_kit::init(cx);
 
-            let app_state = AppState::new(storage.clone(), clock.clone());
+            #[allow(unused_mut)]
+            let mut app_state = AppState::new(storage.clone(), clock.clone());
+
+            #[cfg(debug_assertions)]
+            {
+                let args: Vec<String> = std::env::args().collect();
+                let mut i = 1;
+                while i < args.len() {
+                    if args[i] == "--timer" && i + 1 < args.len() {
+                        app_state.debug_timer_override =
+                            amategeko_core::dev::parse_timer_arg(&args[i + 1]);
+                        i += 2;
+                    } else if let Some(val) = args[i].strip_prefix("--timer=") {
+                        app_state.debug_timer_override = amategeko_core::dev::parse_timer_arg(val);
+                        i += 1;
+                    } else {
+                        i += 1;
+                    }
+                }
+            }
+
             let initial_theme = app_state.settings.theme;
             amategeko_app::apply_theme(initial_theme, None, cx);
+
+            let primary_id = cx.primary_display().map(|d| d.id());
+            let displays: Vec<amategeko_core::window::DisplayRect> = cx
+                .displays()
+                .into_iter()
+                .map(|d| {
+                    let b = d.bounds();
+                    let is_primary = Some(d.id()) == primary_id;
+                    amategeko_core::window::DisplayRect {
+                        bounds: amategeko_core::window::Rect {
+                            x: b.origin.x.as_f32(),
+                            y: b.origin.y.as_f32(),
+                            width: b.size.width.as_f32(),
+                            height: b.size.height.as_f32(),
+                        },
+                        primary: is_primary,
+                    }
+                })
+                .collect();
+
+            let saved_window = storage.load_window_state();
+            let fitted = amategeko_core::window::fit_window(
+                saved_window,
+                &displays,
+                amategeko_core::window::DEFAULT_WINDOW_SIZE,
+                amategeko_core::window::MIN_WINDOW_SIZE,
+            );
+
+            let bounds = Bounds {
+                origin: point(px(fitted.x), px(fitted.y)),
+                size: size(px(fitted.width), px(fitted.height)),
+            };
+
+            let window_bounds = if fitted.maximized {
+                Some(WindowBounds::Maximized(bounds))
+            } else {
+                Some(WindowBounds::Windowed(bounds))
+            };
 
             let options = WindowOptions {
                 titlebar: Some(TitlebarOptions {
                     title: Some("Amategeko y'Umuhanda".into()),
                     ..Default::default()
                 }),
+                window_bounds,
                 ..Default::default()
             };
 
-            cx.open_window(options, |window, cx| {
+            let storage_for_window = storage.clone();
+            cx.open_window(options, move |window, cx| {
                 amategeko_app::apply_theme(initial_theme, Some(window), cx);
+
+                let storage_for_close = storage_for_window.clone();
+                window.on_window_should_close(cx, move |window, _cx| {
+                    let b = window.bounds();
+                    let is_max = window.is_maximized();
+                    let state = amategeko_core::window::WindowState {
+                        x: b.origin.x.as_f32(),
+                        y: b.origin.y.as_f32(),
+                        width: b.size.width.as_f32(),
+                        height: b.size.height.as_f32(),
+                        maximized: is_max,
+                    };
+                    let _ = storage_for_close.save_window_state(&state);
+                    true
+                });
+
                 let shell = cx.new(|cx| ShellView::new(app_state, cx));
                 cx.new(|cx| Root::new(shell, window, cx))
             })

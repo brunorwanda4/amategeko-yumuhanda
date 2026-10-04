@@ -1,7 +1,7 @@
 use amategeko_core::*;
 use std::sync::Arc;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Screen {
     Home,
     Quiz,
@@ -9,6 +9,34 @@ pub enum Screen {
     Questions,
     Stats,
     Settings,
+}
+
+#[cfg(debug_assertions)]
+impl From<amategeko_core::dev::DevScreen> for Screen {
+    fn from(ds: amategeko_core::dev::DevScreen) -> Self {
+        match ds {
+            amategeko_core::dev::DevScreen::Home => Screen::Home,
+            amategeko_core::dev::DevScreen::Quiz => Screen::Quiz,
+            amategeko_core::dev::DevScreen::Results => Screen::Results,
+            amategeko_core::dev::DevScreen::Browse => Screen::Questions,
+            amategeko_core::dev::DevScreen::Stats => Screen::Stats,
+            amategeko_core::dev::DevScreen::Settings => Screen::Settings,
+        }
+    }
+}
+
+#[cfg(debug_assertions)]
+impl From<Screen> for amategeko_core::dev::DevScreen {
+    fn from(s: Screen) -> Self {
+        match s {
+            Screen::Home => amategeko_core::dev::DevScreen::Home,
+            Screen::Quiz => amategeko_core::dev::DevScreen::Quiz,
+            Screen::Results => amategeko_core::dev::DevScreen::Results,
+            Screen::Questions => amategeko_core::dev::DevScreen::Browse,
+            Screen::Stats => amategeko_core::dev::DevScreen::Stats,
+            Screen::Settings => amategeko_core::dev::DevScreen::Settings,
+        }
+    }
 }
 
 pub struct AppState {
@@ -21,6 +49,8 @@ pub struct AppState {
     pub storage: Arc<dyn Storage>,
     pub clock: Arc<dyn Clock>,
     pub pending_leave_dialog: bool,
+    #[cfg(debug_assertions)]
+    pub debug_timer_override: Option<u64>,
 }
 
 impl AppState {
@@ -51,16 +81,32 @@ impl AppState {
             }
         }
 
+        #[cfg(debug_assertions)]
+        let mut active_screen = Screen::Home;
+
+        #[cfg(debug_assertions)]
+        if let Some(dev) = storage.load_dev_state() {
+            let restored: Screen = dev.screen.into();
+            if restored != Screen::Quiz || current_attempt.is_some() {
+                active_screen = restored;
+            }
+        }
+
+        #[cfg(not(debug_assertions))]
+        let active_screen = Screen::Home;
+
         Self {
             bank,
             settings,
             progress,
-            active_screen: Screen::Home,
+            active_screen,
             current_attempt,
             last_result,
             storage,
             clock,
             pending_leave_dialog: false,
+            #[cfg(debug_assertions)]
+            debug_timer_override: None,
         }
     }
 
@@ -73,6 +119,12 @@ impl AppState {
         let stats = &self.progress.question_stats;
         match QuizEngine::start_quiz(&self.bank, mode, &self.settings, stats, now) {
             Ok(attempt) => {
+                #[allow(unused_mut)]
+                let mut attempt = attempt;
+                #[cfg(debug_assertions)]
+                if let Some(secs) = self.debug_timer_override {
+                    amategeko_core::dev::apply_timer_override(&mut attempt, secs, now);
+                }
                 let _ = self.storage.save_in_progress(&attempt);
                 self.current_attempt = Some(attempt);
                 self.active_screen = Screen::Quiz;

@@ -13,6 +13,7 @@ impl StatsView {
     pub fn render<V: 'static>(
         state: &AppState,
         is_desktop: bool,
+        scroll_handle: &gpui::ScrollHandle,
         cx: &mut Context<V>,
         on_start_weak_practice: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
         on_start_quiz: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
@@ -30,6 +31,7 @@ impl StatsView {
 
         div()
             .id("stats_scroll_view")
+            .track_scroll(scroll_handle)
             .flex()
             .flex_col()
             .size_full()

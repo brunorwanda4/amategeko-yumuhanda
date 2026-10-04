@@ -120,6 +120,40 @@ amategeko-yumuhanda/
 
 ## Building and Running
 
+### Fast Development Loop (Auto Rebuild & State Restore)
+
+For rapid development on desktop, file watchers and automatic state restoration are supported:
+
+#### Prerequisites
+Install `watchexec`:
+```powershell
+cargo install watchexec-cli
+```
+
+#### Running Auto-Rebuild Tasks
+Using `just`:
+```bash
+just dev    # Watch crates/ & assets/, rebuild and restart desktop app on change
+just check  # Watch crates/, run cargo check --workspace on change
+```
+
+Or using PowerShell script on Windows:
+```powershell
+.\scripts\dev.ps1 dev    # Auto rebuild and restart desktop app
+.\scripts\dev.ps1 check  # Continuous workspace typecheck
+```
+
+#### State Restoration (Debug Builds Only)
+- In debug builds, the active screen, open Browse/Stats filters, and scroll position are automatically saved to `dev_state.json` on change and restored on next startup.
+- Together with persisted window bounds and in-progress quiz attempts, the app restarts directly back to your exact working state.
+- In release builds, `dev_state.json` tracking and restore logic are completely omitted (`#[cfg(debug_assertions)]`).
+
+#### Testing Timer Warning & Expiration States
+To test Medium/Hard countdown alert banners and auto-submission without waiting for 12 or 20 minutes, pass the debug-only `--timer` flag:
+```powershell
+cargo run -p desktop -- --timer 30s
+```
+
 ### 1. Windows Desktop
 
 #### Prerequisites

@@ -5,6 +5,8 @@
 
 pub mod about;
 pub mod data;
+#[cfg(debug_assertions)]
+pub mod dev;
 pub mod error;
 pub mod i18n;
 pub mod models;
@@ -16,6 +18,8 @@ pub mod window;
 
 pub use about::{ProjectCredit, APP_VERSION, PROJECT_CREDIT};
 pub use data::QuestionBank;
+#[cfg(debug_assertions)]
+pub use dev::*;
 pub use error::{AppError, Result};
 pub use i18n::{t, tf, I18n, Strings};
 pub use models::*;

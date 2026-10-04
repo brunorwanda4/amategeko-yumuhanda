@@ -200,9 +200,13 @@ pub fn fit_window(
     let primary = primary_display(displays, default);
 
     let Some(saved) = saved.filter(WindowState::is_valid) else {
-        let preferred = Size {
-            width: default.width.min(primary.width * DEFAULT_SCREEN_FRACTION),
-            height: default.height.min(primary.height * DEFAULT_SCREEN_FRACTION),
+        let preferred = if displays.is_empty() {
+            default
+        } else {
+            Size {
+                width: default.width.min(primary.width * DEFAULT_SCREEN_FRACTION),
+                height: default.height.min(primary.height * DEFAULT_SCREEN_FRACTION),
+            }
         };
         return centered_on(&primary, clamp_size(preferred, &primary, min), false);
     };
@@ -226,10 +230,6 @@ pub fn fit_window(
                 maximized: saved.maximized,
             }
         }
-        None => centered_on(
-            &primary,
-            clamp_size(wanted, &primary, min),
-            saved.maximized,
-        ),
+        None => centered_on(&primary, clamp_size(wanted, &primary, min), saved.maximized),
     }
 }

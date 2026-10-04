@@ -40,6 +40,30 @@ impl TimerBanner {
     }
 }
 
+#[cfg(debug_assertions)]
+impl From<amategeko_core::dev::BrowseFilter> for QuestionsFilter {
+    fn from(f: amategeko_core::dev::BrowseFilter) -> Self {
+        match f {
+            amategeko_core::dev::BrowseFilter::All => QuestionsFilter::All,
+            amategeko_core::dev::BrowseFilter::HasImage => QuestionsFilter::HasImage,
+            amategeko_core::dev::BrowseFilter::Mistakes => QuestionsFilter::Mistakes,
+            amategeko_core::dev::BrowseFilter::Starred => QuestionsFilter::Starred,
+        }
+    }
+}
+
+#[cfg(debug_assertions)]
+impl From<QuestionsFilter> for amategeko_core::dev::BrowseFilter {
+    fn from(f: QuestionsFilter) -> Self {
+        match f {
+            QuestionsFilter::All => amategeko_core::dev::BrowseFilter::All,
+            QuestionsFilter::HasImage => amategeko_core::dev::BrowseFilter::HasImage,
+            QuestionsFilter::Mistakes => amategeko_core::dev::BrowseFilter::Mistakes,
+            QuestionsFilter::Starred => amategeko_core::dev::BrowseFilter::Starred,
+        }
+    }
+}
+
 pub struct ShellView {
     pub state: AppState,
     pub results_filter: ResultFilter,
@@ -56,6 +80,11 @@ pub struct ShellView {
     pub show_finish_confirm_dialog: bool,
     pub questions_search_focused: bool,
     pub questions_selected_idx: usize,
+    pub questions_scroll_handle: gpui::ScrollHandle,
+    pub stats_scroll_handle: gpui::ScrollHandle,
+    pub stats_filter: String,
+    #[cfg(debug_assertions)]
+    last_saved_scroll: f32,
     timer_tracker: TimerTracker,
     timer_attempt_id: Option<String>,
     timer_banner: Option<TimerBanner>,
@@ -78,11 +107,68 @@ impl ShellView {
             }
         });
 
+        #[cfg(debug_assertions)]
+        let dev_state = state.storage.load_dev_state();
+
+        #[cfg(debug_assertions)]
+        let initial_questions_filter = dev_state
+            .as_ref()
+            .and_then(|d| d.browse_filter)
+            .map(Into::into)
+            .unwrap_or(QuestionsFilter::All);
+
+        #[cfg(not(debug_assertions))]
+        let initial_questions_filter = QuestionsFilter::All;
+
+        #[cfg(debug_assertions)]
+        let initial_stats_filter = dev_state
+            .as_ref()
+            .and_then(|d| d.stats_filter.clone())
+            .unwrap_or_default();
+
+        #[cfg(not(debug_assertions))]
+        let initial_stats_filter = String::new();
+
+        #[cfg(debug_assertions)]
+        let initial_results_filter = dev_state
+            .as_ref()
+            .and_then(|d| d.results_filter.as_deref())
+            .map(|s| match s {
+                "correct" => ResultFilter::Correct,
+                "wrong" => ResultFilter::Wrong,
+                _ => ResultFilter::All,
+            })
+            .unwrap_or(ResultFilter::All);
+
+        #[cfg(not(debug_assertions))]
+        let initial_results_filter = ResultFilter::All;
+
+        let questions_scroll_handle = gpui::ScrollHandle::default();
+        let stats_scroll_handle = gpui::ScrollHandle::default();
+
+        #[cfg(debug_assertions)]
+        let initial_scroll = dev_state.as_ref().map(|d| d.scroll_position).unwrap_or(0.0);
+
+        #[cfg(debug_assertions)]
+        if initial_scroll > 0.0 {
+            match state.active_screen {
+                Screen::Questions => {
+                    questions_scroll_handle
+                        .set_offset(gpui::point(gpui::px(0.0), gpui::px(-initial_scroll.abs())));
+                }
+                Screen::Stats => {
+                    stats_scroll_handle
+                        .set_offset(gpui::point(gpui::px(0.0), gpui::px(-initial_scroll.abs())));
+                }
+                _ => {}
+            }
+        }
+
         Self {
             state,
-            results_filter: ResultFilter::All,
+            results_filter: initial_results_filter,
             results_expanded: HashSet::new(),
-            questions_filter: QuestionsFilter::All,
+            questions_filter: initial_questions_filter,
             questions_search: String::new(),
             questions_expanded: HashSet::new(),
             questions_revealed: HashMap::new(),
@@ -94,6 +180,11 @@ impl ShellView {
             show_finish_confirm_dialog: false,
             questions_search_focused: false,
             questions_selected_idx: 0,
+            questions_scroll_handle,
+            stats_scroll_handle,
+            stats_filter: initial_stats_filter,
+            #[cfg(debug_assertions)]
+            last_saved_scroll: initial_scroll,
             timer_tracker: TimerTracker::new(),
             timer_attempt_id: None,
             timer_banner: None,
@@ -101,6 +192,53 @@ impl ShellView {
             _timer_task: timer_task,
         }
     }
+
+    pub fn current_scroll_handle(&self) -> &gpui::ScrollHandle {
+        match self.state.active_screen {
+            Screen::Questions => &self.questions_scroll_handle,
+            Screen::Stats => &self.stats_scroll_handle,
+            _ => &self.questions_scroll_handle,
+        }
+    }
+
+    #[cfg(debug_assertions)]
+    pub fn save_dev_state(&mut self) {
+        let scroll = self.current_scroll_handle().offset().y.as_f32().abs();
+        self.last_saved_scroll = scroll;
+
+        let dev_state = amategeko_core::dev::DevState {
+            screen: self.state.active_screen.clone().into(),
+            browse_filter: Some(self.questions_filter.into()),
+            stats_filter: if self.stats_filter.is_empty() {
+                None
+            } else {
+                Some(self.stats_filter.clone())
+            },
+            results_filter: Some(match self.results_filter {
+                ResultFilter::All => "all".to_string(),
+                ResultFilter::Correct => "correct".to_string(),
+                ResultFilter::Wrong => "wrong".to_string(),
+            }),
+            scroll_position: scroll,
+            scroll_positions: {
+                let mut map = std::collections::HashMap::new();
+                let q_scroll = self.questions_scroll_handle.offset().y.as_f32().abs();
+                let s_scroll = self.stats_scroll_handle.offset().y.as_f32().abs();
+                if q_scroll > 0.0 {
+                    map.insert("questions".to_string(), q_scroll);
+                }
+                if s_scroll > 0.0 {
+                    map.insert("stats".to_string(), s_scroll);
+                }
+                map
+            },
+        };
+        let _ = self.state.storage.save_dev_state(&dev_state);
+    }
+
+    #[cfg(not(debug_assertions))]
+    #[inline(always)]
+    pub fn save_dev_state(&mut self) {}
 
     fn update_quiz_timer(&mut self) {
         let now = self.state.clock.now_seconds();
@@ -154,6 +292,7 @@ impl ShellView {
             if level == TimerLevel::Done {
                 self.focus_mode = false;
                 self.state.finish_current_quiz();
+                self.save_dev_state();
             }
         }
     }
@@ -161,6 +300,14 @@ impl ShellView {
 
 impl Render for ShellView {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        #[cfg(debug_assertions)]
+        {
+            let current_scroll = self.current_scroll_handle().offset().y.as_f32().abs();
+            if (current_scroll - self.last_saved_scroll).abs() >= 1.0 {
+                self.save_dev_state();
+            }
+        }
+
         let theme = cx.theme();
         let colors = theme.colors;
 
@@ -177,14 +324,17 @@ impl Render for ShellView {
                 cx,
                 |this, mode, _, cx| {
                     this.state.start_quiz(mode);
+                    this.save_dev_state();
                     cx.notify();
                 },
                 |this, _, cx| {
                     this.state.resume_attempt();
+                    this.save_dev_state();
                     cx.notify();
                 },
                 |this, _, cx| {
                     this.state.discard_in_progress();
+                    this.save_dev_state();
                     cx.notify();
                 },
             )
@@ -269,6 +419,7 @@ impl Render for ShellView {
                     }
                     this.focus_mode = false;
                     this.state.finish_current_quiz();
+                    this.save_dev_state();
                     cx.notify();
                 },
                 |this, window, cx| {
@@ -278,6 +429,7 @@ impl Render for ShellView {
                     this.focus_mode = false;
                     this.state.discard_in_progress();
                     this.state.navigate(Screen::Home);
+                    this.save_dev_state();
                     cx.notify();
                 },
             )
@@ -290,6 +442,7 @@ impl Render for ShellView {
                 cx,
                 |this, filter, _, cx| {
                     this.results_filter = filter;
+                    this.save_dev_state();
                     cx.notify();
                 },
                 |this, idx, _, cx| {
@@ -302,14 +455,17 @@ impl Render for ShellView {
                 },
                 |this, _, cx| {
                     this.state.start_retry_wrong();
+                    this.save_dev_state();
                     cx.notify();
                 },
                 |this, _, cx| {
                     this.state.start_quiz(QuizMode::Byoroshye);
+                    this.save_dev_state();
                     cx.notify();
                 },
                 |this, _, cx| {
                     this.state.navigate(Screen::Home);
+                    this.save_dev_state();
                     cx.notify();
                 },
             )
@@ -317,6 +473,7 @@ impl Render for ShellView {
             Screen::Questions => QuestionsView::render(
                 &self.state,
                 is_desktop,
+                &self.questions_scroll_handle,
                 self.questions_filter,
                 &self.questions_search,
                 self.state.settings.study_hide_answers,
@@ -325,6 +482,7 @@ impl Render for ShellView {
                 cx,
                 |this, filter, _, cx| {
                     this.questions_filter = filter;
+                    this.save_dev_state();
                     cx.notify();
                 },
                 |this, search, _, cx| {
@@ -360,13 +518,16 @@ impl Render for ShellView {
             Screen::Stats => StatsView::render(
                 &self.state,
                 is_desktop,
+                &self.stats_scroll_handle,
                 cx,
                 |this, _, cx| {
                     this.state.start_quiz(QuizMode::WeakPractice);
+                    this.save_dev_state();
                     cx.notify();
                 },
                 |this, _, cx| {
                     this.state.start_quiz(QuizMode::Byoroshye);
+                    this.save_dev_state();
                     cx.notify();
                 },
             )
@@ -1213,6 +1374,7 @@ impl ShellView {
             .tooltip(move |window, cx| Tooltip::new(tooltip.clone()).build(window, cx))
             .on_click(cx.listener(move |this, _, _, cx| {
                 this.state.navigate(target_screen.clone());
+                this.save_dev_state();
                 cx.notify();
             }))
             .child(
@@ -1377,6 +1539,7 @@ impl ShellView {
             .cursor_pointer()
             .on_click(cx.listener(move |this, _, _, cx| {
                 this.state.navigate(target_screen.clone());
+                this.save_dev_state();
                 cx.notify();
             }))
             .child(Icon::new(icon).size(px(20.0)).text_color(color))

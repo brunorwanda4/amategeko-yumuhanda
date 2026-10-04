@@ -24,6 +24,7 @@ impl QuestionsView {
     pub fn render<V: 'static>(
         state: &AppState,
         _is_desktop: bool,
+        scroll_handle: &gpui::ScrollHandle,
         filter: QuestionsFilter,
         search_query: &str,
         hide_answers: bool,
@@ -243,6 +244,7 @@ impl QuestionsView {
             .child(
                 div()
                     .id("questions_scroll_view")
+                    .track_scroll(scroll_handle)
                     .flex()
                     .flex_col()
                     .flex_1()
