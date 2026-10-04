@@ -7,3 +7,24 @@ pub use state::{AppState, Screen};
 pub use ui::home::HomeView;
 pub use ui::quiz::QuizView;
 pub use ui::shell::ShellView;
+
+use gpui_kit::component::{Theme, ThemeMode as GpuiThemeMode};
+
+/// Applies the given theme mode to GPUI Kit's theme registry and optionally refreshes the window.
+pub fn apply_theme(
+    theme: amategeko_core::ThemeMode,
+    window: Option<&mut gpui::Window>,
+    cx: &mut gpui::App,
+) {
+    match theme {
+        amategeko_core::ThemeMode::System => {
+            Theme::sync_system_appearance(window, cx);
+        }
+        amategeko_core::ThemeMode::Light => {
+            Theme::change(GpuiThemeMode::Light, window, cx);
+        }
+        amategeko_core::ThemeMode::Dark => {
+            Theme::change(GpuiThemeMode::Dark, window, cx);
+        }
+    }
+}

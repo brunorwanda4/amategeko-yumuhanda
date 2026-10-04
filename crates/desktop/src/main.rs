@@ -34,6 +34,8 @@ fn main() {
             gpui_kit::init(cx);
 
             let app_state = AppState::new(storage.clone(), clock.clone());
+            let initial_theme = app_state.settings.theme;
+            amategeko_app::apply_theme(initial_theme, None, cx);
 
             let options = WindowOptions {
                 titlebar: Some(TitlebarOptions {
@@ -44,6 +46,7 @@ fn main() {
             };
 
             cx.open_window(options, |window, cx| {
+                amategeko_app::apply_theme(initial_theme, Some(window), cx);
                 let shell = cx.new(|_| ShellView::new(app_state));
                 cx.new(|cx| Root::new(shell, window, cx))
             })

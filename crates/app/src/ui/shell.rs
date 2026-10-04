@@ -8,7 +8,7 @@ use crate::ui::stats::StatsView;
 use amategeko_core::{QuizEngine, QuizMode, Strings};
 use gpui::InteractiveElement as _;
 use gpui_kit::base::StyledExt;
-use gpui_kit::component::{ActiveTheme, Icon, IconName, Theme, ThemeMode};
+use gpui_kit::component::{ActiveTheme, Icon, IconName};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
 use std::collections::{HashMap, HashSet};
@@ -287,22 +287,9 @@ impl Render for ShellView {
                             this.state.save_settings(this.state.settings.clone());
                         }
                         SettingsAction::SetTheme(mode) => {
-                            let old_theme = this.state.settings.theme;
                             this.state.settings.theme = mode;
                             this.state.save_settings(this.state.settings.clone());
-                            if old_theme != mode {
-                                match mode {
-                                    amategeko_core::ThemeMode::System => {
-                                        Theme::sync_system_appearance(Some(window), cx);
-                                    }
-                                    amategeko_core::ThemeMode::Light => {
-                                        Theme::change(ThemeMode::Light, Some(window), cx);
-                                    }
-                                    amategeko_core::ThemeMode::Dark => {
-                                        Theme::change(ThemeMode::Dark, Some(window), cx);
-                                    }
-                                }
-                            }
+                            crate::apply_theme(mode, Some(window), cx);
                         }
                         SettingsAction::DecFontScale => {
                             this.state.settings.font_size_scale =
@@ -317,7 +304,7 @@ impl Render for ShellView {
                         SettingsAction::ResetDefaults => {
                             this.state.settings = amategeko_core::Settings::default();
                             this.state.save_settings(this.state.settings.clone());
-                            Theme::sync_system_appearance(Some(window), cx);
+                            crate::apply_theme(this.state.settings.theme, Some(window), cx);
                         }
                         SettingsAction::SaveSettings => {
                             this.state.save_settings(this.state.settings.clone());
