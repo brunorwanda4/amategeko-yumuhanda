@@ -1,5 +1,5 @@
 use amategeko_app::{AppState, QuizView, Screen, ShellView};
-use amategeko_core::{InMemoryStorage, Language, MockClock, QuizMode};
+use amategeko_core::{InMemoryStorage, Language, MockClock, QuizEngine, QuizMode};
 use gpui::{px, size, Context, IntoElement, Render, TestAppContext, VisualTestContext, Window};
 use std::sync::Arc;
 
@@ -167,4 +167,87 @@ fn questions_view_in_shell_renders_cards(cx: &mut TestAppContext) {
         "image card must have visible height, got {:?}",
         img_card.size.height
     );
+}
+
+#[gpui::test]
+fn segmented_progress_bar_shown_only_on_easy_and_medium(cx: &mut TestAppContext) {
+    cx.update(gpui_kit::init);
+
+    for mode in [QuizMode::Byoroshye, QuizMode::Hagati, QuizMode::Bikomeye] {
+        let storage = Arc::new(InMemoryStorage::new());
+        let clock = Arc::new(MockClock::new(1_000));
+        let mut state = AppState::new(storage, clock);
+        state.start_quiz(mode);
+
+        let (_view, cx) = cx.add_window_view(move |_, cx| ShellView::new(state, cx));
+        let cx: &mut VisualTestContext = cx;
+        draw_context(cx);
+
+        let seg0 = cx.debug_bounds("progress_seg_0");
+        if mode == QuizMode::Byoroshye || mode == QuizMode::Hagati {
+            assert!(
+                seg0.is_some(),
+                "progress_seg_0 should exist for mode {:?}",
+                mode
+            );
+        } else {
+            assert!(
+                seg0.is_none(),
+                "progress_seg_0 should NOT exist for mode {:?}",
+                mode
+            );
+        }
+    }
+}
+
+#[gpui::test]
+fn hard_mode_quiz_finishes_before_time_and_shows_results(cx: &mut TestAppContext) {
+    cx.update(gpui_kit::init);
+    let storage = Arc::new(InMemoryStorage::new());
+    let clock = Arc::new(MockClock::new(1_000));
+    let mut state = AppState::new(storage, clock);
+    state.start_quiz(QuizMode::Bikomeye);
+
+    let total = state
+        .current_attempt
+        .as_ref()
+        .expect("attempt should be active")
+        .total_questions();
+    for _ in 0..total - 1 {
+        let att = state.current_attempt.as_mut().unwrap();
+        att.answers.insert(att.current_index, "a".into());
+        let _ = QuizEngine::confirm_and_advance_hard(att);
+    }
+    state
+        .current_attempt
+        .as_mut()
+        .unwrap()
+        .answers.insert(total - 1, "c".into());
+
+    let (view, cx) = cx.add_window_view(move |_, cx| ShellView::new(state, cx));
+    let cx: &mut VisualTestContext = cx;
+    draw_context(cx);
+
+    assert_eq!(
+        view.read_with(cx, |this, _| this.state.active_screen.clone()),
+        Screen::Quiz
+    );
+
+    cx.simulate_event(gpui::KeyDownEvent {
+        keystroke: gpui::Keystroke {
+            modifiers: gpui::Modifiers::default(),
+            key: "enter".to_string(),
+            key_char: None,
+        },
+        is_held: false,
+        prefer_character_input: false,
+    });
+    draw_context(cx);
+
+    assert_eq!(
+        view.read_with(cx, |this, _| this.state.active_screen.clone()),
+        Screen::Results
+    );
+    let has_result = view.read_with(cx, |this, _| this.state.last_result.is_some());
+    assert!(has_result, "last_result must be populated");
 }

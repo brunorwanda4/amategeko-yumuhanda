@@ -521,48 +521,55 @@ impl QuizView {
                     )
                 },
             )
-            // Segmented Progress Bar
-            .child(
-                div()
-                    .flex()
-                    .flex_row()
-                    .items_center()
-                    .w_full()
-                    .px_6()
-                    .py_2p5()
-                    .gap_1p5()
-                    .children((0..total_questions).map(|i| {
-                        let is_cur = i == current_idx;
-                        let ans = attempt.answers.get(&i);
-                        let seg_color = if is_cur {
-                            colors.foreground
-                        } else if let Some(user_a) = ans {
-                            if attempt.mode.provides_instant_feedback() {
-                                let is_correct =
-                                    user_a.eq_ignore_ascii_case(&attempt.questions[i].correct);
-                                if is_correct {
-                                    colors.success
-                                } else {
-                                    colors.danger
-                                }
-                            } else {
-                                colors.primary
-                            }
-                        } else {
-                            colors.border
-                        };
-
+            // Segmented Progress Bar (Easy and Medium modes only)
+            .when(
+                matches!(attempt.mode, QuizMode::Byoroshye | QuizMode::Hagati),
+                |parent| {
+                    parent.child(
                         div()
-                            .id(format!("progress_seg_{i}"))
-                            .flex_1()
-                            .h(px(4.0))
-                            .rounded_full()
-                            .bg(seg_color)
-                            .cursor_pointer()
-                            .on_click(cx.listener(move |this, _, window, cx| {
-                                on_jump_to(this, i, window, cx);
-                            }))
-                    })),
+                            .id("quiz_segmented_progress")
+                            .flex()
+                            .flex_row()
+                            .items_center()
+                            .w_full()
+                            .px_6()
+                            .py_2p5()
+                            .gap_1p5()
+                            .children((0..total_questions).map(|i| {
+                                let is_cur = i == current_idx;
+                                let ans = attempt.answers.get(&i);
+                                let seg_color = if is_cur {
+                                    colors.foreground
+                                } else if let Some(user_a) = ans {
+                                    if attempt.mode.provides_instant_feedback() {
+                                        let is_correct =
+                                            user_a.eq_ignore_ascii_case(&attempt.questions[i].correct);
+                                        if is_correct {
+                                            colors.success
+                                        } else {
+                                            colors.danger
+                                        }
+                                    } else {
+                                        colors.primary
+                                    }
+                                } else {
+                                    colors.border
+                                };
+
+                                div()
+                                    .id(format!("progress_seg_{i}"))
+                                    .debug_selector(move || format!("progress_seg_{i}").into())
+                                    .flex_1()
+                                    .h(px(4.0))
+                                    .rounded_full()
+                                    .bg(seg_color)
+                                    .cursor_pointer()
+                                    .on_click(cx.listener(move |this, _, window, cx| {
+                                        on_jump_to(this, i, window, cx);
+                                    }))
+                            })),
+                    )
+                },
             )
             // Main Question Body (Scrollable, Two Columns on Desktop)
             .child(

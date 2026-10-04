@@ -431,10 +431,22 @@ impl Render for ShellView {
                     }
                     cx.notify();
                 },
-                |this, _, cx| {
+                |this, window, cx| {
                     if let Some(att) = &mut this.state.current_attempt {
-                        let _ = QuizEngine::confirm_and_advance_hard(att);
-                        let _ = this.state.storage.save_in_progress(att);
+                        match QuizEngine::confirm_and_advance_hard(att) {
+                            Ok(true) => {
+                                if window.is_fullscreen() {
+                                    window.toggle_fullscreen();
+                                }
+                                this.focus_mode = false;
+                                this.state.finish_current_quiz();
+                                this.save_dev_state();
+                            }
+                            Ok(false) => {
+                                let _ = this.state.storage.save_in_progress(att);
+                            }
+                            Err(_) => {}
+                        }
                     }
                     cx.notify();
                 },
@@ -951,8 +963,20 @@ impl Render for ShellView {
                         ShortcutAction::NextOrConfirm => {
                             if let Some(att) = &mut this.state.current_attempt {
                                 if att.mode == QuizMode::Bikomeye {
-                                    let _ = QuizEngine::confirm_and_advance_hard(att);
-                                    let _ = this.state.storage.save_in_progress(att);
+                                    match QuizEngine::confirm_and_advance_hard(att) {
+                                        Ok(true) => {
+                                            if window.is_fullscreen() {
+                                                window.toggle_fullscreen();
+                                            }
+                                            this.focus_mode = false;
+                                            this.state.finish_current_quiz();
+                                            this.save_dev_state();
+                                        }
+                                        Ok(false) => {
+                                            let _ = this.state.storage.save_in_progress(att);
+                                        }
+                                        Err(_) => {}
+                                    }
                                     cx.notify();
                                 } else if ShortcutRegistry::can_advance_easy_next(att) {
                                     let is_last = att.current_index + 1 == att.total_questions();
@@ -1235,6 +1259,7 @@ impl Render for ShellView {
                                                 }
                                                 this.focus_mode = false;
                                                 this.state.finish_current_quiz();
+                                                this.save_dev_state();
                                                 cx.notify();
                                             })),
                                     ),
