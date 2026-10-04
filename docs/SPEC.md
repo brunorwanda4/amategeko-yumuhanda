@@ -179,3 +179,17 @@ The app supports Kinyarwanda (`rw`, default) and English (`en`).
 - Switching the question language keeps the same correct answers, images and stats.
 - Missing English questions fall back to Kinyarwanda.
 - All i18n tests pass.
+
+## 16. Timer warning states (Medium and Hard only)
+
+- Thresholds are fractions of the attempt's total time: WARNING at ≤ 25% remaining, ERROR at ≤ 10% remaining (constants in `core`). Example: 20 min → 05:00 and 02:00; 12 min → 03:00 and 01:12.
+- Timer pill: normal (neutral, clock icon) → warning (warning colour, triangle icon) → error (danger colour, circle-alert icon, bold, subtle pulse that respects reduced-motion) → done (danger colour, 00:00).
+- A thin time-remaining bar under the header follows the same colours.
+- When the level gets worse (normal→warning, warning→error, any→done), show ONE dismissible banner (auto-hides after 5 s, except the "time is up" one):
+  - warning: "Igihe kiregereje. Hasigaye {time}."
+  - error: "Igihe kigiye kurangira! Hasigaye {time}."
+  - done: "Igihe kirarangiye. Ikizamini cyoherejwe."
+- Never rely on colour alone: icon + text + accessibility announcement (assertive) on each level change.
+- Levels are computed from the deadline-based remaining time (so they stay correct after backgrounding). If the app resumes already past a threshold, show the current level's banner once.
+- On mobile, an optional vibration on level change if the platform supports it (setting off by default).
+- Unit tests in `core`: threshold levels for 20 min and 12 min totals; level never goes back to normal unless the attempt restarts; resume past a threshold reports the correct level.
