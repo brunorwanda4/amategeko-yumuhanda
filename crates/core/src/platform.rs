@@ -2,6 +2,7 @@
 
 use crate::error::Result;
 use crate::models::{Attempt, Progress, Settings};
+use crate::window::{WindowState, WINDOW_BACKUP_FILE, WINDOW_FILE};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::RwLock;
@@ -81,6 +82,30 @@ pub trait Storage: Send + Sync {
 
     fn clear_in_progress(&self) -> Result<()> {
         let _ = self.delete_file(IN_PROGRESS_FILE);
+        Ok(())
+    }
+
+    /// Load the saved desktop window state. Returns `None` when the file is missing or
+    /// corrupt; a corrupt file is first copied to `window.json.bak` so it is not lost.
+    fn load_window_state(&self) -> Option<WindowState> {
+        let content = self.read_file(WINDOW_FILE).ok()?;
+        match serde_json::from_str(&content) {
+            Ok(state) => Some(state),
+            Err(_) => {
+                let _ = self.write_file(WINDOW_BACKUP_FILE, &content);
+                None
+            }
+        }
+    }
+
+    fn save_window_state(&self, state: &WindowState) -> Result<()> {
+        let json = serde_json::to_string_pretty(state)?;
+        self.write_file(WINDOW_FILE, &json)?;
+        Ok(())
+    }
+
+    fn clear_window_state(&self) -> Result<()> {
+        self.delete_file(WINDOW_FILE)?;
         Ok(())
     }
 }

@@ -11,6 +11,7 @@ pub mod platform;
 pub mod quiz;
 pub mod stats;
 pub mod timer;
+pub mod window;
 
 pub use data::QuestionBank;
 pub use error::{AppError, Result};
