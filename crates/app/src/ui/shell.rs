@@ -162,7 +162,23 @@ impl ShellView {
         let now = Instant::now();
 
         #[cfg(debug_assertions)]
-        let initial_scroll = dev_state.as_ref().map(|d| d.scroll_position).unwrap_or(0.0);
+        let initial_scroll = dev_state
+            .as_ref()
+            .map(|d| {
+                let screen_key = match state.active_screen {
+                    Screen::Questions => "questions",
+                    Screen::Stats => "stats",
+                    _ => "general",
+                };
+                if let Some(pos) = d.scroll_positions.get(screen_key) {
+                    *pos
+                } else if d.screen == state.active_screen.clone().into() {
+                    d.scroll_position
+                } else {
+                    0.0
+                }
+            })
+            .unwrap_or(0.0);
 
         #[cfg(debug_assertions)]
         if initial_scroll > 0.0 {
@@ -533,11 +549,17 @@ impl Render for ShellView {
                 |this, filter, _, cx| {
                     this.questions_filter = filter;
                     this.questions_search_focused = false;
+                    this.questions_selected_idx = 0;
+                    this.questions_scroll_handle
+                        .set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
                     this.save_dev_state();
                     cx.notify();
                 },
                 |this, search, _, cx| {
                     this.questions_search = search;
+                    this.questions_selected_idx = 0;
+                    this.questions_scroll_handle
+                        .set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
                     cx.notify();
                 },
                 |this, focused, window, cx| {

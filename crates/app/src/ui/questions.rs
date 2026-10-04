@@ -353,7 +353,9 @@ impl QuestionsView {
             .child(
                 div()
                     .id("questions_scroll_view")
+                    .debug_selector(|| "questions_scroll_view".into())
                     .track_scroll(scroll_handle)
+                    .relative()
                     .flex()
                     .flex_col()
                     .flex_1()
@@ -370,6 +372,7 @@ impl QuestionsView {
                     .when(filtered_questions.is_empty(), |el| {
                         el.child(
                             div()
+                                .flex_shrink_0()
                                 .flex()
                                 .flex_col()
                                 .items_center()
@@ -437,6 +440,8 @@ impl QuestionsView {
 
                         div()
                             .id(format!("q_card_{}", q_id))
+                            .debug_selector(move || format!("q_card_{}", q_id).into())
+                            .flex_shrink_0()
                             .flex()
                             .flex_col()
                             .w_full()
