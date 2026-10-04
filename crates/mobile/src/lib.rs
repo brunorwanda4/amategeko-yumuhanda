@@ -70,7 +70,7 @@ fn android_main(app: android_activity::AndroidApp) {
 
         cx.open_window(WindowOptions::default(), |window, cx| {
             amategeko_app::apply_theme(initial_theme, Some(window), cx);
-            let shell = cx.new(|_| ShellView::new(app_state));
+            let shell = cx.new(|cx| ShellView::new(app_state, cx));
             cx.new(|cx| gpui_kit::component::Root::new(shell, window, cx))
         })
         .expect("open mobile window");
@@ -94,7 +94,7 @@ pub extern "C" fn gpui_ios_register_app() {
 
         cx.open_window(WindowOptions::default(), |window, cx| {
             amategeko_app::apply_theme(initial_theme, Some(window), cx);
-            let shell = cx.new(|_| ShellView::new(app_state));
+            let shell = cx.new(|cx| ShellView::new(app_state, cx));
             cx.new(|cx| gpui_kit::component::Root::new(shell, window, cx))
         })
         .expect("open mobile window");

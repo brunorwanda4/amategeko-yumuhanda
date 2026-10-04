@@ -72,4 +72,5 @@ Tracking milestones for "Amategeko y'Umuhanda" (Rwanda driving-test theory study
   - [x] Comprehensive README updated with Windows & Android build/install guide
   - [x] Add branded Windows executable and Android launcher icons (2026-10-04)
   - [x] Restore the saved theme during desktop and mobile startup (2026-10-04)
+  - [x] Refresh the quiz layout and add fullscreen focus mode and keyboard shortcuts (2026-10-04)
 - [ ] **Milestone 13: Optional iOS Verification** (Requires macOS + Xcode 15+)

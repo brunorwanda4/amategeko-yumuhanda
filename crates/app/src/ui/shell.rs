@@ -6,6 +6,7 @@ use crate::ui::results::{ResultFilter, ResultsView};
 use crate::ui::settings::{SettingsAction, SettingsView};
 use crate::ui::stats::StatsView;
 use amategeko_core::{QuizEngine, QuizMode, Strings};
+use gpui::FocusHandle;
 use gpui::InteractiveElement as _;
 use gpui_kit::base::StyledExt;
 use gpui_kit::component::{ActiveTheme, Icon, IconName};
@@ -22,10 +23,11 @@ pub struct ShellView {
     pub questions_revealed: HashMap<u32, String>,
     pub settings_confirm_clear: bool,
     pub focus_mode: bool,
+    pub focus_handle: FocusHandle,
 }
 
 impl ShellView {
-    pub fn new(state: AppState) -> Self {
+    pub fn new(state: AppState, cx: &mut Context<Self>) -> Self {
         Self {
             state,
             results_filter: ResultFilter::All,
@@ -35,6 +37,7 @@ impl ShellView {
             questions_revealed: HashMap::new(),
             settings_confirm_clear: false,
             focus_mode: false,
+            focus_handle: cx.focus_handle(),
         }
     }
 }
@@ -124,16 +127,29 @@ impl Render for ShellView {
                     let _ = this.state.storage.save_progress(&this.state.progress);
                     cx.notify();
                 },
-                |this, _, cx| {
+                |this, window, cx| {
                     this.focus_mode = !this.focus_mode;
+                    if this.focus_mode {
+                        if !window.is_fullscreen() {
+                            window.toggle_fullscreen();
+                        }
+                    } else if window.is_fullscreen() {
+                        window.toggle_fullscreen();
+                    }
                     cx.notify();
                 },
-                |this, _, cx| {
+                |this, window, cx| {
+                    if window.is_fullscreen() {
+                        window.toggle_fullscreen();
+                    }
                     this.focus_mode = false;
                     this.state.finish_current_quiz();
                     cx.notify();
                 },
-                |this, _, cx| {
+                |this, window, cx| {
+                    if window.is_fullscreen() {
+                        window.toggle_fullscreen();
+                    }
                     this.focus_mode = false;
                     this.state.discard_in_progress();
                     this.state.navigate(Screen::Home);
@@ -323,7 +339,7 @@ impl Render for ShellView {
             .into_any_element(),
         };
 
-        if is_desktop {
+        let root = if is_desktop {
             // Desktop Layout: Left Sidebar + Content
             // Focus Mode in Quiz hides the sidebar for a pure, distraction-free reading experience
             let show_sidebar = !is_in_quiz || !self.focus_mode;
@@ -347,7 +363,150 @@ impl Render for ShellView {
                 .when(!is_in_quiz, |el| {
                     el.child(self.render_mobile_bottom_bar(cx))
                 })
+        };
+
+        let shortcuts_enabled = self.state.settings.desktop_shortcuts_enabled;
+
+        let root = root
+            .track_focus(&self.focus_handle)
+            .key_context("Shell")
+            .on_key_down(
+                cx.listener(move |this, event: &gpui::KeyDownEvent, window, cx| {
+                    if this.state.active_screen != Screen::Quiz || !shortcuts_enabled {
+                        return;
+                    }
+
+                    let key = event.keystroke.key.to_lowercase();
+                    match key.as_str() {
+                        "a" | "1" => {
+                            let locked = this
+                                .state
+                                .current_attempt
+                                .as_ref()
+                                .map(|a| a.is_current_locked())
+                                .unwrap_or(false);
+                            if !locked {
+                                this.state.record_current_answer("a");
+                                cx.notify();
+                            }
+                        }
+                        "b" | "2" => {
+                            let locked = this
+                                .state
+                                .current_attempt
+                                .as_ref()
+                                .map(|a| a.is_current_locked())
+                                .unwrap_or(false);
+                            if !locked {
+                                this.state.record_current_answer("b");
+                                cx.notify();
+                            }
+                        }
+                        "c" | "3" => {
+                            let locked = this
+                                .state
+                                .current_attempt
+                                .as_ref()
+                                .map(|a| a.is_current_locked())
+                                .unwrap_or(false);
+                            if !locked {
+                                this.state.record_current_answer("c");
+                                cx.notify();
+                            }
+                        }
+                        "d" | "4" => {
+                            let locked = this
+                                .state
+                                .current_attempt
+                                .as_ref()
+                                .map(|a| a.is_current_locked())
+                                .unwrap_or(false);
+                            if !locked {
+                                this.state.record_current_answer("d");
+                                cx.notify();
+                            }
+                        }
+                        "enter" => {
+                            if let Some(att) = &mut this.state.current_attempt {
+                                if att.mode == QuizMode::Bikomeye {
+                                    let _ = QuizEngine::confirm_and_advance_hard(att);
+                                    let _ = this.state.storage.save_in_progress(att);
+                                } else {
+                                    let is_last = att.current_index + 1 == att.total_questions();
+                                    if is_last {
+                                        if window.is_fullscreen() {
+                                            window.toggle_fullscreen();
+                                        }
+                                        this.focus_mode = false;
+                                        this.state.finish_current_quiz();
+                                    } else {
+                                        let _ = QuizEngine::next_question(att);
+                                        let _ = this.state.storage.save_in_progress(att);
+                                    }
+                                }
+                                cx.notify();
+                            }
+                        }
+                        "arrowleft" | "left" => {
+                            if let Some(att) = &mut this.state.current_attempt {
+                                let _ = QuizEngine::previous_question(att);
+                                let _ = this.state.storage.save_in_progress(att);
+                                cx.notify();
+                            }
+                        }
+                        "arrowright" | "right" => {
+                            if let Some(att) = &mut this.state.current_attempt {
+                                let is_last = att.current_index + 1 == att.total_questions();
+                                if is_last {
+                                    if window.is_fullscreen() {
+                                        window.toggle_fullscreen();
+                                    }
+                                    this.focus_mode = false;
+                                    this.state.finish_current_quiz();
+                                } else {
+                                    let _ = QuizEngine::next_question(att);
+                                    let _ = this.state.storage.save_in_progress(att);
+                                }
+                                cx.notify();
+                            }
+                        }
+                        "s" => {
+                            if let Some(att) = &this.state.current_attempt {
+                                if let Some(q) = att.current_question() {
+                                    this.state.progress.toggle_starred(q.id);
+                                    let _ = this.state.storage.save_progress(&this.state.progress);
+                                    cx.notify();
+                                }
+                            }
+                        }
+                        "f" => {
+                            this.focus_mode = !this.focus_mode;
+                            if this.focus_mode {
+                                if !window.is_fullscreen() {
+                                    window.toggle_fullscreen();
+                                }
+                            } else if window.is_fullscreen() {
+                                window.toggle_fullscreen();
+                            }
+                            cx.notify();
+                        }
+                        "escape" if this.focus_mode => {
+                            this.focus_mode = false;
+                            if window.is_fullscreen() {
+                                window.toggle_fullscreen();
+                            }
+                            cx.notify();
+                        }
+                        _ => {}
+                    }
+                }),
+            );
+
+        if is_in_quiz {
+            window.focus(&self.focus_handle, cx);
         }
+
+        root
     }
 }
 
@@ -444,7 +603,7 @@ impl ShellView {
         label: &'static str,
         icon: IconName,
         is_active: bool,
-        target: Screen,
+        target_screen: Screen,
         cx: &mut Context<Self>,
     ) -> impl IntoElement {
         let theme = cx.theme();
@@ -453,9 +612,8 @@ impl ShellView {
         let bg_color = if is_active {
             colors.sidebar_accent
         } else {
-            gpui::hsla(0.0, 0.0, 0.0, 0.0)
+            gpui::transparent_black()
         };
-
         let text_color = if is_active {
             colors.primary
         } else {
@@ -467,22 +625,22 @@ impl ShellView {
             .flex()
             .flex_row()
             .items_center()
-            .gap_3()
+            .gap_2p5()
             .px_3()
             .py_2()
             .rounded_lg()
             .bg(bg_color)
-            .hover(|el| el.bg(colors.sidebar_accent))
             .cursor_pointer()
+            .hover(|el| el.bg(colors.sidebar_accent))
             .on_click(cx.listener(move |this, _, _, cx| {
-                this.state.navigate(target.clone());
+                this.state.navigate(target_screen.clone());
                 cx.notify();
             }))
-            .child(Icon::new(icon).size(px(18.0)).text_color(text_color))
+            .child(Icon::new(icon).size(px(16.0)).text_color(text_color))
             .child(
                 div()
-                    .text_sm()
-                    .when(is_active, |el| el.font_semibold())
+                    .text_xs()
+                    .font_semibold()
                     .text_color(text_color)
                     .child(label),
             )
@@ -506,8 +664,8 @@ impl ShellView {
             .flex_row()
             .items_center()
             .justify_between()
-            .h(px(52.0))
             .px_4()
+            .py_3()
             .border_b_1()
             .border_color(colors.border)
             .bg(colors.secondary)
@@ -530,12 +688,13 @@ impl ShellView {
             .flex_row()
             .items_center()
             .justify_around()
-            .h(px(60.0))
+            .px_2()
+            .py_2()
             .border_t_1()
             .border_color(colors.border)
             .bg(colors.secondary)
             .child(self.render_mobile_nav_item(
-                "m_nav_home",
+                "m_home",
                 Strings::NAV_HOME,
                 IconName::LayoutDashboard,
                 matches!(active, Screen::Home),
@@ -543,7 +702,7 @@ impl ShellView {
                 cx,
             ))
             .child(self.render_mobile_nav_item(
-                "m_nav_quiz",
+                "m_quiz",
                 Strings::NAV_QUIZ,
                 IconName::Play,
                 matches!(active, Screen::Quiz),
@@ -551,7 +710,7 @@ impl ShellView {
                 cx,
             ))
             .child(self.render_mobile_nav_item(
-                "m_nav_questions",
+                "m_questions",
                 Strings::NAV_QUESTIONS,
                 IconName::BookOpen,
                 matches!(active, Screen::Questions),
@@ -559,7 +718,7 @@ impl ShellView {
                 cx,
             ))
             .child(self.render_mobile_nav_item(
-                "m_nav_stats",
+                "m_stats",
                 Strings::NAV_STATS,
                 IconName::ChartPie,
                 matches!(active, Screen::Stats | Screen::Results),
@@ -567,7 +726,7 @@ impl ShellView {
                 cx,
             ))
             .child(self.render_mobile_nav_item(
-                "m_nav_settings",
+                "m_settings",
                 Strings::NAV_SETTINGS,
                 IconName::Settings,
                 matches!(active, Screen::Settings),
@@ -582,13 +741,13 @@ impl ShellView {
         label: &'static str,
         icon: IconName,
         is_active: bool,
-        target: Screen,
+        target_screen: Screen,
         cx: &mut Context<Self>,
     ) -> impl IntoElement {
         let theme = cx.theme();
         let colors = theme.colors;
 
-        let text_color = if is_active {
+        let color = if is_active {
             colors.primary
         } else {
             colors.muted_foreground
@@ -600,20 +759,15 @@ impl ShellView {
             .flex_col()
             .items_center()
             .justify_center()
-            .flex_1()
-            .h_full()
+            .gap_1()
+            .px_2()
+            .py_1()
             .cursor_pointer()
             .on_click(cx.listener(move |this, _, _, cx| {
-                this.state.navigate(target.clone());
+                this.state.navigate(target_screen.clone());
                 cx.notify();
             }))
-            .child(Icon::new(icon).size(px(20.0)).text_color(text_color))
-            .child(
-                div()
-                    .text_xs()
-                    .when(is_active, |el| el.font_semibold())
-                    .text_color(text_color)
-                    .child(label),
-            )
+            .child(Icon::new(icon).size(px(20.0)).text_color(color))
+            .child(div().text_xs().font_medium().text_color(color).child(label))
     }
 }
