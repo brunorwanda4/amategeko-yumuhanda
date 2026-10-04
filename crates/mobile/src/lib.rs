@@ -64,19 +64,19 @@ fn android_main(app: android_activity::AndroidApp) {
     Application::with_platform(shared.into_rc())
         .with_assets(amategeko_app::AppAssets)
         .run(move |cx: &mut App| {
-        gpui_kit::init(cx);
+            gpui_kit::init(cx);
 
-        let app_state = AppState::new(storage.clone(), clock.clone());
-        let initial_theme = app_state.settings.theme;
-        amategeko_app::apply_theme(initial_theme, None, cx);
+            let app_state = AppState::new(storage.clone(), clock.clone());
+            let initial_theme = app_state.settings.theme;
+            amategeko_app::apply_theme(initial_theme, None, cx);
 
-        cx.open_window(WindowOptions::default(), |window, cx| {
-            amategeko_app::apply_theme(initial_theme, Some(window), cx);
-            let shell = cx.new(|cx| ShellView::new(app_state, cx));
-            cx.new(|cx| gpui_kit::component::Root::new(shell, window, cx))
-        })
-        .expect("open mobile window");
-    });
+            cx.open_window(WindowOptions::default(), |window, cx| {
+                amategeko_app::apply_theme(initial_theme, Some(window), cx);
+                let shell = cx.new(|cx| ShellView::new(app_state, cx));
+                cx.new(|cx| gpui_kit::component::Root::new(shell, window, cx))
+            })
+            .expect("open mobile window");
+        });
 }
 
 #[cfg(target_os = "ios")]

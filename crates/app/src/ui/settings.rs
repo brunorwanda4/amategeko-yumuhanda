@@ -458,18 +458,31 @@ impl SettingsView {
                                             on_action(this, SettingsAction::ToggleEasyTimer, window, cx);
                                         },
                                     ))
-                                    .child(Self::render_divider(&colors))
-                                    // Keyboard shortcuts switch
-                                    .child(Self::render_switch_row(
-                                        t("settings.desktop_shortcuts", lang),
-                                        "A–D, 1–4, Enter, F",
-                                        "sw_shortcuts",
-                                        s.desktop_shortcuts_enabled,
-                                        cx,
-                                        move |this, window, cx| {
-                                            on_action(this, SettingsAction::ToggleDesktopShortcuts, window, cx);
-                                        },
-                                    ))
+                                    // Keyboard shortcuts switch (desktop only)
+                                    .when(is_desktop, |el| {
+                                        let sub = if cfg!(target_os = "macos") {
+                                            "Cmd+1..5, A–D, Enter, ? / F1"
+                                        } else {
+                                            "Ctrl+1..5, A–D, Enter, ? / F1"
+                                        };
+                                        el.child(Self::render_divider(&colors)).child(
+                                            Self::render_switch_row(
+                                                t("settings.desktop_shortcuts", lang),
+                                                sub,
+                                                "sw_shortcuts",
+                                                s.desktop_shortcuts_enabled,
+                                                cx,
+                                                move |this, window, cx| {
+                                                    on_action(
+                                                        this,
+                                                        SettingsAction::ToggleDesktopShortcuts,
+                                                        window,
+                                                        cx,
+                                                    );
+                                                },
+                                            ),
+                                        )
+                                    })
                                     .child(Self::render_divider(&colors))
                                     // Hard weight image questions switch
                                     .child(Self::render_switch_row(
@@ -587,14 +600,23 @@ impl SettingsView {
                                         on_action(this, SettingsAction::ResetDefaults, window, cx);
                                     })),
                             )
-                            .child(
+                            .child({
+                                let save_hint = if is_desktop && s.desktop_shortcuts_enabled {
+                                    if cfg!(target_os = "macos") {
+                                        format!("{} (Cmd+S)", t("settings.save_btn", lang))
+                                    } else {
+                                        format!("{} (Ctrl+S)", t("settings.save_btn", lang))
+                                    }
+                                } else {
+                                    t("settings.save_btn", lang).to_string()
+                                };
                                 Button::new("btn_save_settings")
                                     .primary()
-                                    .label(t("settings.save_btn", lang))
+                                    .label(save_hint)
                                     .on_click(cx.listener(move |this, _, window, cx| {
                                         on_action(this, SettingsAction::SaveSettings, window, cx);
-                                    })),
-                            ),
+                                    }))
+                            }),
                     ),
             )
     }

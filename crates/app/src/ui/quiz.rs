@@ -109,6 +109,8 @@ impl QuizView {
             t("quiz.next", lang)
         };
 
+        let shortcuts_active = is_desktop && state.settings.desktop_shortcuts_enabled;
+
         div()
             .flex()
             .flex_col()
@@ -140,7 +142,7 @@ impl QuizView {
                                     .flex()
                                     .flex_row()
                                     .items_center()
-                                    .gap_1()
+                                    .gap_1p5()
                                     .px_2p5()
                                     .py_1p5()
                                     .rounded_lg()
@@ -163,7 +165,22 @@ impl QuizView {
                                             .font_medium()
                                             .text_color(colors.muted_foreground)
                                             .child(t("dialog.abandon.confirm", lang)),
-                                    ),
+                                    )
+                                    .when(shortcuts_active && !is_hard, |el| {
+                                        el.child(
+                                            div()
+                                                .text_xs()
+                                                .font_semibold()
+                                                .px_1p5()
+                                                .py_0p5()
+                                                .rounded_md()
+                                                .bg(colors.muted.opacity(0.4))
+                                                .border_1()
+                                                .border_color(colors.border)
+                                                .text_color(colors.muted_foreground)
+                                                .child("Esc"),
+                                        )
+                                    }),
                             )
                             // Mode Pill Badge
                             .child(
@@ -252,7 +269,7 @@ impl QuizView {
                                                         text.font_medium()
                                                     })
                                                     .text_color(timer_color)
-                                                    .child(format!("{:02}:{:02}", mins, secs)),
+                                                    .child(format!("{mins:02}:{secs:02}")),
                                             );
 
                                         if level == TimerLevel::Error {
@@ -277,28 +294,28 @@ impl QuizView {
                                     }
                                     TimerState::Expired => el.child(
                                         div()
-                                                .flex()
-                                                .flex_row()
-                                                .items_center()
-                                                .gap_1p5()
-                                                .px_3()
-                                                .py_1p5()
-                                                .rounded_lg()
-                                                .border_1()
-                                                .border_color(colors.danger)
-                                                .bg(colors.secondary)
-                                                .child(
-                                                    Icon::new(IconName::CircleAlert)
-                                                        .size(px(14.0))
-                                                        .text_color(colors.danger),
-                                                )
-                                                .child(
-                                                    div()
-                                                        .text_xs()
-                                                        .font_bold()
-                                                        .text_color(colors.danger)
-                                                        .child("00:00"),
-                                                ),
+                                            .flex()
+                                            .flex_row()
+                                            .items_center()
+                                            .gap_1p5()
+                                            .px_3()
+                                            .py_1p5()
+                                            .rounded_lg()
+                                            .border_1()
+                                            .border_color(colors.danger)
+                                            .bg(colors.secondary)
+                                            .child(
+                                                Icon::new(IconName::CircleAlert)
+                                                    .size(px(14.0))
+                                                    .text_color(colors.danger),
+                                            )
+                                            .child(
+                                                div()
+                                                    .text_xs()
+                                                    .font_bold()
+                                                    .text_color(colors.danger)
+                                                    .child("00:00"),
+                                            ),
                                     ),
                                     TimerState::Elapsed(elapsed) => {
                                         let mins = elapsed / 60;
@@ -325,7 +342,7 @@ impl QuizView {
                                                         .text_xs()
                                                         .font_bold()
                                                         .text_color(colors.foreground)
-                                                        .child(format!("{:02}:{:02}", mins, secs)),
+                                                        .child(format!("{mins:02}:{secs:02}")),
                                                 ),
                                         )
                                     }
@@ -345,8 +362,12 @@ impl QuizView {
                                         .flex()
                                         .items_center()
                                         .justify_center()
-                                        .w(px(36.0))
-                                        .h(px(36.0))
+                                        .when(!shortcuts_active, |btn| {
+                                            btn.w(px(36.0)).h(px(36.0))
+                                        })
+                                        .when(shortcuts_active, |btn| {
+                                            btn.h(px(36.0)).px_2().gap_1p5()
+                                        })
                                         .rounded_lg()
                                         .border_1()
                                         .border_color(if is_flagged {
@@ -364,7 +385,16 @@ impl QuizView {
                                             Icon::new(IconName::TriangleAlert)
                                                 .size(px(17.0))
                                                 .text_color(flag_color),
-                                        ),
+                                        )
+                                        .when(shortcuts_active, |btn| {
+                                            btn.child(
+                                                div()
+                                                    .text_xs()
+                                                    .font_semibold()
+                                                    .text_color(colors.muted_foreground)
+                                                    .child("F"),
+                                            )
+                                        }),
                                 )
                             })
                             // Focus / Fullscreen mode toggle
@@ -416,8 +446,14 @@ impl QuizView {
                                     .flex()
                                     .items_center()
                                     .justify_center()
-                                    .w(px(36.0))
-                                    .h(px(36.0))
+                                    .when(
+                                        !shortcuts_active || attempt.mode != QuizMode::Byoroshye,
+                                        |btn| btn.w(px(36.0)).h(px(36.0)),
+                                    )
+                                    .when(
+                                        shortcuts_active && attempt.mode == QuizMode::Byoroshye,
+                                        |btn| btn.h(px(36.0)).px_2().gap_1p5(),
+                                    )
                                     .rounded_lg()
                                     .border_1()
                                     .border_color(if is_starred {
@@ -433,9 +469,21 @@ impl QuizView {
                                     }))
                                     .child(
                                         Icon::new(star_icon).size(px(18.0)).text_color(star_color),
+                                    )
+                                    .when(
+                                        shortcuts_active && attempt.mode == QuizMode::Byoroshye,
+                                        |btn| {
+                                            btn.child(
+                                                div()
+                                                    .text_xs()
+                                                    .font_semibold()
+                                                    .text_color(colors.muted_foreground)
+                                                    .child("B"),
+                                            )
+                                        },
                                     ),
                             ),
-                    ),
+                    )
             )
             // Time Remaining Bar (Medium and Hard)
             .when(
@@ -577,27 +625,29 @@ impl QuizView {
                                                 ),
                                         )
                                         // Shortcut navigation indicator
-                                        .child(
-                                            div()
-                                                .flex()
-                                                .flex_row()
-                                                .items_center()
-                                                .gap_2()
-                                                .mt_3()
-                                                .px_1()
-                                                .child(
-                                                    svg()
-                                                        .path("icons/keyboard.svg")
-                                                        .size(px(14.0))
-                                                        .text_color(colors.muted_foreground),
-                                                )
-                                                .child(
-                                                    div()
-                                                        .text_xs()
-                                                        .text_color(colors.muted_foreground)
-                                                        .child(t("quiz.shortcut_hint", lang)),
-                                                ),
-                                        ),
+                                        .when(shortcuts_active, |col| {
+                                            col.child(
+                                                div()
+                                                    .flex()
+                                                    .flex_row()
+                                                    .items_center()
+                                                    .gap_2()
+                                                    .mt_3()
+                                                    .px_1()
+                                                    .child(
+                                                        svg()
+                                                            .path("icons/keyboard.svg")
+                                                            .size(px(14.0))
+                                                            .text_color(colors.muted_foreground),
+                                                    )
+                                                    .child(
+                                                        div()
+                                                            .text_xs()
+                                                            .text_color(colors.muted_foreground)
+                                                            .child(t("quiz.shortcut_hint", lang)),
+                                                    ),
+                                            )
+                                        }),
                                 )
                             })
                             // RIGHT / MAIN COLUMN: Question Text, Hint / Feedback, Options, Bottom Actions
@@ -795,7 +845,22 @@ impl QuizView {
                                                             .font_medium()
                                                             .text_color(colors.foreground)
                                                             .child(t("quiz.previous", lang)),
-                                                    ),
+                                                    )
+                                                    .when(shortcuts_active && !is_hard, |el| {
+                                                        el.child(
+                                                            div()
+                                                                .text_xs()
+                                                                .font_semibold()
+                                                                .px_1p5()
+                                                                .py_0p5()
+                                                                .rounded_md()
+                                                                .bg(colors.muted.opacity(0.4))
+                                                                .border_1()
+                                                                .border_color(colors.border)
+                                                                .text_color(colors.muted_foreground)
+                                                                .child("←"),
+                                                        )
+                                                    }),
                                             )
                                             // Right Actions: Simbuka (Skip) & Ibikurikira (Next) / Soza (Finish)
                                             .child(
@@ -812,6 +877,7 @@ impl QuizView {
                                                                 .flex()
                                                                 .flex_row()
                                                                 .items_center()
+                                                                .gap_2()
                                                                 .px_4()
                                                                 .py_2()
                                                                 .rounded_xl()
@@ -836,6 +902,33 @@ impl QuizView {
                                                                             "quiz.skip",
                                                                             lang,
                                                                         )),
+                                                                )
+                                                                .when(
+                                                                    shortcuts_active
+                                                                        && attempt.mode
+                                                                            == QuizMode::Byoroshye,
+                                                                    |el| {
+                                                                        el.child(
+                                                                            div()
+                                                                                .text_xs()
+                                                                                .font_semibold()
+                                                                                .px_1p5()
+                                                                                .py_0p5()
+                                                                                .rounded_md()
+                                                                                .bg(colors
+                                                                                    .muted
+                                                                                    .opacity(0.4))
+                                                                                .border_1()
+                                                                                .border_color(
+                                                                                    colors.border,
+                                                                                )
+                                                                                .text_color(
+                                                                                    colors
+                                                                                        .muted_foreground,
+                                                                                )
+                                                                                .child("S"),
+                                                                        )
+                                                                    },
                                                                 ),
                                                         )
                                                     })
@@ -877,6 +970,37 @@ impl QuizView {
                                                                     .text_color(colors.foreground)
                                                                     .child(next_btn_label),
                                                             )
+                                                            .when(shortcuts_active, |el| {
+                                                                let hint = if is_last
+                                                                    && attempt.mode
+                                                                        == QuizMode::Hagati
+                                                                {
+                                                                    if cfg!(target_os = "macos") {
+                                                                        "Cmd+Enter"
+                                                                    } else {
+                                                                        "Ctrl+Enter"
+                                                                    }
+                                                                } else {
+                                                                    "Enter"
+                                                                };
+                                                                el.child(
+                                                                    div()
+                                                                        .text_xs()
+                                                                        .font_semibold()
+                                                                        .px_1p5()
+                                                                        .py_0p5()
+                                                                        .rounded_md()
+                                                                        .bg(colors
+                                                                            .muted
+                                                                            .opacity(0.4))
+                                                                        .border_1()
+                                                                        .border_color(colors.border)
+                                                                        .text_color(
+                                                                            colors.muted_foreground,
+                                                                        )
+                                                                        .child(hint),
+                                                                )
+                                                            })
                                                             .child(
                                                                 Icon::new(IconName::ArrowRight)
                                                                     .size(px(16.0))
@@ -886,7 +1010,7 @@ impl QuizView {
                                             ),
                                     )
                                     // Shortcut navigation indicator (shown below navigation when there is no image column)
-                                    .when(!current_q.has_image, |col| {
+                                    .when(!current_q.has_image && shortcuts_active, |col| {
                                         col.child(
                                             div()
                                                 .flex()

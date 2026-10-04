@@ -76,14 +76,20 @@ mod tests {
     #[test]
     fn test_load_question_images() {
         let assets = AppAssets;
-        let img1 = assets.load("assets/images/q229.png").expect("load assets/images/q229.png");
+        let img1 = assets
+            .load("assets/images/q229.png")
+            .expect("load assets/images/q229.png");
         assert!(img1.is_some(), "assets/images/q229.png should not be None");
         assert!(!img1.unwrap().is_empty());
 
-        let img2 = assets.load("images/q229.png").expect("load images/q229.png");
+        let img2 = assets
+            .load("images/q229.png")
+            .expect("load images/q229.png");
         assert!(img2.is_some(), "images/q229.png should not be None");
 
-        let icon = assets.load("icons/keyboard.svg").expect("load keyboard icon");
+        let icon = assets
+            .load("icons/keyboard.svg")
+            .expect("load keyboard icon");
         assert!(icon.is_some());
     }
 }
