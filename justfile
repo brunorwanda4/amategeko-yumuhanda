@@ -1,5 +1,7 @@
 # Fast development loop tasks
 
+set windows-shell := ["powershell.exe", "-NoLogo", "-Command"]
+
 # Auto rebuild and restart the desktop app on changes
 dev:
     watchexec -r -e rs,toml,json -w crates -w assets -- cargo run -p desktop
