@@ -74,4 +74,5 @@ Tracking milestones for "Amategeko y'Umuhanda" (Rwanda driving-test theory study
   - [x] Restore the saved theme during desktop and mobile startup (2026-10-04)
   - [x] Refresh the quiz layout and add fullscreen focus mode and keyboard shortcuts (2026-10-04)
   - [x] Implement Medium and Hard timer warning states (2026-10-04: level-aware pill, remaining-time bar, dismissible alerts, reduced-motion-safe pulse, and expiry submission)
+  - [x] Desktop keyboard shortcut registry (`crates/app/src/shortcuts.rs`) with help dialog (`?` / `F1`), button badges, input focus detection, mode restrictions (Hard strict mode disables navigation/back; Easy blocks Next before answering; Medium Ctrl+Enter finish confirmation), and desktop-only Settings switch (Cmd on macOS, Ctrl elsewhere). Note: Stats 1–4 filters are registered in registry but their action is deferred until stats screen filter controls are built. (2026-10-04)
 - [ ] **Milestone 13: Optional iOS Verification** (Requires macOS + Xcode 15+)

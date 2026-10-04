@@ -1,3 +1,4 @@
+use crate::shortcuts::{ShortcutAction, ShortcutRegistry};
 use crate::state::{AppState, Screen};
 use crate::ui::home::HomeView;
 use crate::ui::questions::{QuestionsFilter, QuestionsView};
@@ -13,6 +14,7 @@ use gpui::InteractiveElement as _;
 use gpui_kit::assets::IconName;
 use gpui_kit::base::StyledExt;
 use gpui_kit::component::alert::Alert;
+use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{ActiveTheme, Icon};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
@@ -48,6 +50,11 @@ pub struct ShellView {
     pub settings_confirm_clear: bool,
     pub focus_mode: bool,
     pub focus_handle: FocusHandle,
+    pub registry: ShortcutRegistry,
+    pub show_help_dialog: bool,
+    pub show_finish_confirm_dialog: bool,
+    pub questions_search_focused: bool,
+    pub questions_selected_idx: usize,
     timer_tracker: TimerTracker,
     timer_attempt_id: Option<String>,
     timer_banner: Option<TimerBanner>,
@@ -81,6 +88,11 @@ impl ShellView {
             settings_confirm_clear: false,
             focus_mode: false,
             focus_handle: cx.focus_handle(),
+            registry: ShortcutRegistry::new(),
+            show_help_dialog: false,
+            show_finish_confirm_dialog: false,
+            questions_search_focused: false,
+            questions_selected_idx: 0,
             timer_tracker: TimerTracker::new(),
             timer_attempt_id: None,
             timer_banner: None,
@@ -244,6 +256,13 @@ impl Render for ShellView {
                     cx.notify();
                 },
                 |this, window, cx| {
+                    if let Some(att) = &this.state.current_attempt {
+                        if att.mode == QuizMode::Hagati {
+                            this.show_finish_confirm_dialog = true;
+                            cx.notify();
+                            return;
+                        }
+                    }
                     if window.is_fullscreen() {
                         window.toggle_fullscreen();
                     }
@@ -468,7 +487,6 @@ impl Render for ShellView {
 
         let root = if is_desktop {
             // Desktop Layout: Left Sidebar + Content
-            // Focus Mode in Quiz hides the sidebar for a pure, distraction-free reading experience
             let show_sidebar = !(is_in_quiz && self.focus_mode);
 
             div()
@@ -491,8 +509,6 @@ impl Render for ShellView {
                     el.child(self.render_mobile_bottom_bar(cx))
                 })
         };
-
-        let shortcuts_enabled = self.state.settings.desktop_shortcuts_enabled;
 
         let banner = self.timer_banner;
         let language = self.state.settings.language;
@@ -546,19 +562,25 @@ impl Render for ShellView {
             .key_context("Shell")
             .on_key_down(
                 cx.listener(move |this, event: &gpui::KeyDownEvent, window, cx| {
-                    if this.state.active_screen == Screen::Questions {
+                    let is_typing = this.questions_search_focused
+                        && this.state.active_screen == Screen::Questions;
+
+                    if is_typing {
                         let key = event.keystroke.key.as_str();
                         if key.eq_ignore_ascii_case("backspace") {
                             this.questions_search.pop();
                             cx.notify();
                             return;
                         } else if key.eq_ignore_ascii_case("escape") {
-                            this.questions_search.clear();
+                            this.questions_search_focused = false;
                             cx.notify();
                             return;
                         } else if key.chars().count() == 1 {
                             let ch = key.chars().next().unwrap();
-                            if !ch.is_control() {
+                            let is_mod = event.keystroke.modifiers.control
+                                || event.keystroke.modifiers.alt
+                                || event.keystroke.modifiers.platform;
+                            if !ch.is_control() && !is_mod {
                                 this.questions_search.push(ch);
                                 cx.notify();
                                 return;
@@ -566,13 +588,88 @@ impl Render for ShellView {
                         }
                     }
 
-                    if this.state.active_screen != Screen::Quiz || !shortcuts_enabled {
-                        return;
-                    }
+                    let action = this.registry.resolve_event(
+                        event,
+                        this.state.active_screen.clone(),
+                        this.state.current_attempt.as_ref().map(|a| a.mode),
+                        this.state.settings.desktop_shortcuts_enabled && is_desktop,
+                        is_typing,
+                    );
 
-                    let key = event.keystroke.key.to_lowercase();
-                    match key.as_str() {
-                        "a" | "1" => {
+                    let Some(action) = action else {
+                        return;
+                    };
+
+                    match action {
+                        ShortcutAction::ShowHelp => {
+                            this.show_help_dialog = !this.show_help_dialog;
+                            cx.notify();
+                        }
+                        ShortcutAction::CloseOrBack => {
+                            if this.show_help_dialog {
+                                this.show_help_dialog = false;
+                            } else if this.show_finish_confirm_dialog {
+                                this.show_finish_confirm_dialog = false;
+                            } else if this.settings_confirm_clear {
+                                this.settings_confirm_clear = false;
+                            } else if this.questions_search_focused {
+                                this.questions_search_focused = false;
+                            } else if this.state.active_screen == Screen::Results {
+                                this.state.navigate(Screen::Home);
+                            } else if this.focus_mode {
+                                this.focus_mode = false;
+                                if window.is_fullscreen() {
+                                    window.toggle_fullscreen();
+                                }
+                            } else if this.state.active_screen == Screen::Quiz {
+                                if window.is_fullscreen() {
+                                    window.toggle_fullscreen();
+                                }
+                                this.focus_mode = false;
+                                this.state.discard_in_progress();
+                                this.state.navigate(Screen::Home);
+                            } else if this.state.active_screen != Screen::Home {
+                                this.state.navigate(Screen::Home);
+                            }
+                            cx.notify();
+                        }
+                        ShortcutAction::NavHome => {
+                            this.state.navigate(Screen::Home);
+                            cx.notify();
+                        }
+                        ShortcutAction::NavQuiz => {
+                            this.state.navigate(Screen::Quiz);
+                            cx.notify();
+                        }
+                        ShortcutAction::NavQuestions => {
+                            this.state.navigate(Screen::Questions);
+                            cx.notify();
+                        }
+                        ShortcutAction::NavStats => {
+                            this.state.navigate(Screen::Stats);
+                            cx.notify();
+                        }
+                        ShortcutAction::NavSettings => {
+                            this.state.navigate(Screen::Settings);
+                            cx.notify();
+                        }
+                        ShortcutAction::StartEasy => {
+                            this.state.start_quiz(QuizMode::Byoroshye);
+                            cx.notify();
+                        }
+                        ShortcutAction::StartMedium => {
+                            this.state.start_quiz(QuizMode::Hagati);
+                            cx.notify();
+                        }
+                        ShortcutAction::StartHard => {
+                            this.state.start_quiz(QuizMode::Bikomeye);
+                            cx.notify();
+                        }
+                        ShortcutAction::ResumeExam => {
+                            this.state.resume_attempt();
+                            cx.notify();
+                        }
+                        ShortcutAction::ChooseOption(opt) => {
                             let locked = this
                                 .state
                                 .current_attempt
@@ -580,91 +677,73 @@ impl Render for ShellView {
                                 .map(|a| a.is_current_locked())
                                 .unwrap_or(false);
                             if !locked {
-                                this.state.record_current_answer("a");
+                                this.state.record_current_answer(&opt.to_string());
                                 cx.notify();
                             }
                         }
-                        "b" | "2" => {
-                            let locked = this
-                                .state
-                                .current_attempt
-                                .as_ref()
-                                .map(|a| a.is_current_locked())
-                                .unwrap_or(false);
-                            if !locked {
-                                this.state.record_current_answer("b");
-                                cx.notify();
-                            }
-                        }
-                        "c" | "3" => {
-                            let locked = this
-                                .state
-                                .current_attempt
-                                .as_ref()
-                                .map(|a| a.is_current_locked())
-                                .unwrap_or(false);
-                            if !locked {
-                                this.state.record_current_answer("c");
-                                cx.notify();
-                            }
-                        }
-                        "d" | "4" => {
-                            let locked = this
-                                .state
-                                .current_attempt
-                                .as_ref()
-                                .map(|a| a.is_current_locked())
-                                .unwrap_or(false);
-                            if !locked {
-                                this.state.record_current_answer("d");
-                                cx.notify();
-                            }
-                        }
-                        "enter" => {
+                        ShortcutAction::NextOrConfirm => {
                             if let Some(att) = &mut this.state.current_attempt {
                                 if att.mode == QuizMode::Bikomeye {
                                     let _ = QuizEngine::confirm_and_advance_hard(att);
                                     let _ = this.state.storage.save_in_progress(att);
-                                } else {
+                                    cx.notify();
+                                } else if ShortcutRegistry::can_advance_easy_next(att) {
                                     let is_last = att.current_index + 1 == att.total_questions();
                                     if is_last {
-                                        if window.is_fullscreen() {
-                                            window.toggle_fullscreen();
+                                        if att.mode == QuizMode::Hagati {
+                                            this.show_finish_confirm_dialog = true;
+                                        } else {
+                                            if window.is_fullscreen() {
+                                                window.toggle_fullscreen();
+                                            }
+                                            this.focus_mode = false;
+                                            this.state.finish_current_quiz();
                                         }
-                                        this.focus_mode = false;
-                                        this.state.finish_current_quiz();
                                     } else {
                                         let _ = QuizEngine::next_question(att);
                                         let _ = this.state.storage.save_in_progress(att);
                                     }
+                                    cx.notify();
                                 }
-                                cx.notify();
                             }
                         }
-                        "arrowleft" | "left" => {
+                        ShortcutAction::PrevQuestion => {
                             if let Some(att) = &mut this.state.current_attempt {
                                 let _ = QuizEngine::previous_question(att);
                                 let _ = this.state.storage.save_in_progress(att);
                                 cx.notify();
                             }
                         }
-                        "arrowright" | "right" => {
+                        ShortcutAction::NextQuestion => {
                             if let Some(att) = &mut this.state.current_attempt {
-                                let is_last = att.current_index + 1 == att.total_questions();
-                                if is_last {
-                                    if window.is_fullscreen() {
-                                        window.toggle_fullscreen();
+                                if ShortcutRegistry::can_advance_easy_next(att) {
+                                    let is_last = att.current_index + 1 == att.total_questions();
+                                    if is_last {
+                                        if att.mode == QuizMode::Hagati {
+                                            this.show_finish_confirm_dialog = true;
+                                        } else {
+                                            if window.is_fullscreen() {
+                                                window.toggle_fullscreen();
+                                            }
+                                            this.focus_mode = false;
+                                            this.state.finish_current_quiz();
+                                        }
+                                    } else {
+                                        let _ = QuizEngine::next_question(att);
+                                        let _ = this.state.storage.save_in_progress(att);
                                     }
-                                    this.focus_mode = false;
-                                    this.state.finish_current_quiz();
-                                } else {
-                                    let _ = QuizEngine::next_question(att);
-                                    let _ = this.state.storage.save_in_progress(att);
+                                    cx.notify();
                                 }
+                            }
+                        }
+                        ShortcutAction::SkipQuestion => {
+                            if let Some(att) = &mut this.state.current_attempt {
+                                let _ = QuizEngine::skip_question(att);
+                                let _ = this.state.storage.save_in_progress(att);
                                 cx.notify();
                             }
                         }
-                        "s" => {
+                        ShortcutAction::StarQuestion => {
                             if let Some(att) = &this.state.current_attempt {
                                 if let Some(q) = att.current_question() {
                                     this.state.progress.toggle_starred(q.id);
@@ -673,25 +752,115 @@ impl Render for ShellView {
                                 }
                             }
                         }
-                        "f" => {
-                            this.focus_mode = !this.focus_mode;
-                            if this.focus_mode {
-                                if !window.is_fullscreen() {
-                                    window.toggle_fullscreen();
+                        ShortcutAction::FlagQuestion => {
+                            if let Some(att) = &mut this.state.current_attempt {
+                                let _ = QuizEngine::toggle_current_flag(att);
+                                let _ = this.state.storage.save_in_progress(att);
+                                cx.notify();
+                            }
+                        }
+                        ShortcutAction::FinishExam => {
+                            this.show_finish_confirm_dialog = true;
+                            cx.notify();
+                        }
+                        ShortcutAction::RetryQuiz => {
+                            this.state.start_quiz(QuizMode::Byoroshye);
+                            cx.notify();
+                        }
+                        ShortcutAction::RetryMistakes => {
+                            this.state.start_retry_wrong();
+                            cx.notify();
+                        }
+                        ShortcutAction::FilterResultsAll => {
+                            this.results_filter = ResultFilter::All;
+                            cx.notify();
+                        }
+                        ShortcutAction::FilterResultsCorrect => {
+                            this.results_filter = ResultFilter::Correct;
+                            cx.notify();
+                        }
+                        ShortcutAction::FilterResultsWrong => {
+                            this.results_filter = ResultFilter::Wrong;
+                            cx.notify();
+                        }
+                        ShortcutAction::FocusSearch => {
+                            this.questions_search_focused = true;
+                            cx.notify();
+                        }
+                        ShortcutAction::MoveUp => {
+                            if this.questions_selected_idx > 0 {
+                                this.questions_selected_idx -= 1;
+                                cx.notify();
+                            }
+                        }
+                        ShortcutAction::MoveDown => {
+                            let total = this
+                                .state
+                                .bank
+                                .search_for_lang(
+                                    &this.questions_search,
+                                    this.questions_filter == QuestionsFilter::HasImage,
+                                    this.questions_filter == QuestionsFilter::Starred,
+                                    this.questions_filter == QuestionsFilter::Mistakes,
+                                    &this.state.progress.starred_questions,
+                                    &this.state.progress.question_stats,
+                                    this.state.settings.question_language,
+                                )
+                                .len();
+                            if total > 0 && this.questions_selected_idx + 1 < total {
+                                this.questions_selected_idx += 1;
+                                cx.notify();
+                            }
+                        }
+                        ShortcutAction::ToggleExpand => {
+                            let questions = this.state.bank.search_for_lang(
+                                &this.questions_search,
+                                this.questions_filter == QuestionsFilter::HasImage,
+                                this.questions_filter == QuestionsFilter::Starred,
+                                this.questions_filter == QuestionsFilter::Mistakes,
+                                &this.state.progress.starred_questions,
+                                &this.state.progress.question_stats,
+                                this.state.settings.question_language,
+                            );
+                            if let Some(q) = questions.get(this.questions_selected_idx) {
+                                if this.questions_expanded.contains(&q.id) {
+                                    this.questions_expanded.remove(&q.id);
+                                } else {
+                                    this.questions_expanded.insert(q.id);
                                 }
-                            } else if window.is_fullscreen() {
-                                window.toggle_fullscreen();
+                                cx.notify();
                             }
+                        }
+                        ShortcutAction::ToggleStarSelected => {
+                            let questions = this.state.bank.search_for_lang(
+                                &this.questions_search,
+                                this.questions_filter == QuestionsFilter::HasImage,
+                                this.questions_filter == QuestionsFilter::Starred,
+                                this.questions_filter == QuestionsFilter::Mistakes,
+                                &this.state.progress.starred_questions,
+                                &this.state.progress.question_stats,
+                                this.state.settings.question_language,
+                            );
+                            if let Some(q) = questions.get(this.questions_selected_idx) {
+                                this.state.progress.toggle_starred(q.id);
+                                let _ = this.state.storage.save_progress(&this.state.progress);
+                                cx.notify();
+                            }
+                        }
+                        ShortcutAction::ToggleHideAnswers => {
+                            this.state.settings.study_hide_answers =
+                                !this.state.settings.study_hide_answers;
+                            this.state.save_settings(this.state.settings.clone());
+                            this.questions_revealed.clear();
                             cx.notify();
                         }
-                        "escape" if this.focus_mode => {
-                            this.focus_mode = false;
-                            if window.is_fullscreen() {
-                                window.toggle_fullscreen();
-                            }
+                        ShortcutAction::FilterStats(_) => {
+                            // Stats screen filter controls are not built yet; skipped per task instructions.
+                        }
+                        ShortcutAction::SaveSettings => {
+                            this.state.save_settings(this.state.settings.clone());
                             cx.notify();
                         }
-                        _ => {}
                     }
                 }),
             );
@@ -700,7 +869,104 @@ impl Render for ShellView {
             window.focus(&self.focus_handle, cx);
         }
 
-        root
+        // Dialog overlays
+        let help_dialog = if is_desktop && self.show_help_dialog {
+            Some(
+                self.registry
+                    .render_help_dialog(language, cx, |this, _, cx| {
+                        this.show_help_dialog = false;
+                        cx.notify();
+                    }),
+            )
+        } else {
+            None
+        };
+
+        let finish_dialog = if self.show_finish_confirm_dialog {
+            Some(
+                div()
+                    .id("finish_confirm_dialog_backdrop")
+                    .absolute()
+                    .inset_0()
+                    .flex()
+                    .items_center()
+                    .justify_center()
+                    .bg(gpui::Rgba {
+                        r: 0.0,
+                        g: 0.0,
+                        b: 0.0,
+                        a: 0.65,
+                    })
+                    .on_click(cx.listener(|this, _, _, cx| {
+                        this.show_finish_confirm_dialog = false;
+                        cx.notify();
+                    }))
+                    .child(
+                        div()
+                            .id("finish_confirm_dialog_container")
+                            .flex()
+                            .flex_col()
+                            .w(px(440.0))
+                            .p_6()
+                            .rounded_2xl()
+                            .border_1()
+                            .border_color(colors.border)
+                            .bg(colors.background)
+                            .gap_4()
+                            .on_mouse_down(gpui::MouseButton::Left, |_, _, _| {})
+                            .child(
+                                div()
+                                    .text_lg()
+                                    .font_bold()
+                                    .text_color(colors.foreground)
+                                    .child(t("quiz.confirm_finish_title", language)),
+                            )
+                            .child(
+                                div()
+                                    .text_sm()
+                                    .text_color(colors.muted_foreground)
+                                    .child(t("quiz.confirm_finish_message", language)),
+                            )
+                            .child(
+                                div()
+                                    .flex()
+                                    .flex_row()
+                                    .justify_end()
+                                    .gap_3()
+                                    .pt_2()
+                                    .child(
+                                        Button::new("cancel_finish_btn")
+                                            .ghost()
+                                            .label(t("dialog.finish.cancel", language))
+                                            .on_click(cx.listener(|this, _, _, cx| {
+                                                this.show_finish_confirm_dialog = false;
+                                                cx.notify();
+                                            })),
+                                    )
+                                    .child(
+                                        Button::new("confirm_finish_btn")
+                                            .danger()
+                                            .label(t("quiz.finish", language))
+                                            .on_click(cx.listener(|this, _, window, cx| {
+                                                this.show_finish_confirm_dialog = false;
+                                                if window.is_fullscreen() {
+                                                    window.toggle_fullscreen();
+                                                }
+                                                this.focus_mode = false;
+                                                this.state.finish_current_quiz();
+                                                cx.notify();
+                                            })),
+                                    ),
+                            ),
+                    )
+                    .into_any_element(),
+            )
+        } else {
+            None
+        };
+
+        root.when_some(help_dialog, |el, dlg| el.child(dlg))
+            .when_some(finish_dialog, |el, dlg| el.child(dlg))
     }
 }
 
@@ -710,6 +976,8 @@ impl ShellView {
         let colors = theme.colors;
         let active = &self.state.active_screen;
         let lang = self.state.settings.language;
+        let shortcuts_on = self.state.settings.desktop_shortcuts_enabled;
+        let mod_name = crate::shortcuts::KeyCombo::primary_modifier_name();
 
         div()
             .flex()
@@ -755,6 +1023,11 @@ impl ShellView {
                         IconName::House,
                         matches!(active, Screen::Home),
                         Screen::Home,
+                        if shortcuts_on {
+                            Some(if mod_name == "Cmd" { "Cmd+1" } else { "Ctrl+1" })
+                        } else {
+                            None
+                        },
                         cx,
                     ))
                     .child(self.render_desktop_nav_item(
@@ -763,6 +1036,11 @@ impl ShellView {
                         IconName::Play,
                         matches!(active, Screen::Quiz),
                         Screen::Quiz,
+                        if shortcuts_on {
+                            Some(if mod_name == "Cmd" { "Cmd+2" } else { "Ctrl+2" })
+                        } else {
+                            None
+                        },
                         cx,
                     ))
                     .child(self.render_desktop_nav_item(
@@ -771,6 +1049,11 @@ impl ShellView {
                         IconName::BookOpen,
                         matches!(active, Screen::Questions),
                         Screen::Questions,
+                        if shortcuts_on {
+                            Some(if mod_name == "Cmd" { "Cmd+3" } else { "Ctrl+3" })
+                        } else {
+                            None
+                        },
                         cx,
                     ))
                     .child(self.render_desktop_nav_item(
@@ -779,6 +1062,11 @@ impl ShellView {
                         IconName::ChartPie,
                         matches!(active, Screen::Stats | Screen::Results),
                         Screen::Stats,
+                        if shortcuts_on {
+                            Some(if mod_name == "Cmd" { "Cmd+4" } else { "Ctrl+4" })
+                        } else {
+                            None
+                        },
                         cx,
                     ))
                     .child(self.render_desktop_nav_item(
@@ -787,11 +1075,67 @@ impl ShellView {
                         IconName::Settings,
                         matches!(active, Screen::Settings),
                         Screen::Settings,
+                        if shortcuts_on {
+                            Some(if mod_name == "Cmd" { "Cmd+5" } else { "Ctrl+5" })
+                        } else {
+                            None
+                        },
                         cx,
                     )),
             )
+            .child(div().flex_1()) // spacer to push help button to bottom
+            .child(
+                div()
+                    .id("sidebar_help_button")
+                    .flex()
+                    .flex_row()
+                    .items_center()
+                    .justify_between()
+                    .px_3()
+                    .py_2()
+                    .rounded_xl()
+                    .cursor_pointer()
+                    .hover(|el| el.bg(colors.sidebar_accent))
+                    .on_click(cx.listener(|this, _, _, cx| {
+                        this.show_help_dialog = !this.show_help_dialog;
+                        cx.notify();
+                    }))
+                    .child(
+                        div()
+                            .flex()
+                            .flex_row()
+                            .items_center()
+                            .gap_2()
+                            .child(
+                                Icon::new(IconName::BookOpen)
+                                    .size(px(16.0))
+                                    .text_color(colors.muted_foreground),
+                            )
+                            .child(
+                                div()
+                                    .text_xs()
+                                    .font_medium()
+                                    .text_color(colors.muted_foreground)
+                                    .child(t("shortcuts.title", lang)),
+                            ),
+                    )
+                    .child(
+                        div()
+                            .px_1p5()
+                            .py_0p5()
+                            .rounded_md()
+                            .bg(colors.background)
+                            .border_1()
+                            .border_color(colors.border)
+                            .text_xs()
+                            .font_bold()
+                            .text_color(colors.muted_foreground)
+                            .child("?"),
+                    ),
+            )
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn render_desktop_nav_item(
         &self,
         id: &'static str,
@@ -799,6 +1143,7 @@ impl ShellView {
         icon: IconName,
         is_active: bool,
         target_screen: Screen,
+        shortcut_badge: Option<&'static str>,
         cx: &mut Context<Self>,
     ) -> impl IntoElement {
         let theme = cx.theme();
@@ -820,7 +1165,7 @@ impl ShellView {
             .flex()
             .flex_row()
             .items_center()
-            .gap_2p5()
+            .justify_between()
             .px_3()
             .py_2()
             .rounded_lg()
@@ -831,14 +1176,36 @@ impl ShellView {
                 this.state.navigate(target_screen.clone());
                 cx.notify();
             }))
-            .child(Icon::new(icon).size(px(16.0)).text_color(text_color))
             .child(
                 div()
-                    .text_xs()
-                    .font_semibold()
-                    .text_color(text_color)
-                    .child(label),
+                    .flex()
+                    .flex_row()
+                    .items_center()
+                    .gap_2p5()
+                    .child(Icon::new(icon).size(px(16.0)).text_color(text_color))
+                    .child(
+                        div()
+                            .text_xs()
+                            .font_semibold()
+                            .text_color(text_color)
+                            .child(label),
+                    ),
             )
+            .when_some(shortcut_badge, |el, badge| {
+                el.child(
+                    div()
+                        .px_1p5()
+                        .py_0p5()
+                        .rounded_md()
+                        .bg(colors.background)
+                        .border_1()
+                        .border_color(colors.border)
+                        .text_xs()
+                        .font_bold()
+                        .text_color(colors.muted_foreground)
+                        .child(badge),
+                )
+            })
     }
 
     fn render_mobile_top_bar(&self, cx: &mut Context<Self>) -> impl IntoElement {
@@ -955,10 +1322,8 @@ impl ShellView {
             .flex()
             .flex_col()
             .items_center()
-            .justify_center()
             .gap_1()
-            .px_2()
-            .py_1()
+            .p_2()
             .cursor_pointer()
             .on_click(cx.listener(move |this, _, _, cx| {
                 this.state.navigate(target_screen.clone());

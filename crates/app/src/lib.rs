@@ -1,11 +1,13 @@
 //! Shared UI for Amategeko y'Umuhanda (Desktop & Mobile).
 
 pub mod assets;
+pub mod shortcuts;
 pub mod state;
 
 pub use assets::AppAssets;
 pub mod ui;
 
+pub use shortcuts::{ShortcutAction, ShortcutDef, ShortcutRegistry};
 pub use state::{AppState, Screen};
 pub use ui::home::HomeView;
 pub use ui::quiz::QuizView;
