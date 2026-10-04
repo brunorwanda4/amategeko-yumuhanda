@@ -73,5 +73,5 @@ Tracking milestones for "Amategeko y'Umuhanda" (Rwanda driving-test theory study
   - [x] Add branded Windows executable and Android launcher icons (2026-10-04)
   - [x] Restore the saved theme during desktop and mobile startup (2026-10-04)
   - [x] Refresh the quiz layout and add fullscreen focus mode and keyboard shortcuts (2026-10-04)
-  - [ ] Implement Medium and Hard timer warning states (specified 2026-10-04; implementation pending)
+  - [x] Implement Medium and Hard timer warning states (2026-10-04: level-aware pill, remaining-time bar, dismissible alerts, reduced-motion-safe pulse, and expiry submission)
 - [ ] **Milestone 13: Optional iOS Verification** (Requires macOS + Xcode 15+)

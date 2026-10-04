@@ -61,7 +61,9 @@ fn android_main(app: android_activity::AndroidApp) {
         }
     };
 
-    Application::with_platform(shared.into_rc()).run(move |cx: &mut App| {
+    Application::with_platform(shared.into_rc())
+        .with_assets(amategeko_app::AppAssets)
+        .run(move |cx: &mut App| {
         gpui_kit::init(cx);
 
         let app_state = AppState::new(storage.clone(), clock.clone());

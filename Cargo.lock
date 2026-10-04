@@ -160,10 +160,12 @@ name = "amategeko-app"
 version = "0.1.0"
 dependencies = [
  "amategeko-core",
+ "anyhow",
  "gpui-kit",
  "gpui-pre",
  "log",
  "rand 0.8.8",
+ "rust-embed",
  "serde",
  "serde_json",
 ]

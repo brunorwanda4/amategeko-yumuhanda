@@ -1,10 +1,12 @@
 use crate::state::AppState;
-use amategeko_core::{t, Attempt, Language, QuizMode, QuizTimer, TimerState};
+use amategeko_core::{t, Attempt, Language, QuizMode, QuizTimer, TimerLevel, TimerState};
 use gpui::InteractiveElement as _;
+use gpui_kit::assets::IconName;
 use gpui_kit::base::StyledExt;
-use gpui_kit::component::{ActiveTheme, Icon, IconName};
+use gpui_kit::component::{ActiveTheme, Icon};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
+use std::time::Duration;
 
 pub struct QuizView;
 
@@ -200,25 +202,81 @@ impl QuizView {
                             .gap_2p5()
                             // Timer Pill (if active)
                             .when(
-                                matches!(
-                                    timer_state,
-                                    TimerState::Countdown { .. } | TimerState::Elapsed(_)
-                                ),
+                                !matches!(timer_state, TimerState::None),
                                 |el| match timer_state {
                                     TimerState::Countdown {
                                         remaining_seconds,
-                                        is_urgent,
+                                        level,
                                         ..
                                     } => {
                                         let mins = remaining_seconds / 60;
                                         let secs = remaining_seconds % 60;
-                                        let t_color = if is_urgent {
-                                            colors.danger
-                                        } else {
-                                            colors.foreground
+                                        let (timer_color, timer_icon) = match level {
+                                            TimerLevel::Normal => {
+                                                (colors.foreground, IconName::Clock)
+                                            }
+                                            TimerLevel::Warning => {
+                                                (colors.warning, IconName::TriangleAlert)
+                                            }
+                                            TimerLevel::Error | TimerLevel::Done => {
+                                                (colors.danger, IconName::CircleAlert)
+                                            }
                                         };
-                                        el.child(
-                                            div()
+                                        let pill = div()
+                                            .flex()
+                                            .flex_row()
+                                            .items_center()
+                                            .gap_1p5()
+                                            .px_3()
+                                            .py_1p5()
+                                            .rounded_lg()
+                                            .border_1()
+                                            .border_color(if level == TimerLevel::Normal {
+                                                colors.border
+                                            } else {
+                                                timer_color
+                                            })
+                                            .bg(colors.secondary)
+                                            .child(
+                                                Icon::new(timer_icon)
+                                                    .size(px(14.0))
+                                                    .text_color(timer_color),
+                                            )
+                                            .child(
+                                                div()
+                                                    .text_xs()
+                                                    .when(level == TimerLevel::Error, |text| {
+                                                        text.font_bold()
+                                                    })
+                                                    .when(level != TimerLevel::Error, |text| {
+                                                        text.font_medium()
+                                                    })
+                                                    .text_color(timer_color)
+                                                    .child(format!("{:02}:{:02}", mins, secs)),
+                                            );
+
+                                        if level == TimerLevel::Error {
+                                            el.child(
+                                                pill.with_animation(
+                                                    "timer-error-pulse",
+                                                    Animation::new(Duration::from_millis(1200))
+                                                        .repeat(),
+                                                    |pill, progress| {
+                                                        let opacity = 0.9
+                                                            + 0.1
+                                                                * (progress
+                                                                    * std::f32::consts::TAU)
+                                                                    .cos();
+                                                        pill.opacity(opacity)
+                                                    },
+                                                ),
+                                            )
+                                        } else {
+                                            el.child(pill)
+                                        }
+                                    }
+                                    TimerState::Expired => el.child(
+                                        div()
                                                 .flex()
                                                 .flex_row()
                                                 .items_center()
@@ -227,26 +285,21 @@ impl QuizView {
                                                 .py_1p5()
                                                 .rounded_lg()
                                                 .border_1()
-                                                .border_color(if is_urgent {
-                                                    colors.danger
-                                                } else {
-                                                    colors.border
-                                                })
+                                                .border_color(colors.danger)
                                                 .bg(colors.secondary)
                                                 .child(
-                                                    Icon::new(IconName::Bell)
+                                                    Icon::new(IconName::CircleAlert)
                                                         .size(px(14.0))
-                                                        .text_color(t_color),
+                                                        .text_color(colors.danger),
                                                 )
                                                 .child(
                                                     div()
                                                         .text_xs()
                                                         .font_bold()
-                                                        .text_color(t_color)
-                                                        .child(format!("{:02}:{:02}", mins, secs)),
+                                                        .text_color(colors.danger)
+                                                        .child("00:00"),
                                                 ),
-                                        )
-                                    }
+                                    ),
                                     TimerState::Elapsed(elapsed) => {
                                         let mins = elapsed / 60;
                                         let secs = elapsed % 60;
@@ -263,7 +316,7 @@ impl QuizView {
                                                 .border_color(colors.border)
                                                 .bg(colors.secondary)
                                                 .child(
-                                                    Icon::new(IconName::Bell)
+                                                    Icon::new(IconName::Clock)
                                                         .size(px(14.0))
                                                         .text_color(colors.foreground),
                                                 )
@@ -383,6 +436,45 @@ impl QuizView {
                                     ),
                             ),
                     ),
+            )
+            // Time Remaining Bar (Medium and Hard)
+            .when(
+                matches!(timer_state, TimerState::Countdown { .. } | TimerState::Expired),
+                |el| {
+                    let (remaining, total, level) = match timer_state {
+                        TimerState::Countdown {
+                            remaining_seconds,
+                            total_seconds,
+                            level,
+                            ..
+                        } => (remaining_seconds, total_seconds, level),
+                        TimerState::Expired => (0, 1, TimerLevel::Done),
+                        _ => (0, 1, TimerLevel::Normal),
+                    };
+                    let fraction = if total == 0 {
+                        0.0
+                    } else {
+                        (remaining as f32 / total as f32).clamp(0.0, 1.0)
+                    };
+                    let bar_color = match level {
+                        TimerLevel::Normal => colors.foreground,
+                        TimerLevel::Warning => colors.warning,
+                        TimerLevel::Error | TimerLevel::Done => colors.danger,
+                    };
+
+                    el.child(
+                        div()
+                            .w_full()
+                            .h(px(3.0))
+                            .bg(colors.secondary)
+                            .child(
+                                div()
+                                    .h_full()
+                                    .w(relative(fraction))
+                                    .bg(bar_color),
+                            ),
+                    )
+                },
             )
             // Segmented Progress Bar
             .child(

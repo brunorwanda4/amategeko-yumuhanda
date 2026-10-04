@@ -1,6 +1,9 @@
 //! Shared UI for Amategeko y'Umuhanda (Desktop & Mobile).
 
+pub mod assets;
 pub mod state;
+
+pub use assets::AppAssets;
 pub mod ui;
 
 pub use state::{AppState, Screen};

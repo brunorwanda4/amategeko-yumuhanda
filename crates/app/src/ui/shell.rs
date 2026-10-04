@@ -5,15 +5,37 @@ use crate::ui::quiz::QuizView;
 use crate::ui::results::{ResultFilter, ResultsView};
 use crate::ui::settings::{SettingsAction, SettingsView};
 use crate::ui::stats::StatsView;
-use amategeko_core::{t, QuizEngine, QuizMode};
+use amategeko_core::{
+    t, QuizEngine, QuizMode, QuizTimer, Strings, TimerLevel, TimerState, TimerTracker,
+};
 use gpui::FocusHandle;
 use gpui::InteractiveElement as _;
 use gpui_kit::assets::IconName;
 use gpui_kit::base::StyledExt;
+use gpui_kit::component::alert::Alert;
 use gpui_kit::component::{ActiveTheme, Icon};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
 use std::collections::{HashMap, HashSet};
+use std::time::Duration;
+
+#[derive(Clone, Copy)]
+struct TimerBanner {
+    level: TimerLevel,
+    remaining_seconds: u32,
+}
+
+impl TimerBanner {
+    fn message(self, language: amategeko_core::Language) -> String {
+        let time = QuizTimer::format_duration(self.remaining_seconds);
+        match self.level {
+            TimerLevel::Warning => Strings::timer_warning_for(&time, language),
+            TimerLevel::Error => Strings::timer_error_for(&time, language),
+            TimerLevel::Done => Strings::timer_done_for(language).to_string(),
+            TimerLevel::Normal => String::new(),
+        }
+    }
+}
 
 pub struct ShellView {
     pub state: AppState,
@@ -21,24 +43,105 @@ pub struct ShellView {
     pub results_expanded: HashSet<usize>,
     pub questions_filter: QuestionsFilter,
     pub questions_search: String,
+    pub questions_expanded: HashSet<u32>,
     pub questions_revealed: HashMap<u32, String>,
     pub settings_confirm_clear: bool,
     pub focus_mode: bool,
     pub focus_handle: FocusHandle,
+    timer_tracker: TimerTracker,
+    timer_attempt_id: Option<String>,
+    timer_banner: Option<TimerBanner>,
+    timer_banner_hide_at: Option<u64>,
+    _timer_task: Task<()>,
 }
 
 impl ShellView {
     pub fn new(state: AppState, cx: &mut Context<Self>) -> Self {
+        let timer_task = cx.spawn(async move |this, cx| loop {
+            cx.background_executor().timer(Duration::from_secs(1)).await;
+            if this
+                .update(cx, |this, cx| {
+                    this.update_quiz_timer();
+                    cx.notify();
+                })
+                .is_err()
+            {
+                break;
+            }
+        });
+
         Self {
             state,
             results_filter: ResultFilter::All,
             results_expanded: HashSet::new(),
             questions_filter: QuestionsFilter::All,
             questions_search: String::new(),
+            questions_expanded: HashSet::new(),
             questions_revealed: HashMap::new(),
             settings_confirm_clear: false,
             focus_mode: false,
             focus_handle: cx.focus_handle(),
+            timer_tracker: TimerTracker::new(),
+            timer_attempt_id: None,
+            timer_banner: None,
+            timer_banner_hide_at: None,
+            _timer_task: timer_task,
+        }
+    }
+
+    fn update_quiz_timer(&mut self) {
+        let now = self.state.clock.now_seconds();
+        if self
+            .timer_banner_hide_at
+            .is_some_and(|hide_at| now >= hide_at)
+        {
+            self.timer_banner = None;
+            self.timer_banner_hide_at = None;
+        }
+
+        let Some((attempt_id, timer_state)) = self.state.current_attempt.as_ref().map(|attempt| {
+            (
+                attempt.id.clone(),
+                QuizTimer::state(attempt, now, self.state.settings.easy_show_timer),
+            )
+        }) else {
+            return;
+        };
+
+        if self.timer_attempt_id.as_deref() != Some(attempt_id.as_str()) {
+            self.timer_attempt_id = Some(attempt_id);
+            self.timer_tracker.reset();
+            self.timer_banner = None;
+            self.timer_banner_hide_at = None;
+        }
+
+        let transition = match timer_state {
+            TimerState::Countdown {
+                remaining_seconds,
+                level,
+                ..
+            } => self
+                .timer_tracker
+                .update_level(level)
+                .map(|level| (level, remaining_seconds)),
+            TimerState::Expired => self
+                .timer_tracker
+                .update_level(TimerLevel::Done)
+                .map(|level| (level, 0)),
+            TimerState::None | TimerState::Elapsed(_) => None,
+        };
+
+        if let Some((level, remaining_seconds)) = transition {
+            self.timer_banner = Some(TimerBanner {
+                level,
+                remaining_seconds,
+            });
+            self.timer_banner_hide_at = (level != TimerLevel::Done).then_some(now + 5);
+
+            if level == TimerLevel::Done {
+                self.focus_mode = false;
+                self.state.finish_current_quiz();
+            }
         }
     }
 }
@@ -197,6 +300,7 @@ impl Render for ShellView {
                 self.questions_filter,
                 &self.questions_search,
                 self.state.settings.study_hide_answers,
+                &self.questions_expanded,
                 &self.questions_revealed,
                 cx,
                 |this, filter, _, cx| {
@@ -217,6 +321,14 @@ impl Render for ShellView {
                 |this, qid, _, cx| {
                     this.state.progress.toggle_starred(qid);
                     let _ = this.state.storage.save_progress(&this.state.progress);
+                    cx.notify();
+                },
+                |this, qid, _, cx| {
+                    if this.questions_expanded.contains(&qid) {
+                        this.questions_expanded.remove(&qid);
+                    } else {
+                        this.questions_expanded.insert(qid);
+                    }
                     cx.notify();
                 },
                 |this, qid, opt, _, cx| {
@@ -382,11 +494,78 @@ impl Render for ShellView {
 
         let shortcuts_enabled = self.state.settings.desktop_shortcuts_enabled;
 
+        let banner = self.timer_banner;
+        let language = self.state.settings.language;
+        let banner_top = if is_in_quiz {
+            if is_desktop {
+                64.0
+            } else {
+                112.0
+            }
+        } else if is_desktop {
+            12.0
+        } else {
+            60.0
+        };
+        let banner_left = if is_desktop && !(is_in_quiz && self.focus_mode) {
+            176.0
+        } else {
+            12.0
+        };
         let root = root
+            .relative()
+            .when_some(banner, |root, banner| {
+                let message = banner.message(language);
+                let alert = match banner.level {
+                    TimerLevel::Warning => Alert::warning("timer-warning-banner", message),
+                    TimerLevel::Error => {
+                        Alert::error("timer-error-banner", message).icon(IconName::CircleAlert)
+                    }
+                    TimerLevel::Done => {
+                        Alert::error("timer-done-banner", message).icon(IconName::CircleAlert)
+                    }
+                    TimerLevel::Normal => Alert::new("timer-normal-banner", message),
+                }
+                .banner()
+                .on_close(cx.listener(|this, _, _, cx| {
+                    this.timer_banner = None;
+                    this.timer_banner_hide_at = None;
+                    cx.notify();
+                }));
+
+                root.child(
+                    div()
+                        .absolute()
+                        .top(px(banner_top))
+                        .left(px(banner_left))
+                        .right(px(12.0))
+                        .child(alert),
+                )
+            })
             .track_focus(&self.focus_handle)
             .key_context("Shell")
             .on_key_down(
                 cx.listener(move |this, event: &gpui::KeyDownEvent, window, cx| {
+                    if this.state.active_screen == Screen::Questions {
+                        let key = event.keystroke.key.as_str();
+                        if key.eq_ignore_ascii_case("backspace") {
+                            this.questions_search.pop();
+                            cx.notify();
+                            return;
+                        } else if key.eq_ignore_ascii_case("escape") {
+                            this.questions_search.clear();
+                            cx.notify();
+                            return;
+                        } else if key.chars().count() == 1 {
+                            let ch = key.chars().next().unwrap();
+                            if !ch.is_control() {
+                                this.questions_search.push(ch);
+                                cx.notify();
+                                return;
+                            }
+                        }
+                    }
+
                     if this.state.active_screen != Screen::Quiz || !shortcuts_enabled {
                         return;
                     }
@@ -517,7 +696,7 @@ impl Render for ShellView {
                 }),
             );
 
-        if is_in_quiz {
+        if is_in_quiz || active_screen == Screen::Questions {
             window.focus(&self.focus_handle, cx);
         }
 
