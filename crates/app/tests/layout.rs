@@ -168,3 +168,34 @@ fn questions_view_in_shell_renders_cards(cx: &mut TestAppContext) {
         img_card.size.height
     );
 }
+
+#[gpui::test]
+fn segmented_progress_bar_shown_only_on_easy_and_medium(cx: &mut TestAppContext) {
+    cx.update(gpui_kit::init);
+
+    for mode in [QuizMode::Byoroshye, QuizMode::Hagati, QuizMode::Bikomeye] {
+        let storage = Arc::new(InMemoryStorage::new());
+        let clock = Arc::new(MockClock::new(1_000));
+        let mut state = AppState::new(storage, clock);
+        state.start_quiz(mode);
+
+        let (_view, cx) = cx.add_window_view(move |_, cx| ShellView::new(state, cx));
+        let cx: &mut VisualTestContext = cx;
+        draw_context(cx);
+
+        let seg0 = cx.debug_bounds("progress_seg_0");
+        if mode == QuizMode::Byoroshye || mode == QuizMode::Hagati {
+            assert!(
+                seg0.is_some(),
+                "progress_seg_0 should exist for mode {:?}",
+                mode
+            );
+        } else {
+            assert!(
+                seg0.is_none(),
+                "progress_seg_0 should NOT exist for mode {:?}",
+                mode
+            );
+        }
+    }
+}
