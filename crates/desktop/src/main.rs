@@ -1,7 +1,7 @@
 use amategeko_app::{AppState, ShellView};
 use amategeko_core::{Storage, SystemClock};
 use directories::ProjectDirs;
-use gpui_kit::assets::Assets;
+use gpui_kit::assets::AllAssets;
 use gpui_kit::component::Root;
 use gpui_kit::*;
 use std::path::PathBuf;
@@ -29,7 +29,7 @@ fn main() {
     let clock = Arc::new(SystemClock);
 
     gpui_kit::application()
-        .with_assets(Assets)
+        .with_assets(AllAssets)
         .run(move |cx: &mut App| {
             gpui_kit::init(cx);
 

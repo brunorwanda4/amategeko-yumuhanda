@@ -162,6 +162,12 @@ impl Attempt {
             .filter(|i| !self.answers.contains_key(i))
             .collect()
     }
+
+    /// Returns the total configured duration of this attempt in seconds, if a deadline was set.
+    pub fn total_duration_secs(&self) -> Option<u32> {
+        self.deadline_secs
+            .map(|deadline| deadline.saturating_sub(self.start_time_secs) as u32)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

@@ -8,8 +8,9 @@ use crate::ui::stats::StatsView;
 use amategeko_core::{QuizEngine, QuizMode, Strings};
 use gpui::FocusHandle;
 use gpui::InteractiveElement as _;
+use gpui_kit::assets::IconName;
 use gpui_kit::base::StyledExt;
-use gpui_kit::component::{ActiveTheme, Icon, IconName};
+use gpui_kit::component::{ActiveTheme, Icon};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
 use std::collections::{HashMap, HashSet};
@@ -557,7 +558,7 @@ impl ShellView {
                     .child(self.render_desktop_nav_item(
                         "nav_home",
                         Strings::NAV_HOME,
-                        IconName::LayoutDashboard,
+                        IconName::House,
                         matches!(active, Screen::Home),
                         Screen::Home,
                         cx,
@@ -696,7 +697,7 @@ impl ShellView {
             .child(self.render_mobile_nav_item(
                 "m_home",
                 Strings::NAV_HOME,
-                IconName::LayoutDashboard,
+                IconName::House,
                 matches!(active, Screen::Home),
                 Screen::Home,
                 cx,
