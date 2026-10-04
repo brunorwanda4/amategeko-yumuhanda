@@ -12,6 +12,7 @@
 # ---------------------------------------------------------------
 # The source PDF is marked "RESTRICTED". Never commit it.
 *.pdf
+
 /tools/input/
 /tools/output/
 /tools/needs_review.json
@@ -158,3 +159,6 @@ package-lock.json
 yarn.lock
 pnpm-lock.yaml
 # Keep these tracked (do not ignore): website/ASSETS.md, website/content/samples/
+
+# Real questions
+!ibibazo_byamategeko_y_umuhanda.pdf
