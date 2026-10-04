@@ -440,36 +440,41 @@ impl QuizView {
                     .child(
                         div()
                             .w_full()
-                            .max_w(px(1120.0))
+                            .when(current_q.has_image, |el| el.max_w(px(1120.0)))
+                            .when(!current_q.has_image, |el| el.max_w(px(800.0)))
                             .mx_auto()
                             .flex()
-                            .when(is_desktop, |el| el.flex_row().items_start().gap_8())
-                            .when(!is_desktop, |el| el.flex_col().items_stretch().gap_6())
-                            // LEFT COLUMN: Sign Image Card + Keyboard Shortcut Hint
-                            .child(
-                                div()
-                                    .flex()
-                                    .flex_col()
-                                    .when(is_desktop, |el| el.w(px(420.0)).flex_shrink_0())
-                                    .when(!is_desktop, |el| el.w_full())
-                                    // Dashed container for sign image
-                                    .child(
-                                        div()
-                                            .w_full()
-                                            .min_h(px(320.0))
-                                            .h(px(340.0))
-                                            .rounded_2xl()
-                                            .border_1()
-                                            .border_dashed()
-                                            .border_color(colors.border)
-                                            .bg(colors.secondary)
-                                            .flex()
-                                            .flex_col()
-                                            .items_center()
-                                            .justify_center()
-                                            .p_4()
-                                            .when(current_q.has_image, |card| {
-                                                card.child(
+                            .when(is_desktop && current_q.has_image, |el| {
+                                el.flex_row().items_start().gap_8()
+                            })
+                            .when(!is_desktop || !current_q.has_image, |el| {
+                                el.flex_col().items_stretch().gap_6()
+                            })
+                            // LEFT COLUMN: Sign Image Card + Keyboard Shortcut Hint (only shown if question has an image)
+                            .when(current_q.has_image, |parent| {
+                                parent.child(
+                                    div()
+                                        .flex()
+                                        .flex_col()
+                                        .when(is_desktop, |el| el.w(px(420.0)).flex_shrink_0())
+                                        .when(!is_desktop, |el| el.w_full())
+                                        // Dashed container for sign image
+                                        .child(
+                                            div()
+                                                .w_full()
+                                                .min_h(px(320.0))
+                                                .h(px(340.0))
+                                                .rounded_2xl()
+                                                .border_1()
+                                                .border_dashed()
+                                                .border_color(colors.border)
+                                                .bg(colors.secondary)
+                                                .flex()
+                                                .flex_col()
+                                                .items_center()
+                                                .justify_center()
+                                                .p_4()
+                                                .child(
                                                     img(format!(
                                                         "assets/images/q{}.png",
                                                         current_q.id
@@ -477,53 +482,38 @@ impl QuizView {
                                                     .max_h(px(270.0))
                                                     .max_w(px(380.0))
                                                     .rounded_xl(),
+                                                ),
+                                        )
+                                        // Shortcut navigation indicator
+                                        .child(
+                                            div()
+                                                .flex()
+                                                .flex_row()
+                                                .items_center()
+                                                .gap_2()
+                                                .mt_3()
+                                                .px_1()
+                                                .child(
+                                                    svg()
+                                                        .path("icons/keyboard.svg")
+                                                        .size(px(14.0))
+                                                        .text_color(colors.muted_foreground),
                                                 )
-                                            })
-                                            .when(!current_q.has_image, |card| {
-                                                card.gap_3()
-                                                    .child(
-                                                        svg()
-                                                            .path("icons/image.svg")
-                                                            .size(px(46.0))
-                                                            .text_color(colors.muted_foreground),
-                                                    )
-                                                    .child(
-                                                        div()
-                                                            .text_sm()
-                                                            .font_medium()
-                                                            .text_color(colors.foreground)
-                                                            .child(t("quiz.no_image", lang)),
-                                                    )
-                                            }),
-                                    )
-                                    // Shortcut navigation indicator
-                                    .child(
-                                        div()
-                                            .flex()
-                                            .flex_row()
-                                            .items_center()
-                                            .gap_2()
-                                            .mt_3()
-                                            .px_1()
-                                            .child(
-                                                svg()
-                                                    .path("icons/keyboard.svg")
-                                                    .size(px(14.0))
-                                                    .text_color(colors.muted_foreground),
-                                            )
-                                            .child(
-                                                div()
-                                                    .text_xs()
-                                                    .text_color(colors.muted_foreground)
-                                                    .child(t("quiz.shortcut_hint", lang)),
-                                            ),
-                                    ),
-                            )
-                            // RIGHT COLUMN: Question Text, Hint / Feedback, Options, Bottom Actions
+                                                .child(
+                                                    div()
+                                                        .text_xs()
+                                                        .text_color(colors.muted_foreground)
+                                                        .child(t("quiz.shortcut_hint", lang)),
+                                                ),
+                                        ),
+                                )
+                            })
+                            // RIGHT / MAIN COLUMN: Question Text, Hint / Feedback, Options, Bottom Actions
                             .child(
                                 div()
                                     .flex()
                                     .flex_col()
+                                    .w_full()
                                     .flex_1()
                                     .gap_4()
                                     // Question text + optional draft badge + optional secondary translation
@@ -802,7 +792,31 @@ impl QuizView {
                                                             ),
                                                     ),
                                             ),
-                                    ),
+                                    )
+                                    // Shortcut navigation indicator (shown below navigation when there is no image column)
+                                    .when(!current_q.has_image, |col| {
+                                        col.child(
+                                            div()
+                                                .flex()
+                                                .flex_row()
+                                                .items_center()
+                                                .gap_2()
+                                                .mt_2()
+                                                .px_1()
+                                                .child(
+                                                    svg()
+                                                        .path("icons/keyboard.svg")
+                                                        .size(px(14.0))
+                                                        .text_color(colors.muted_foreground),
+                                                )
+                                                .child(
+                                                    div()
+                                                        .text_xs()
+                                                        .text_color(colors.muted_foreground)
+                                                        .child(t("quiz.shortcut_hint", lang)),
+                                                ),
+                                        )
+                                    }),
                             ),
                     ),
             )
