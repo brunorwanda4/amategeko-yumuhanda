@@ -4,7 +4,7 @@ use crate::ui::home::HomeView;
 use crate::ui::questions::{QuestionsFilter, QuestionsView};
 use crate::ui::quiz::QuizView;
 use crate::ui::results::{ResultFilter, ResultsView};
-use crate::ui::scroll::{configure_scrollbar_motion, vertical_scrollbar};
+use crate::ui::scroll::{configure_scrollbar_motion, vertical_scrollbar, ScrollbarContext};
 use crate::ui::settings::{SettingsAction, SettingsView};
 use crate::ui::stats::StatsView;
 use amategeko_core::{
@@ -360,9 +360,11 @@ impl Render for ShellView {
         let content = match active_screen {
             Screen::Home => HomeView::render(
                 &self.state,
-                window_width,
-                &self.home_scroll_handle,
-                reveal_scrollbar,
+                ScrollbarContext {
+                    handle: &self.home_scroll_handle,
+                    is_desktop,
+                    reveal_on_open: reveal_scrollbar,
+                },
                 cx,
                 |this, mode, _, cx| {
                     this.state.start_quiz(mode);

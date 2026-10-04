@@ -78,4 +78,5 @@ Tracking milestones for "Amategeko y'Umuhanda" (Rwanda driving-test theory study
   - [x] Add responsive author credit footer to Home and Settings (2026-10-04)
   - [x] Fix long question and option wrapping, sidebar overflow, and Easy elapsed-time defaults and resume behavior (2026-10-04)
   - [x] Fast development loop (auto rebuild + restore state) (2026-10-04: justfile / scripts/dev.ps1 with watchexec, Cargo dev profile optimization [opt-level=1, line-tables-only, dependencies opt-level=3 reducing rebuilds from 34.02s to 11.75s], debug-only dev_state.json screen/filter/scroll restoration, and --timer 30s flag)
+  - [x] Add GPUI Kit scrollbars to every vertical app viewport, with responsive visibility, draggable desktop thumbs, reserved gutters, and persistent per-screen offsets (2026-10-04)
 - [ ] **Milestone 13: Optional iOS Verification** (Requires macOS + Xcode 15+)
