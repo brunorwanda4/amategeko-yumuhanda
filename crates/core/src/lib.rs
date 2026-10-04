@@ -19,4 +19,7 @@ pub use models::*;
 pub use platform::{Clock, InMemoryStorage, MockClock, Storage, SystemClock};
 pub use quiz::QuizEngine;
 pub use stats::{MostMissedQuestion, StatsCalculator, StatsSummary};
-pub use timer::{QuizTimer, TimerState};
+pub use timer::{
+    level, QuizTimer, TimerLevel, TimerState, TimerTracker, ERROR_THRESHOLD_PERCENT,
+    WARNING_THRESHOLD_PERCENT,
+};

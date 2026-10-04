@@ -212,22 +212,30 @@ fn test_deadline_timer() {
     match state {
         TimerState::Countdown {
             remaining_seconds,
+            total_seconds,
+            level,
             is_urgent,
         } => {
             assert_eq!(remaining_seconds, 1200);
+            assert_eq!(total_seconds, 1200);
+            assert_eq!(level, TimerLevel::Normal);
             assert!(!is_urgent);
         }
         _ => panic!("Expected Countdown"),
     }
 
-    // At 2100s, 100s remaining -> urgent!
+    // At 2100s, 100s remaining -> urgent (Error level)!
     let state_urgent = QuizTimer::state(&attempt, 2100, true);
     match state_urgent {
         TimerState::Countdown {
             remaining_seconds,
+            total_seconds,
+            level,
             is_urgent,
         } => {
             assert_eq!(remaining_seconds, 100);
+            assert_eq!(total_seconds, 1200);
+            assert_eq!(level, TimerLevel::Error);
             assert!(is_urgent);
         }
         _ => panic!("Expected Countdown with urgency"),
@@ -239,6 +247,178 @@ fn test_deadline_timer() {
     assert_eq!(state_exp, TimerState::Expired);
 
     assert_eq!(QuizTimer::format_duration(125), "02:05");
+}
+
+#[test]
+fn test_timer_levels_thresholds_20min_and_12min() {
+    assert_eq!(WARNING_THRESHOLD_PERCENT, 25);
+    assert_eq!(ERROR_THRESHOLD_PERCENT, 10);
+    assert_eq!(TimerLevel::WARNING_THRESHOLD_PERCENT, 25);
+    assert_eq!(TimerLevel::ERROR_THRESHOLD_PERCENT, 10);
+    assert_eq!(QuizTimer::WARNING_THRESHOLD_PERCENT, 25);
+    assert_eq!(QuizTimer::ERROR_THRESHOLD_PERCENT, 10);
+
+    // Severity order
+    assert!(TimerLevel::Warning > TimerLevel::Normal);
+    assert!(TimerLevel::Error > TimerLevel::Warning);
+    assert!(TimerLevel::Done > TimerLevel::Error);
+    assert!(TimerLevel::Warning.is_worse_than(&TimerLevel::Normal));
+    assert!(TimerLevel::Error.is_worse_than(&TimerLevel::Warning));
+
+    // 20 min total = 1200s
+    // 25% = 300s (05:00), 10% = 120s (02:00)
+    let total_20m = 1200;
+    assert_eq!(level(1200, total_20m), TimerLevel::Normal);
+    assert_eq!(level(301, total_20m), TimerLevel::Normal);
+    assert_eq!(level(300, total_20m), TimerLevel::Warning);
+    assert_eq!(level(200, total_20m), TimerLevel::Warning);
+    assert_eq!(level(121, total_20m), TimerLevel::Warning);
+    assert_eq!(level(120, total_20m), TimerLevel::Error);
+    assert_eq!(level(60, total_20m), TimerLevel::Error);
+    assert_eq!(level(1, total_20m), TimerLevel::Error);
+    assert_eq!(level(0, total_20m), TimerLevel::Done);
+
+    // Also via TimerLevel::level and QuizTimer::level
+    assert_eq!(TimerLevel::level(300, total_20m), TimerLevel::Warning);
+    assert_eq!(QuizTimer::level(120, total_20m), TimerLevel::Error);
+
+    // 12 min total = 720s
+    // 25% = 180s (03:00), 10% = 72s (01:12)
+    let total_12m = 720;
+    assert_eq!(level(720, total_12m), TimerLevel::Normal);
+    assert_eq!(level(181, total_12m), TimerLevel::Normal);
+    assert_eq!(level(180, total_12m), TimerLevel::Warning);
+    assert_eq!(level(100, total_12m), TimerLevel::Warning);
+    assert_eq!(level(73, total_12m), TimerLevel::Warning);
+    assert_eq!(level(72, total_12m), TimerLevel::Error);
+    assert_eq!(level(30, total_12m), TimerLevel::Error);
+    assert_eq!(level(1, total_12m), TimerLevel::Error);
+    assert_eq!(level(0, total_12m), TimerLevel::Done);
+
+    // Edge case: 0 total duration
+    assert_eq!(level(10, 0), TimerLevel::Done);
+}
+
+#[test]
+fn test_timer_level_never_goes_back_unless_restarted() {
+    let mut tracker = TimerTracker::new();
+    assert_eq!(tracker.current_level, TimerLevel::Normal);
+
+    // Starting at 20 min (1200s) -> level is Normal, no transition reported
+    assert_eq!(tracker.update(1200, 1200), None);
+    assert_eq!(tracker.current_level, TimerLevel::Normal);
+
+    // Remaining drops to 300s (Warning) -> transition reported
+    assert_eq!(tracker.update(300, 1200), Some(TimerLevel::Warning));
+    assert_eq!(tracker.current_level, TimerLevel::Warning);
+
+    // Subsequent tick at 290s (still Warning) -> no transition reported
+    assert_eq!(tracker.update(290, 1200), None);
+    assert_eq!(tracker.current_level, TimerLevel::Warning);
+
+    // Clock jitter or backwards tick: remaining increases to 600s
+    // Level must NOT go back to Normal!
+    assert_eq!(tracker.update(600, 1200), None);
+    assert_eq!(tracker.current_level, TimerLevel::Warning);
+
+    // Remaining drops to 120s (Error) -> transition reported
+    assert_eq!(tracker.update(120, 1200), Some(TimerLevel::Error));
+    assert_eq!(tracker.current_level, TimerLevel::Error);
+
+    // Jitter: remaining increases to 200s (Warning) -> level remains Error!
+    assert_eq!(tracker.update(200, 1200), None);
+    assert_eq!(tracker.current_level, TimerLevel::Error);
+
+    // Remaining drops to 0s (Done) -> transition reported
+    assert_eq!(tracker.update(0, 1200), Some(TimerLevel::Done));
+    assert_eq!(tracker.current_level, TimerLevel::Done);
+
+    // Attempt restarts: reset() restores to Normal
+    tracker.reset();
+    assert_eq!(tracker.current_level, TimerLevel::Normal);
+    assert_eq!(tracker.update(1200, 1200), None);
+}
+
+#[test]
+fn test_timer_resume_past_threshold_reports_correct_level() {
+    // 1. Resumes directly past Warning threshold (e.g. 250s remaining of 1200s)
+    let mut tracker1 = TimerTracker::new();
+    assert_eq!(tracker1.update(250, 1200), Some(TimerLevel::Warning));
+    assert_eq!(tracker1.current_level, TimerLevel::Warning);
+    // Next tick does not repeat banner
+    assert_eq!(tracker1.update(240, 1200), None);
+
+    // 2. Resumes directly past Error threshold (e.g. 80s remaining of 1200s)
+    let mut tracker2 = TimerTracker::new();
+    assert_eq!(tracker2.update(80, 1200), Some(TimerLevel::Error));
+    assert_eq!(tracker2.current_level, TimerLevel::Error);
+    assert_eq!(tracker2.update(70, 1200), None);
+
+    // 3. Resumes already expired (0s remaining)
+    let mut tracker3 = TimerTracker::new();
+    assert_eq!(tracker3.update(0, 1200), Some(TimerLevel::Done));
+    assert_eq!(tracker3.current_level, TimerLevel::Done);
+}
+
+#[test]
+fn test_i18n_parity_and_timer_strings() {
+    let rw_content = include_str!("../../../assets/i18n/rw.json");
+    let en_content = include_str!("../../../assets/i18n/en.json");
+
+    let rw_json: serde_json::Value =
+        serde_json::from_str(rw_content).expect("rw.json must be valid JSON");
+    let en_json: serde_json::Value =
+        serde_json::from_str(en_content).expect("en.json must be valid JSON");
+
+    let rw_map = rw_json.as_object().expect("rw.json root must be object");
+    let en_map = en_json.as_object().expect("en.json root must be object");
+
+    // Parity check
+    assert_eq!(
+        rw_map.keys().collect::<HashSet<_>>(),
+        en_map.keys().collect::<HashSet<_>>()
+    );
+
+    assert_eq!(
+        rw_map.get("timer.warning").and_then(|v| v.as_str()),
+        Some("Igihe kiregereje. Hasigaye {time}.")
+    );
+    assert_eq!(
+        en_map.get("timer.warning").and_then(|v| v.as_str()),
+        Some("Time is running low. {time} left.")
+    );
+
+    assert_eq!(
+        rw_map.get("timer.error").and_then(|v| v.as_str()),
+        Some("Igihe kigiye kurangira! Hasigaye {time}.")
+    );
+    assert_eq!(
+        en_map.get("timer.error").and_then(|v| v.as_str()),
+        Some("Time is almost up! {time} left.")
+    );
+
+    assert_eq!(
+        rw_map.get("timer.done").and_then(|v| v.as_str()),
+        Some("Igihe kirarangiye. Ikizamini cyoherejwe.")
+    );
+    assert_eq!(
+        en_map.get("timer.done").and_then(|v| v.as_str()),
+        Some("Time is up. Exam submitted.")
+    );
+
+    // In-app formatting helpers
+    assert_eq!(
+        Strings::timer_warning("05:00"),
+        "Igihe kiregereje. Hasigaye 05:00."
+    );
+    assert_eq!(
+        Strings::timer_error("02:00"),
+        "Igihe kigiye kurangira! Hasigaye 02:00."
+    );
+    assert_eq!(
+        Strings::timer_done(),
+        "Igihe kirarangiye. Ikizamini cyoherejwe."
+    );
 }
 
 #[test]

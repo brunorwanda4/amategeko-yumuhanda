@@ -53,6 +53,30 @@ impl Strings {
     // Hard mode errors
     pub const QUIZ_HARD_NO_SELECTION: &'static str = "Hitamo igisubizo mbere yo kwemeza";
 
+    // Timer Warning States (Medium & Hard)
+    pub const TIMER_WARNING_RW: &'static str = "Igihe kiregereje. Hasigaye {time}.";
+    pub const TIMER_WARNING_EN: &'static str = "Time is running low. {time} left.";
+    pub const TIMER_ERROR_RW: &'static str = "Igihe kigiye kurangira! Hasigaye {time}.";
+    pub const TIMER_ERROR_EN: &'static str = "Time is almost up! {time} left.";
+    pub const TIMER_DONE_RW: &'static str = "Igihe kirarangiye. Ikizamini cyoherejwe.";
+    pub const TIMER_DONE_EN: &'static str = "Time is up. Exam submitted.";
+
+    pub const TIMER_WARNING: &'static str = Self::TIMER_WARNING_RW;
+    pub const TIMER_ERROR: &'static str = Self::TIMER_ERROR_RW;
+    pub const TIMER_DONE: &'static str = Self::TIMER_DONE_RW;
+
+    pub fn timer_warning(time: &str) -> String {
+        Self::TIMER_WARNING.replace("{time}", time)
+    }
+
+    pub fn timer_error(time: &str) -> String {
+        Self::TIMER_ERROR.replace("{time}", time)
+    }
+
+    pub fn timer_done() -> &'static str {
+        Self::TIMER_DONE
+    }
+
     // Finish / Abandon Dialogs
     pub const DIALOG_FINISH_TITLE: &'static str = "Soza ikizamini?";
     pub const DIALOG_UNANSWERED_WARNING: &'static str =

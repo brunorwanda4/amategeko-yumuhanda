@@ -1,9 +1,9 @@
 use crate::state::AppState;
 use amategeko_core::{QuizMode, StatsCalculator, Strings};
 use gpui::InteractiveElement as _;
+use gpui_kit::assets::IconName;
 use gpui_kit::base::StyledExt;
-use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::ActiveTheme;
+use gpui_kit::component::{ActiveTheme, Icon};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
 
@@ -23,7 +23,22 @@ impl HomeView {
         let stats_summary = StatsCalculator::compute_summary(&state.progress);
 
         let is_desktop = window_width >= px(700.0);
-        let is_wide = window_width >= px(1060.0);
+
+        // Stats values matching the design
+        let total_questions = state.bank.len();
+        let last_score_display = if let Some(last) = state.progress.attempts.last() {
+            format!("{} / {}", last.score, last.total)
+        } else if let Some(last) = &state.last_result {
+            format!("{} / {}", last.score, last.total)
+        } else {
+            "— / 20".to_string()
+        };
+
+        let pass_rate_display = if stats_summary.total_attempts > 0 {
+            format!("{:.0}%", stats_summary.pass_rate_percentage)
+        } else {
+            "—".to_string()
+        };
 
         div()
             .id("home_scroll")
@@ -32,17 +47,17 @@ impl HomeView {
             .size_full()
             .overflow_y_scroll()
             .p_4()
-            .when(is_desktop, |el| el.p_6())
+            .when(is_desktop, |el| el.p_8())
             // Max width wrapper for clean desktop centering
             .child(
                 div()
                     .flex()
                     .flex_col()
                     .w_full()
-                    .max_w(px(1080.0))
+                    .max_w(px(1040.0))
                     .mx_auto()
                     .gap_6()
-                    // Header / Hero
+                    // Header / Greeting
                     .child(
                         div()
                             .flex()
@@ -53,16 +68,16 @@ impl HomeView {
                                     .text_2xl()
                                     .font_bold()
                                     .text_color(colors.foreground)
-                                    .child(Strings::APP_TITLE),
+                                    .child("Murakaza neza"),
                             )
                             .child(
                                 div()
                                     .text_sm()
                                     .text_color(colors.muted_foreground)
-                                    .child(Strings::HOME_WELCOME),
+                                    .child("Hitamo uko ushaka kwitoza uyu munsi"),
                             ),
                     )
-                    // In-Progress Attempt Banner (if present)
+                    // In-Progress Attempt Banner (if an attempt is active)
                     .children(state.current_attempt.as_ref().map(|att| {
                         let answered = att.answered_count();
                         let total = att.total_questions();
@@ -71,6 +86,7 @@ impl HomeView {
                         div()
                             .flex()
                             .flex_col()
+                            .when(is_desktop, |el| el.flex_row().items_center().justify_between())
                             .gap_3()
                             .p_4()
                             .rounded_xl()
@@ -81,8 +97,7 @@ impl HomeView {
                                 div()
                                     .flex()
                                     .flex_col()
-                                    .when(is_desktop, |el| el.flex_row().items_center().justify_between())
-                                    .gap_2()
+                                    .gap_1()
                                     .child(
                                         div()
                                             .text_base()
@@ -93,221 +108,220 @@ impl HomeView {
                                     .child(
                                         div()
                                             .text_xs()
-                                            .font_semibold()
-                                            .px_2()
-                                            .py_1()
-                                            .rounded_md()
-                                            .bg(colors.background)
-                                            .text_color(colors.primary)
-                                            .child(format!("{mode_title}: {answered}/{total} ibibazo")),
+                                            .text_color(colors.muted_foreground)
+                                            .child(format!("{mode_title}: {answered}/{total} ibibazo byasubijwe")),
                                     ),
                             )
                             .child(
                                 div()
                                     .flex()
                                     .flex_row()
+                                    .items_center()
                                     .gap_3()
                                     .child(
-                                        Button::new("resume_quiz_btn")
-                                            .primary()
-                                            .label(Strings::HOME_RESUME_BTN)
+                                        div()
+                                            .id("resume_quiz_btn")
+                                            .flex()
+                                            .flex_row()
+                                            .items_center()
+                                            .justify_center()
+                                            .px_4()
+                                            .py_2()
+                                            .rounded_lg()
+                                            .bg(colors.primary)
+                                            .cursor_pointer()
+                                            .hover(|el| el.opacity(0.9))
                                             .on_click(cx.listener(move |this, _, window, cx| {
                                                 on_resume(this, window, cx);
-                                            })),
+                                            }))
+                                            .child(
+                                                div()
+                                                    .text_sm()
+                                                    .font_semibold()
+                                                    .text_color(colors.primary_foreground)
+                                                    .child(Strings::HOME_RESUME_BTN),
+                                            ),
                                     )
                                     .child(
-                                        Button::new("discard_quiz_btn")
-                                            .outline()
-                                            .label(Strings::HOME_DISCARD_BTN)
+                                        div()
+                                            .id("discard_quiz_btn")
+                                            .flex()
+                                            .flex_row()
+                                            .items_center()
+                                            .justify_center()
+                                            .px_4()
+                                            .py_2()
+                                            .rounded_lg()
+                                            .border_1()
+                                            .border_color(colors.border)
+                                            .bg(colors.secondary)
+                                            .cursor_pointer()
+                                            .hover(|el| el.bg(colors.muted))
                                             .on_click(cx.listener(move |this, _, window, cx| {
                                                 on_discard(this, window, cx);
-                                            })),
+                                            }))
+                                            .child(
+                                                div()
+                                                    .text_sm()
+                                                    .font_medium()
+                                                    .text_color(colors.foreground)
+                                                    .child(Strings::HOME_DISCARD_BTN),
+                                            ),
                                     ),
                             )
                     }))
-                    // Mode Cards Section (Fully responsive: 3-col on wide screens, 2-col wrap on medium screens, 1-col on mobile)
+                    // 3 Mode Cards Row
                     .child(
                         div()
                             .flex()
-                            .flex_col()
-                            .gap_3()
-                            .child(
-                                div()
-                                    .text_base()
-                                    .font_semibold()
-                                    .text_color(colors.foreground)
-                                    .child("Hitamo uburyo bwo kwitoza:"),
-                            )
-                            .child(
-                                div()
-                                    .flex()
-                                    .gap_4()
-                                    .when(is_wide, |el| el.flex_row())
-                                    .when(is_desktop && !is_wide, |el| el.flex_row().flex_wrap())
-                                    .when(!is_desktop, |el| el.flex_col())
-                                    // Card 1: Byoroshye (Easy - Green)
-                                    .child(
-                                        Self::render_mode_card(
-                                            QuizMode::Byoroshye,
-                                            Strings::MODE_EASY_TITLE,
-                                            "Kwiga & Gusobanukirwa",
-                                            Strings::MODE_EASY_DESC,
-                                            "20 ibibazo • Nta gihe kigabanyuka • Ibisubizo byihuse",
-                                            colors.success,
-                                            is_desktop,
-                                            cx,
-                                            on_start_mode,
-                                        ),
-                                    )
-                                    // Card 2: Hagati (Medium - Amber/Warning)
-                                    .child(
-                                        Self::render_mode_card(
-                                            QuizMode::Hagati,
-                                            Strings::MODE_MEDIUM_TITLE,
-                                            "Kwimenyereza ikizamini",
-                                            Strings::MODE_MEDIUM_DESC,
-                                            "20 ibibazo • Iminota 20 • Guhindura igisubizo • Gusimbuka",
-                                            colors.warning,
-                                            is_desktop,
-                                            cx,
-                                            on_start_mode,
-                                        ),
-                                    )
-                                    // Card 3: Bikomeye (Hard - Red/Danger)
-                                    .child(
-                                        Self::render_mode_card(
-                                            QuizMode::Bikomeye,
-                                            Strings::MODE_HARD_TITLE,
-                                            "Uburyo bukaze",
-                                            Strings::MODE_HARD_DESC,
-                                            "20 ibibazo • Iminota 12 • Ibyapa byinshi • Nta gusimbuka",
-                                            colors.danger,
-                                            is_desktop,
-                                            cx,
-                                            on_start_mode,
-                                        ),
-                                    ),
-                            ),
+                            .gap_4()
+                            .when(is_desktop, |el| el.flex_row())
+                            .when(!is_desktop, |el| el.flex_col())
+                            // Card 1: Byoroshye
+                            .child(Self::render_mode_card(
+                                QuizMode::Byoroshye,
+                                "Byoroshye",
+                                "Wiga uko ukunze. Igisubizo kigaragara ako kanya, nta mwanya ugenwe.",
+                                IconName::GraduationCap,
+                                gpui::rgb(0x22c55e),
+                                gpui::rgba(0x0e2f1bff),
+                                is_desktop,
+                                cx,
+                                on_start_mode,
+                            ))
+                            // Card 2: Hagati
+                            .child(Self::render_mode_card(
+                                QuizMode::Hagati,
+                                "Hagati",
+                                "Ikizamini nyacyo: ibibazo 20 mu minota 20. Ibisubizo biboneka ku iherezo.",
+                                IconName::Clock,
+                                gpui::rgb(0xf59e0b),
+                                gpui::rgba(0x382405ff),
+                                is_desktop,
+                                cx,
+                                on_start_mode,
+                            ))
+                            // Card 3: Bikomeye
+                            .child(Self::render_mode_card(
+                                QuizMode::Bikomeye,
+                                "Bikomeye",
+                                "Ibibazo 20 mu minota 12. Nta gusubira inyuma, nta gusimbuka.",
+                                IconName::Flame,
+                                gpui::rgb(0xef4444),
+                                gpui::rgba(0x3b1115ff),
+                                is_desktop,
+                                cx,
+                                on_start_mode,
+                            )),
                     )
-                    // Weak Questions Practice Card
+                    // 3 Stat Tiles
+                    .child(
+                        div()
+                            .flex()
+                            .gap_4()
+                            .when(is_desktop, |el| el.flex_row())
+                            .when(!is_desktop, |el| el.flex_col())
+                            .child(Self::render_stat_tile(
+                                "Ibibazo byose",
+                                &total_questions.to_string(),
+                                cx,
+                            ))
+                            .child(Self::render_stat_tile(
+                                "Ikizamini giheruka",
+                                &last_score_display,
+                                cx,
+                            ))
+                            .child(Self::render_stat_tile(
+                                "Impuzandengo",
+                                &pass_rate_display,
+                                cx,
+                            )),
+                    )
+                    // Bottom Practice Card: Ibibazo nakosheje
                     .child(
                         div()
                             .flex()
                             .flex_col()
                             .when(is_desktop, |el| el.flex_row().items_center().justify_between())
-                            .gap_3()
-                            .p_4()
+                            .gap_4()
+                            .p_5()
                             .rounded_xl()
                             .border_1()
                             .border_color(colors.border)
                             .bg(colors.secondary)
+                            // Left side: target icon + titles
                             .child(
                                 div()
                                     .flex()
-                                    .flex_col()
-                                    .gap_1()
+                                    .flex_row()
+                                    .items_center()
+                                    .gap_4()
                                     .child(
                                         div()
-                                            .text_base()
-                                            .font_bold()
-                                            .text_color(colors.foreground)
-                                            .child("Ibibazo nakosheje kenshi"),
+                                            .flex()
+                                            .items_center()
+                                            .justify_center()
+                                            .size(px(42.0))
+                                            .rounded_xl()
+                                            .bg(gpui::rgba(0x22262eff))
+                                            .child(
+                                                Icon::new(IconName::Target)
+                                                    .size(px(22.0))
+                                                    .text_color(colors.foreground),
+                                            ),
                                     )
                                     .child(
                                         div()
-                                            .text_xs()
-                                            .text_color(colors.muted_foreground)
-                                            .child("Itoze ibibazo ugiramo amakosa cyane kugira ngo ubyumve neza"),
+                                            .flex()
+                                            .flex_col()
+                                            .gap_0p5()
+                                            .child(
+                                                div()
+                                                    .text_base()
+                                                    .font_bold()
+                                                    .text_color(colors.foreground)
+                                                    .child("Ibibazo nakosheje"),
+                                            )
+                                            .child(
+                                                div()
+                                                    .text_xs()
+                                                    .text_color(colors.muted_foreground)
+                                                    .child("Subiramo ibibazo wakunze kwibeshyaho"),
+                                            ),
                                     ),
                             )
+                            // Right side: Action Button "Kora ibi bibazo ->"
                             .child(
-                                Button::new("start_weak_practice_btn")
-                                    .primary()
-                                    .label("Tangira kwitoza ibyo nakosheje")
+                                div()
+                                    .id("start_weak_practice_btn")
+                                    .flex()
+                                    .flex_row()
+                                    .items_center()
+                                    .justify_center()
+                                    .gap_2()
+                                    .px_4()
+                                    .py_2p5()
+                                    .rounded_lg()
+                                    .border_1()
+                                    .border_color(colors.border)
+                                    .bg(gpui::rgba(0x1a1e24ff))
+                                    .cursor_pointer()
+                                    .hover(|el| el.bg(gpui::rgba(0x252a32ff)).border_color(gpui::rgba(0x3e4552ff)))
                                     .on_click(cx.listener(move |this, _, window, cx| {
                                         on_start_mode(this, QuizMode::WeakPractice, window, cx);
-                                    })),
-                            ),
-                    )
-                    // Quick Statistics Preview (Responsive 4 in a row on Wide Desktop, 2x2 grid on Compact Desktop & Mobile)
-                    .child(
-                        div()
-                            .flex()
-                            .flex_col()
-                            .gap_3()
-                            .child(
-                                div()
-                                    .text_base()
-                                    .font_semibold()
-                                    .text_color(colors.foreground)
-                                    .child("Incamake y'imibare"),
-                            )
-                            .child(
-                                div()
-                                    .when(is_wide, |el| {
-                                        // 4 in a single horizontal row on Wide Desktop
-                                        el.flex()
-                                            .flex_row()
-                                            .gap_3()
-                                            .child(Self::render_stat_tile(
-                                                Strings::STATS_TOTAL_ATTEMPTS,
-                                                &stats_summary.total_attempts.to_string(),
-                                                cx,
-                                            ))
-                                            .child(Self::render_stat_tile(
-                                                Strings::STATS_AVERAGE_SCORE,
-                                                &format!("{:.1}/20", stats_summary.average_score),
-                                                cx,
-                                            ))
-                                            .child(Self::render_stat_tile(
-                                                Strings::STATS_PASS_RATE,
-                                                &format!("{:.0}%", stats_summary.pass_rate_percentage),
-                                                cx,
-                                            ))
-                                            .child(Self::render_stat_tile(
-                                                "Ibibazo wamaze kubona",
-                                                &format!("{}/390", stats_summary.questions_seen_count),
-                                                cx,
-                                            ))
-                                    })
-                                    .when(!is_wide, |el| {
-                                        // 2x2 grid on Compact Desktop & Mobile for clean readability
-                                        el.flex()
-                                            .flex_col()
-                                            .gap_2()
-                                            .child(
-                                                div()
-                                                    .flex()
-                                                    .flex_row()
-                                                    .gap_2()
-                                                    .child(Self::render_stat_tile(
-                                                        Strings::STATS_TOTAL_ATTEMPTS,
-                                                        &stats_summary.total_attempts.to_string(),
-                                                        cx,
-                                                    ))
-                                                    .child(Self::render_stat_tile(
-                                                        Strings::STATS_AVERAGE_SCORE,
-                                                        &format!("{:.1}/20", stats_summary.average_score),
-                                                        cx,
-                                                    )),
-                                            )
-                                            .child(
-                                                div()
-                                                    .flex()
-                                                    .flex_row()
-                                                    .gap_2()
-                                                    .child(Self::render_stat_tile(
-                                                        Strings::STATS_PASS_RATE,
-                                                        &format!("{:.0}%", stats_summary.pass_rate_percentage),
-                                                        cx,
-                                                    ))
-                                                    .child(Self::render_stat_tile(
-                                                        "Ibibazo wamaze kubona",
-                                                        &format!("{}/390", stats_summary.questions_seen_count),
-                                                        cx,
-                                                    )),
-                                            )
-                                    }),
+                                    }))
+                                    .child(
+                                        div()
+                                            .text_sm()
+                                            .font_semibold()
+                                            .text_color(colors.foreground)
+                                            .child("Kora ibi bibazo"),
+                                    )
+                                    .child(
+                                        Icon::new(IconName::ArrowRight)
+                                            .size(px(16.0))
+                                            .text_color(colors.foreground),
+                                    ),
                             ),
                     ),
             )
@@ -317,10 +331,10 @@ impl HomeView {
     fn render_mode_card<V: 'static>(
         mode: QuizMode,
         title: &'static str,
-        badge_text: &'static str,
         desc: &'static str,
-        features: &'static str,
-        accent_color: gpui::Hsla,
+        icon: IconName,
+        icon_color: impl Into<gpui::Hsla>,
+        badge_bg: impl Into<gpui::Hsla>,
         is_desktop: bool,
         cx: &mut Context<V>,
         on_start_mode: impl Fn(&mut V, QuizMode, &mut Window, &mut Context<V>) + 'static + Copy,
@@ -332,56 +346,83 @@ impl HomeView {
             .flex()
             .flex_col()
             .flex_1()
-            .when(is_desktop, |el| el.min_w(px(260.0)))
-            .gap_3()
-            .p_4()
+            .when(is_desktop, |el| el.min_w(px(240.0)))
+            .p_5()
             .rounded_xl()
             .border_1()
             .border_color(colors.border)
             .bg(colors.secondary)
-            // Header with title and badge
+            // Header: Icon badge + Title
             .child(
                 div()
                     .flex()
                     .flex_row()
                     .items_center()
-                    .justify_between()
-                    .gap_2()
+                    .gap_3()
+                    .child(
+                        div()
+                            .flex()
+                            .items_center()
+                            .justify_center()
+                            .size(px(40.0))
+                            .rounded_xl()
+                            .bg(badge_bg.into())
+                            .child(Icon::new(icon).size(px(20.0)).text_color(icon_color.into())),
+                    )
                     .child(
                         div()
                             .text_lg()
                             .font_bold()
-                            .text_color(accent_color)
+                            .text_color(colors.foreground)
                             .child(title),
-                    )
-                    .child(
-                        div()
-                            .text_xs()
-                            .font_semibold()
-                            .px_2()
-                            .py_0p5()
-                            .rounded_md()
-                            .border_1()
-                            .border_color(accent_color)
-                            .text_color(accent_color)
-                            .child(badge_text),
                     ),
             )
-            .child(div().text_xs().text_color(colors.foreground).child(desc))
+            // Card Description
             .child(
                 div()
+                    .mt_4()
                     .text_xs()
                     .text_color(colors.muted_foreground)
-                    .child(features),
+                    .min_h(px(44.0))
+                    .child(desc),
             )
+            // Bottom Action Button: Tangira
             .child(
-                div().mt_auto().pt_2().child(
-                    Button::new(format!("btn_mode_{title}"))
-                        .primary()
-                        .label(format!("Tangira {title}"))
+                div().mt_6().w_full().child(
+                    div()
+                        .id(format!("btn_mode_{title}"))
+                        .flex()
+                        .flex_row()
+                        .items_center()
+                        .justify_center()
+                        .gap_2()
+                        .w_full()
+                        .py_2p5()
+                        .px_4()
+                        .rounded_lg()
+                        .border_1()
+                        .border_color(colors.border)
+                        .bg(gpui::rgba(0x1a1e24ff))
+                        .cursor_pointer()
+                        .hover(|el| {
+                            el.bg(gpui::rgba(0x252a32ff))
+                                .border_color(gpui::rgba(0x3e4552ff))
+                        })
                         .on_click(cx.listener(move |this, _, window, cx| {
                             on_start_mode(this, mode, window, cx);
-                        })),
+                        }))
+                        .child(
+                            Icon::new(IconName::Play)
+                                .size(px(14.0))
+                                .text_color(colors.foreground),
+                        )
+                        .child(
+                            div()
+                                .text_sm()
+                                .font_semibold()
+                                .text_color(colors.foreground)
+                                .child("Tangira"),
+                        ),
                 ),
             )
     }
@@ -398,21 +439,22 @@ impl HomeView {
             .flex()
             .flex_col()
             .flex_1()
-            .gap_1()
-            .p_3()
-            .rounded_lg()
+            .gap_2()
+            .p_5()
+            .rounded_xl()
             .border_1()
             .border_color(colors.border)
             .bg(colors.secondary)
             .child(
                 div()
                     .text_xs()
+                    .font_medium()
                     .text_color(colors.muted_foreground)
                     .child(label),
             )
             .child(
                 div()
-                    .text_base()
+                    .text_3xl()
                     .font_bold()
                     .text_color(colors.foreground)
                     .child(value.to_string()),

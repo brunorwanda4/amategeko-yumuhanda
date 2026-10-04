@@ -197,6 +197,7 @@ impl QuizView {
                                     TimerState::Countdown {
                                         remaining_seconds,
                                         is_urgent,
+                                        ..
                                     } => {
                                         let mins = remaining_seconds / 60;
                                         let secs = remaining_seconds % 60;

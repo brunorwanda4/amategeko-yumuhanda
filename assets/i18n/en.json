@@ -1,0 +1,5 @@
+{
+  "timer.warning": "Time is running low. {time} left.",
+  "timer.error": "Time is almost up! {time} left.",
+  "timer.done": "Time is up. Exam submitted."
+}

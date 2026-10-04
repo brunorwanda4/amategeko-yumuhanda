@@ -1,0 +1,5 @@
+{
+  "timer.warning": "Igihe kiregereje. Hasigaye {time}.",
+  "timer.error": "Igihe kigiye kurangira! Hasigaye {time}.",
+  "timer.done": "Igihe kirarangiye. Ikizamini cyoherejwe."
+}
