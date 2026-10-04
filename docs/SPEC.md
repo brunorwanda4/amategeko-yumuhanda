@@ -46,8 +46,7 @@ road-rules-trainer/
 The repository also contains a project website in `website/` (landing page + documentation). It is built with Next.js, Fumadocs, shadcn/ui and Bun, as a static export. Its full specification is `docs/WEBSITE_SPEC.md`.
 - The website is separate from the app. It shares no code with the Rust crates.
 - Downloads are links to the latest GitHub Release. The website never hosts the APK, the exe, the PDF, or the question bank.
-- No analytics, cookies, trackers, forms, or backend on the website.
-- Website pages must describe the real behavior of the app (quiz rules, screens, settings). If a rule in this file changes, update the website docs in the same task or tell the owner.
+- No analytics, cookies, trackers, forms, or backend on the website.\n- Website pages must describe the real behavior of the app (quiz rules, screens, settings). If a rule in this file changes, update the website docs in the same task or tell the owner.
 
 ## 13. Content and licensing
 - The source PDF is marked "RESTRICTED". Never publish it, `questions.json` or `assets/images/` (website, release assets, screenshots) unless the owner confirms in writing that sharing is allowed.
@@ -193,3 +192,16 @@ The app supports Kinyarwanda (`rw`, default) and English (`en`).
 - Levels are computed from the deadline-based remaining time (so they stay correct after backgrounding). If the app resumes already past a threshold, show the current level's banner once.
 - On mobile, an optional vibration on level change if the platform supports it (setting off by default).
 - Unit tests in `core`: threshold levels for 20 min and 12 min totals; level never goes back to normal unless the attempt restarts; resume past a threshold reports the correct level.
+
+### Keyboard shortcuts (desktop only; ignored on mobile)
+All shortcuts are defined in ONE registry (`crates/app/src/shortcuts.rs`): key, action, screens where active, i18n label. The help dialog (`?` / `F1`) and button tooltips are generated from it. Settings switch "Keyboard shortcuts" disables all. `Cmd` replaces `Ctrl` on macOS.
+- Global: Ctrl+1..5 go to Home / Quiz / Questions / Stats / Settings; Esc closes a dialog or goes back; ? or F1 opens the help.
+- Home: 1/2/3 start Easy/Medium/Hard; Enter resumes the unfinished exam.
+- Quiz: A-D or 1-4 choose; Enter = Next (Easy, Medium) or Confirm (Hard).
+- Easy: Left/Right previous/next (Next only after answering); S skip; B star.
+- Medium: Left/Right; F flag; Ctrl+Enter finish (with the confirmation dialog).
+- Hard: only A-D, 1-4, Enter. Navigation shortcuts and Esc-back are disabled while the exam runs.
+- Results: R retry; W retry mistakes; 1/2/3 filters; Esc home.
+- Questions: / or Ctrl+F focus search; Up/Down move; Enter open/close; B star; H hide/show answers.
+- Stats: 1-4 filters. Settings: Ctrl+S save.
+Rules: single-key shortcuts are off while a text input is focused (only Esc and Ctrl+ combos work). Destructive actions (clear history, reset, finish) never have a single-key shortcut. Each shortcut works only where its screen/mode rules allow the action.

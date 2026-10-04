@@ -188,22 +188,12 @@ impl QuestionsView {
                             .cursor_pointer()
                             .border_1()
                             .border_color(if is_active {
-                                gpui::Rgba {
-                                    r: 0.35,
-                                    g: 0.38,
-                                    b: 0.45,
-                                    a: 1.0,
-                                }
+                                colors.muted_foreground
                             } else {
                                 colors.border
                             })
                             .bg(if is_active {
-                                gpui::Rgba {
-                                    r: 0.16,
-                                    g: 0.18,
-                                    b: 0.22,
-                                    a: 1.0,
-                                }
+                                colors.secondary
                             } else {
                                 colors.background
                             })
@@ -373,7 +363,7 @@ impl QuestionsView {
                                                     .child(q.text_for(q_lang).to_string()),
                                             ),
                                     )
-                                    // Right: Badges, Correct Letter (if collapsed & !hide), Bookmark, Chevron
+                                    // Right: Badges, Correct Letter (if collapsed & !hide), Star, Chevron
                                     .child(
                                         div()
                                             .flex()
@@ -392,22 +382,22 @@ impl QuestionsView {
                                                         .px_2()
                                                         .py_0p5()
                                                         .rounded_md()
-                                                        .bg(gpui::Rgba {
-                                                            r: 0.06,
-                                                            g: 0.18,
-                                                            b: 0.35,
+                                                        .bg(gpui::Hsla {
+                                                            h: 215.0 / 360.0,
+                                                            s: 0.70,
+                                                            l: 0.16,
                                                             a: 1.0,
                                                         })
                                                         .text_xs()
                                                         .font_medium()
-                                                        .text_color(gpui::Rgba {
-                                                            r: 0.38,
-                                                            g: 0.65,
-                                                            b: 0.98,
+                                                        .text_color(gpui::Hsla {
+                                                            h: 215.0 / 360.0,
+                                                            s: 0.90,
+                                                            l: 0.65,
                                                             a: 1.0,
                                                         })
                                                         .child(
-                                                            Icon::new(IconName::Image)
+                                                            Icon::new(IconName::Frame)
                                                                 .size(px(13.0)),
                                                         )
                                                         .child(t("badge.image", lang)),
@@ -420,18 +410,18 @@ impl QuestionsView {
                                                         .px_2()
                                                         .py_0p5()
                                                         .rounded_md()
-                                                        .bg(gpui::Rgba {
-                                                            r: 0.35,
-                                                            g: 0.1,
-                                                            b: 0.1,
+                                                        .bg(gpui::Hsla {
+                                                            h: 0.0,
+                                                            s: 0.55,
+                                                            l: 0.18,
                                                             a: 1.0,
                                                         })
                                                         .text_xs()
                                                         .font_medium()
-                                                        .text_color(gpui::Rgba {
-                                                            r: 0.98,
-                                                            g: 0.44,
-                                                            b: 0.44,
+                                                        .text_color(gpui::Hsla {
+                                                            h: 0.0,
+                                                            s: 0.85,
+                                                            l: 0.65,
                                                             a: 1.0,
                                                         })
                                                         .child(
@@ -449,16 +439,11 @@ impl QuestionsView {
                                                     div()
                                                         .text_sm()
                                                         .font_medium()
-                                                        .text_color(gpui::Rgba {
-                                                            r: 0.22,
-                                                            g: 0.77,
-                                                            b: 0.36,
-                                                            a: 1.0,
-                                                        })
+                                                        .text_color(colors.success)
                                                         .child(format!("{})", q.correct)),
                                                 )
                                             })
-                                            // Bookmark Button
+                                            // Star Button
                                             .child(
                                                 div()
                                                     .id(format!("star_q_{}", q_id))
@@ -482,9 +467,9 @@ impl QuestionsView {
                                                     }))
                                                     .child(
                                                         Icon::new(if is_starred {
-                                                            IconName::BookmarkCheck
+                                                            IconName::StarFill
                                                         } else {
-                                                            IconName::Bookmark
+                                                            IconName::Star
                                                         })
                                                         .size(px(15.0))
                                                         .text_color(if is_starred {
@@ -547,7 +532,7 @@ impl QuestionsView {
                                                             .text_xs()
                                                             .text_color(colors.muted_foreground)
                                                             .child(
-                                                                Icon::new(IconName::Image)
+                                                                Icon::new(IconName::Frame)
                                                                     .size(px(14.0))
                                                                     .text_color(
                                                                         colors.muted_foreground,
@@ -599,24 +584,14 @@ impl QuestionsView {
                                                         if !hide_answers {
                                                             if is_correct_key {
                                                                 (
-                                                                    gpui::Rgba {
-                                                                        r: 0.13,
-                                                                        g: 0.45,
-                                                                        b: 0.18,
+                                                                    colors.success,
+                                                                    gpui::Hsla {
+                                                                        h: 130.0 / 360.0,
+                                                                        s: 0.50,
+                                                                        l: 0.10,
                                                                         a: 1.0,
                                                                     },
-                                                                    gpui::Rgba {
-                                                                        r: 0.05,
-                                                                        g: 0.16,
-                                                                        b: 0.07,
-                                                                        a: 1.0,
-                                                                    },
-                                                                    gpui::Rgba {
-                                                                        r: 0.22,
-                                                                        g: 0.77,
-                                                                        b: 0.36,
-                                                                        a: 1.0,
-                                                                    },
+                                                                    colors.success,
                                                                     Some(IconName::Check),
                                                                 )
                                                             } else {
@@ -633,69 +608,39 @@ impl QuestionsView {
                                                             if chosen == key {
                                                                 if is_correct_key {
                                                                     (
-                                                                        gpui::Rgba {
-                                                                            r: 0.13,
-                                                                            g: 0.45,
-                                                                            b: 0.18,
+                                                                        colors.success,
+                                                                        gpui::Hsla {
+                                                                            h: 130.0 / 360.0,
+                                                                            s: 0.50,
+                                                                            l: 0.10,
                                                                             a: 1.0,
                                                                         },
-                                                                        gpui::Rgba {
-                                                                            r: 0.05,
-                                                                            g: 0.16,
-                                                                            b: 0.07,
-                                                                            a: 1.0,
-                                                                        },
-                                                                        gpui::Rgba {
-                                                                            r: 0.22,
-                                                                            g: 0.77,
-                                                                            b: 0.36,
-                                                                            a: 1.0,
-                                                                        },
+                                                                        colors.success,
                                                                         Some(IconName::Check),
                                                                     )
                                                                 } else {
                                                                     (
-                                                                        gpui::Rgba {
-                                                                            r: 0.55,
-                                                                            g: 0.15,
-                                                                            b: 0.15,
+                                                                        colors.danger,
+                                                                        gpui::Hsla {
+                                                                            h: 0.0,
+                                                                            s: 0.50,
+                                                                            l: 0.12,
                                                                             a: 1.0,
                                                                         },
-                                                                        gpui::Rgba {
-                                                                            r: 0.25,
-                                                                            g: 0.05,
-                                                                            b: 0.05,
-                                                                            a: 1.0,
-                                                                        },
-                                                                        gpui::Rgba {
-                                                                            r: 0.98,
-                                                                            g: 0.44,
-                                                                            b: 0.44,
-                                                                            a: 1.0,
-                                                                        },
+                                                                        colors.danger,
                                                                         Some(IconName::CircleX),
                                                                     )
                                                                 }
                                                             } else if is_correct_key {
                                                                 (
-                                                                    gpui::Rgba {
-                                                                        r: 0.13,
-                                                                        g: 0.45,
-                                                                        b: 0.18,
+                                                                    colors.success,
+                                                                    gpui::Hsla {
+                                                                        h: 130.0 / 360.0,
+                                                                        s: 0.50,
+                                                                        l: 0.10,
                                                                         a: 1.0,
                                                                     },
-                                                                    gpui::Rgba {
-                                                                        r: 0.05,
-                                                                        g: 0.16,
-                                                                        b: 0.07,
-                                                                        a: 1.0,
-                                                                    },
-                                                                    gpui::Rgba {
-                                                                        r: 0.22,
-                                                                        g: 0.77,
-                                                                        b: 0.36,
-                                                                        a: 1.0,
-                                                                    },
+                                                                    colors.success,
                                                                     Some(IconName::Check),
                                                                 )
                                                             } else {
@@ -775,7 +720,7 @@ impl QuestionsView {
                                                 })),
                                         ),
                                 )
-                            }),
+                            })
                     })),
             )
             // Footer Performance Note
