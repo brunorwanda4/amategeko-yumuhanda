@@ -143,6 +143,9 @@ impl ResultsView {
                         div()
                             .flex()
                             .flex_col()
+                            .w_full()
+                            .min_w_0()
+                            .overflow_hidden()
                             .items_center()
                             .justify_center()
                             .w(px(110.0))
@@ -446,6 +449,9 @@ impl ResultsView {
                                     .flex_row()
                                     .items_center()
                                     .justify_between()
+                                    .w_full()
+                                    .min_w_0()
+                                    .overflow_hidden()
                                     .cursor_pointer()
                                     .on_click(cx.listener(move |this, _, window, cx| {
                                         on_toggle_expand(this, orig_idx, window, cx);
@@ -457,10 +463,13 @@ impl ResultsView {
                                             .items_center()
                                             .gap_2()
                                             .flex_1()
+                                            .min_w_0()
+                                            .overflow_hidden()
                                             // Status Icon (Check or Cross)
                                             .child(
                                                 Icon::new(status_icon)
                                                     .size(px(18.0))
+                                                    .flex_none()
                                                     .text_color(status_color),
                                             )
                                             // Question Number + Badges + Text Snippet
@@ -468,6 +477,8 @@ impl ResultsView {
                                                 div()
                                                     .flex()
                                                     .flex_col()
+                                                    .min_w_0()
+                                                    .overflow_hidden()
                                                     .child(
                                                         div()
                                                             .flex()
@@ -524,17 +535,15 @@ impl ResultsView {
                                                             }),
                                                     )
                                                     .when(!is_expanded, |snip| {
-                                                        let q_text = q.text_for(q_lang);
-                                                        let snippet = if q_text.len() > 65 {
-                                                            format!("{}...", &q_text[..60])
-                                                        } else {
-                                                            q_text.to_string()
-                                                        };
                                                         snip.child(
                                                             div()
+                                                                .w_full()
+                                                                .min_w_0()
+                                                                .overflow_hidden()
+                                                                .whitespace_normal()
                                                                 .text_xs()
                                                                 .text_color(colors.muted_foreground)
-                                                                .child(snippet),
+                                                                .child(q.text_for(q_lang).to_string()),
                                                         )
                                                     }),
                                             ),
@@ -547,6 +556,7 @@ impl ResultsView {
                                             IconName::ChevronDown
                                         })
                                         .size(px(16.0))
+                                        .flex_none()
                                         .text_color(colors.muted_foreground),
                                     ),
                             )
@@ -556,6 +566,9 @@ impl ResultsView {
                                     div()
                                         .flex()
                                         .flex_col()
+                                        .w_full()
+                                        .min_w_0()
+                                        .overflow_hidden()
                                         .gap_3()
                                         .pt_2()
                                         .border_t_1()
@@ -565,9 +578,16 @@ impl ResultsView {
                                             div()
                                                 .flex()
                                                 .flex_col()
+                                                .w_full()
+                                                .min_w_0()
+                                                .overflow_hidden()
                                                 .gap_1()
                                                 .child(
                                                     div()
+                                                        .w_full()
+                                                        .min_w_0()
+                                                        .overflow_hidden()
+                                                        .whitespace_normal()
                                                         .text_sm()
                                                         .font_medium()
                                                         .text_color(colors.foreground)
@@ -577,6 +597,10 @@ impl ResultsView {
                                                     if let Some(sec_text) = q.secondary_text_for(q_lang) {
                                                         bilingual.child(
                                                             div()
+                                                                .w_full()
+                                                                .min_w_0()
+                                                                .overflow_hidden()
+                                                                .whitespace_normal()
                                                                 .text_xs()
                                                                 .text_color(colors.muted_foreground)
                                                                 .child(sec_text.to_string()),
@@ -622,7 +646,7 @@ impl ResultsView {
                                             )
                                         })
                                         // Options review
-                                        .child(div().flex().flex_col().gap_2().children(
+                                        .child(div().flex().flex_col().w_full().min_w_0().overflow_hidden().gap_2().children(
                                             sorted_keys.into_iter().map(|key| {
                                                 let opt_text =
                                                     opts.get(key).cloned().unwrap_or_default();
@@ -684,6 +708,9 @@ impl ResultsView {
                                                 div()
                                                     .flex()
                                                     .flex_col()
+                                                    .w_full()
+                                                    .min_w_0()
+                                                    .overflow_hidden()
                                                     .p_2p5()
                                                     .rounded_lg()
                                                     .border_1()
@@ -699,9 +726,20 @@ impl ResultsView {
                                                             .flex()
                                                             .flex_row()
                                                             .items_start()
+                                                            .w_full()
+                                                            .min_w_0()
+                                                            .overflow_hidden()
                                                             .gap_2()
                                                             .child(
                                                                 div()
+                                                                    .size(px(24.0))
+                                                                    .flex_none()
+                                                                    .flex()
+                                                                    .items_center()
+                                                                    .justify_center()
+                                                                    .rounded_md()
+                                                                    .border_1()
+                                                                    .border_color(opt_border)
                                                                     .text_xs()
                                                                     .font_bold()
                                                                     .text_color(
@@ -719,9 +757,15 @@ impl ResultsView {
                                                                 div()
                                                                     .flex_1()
                                                                     .flex_col()
+                                                                    .min_w_0()
+                                                                    .overflow_hidden()
                                                                     .gap_0p5()
                                                                     .child(
                                                                         div()
+                                                                            .w_full()
+                                                                            .min_w_0()
+                                                                            .overflow_hidden()
+                                                                            .whitespace_normal()
                                                                             .text_xs()
                                                                             .text_color(colors.foreground)
                                                                             .child(opt_text),
@@ -729,6 +773,10 @@ impl ResultsView {
                                                                     .when_some(sec_opt, |el, sec| {
                                                                         el.child(
                                                                             div()
+                                                                                .w_full()
+                                                                                .min_w_0()
+                                                                                .overflow_hidden()
+                                                                                .whitespace_normal()
                                                                                 .text_xs()
                                                                                 .text_color(colors.muted_foreground)
                                                                                 .child(sec),
@@ -739,6 +787,10 @@ impl ResultsView {
                                                     .when_some(badge_text, |b, txt| {
                                                         b.child(
                                                             div()
+                                                                .w_full()
+                                                                .min_w_0()
+                                                                .overflow_hidden()
+                                                                .whitespace_normal()
                                                                 .text_xs()
                                                                 .font_semibold()
                                                                 .text_color(badge_color)

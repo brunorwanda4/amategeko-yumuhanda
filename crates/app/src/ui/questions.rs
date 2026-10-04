@@ -321,6 +321,9 @@ impl QuestionsView {
                             .id(format!("q_card_{}", q_id))
                             .flex()
                             .flex_col()
+                            .w_full()
+                            .min_w_0()
+                            .overflow_hidden()
                             .rounded_lg()
                             .border_1()
                             .border_color(colors.border)
@@ -336,6 +339,9 @@ impl QuestionsView {
                                     .items_center()
                                     .justify_between()
                                     .gap_3()
+                                    .w_full()
+                                    .min_w_0()
+                                    .overflow_hidden()
                                     .cursor_pointer()
                                     .on_click(cx.listener(move |this, _, window, cx| {
                                         on_toggle_expand(this, q_id, window, cx);
@@ -348,8 +354,11 @@ impl QuestionsView {
                                             .items_baseline()
                                             .gap_3()
                                             .flex_1()
+                                            .min_w_0()
+                                            .overflow_hidden()
                                             .child(
                                                 div()
+                                                    .flex_none()
                                                     .text_sm()
                                                     .text_color(colors.muted_foreground)
                                                     .child(format!("{}.", q_id)),
@@ -357,6 +366,9 @@ impl QuestionsView {
                                             .child(
                                                 div()
                                                     .flex_1()
+                                                    .min_w_0()
+                                                    .overflow_hidden()
+                                                    .whitespace_normal()
                                                     .text_sm()
                                                     .font_normal()
                                                     .text_color(colors.foreground)
@@ -371,6 +383,7 @@ impl QuestionsView {
                                             .items_center()
                                             .gap_2p5()
                                             .flex_shrink_0()
+                                            .flex_none()
                                             // Image badge (blue pill)
                                             .when(q.has_image, |b| {
                                                 b.child(
@@ -505,6 +518,9 @@ impl QuestionsView {
                                     div()
                                         .flex()
                                         .flex_col()
+                                        .w_full()
+                                        .min_w_0()
+                                        .overflow_hidden()
                                         .gap_3()
                                         .pt_1()
                                         // Sign Image Container with dashed border
@@ -558,6 +574,10 @@ impl QuestionsView {
                                             if let Some(sec_text) = q.secondary_text_for(q_lang) {
                                                 bilingual.child(
                                                     div()
+                                                        .w_full()
+                                                        .min_w_0()
+                                                        .overflow_hidden()
+                                                        .whitespace_normal()
                                                         .text_xs()
                                                         .text_color(colors.muted_foreground)
                                                         .child(sec_text.to_string()),
@@ -571,6 +591,9 @@ impl QuestionsView {
                                             div()
                                                 .flex()
                                                 .flex_col()
+                                                .w_full()
+                                                .min_w_0()
+                                                .overflow_hidden()
                                                 .gap_2()
                                                 .children(sorted_keys.into_iter().map(|key| {
                                                     let opt_text = opts
@@ -664,9 +687,11 @@ impl QuestionsView {
                                                         .id(format!("q_{}_opt_{}", q_id, key))
                                                         .flex()
                                                         .flex_row()
-                                                        .items_center()
-                                                        .justify_between()
+                                                        .items_start()
                                                         .w_full()
+                                                        .min_w_0()
+                                                        .overflow_hidden()
+                                                        .gap_2p5()
                                                         .p_3()
                                                         .rounded_lg()
                                                         .border_1()
@@ -688,32 +713,35 @@ impl QuestionsView {
                                                         ))
                                                         .child(
                                                             div()
+                                                                .size(px(28.0))
+                                                                .flex_none()
                                                                 .flex()
-                                                                .flex_row()
                                                                 .items_center()
-                                                                .gap_2p5()
+                                                                .justify_center()
+                                                                .rounded_md()
+                                                                .border_1()
+                                                                .border_color(border_c)
+                                                                .bg(colors.background)
+                                                                .text_sm()
+                                                                .font_semibold()
+                                                                .text_color(text_c)
+                                                                .child(format!("{})", key)),
+                                                        )
+                                                        .child(
+                                                            div()
                                                                 .flex_1()
-                                                                .child(
-                                                                    div()
-                                                                        .text_sm()
-                                                                        .font_semibold()
-                                                                        .text_color(text_c)
-                                                                        .child(format!(
-                                                                            "{})",
-                                                                            key
-                                                                        )),
-                                                                )
-                                                                .child(
-                                                                    div()
-                                                                        .text_sm()
-                                                                        .text_color(text_c)
-                                                                        .child(opt_text),
-                                                                ),
+                                                                .min_w_0()
+                                                                .overflow_hidden()
+                                                                .whitespace_normal()
+                                                                .text_sm()
+                                                                .text_color(text_c)
+                                                                .child(opt_text),
                                                         )
                                                         .when_some(icon_opt, |row, ic| {
                                                             row.child(
                                                                 Icon::new(ic)
                                                                     .size(px(16.0))
+                                                                    .flex_none()
                                                                     .text_color(text_c),
                                                             )
                                                         })

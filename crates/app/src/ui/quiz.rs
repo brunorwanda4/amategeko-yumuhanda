@@ -657,12 +657,17 @@ impl QuizView {
                                     .flex_col()
                                     .w_full()
                                     .flex_1()
+                                    .min_w_0()
+                                    .overflow_hidden()
                                     .gap_4()
                                     // Question text + optional draft badge + optional secondary translation
                                     .child(
                                         div()
                                             .flex()
                                             .flex_col()
+                                            .w_full()
+                                            .min_w_0()
+                                            .overflow_hidden()
                                             .gap_1p5()
                                             .when(
                                                 current_q.is_draft_translation()
@@ -695,6 +700,11 @@ impl QuizView {
                                             )
                                             .child(
                                                 div()
+                                                    .debug_selector(|| "quiz-question-text".into())
+                                                    .w_full()
+                                                    .min_w_0()
+                                                    .overflow_hidden()
+                                                    .whitespace_normal()
                                                     .text_xl()
                                                     .font_bold()
                                                     .text_color(colors.foreground)
@@ -706,6 +716,10 @@ impl QuizView {
                                                 {
                                                     bilingual.child(
                                                         div()
+                                                            .w_full()
+                                                            .min_w_0()
+                                                            .overflow_hidden()
+                                                            .whitespace_normal()
                                                             .text_sm()
                                                             .font_normal()
                                                             .text_color(colors.muted_foreground)
@@ -746,15 +760,23 @@ impl QuizView {
                                                 div()
                                                     .flex()
                                                     .flex_row()
-                                                    .items_center()
+                                                    .items_start()
+                                                    .w_full()
+                                                    .min_w_0()
+                                                    .overflow_hidden()
                                                     .gap_2()
                                                     .child(
                                                         Icon::new(exp_icon)
                                                             .size(px(16.0))
+                                                            .flex_none()
                                                             .text_color(exp_color),
                                                     )
                                                     .child(
                                                         div()
+                                                            .flex_1()
+                                                            .min_w_0()
+                                                            .overflow_hidden()
+                                                            .whitespace_normal()
                                                             .text_sm()
                                                             .font_medium()
                                                             .text_color(exp_color)
@@ -762,19 +784,27 @@ impl QuizView {
                                                     )
                                             } else {
                                                 div()
+                                                    .w_full()
+                                                    .min_w_0()
+                                                    .overflow_hidden()
+                                                    .whitespace_normal()
                                                     .text_sm()
                                                     .text_color(colors.muted_foreground)
                                                     .child(t("quiz.easy_hint", lang))
                                             }
                                         } else {
                                             div()
+                                                .w_full()
+                                                .min_w_0()
+                                                .overflow_hidden()
+                                                .whitespace_normal()
                                                 .text_sm()
                                                 .text_color(colors.muted_foreground)
                                                 .child(t("quiz.hard_no_selection", lang))
                                         }
                                     })
                                     // Options list
-                                    .child(div().flex().flex_col().gap_3().children({
+                                    .child(div().flex().flex_col().w_full().min_w_0().overflow_hidden().gap_3().children({
                                         let opts = current_q.options_for(q_lang);
                                         let mut keys: Vec<&String> = opts.keys().collect();
                                         keys.sort();
@@ -1142,9 +1172,14 @@ impl QuizView {
 
         div()
             .id(format!("option_card_{letter}"))
+            .debug_selector(|| format!("quiz-option-row-{letter}"))
             .flex()
             .flex_row()
-            .items_center()
+            .items_start()
+            .w_full()
+            .min_w_0()
+            .overflow_hidden()
+            .gap_3()
             .min_h(px(52.0))
             .px_4()
             .py_3()
@@ -1164,11 +1199,12 @@ impl QuizView {
             // Badge containing letter: A, B, C, D
             .child(
                 div()
+                    .debug_selector(|| format!("quiz-option-badge-{letter}"))
                     .flex()
                     .items_center()
                     .justify_center()
-                    .w(px(32.0))
-                    .h(px(32.0))
+                    .size(px(32.0))
+                    .flex_none()
                     .rounded_lg()
                     .border_1()
                     .border_color(badge_border)
@@ -1184,12 +1220,18 @@ impl QuizView {
             // Option text (primary + optional secondary)
             .child(
                 div()
+                    .debug_selector(|| format!("quiz-option-text-{letter}"))
                     .flex_1()
                     .flex_col()
+                    .min_w_0()
+                    .overflow_hidden()
                     .gap_0p5()
-                    .px_3()
                     .child(
                         div()
+                            .w_full()
+                            .min_w_0()
+                            .overflow_hidden()
+                            .whitespace_normal()
                             .text_sm()
                             .font_medium()
                             .text_color(text_color)
@@ -1198,6 +1240,10 @@ impl QuizView {
                     .when_some(secondary_text, |el, sec| {
                         el.child(
                             div()
+                                .w_full()
+                                .min_w_0()
+                                .overflow_hidden()
+                                .whitespace_normal()
                                 .text_xs()
                                 .text_color(colors.muted_foreground)
                                 .child(sec.to_string()),
@@ -1206,7 +1252,8 @@ impl QuizView {
             )
             // Feedback icon
             .children(
-                icon_element.map(|(icon, col)| Icon::new(icon).size(px(18.0)).text_color(col)),
+                icon_element
+                    .map(|(icon, col)| Icon::new(icon).size(px(18.0)).flex_none().text_color(col)),
             )
     }
 }

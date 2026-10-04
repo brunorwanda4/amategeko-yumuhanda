@@ -15,6 +15,7 @@ use gpui_kit::assets::IconName;
 use gpui_kit::base::StyledExt;
 use gpui_kit::component::alert::Alert;
 use gpui_kit::component::button::{Button, ButtonVariants};
+use gpui_kit::component::tooltip::Tooltip;
 use gpui_kit::component::{ActiveTheme, Icon};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
@@ -977,12 +978,13 @@ impl ShellView {
         let active = &self.state.active_screen;
         let lang = self.state.settings.language;
         let shortcuts_on = self.state.settings.desktop_shortcuts_enabled;
-        let mod_name = crate::shortcuts::KeyCombo::primary_modifier_name();
 
         div()
             .flex()
             .flex_col()
-            .w(px(160.0))
+            .w(px(200.0))
+            .flex_none()
+            .overflow_hidden()
             .h_full()
             .border_r_1()
             .border_color(colors.border)
@@ -1023,11 +1025,6 @@ impl ShellView {
                         IconName::House,
                         matches!(active, Screen::Home),
                         Screen::Home,
-                        if shortcuts_on {
-                            Some(if mod_name == "Cmd" { "Cmd+1" } else { "Ctrl+1" })
-                        } else {
-                            None
-                        },
                         cx,
                     ))
                     .child(self.render_desktop_nav_item(
@@ -1036,11 +1033,6 @@ impl ShellView {
                         IconName::Play,
                         matches!(active, Screen::Quiz),
                         Screen::Quiz,
-                        if shortcuts_on {
-                            Some(if mod_name == "Cmd" { "Cmd+2" } else { "Ctrl+2" })
-                        } else {
-                            None
-                        },
                         cx,
                     ))
                     .child(self.render_desktop_nav_item(
@@ -1049,11 +1041,6 @@ impl ShellView {
                         IconName::BookOpen,
                         matches!(active, Screen::Questions),
                         Screen::Questions,
-                        if shortcuts_on {
-                            Some(if mod_name == "Cmd" { "Cmd+3" } else { "Ctrl+3" })
-                        } else {
-                            None
-                        },
                         cx,
                     ))
                     .child(self.render_desktop_nav_item(
@@ -1062,11 +1049,6 @@ impl ShellView {
                         IconName::ChartPie,
                         matches!(active, Screen::Stats | Screen::Results),
                         Screen::Stats,
-                        if shortcuts_on {
-                            Some(if mod_name == "Cmd" { "Cmd+4" } else { "Ctrl+4" })
-                        } else {
-                            None
-                        },
                         cx,
                     ))
                     .child(self.render_desktop_nav_item(
@@ -1075,11 +1057,6 @@ impl ShellView {
                         IconName::Settings,
                         matches!(active, Screen::Settings),
                         Screen::Settings,
-                        if shortcuts_on {
-                            Some(if mod_name == "Cmd" { "Cmd+5" } else { "Ctrl+5" })
-                        } else {
-                            None
-                        },
                         cx,
                     )),
             )
@@ -1090,12 +1067,21 @@ impl ShellView {
                     .flex()
                     .flex_row()
                     .items_center()
-                    .justify_between()
+                    .w_full()
+                    .min_w_0()
+                    .overflow_hidden()
                     .px_3()
                     .py_2()
                     .rounded_xl()
                     .cursor_pointer()
                     .hover(|el| el.bg(colors.sidebar_accent))
+                    .tooltip({
+                        let tooltip = self
+                            .registry
+                            .tooltip_for_action(ShortcutAction::ShowHelp, lang, true, shortcuts_on)
+                            .unwrap_or_else(|| t("shortcuts.title", lang).to_string());
+                        move |window, cx| Tooltip::new(tooltip.clone()).build(window, cx)
+                    })
                     .on_click(cx.listener(|this, _, _, cx| {
                         this.show_help_dialog = !this.show_help_dialog;
                         cx.notify();
@@ -1106,6 +1092,8 @@ impl ShellView {
                             .flex_row()
                             .items_center()
                             .gap_2()
+                            .min_w_0()
+                            .overflow_hidden()
                             .child(
                                 Icon::new(IconName::BookOpen)
                                     .size(px(16.0))
@@ -1113,29 +1101,19 @@ impl ShellView {
                             )
                             .child(
                                 div()
+                                    .min_w_0()
+                                    .overflow_hidden()
+                                    .whitespace_nowrap()
+                                    .text_ellipsis()
                                     .text_xs()
                                     .font_medium()
                                     .text_color(colors.muted_foreground)
                                     .child(t("shortcuts.title", lang)),
                             ),
-                    )
-                    .child(
-                        div()
-                            .px_1p5()
-                            .py_0p5()
-                            .rounded_md()
-                            .bg(colors.background)
-                            .border_1()
-                            .border_color(colors.border)
-                            .text_xs()
-                            .font_bold()
-                            .text_color(colors.muted_foreground)
-                            .child("?"),
                     ),
             )
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn render_desktop_nav_item(
         &self,
         id: &'static str,
@@ -1143,7 +1121,6 @@ impl ShellView {
         icon: IconName,
         is_active: bool,
         target_screen: Screen,
-        shortcut_badge: Option<&'static str>,
         cx: &mut Context<Self>,
     ) -> impl IntoElement {
         let theme = cx.theme();
@@ -1159,19 +1136,38 @@ impl ShellView {
         } else {
             colors.foreground
         };
+        let shortcut_action = match &target_screen {
+            Screen::Home => ShortcutAction::NavHome,
+            Screen::Quiz => ShortcutAction::NavQuiz,
+            Screen::Questions => ShortcutAction::NavQuestions,
+            Screen::Stats | Screen::Results => ShortcutAction::NavStats,
+            Screen::Settings => ShortcutAction::NavSettings,
+        };
+        let tooltip = self
+            .registry
+            .tooltip_for_action(
+                shortcut_action,
+                self.state.settings.language,
+                true,
+                self.state.settings.desktop_shortcuts_enabled,
+            )
+            .unwrap_or_else(|| label.to_string());
 
         div()
             .id(id)
             .flex()
             .flex_row()
             .items_center()
-            .justify_between()
+            .w_full()
+            .min_w_0()
+            .overflow_hidden()
             .px_3()
             .py_2()
             .rounded_lg()
             .bg(bg_color)
             .cursor_pointer()
             .hover(|el| el.bg(colors.sidebar_accent))
+            .tooltip(move |window, cx| Tooltip::new(tooltip.clone()).build(window, cx))
             .on_click(cx.listener(move |this, _, _, cx| {
                 this.state.navigate(target_screen.clone());
                 cx.notify();
@@ -1182,30 +1178,27 @@ impl ShellView {
                     .flex_row()
                     .items_center()
                     .gap_2p5()
-                    .child(Icon::new(icon).size(px(16.0)).text_color(text_color))
+                    .w_full()
+                    .min_w_0()
+                    .overflow_hidden()
+                    .child(
+                        Icon::new(icon)
+                            .size(px(16.0))
+                            .flex_none()
+                            .text_color(text_color),
+                    )
                     .child(
                         div()
+                            .min_w_0()
+                            .overflow_hidden()
+                            .whitespace_nowrap()
+                            .text_ellipsis()
                             .text_xs()
                             .font_semibold()
                             .text_color(text_color)
                             .child(label),
                     ),
             )
-            .when_some(shortcut_badge, |el, badge| {
-                el.child(
-                    div()
-                        .px_1p5()
-                        .py_0p5()
-                        .rounded_md()
-                        .bg(colors.background)
-                        .border_1()
-                        .border_color(colors.border)
-                        .text_xs()
-                        .font_bold()
-                        .text_color(colors.muted_foreground)
-                        .child(badge),
-                )
-            })
     }
 
     fn render_mobile_top_bar(&self, cx: &mut Context<Self>) -> impl IntoElement {
