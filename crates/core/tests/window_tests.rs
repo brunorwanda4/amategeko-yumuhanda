@@ -25,16 +25,28 @@ fn assert_inside(state: &WindowState, d: &DisplayRect) {
     let b = d.bounds;
     assert!(state.x >= b.x, "left edge off-screen: {state:?}");
     assert!(state.y >= b.y, "top edge off-screen: {state:?}");
-    assert!(state.x + state.width <= b.x + b.width, "right edge: {state:?}");
-    assert!(state.y + state.height <= b.y + b.height, "bottom edge: {state:?}");
+    assert!(
+        state.x + state.width <= b.x + b.width,
+        "right edge: {state:?}"
+    );
+    assert!(
+        state.y + state.height <= b.y + b.height,
+        "bottom edge: {state:?}"
+    );
 }
 
 fn assert_centered(state: &WindowState, d: &DisplayRect) {
     let b = d.bounds;
     let cx = state.x + state.width / 2.0;
     let cy = state.y + state.height / 2.0;
-    assert!((cx - (b.x + b.width / 2.0)).abs() < 0.5, "not centered x: {state:?}");
-    assert!((cy - (b.y + b.height / 2.0)).abs() < 0.5, "not centered y: {state:?}");
+    assert!(
+        (cx - (b.x + b.width / 2.0)).abs() < 0.5,
+        "not centered x: {state:?}"
+    );
+    assert!(
+        (cy - (b.y + b.height / 2.0)).abs() < 0.5,
+        "not centered y: {state:?}"
+    );
 }
 
 #[test]
@@ -197,10 +209,7 @@ fn maximized_is_kept() {
     let state = fit_window(Some(saved), &[d], DEFAULT_WINDOW_SIZE, MIN_WINDOW_SIZE);
     assert!(state.maximized);
 
-    let moved = WindowState {
-        x: 5000.0,
-        ..saved
-    };
+    let moved = WindowState { x: 5000.0, ..saved };
     let state = fit_window(Some(moved), &[d], DEFAULT_WINDOW_SIZE, MIN_WINDOW_SIZE);
     assert!(state.maximized);
     assert_centered(&state, &d);

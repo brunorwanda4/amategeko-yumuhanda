@@ -4,6 +4,8 @@
 //! and trivial to cross-compile for all targets.
 
 pub mod data;
+#[cfg(debug_assertions)]
+pub mod dev;
 pub mod error;
 pub mod i18n;
 pub mod models;
@@ -14,6 +16,8 @@ pub mod timer;
 pub mod window;
 
 pub use data::QuestionBank;
+#[cfg(debug_assertions)]
+pub use dev::*;
 pub use error::{AppError, Result};
 pub use i18n::{t, tf, I18n, Strings};
 pub use models::*;

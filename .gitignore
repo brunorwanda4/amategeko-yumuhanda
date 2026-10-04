@@ -89,6 +89,7 @@ env/
 settings.json
 progress.json
 in_progress.json
+dev_state.json
 *.bak
 # Keep the question files and examples
 !assets/questions.json

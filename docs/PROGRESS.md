@@ -74,4 +74,5 @@ Tracking milestones for "Amategeko y'Umuhanda" (Rwanda driving-test theory study
   - [x] Restore the saved theme during desktop and mobile startup (2026-10-04)
   - [x] Refresh the quiz layout and add fullscreen focus mode and keyboard shortcuts (2026-10-04)
   - [x] Implement Medium and Hard timer warning states (2026-10-04: level-aware pill, remaining-time bar, dismissible alerts, reduced-motion-safe pulse, and expiry submission)
+- [x] Fast development loop (auto rebuild + restore state) (2026-10-04: justfile / scripts/dev.ps1 with watchexec, Cargo dev profile optimization [opt-level=1, line-tables-only, dependencies opt-level=3 reducing rebuilds from 34.02s to 11.75s], debug-only dev_state.json screen/filter/scroll restoration, and --timer 30s flag)
 - [ ] **Milestone 13: Optional iOS Verification** (Requires macOS + Xcode 15+)

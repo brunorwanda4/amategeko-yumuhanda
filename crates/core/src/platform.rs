@@ -108,6 +108,35 @@ pub trait Storage: Send + Sync {
         self.delete_file(WINDOW_FILE)?;
         Ok(())
     }
+
+    /// Load the saved development state. Returns `None` when the file is missing or corrupt.
+    #[cfg(debug_assertions)]
+    fn load_dev_state(&self) -> Option<crate::dev::DevState> {
+        let content = self.read_file(crate::dev::DEV_STATE_FILE).ok()?;
+        match serde_json::from_str::<crate::dev::DevState>(&content) {
+            Ok(state) => {
+                if state.is_valid() {
+                    Some(state)
+                } else {
+                    None
+                }
+            }
+            Err(_) => None,
+        }
+    }
+
+    #[cfg(debug_assertions)]
+    fn save_dev_state(&self, state: &crate::dev::DevState) -> Result<()> {
+        let json = serde_json::to_string_pretty(state)?;
+        self.write_file(crate::dev::DEV_STATE_FILE, &json)?;
+        Ok(())
+    }
+
+    #[cfg(debug_assertions)]
+    fn clear_dev_state(&self) -> Result<()> {
+        let _ = self.delete_file(crate::dev::DEV_STATE_FILE);
+        Ok(())
+    }
 }
 
 /// In-memory storage useful for unit tests and sandboxes.
