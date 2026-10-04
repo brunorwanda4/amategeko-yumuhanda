@@ -1,4 +1,4 @@
-use amategeko_app::{AppState, QuizView};
+use amategeko_app::{AppState, QuizView, Screen, ShellView};
 use amategeko_core::{InMemoryStorage, Language, MockClock, QuizMode};
 use gpui::{px, size, Context, IntoElement, Render, TestAppContext, VisualTestContext, Window};
 use std::sync::Arc;
@@ -78,6 +78,13 @@ fn state_with_longest_text(language: Language) -> AppState {
     state
 }
 
+fn draw_context(cx: &mut VisualTestContext) {
+    cx.run_until_parked();
+    cx.update(|window, cx| {
+        _ = window.draw(cx);
+    });
+}
+
 #[gpui::test]
 fn longest_question_and_option_fit_minimum_and_desktop_widths(cx: &mut TestAppContext) {
     cx.update(gpui_kit::init);
@@ -116,4 +123,48 @@ fn longest_question_and_option_fit_minimum_and_desktop_widths(cx: &mut TestAppCo
             }
         }
     }
+}
+
+#[gpui::test]
+fn questions_view_in_shell_renders_cards(cx: &mut TestAppContext) {
+    cx.update(gpui_kit::init);
+    let storage = Arc::new(InMemoryStorage::new());
+    let clock = Arc::new(MockClock::new(1_000));
+    let mut state = AppState::new(storage, clock);
+    state.navigate(Screen::Questions);
+
+    let (view, cx) = cx.add_window_view(move |_, cx| ShellView::new(state, cx));
+    let cx: &mut VisualTestContext = cx;
+    draw_context(cx);
+
+    let scroll_view = cx
+        .debug_bounds("questions_scroll_view")
+        .expect("questions_scroll_view should exist");
+    assert!(
+        scroll_view.size.height > px(100.0),
+        "scroll view must have height"
+    );
+
+    let card1 = cx.debug_bounds("q_card_1").expect("q_card_1 should render");
+    assert!(
+        card1.size.height >= px(40.0),
+        "q_card_1 must have visible height, got {:?}",
+        card1.size.height
+    );
+
+    // Switch to "With image" filter and verify image question cards render with visible height
+    view.update(cx, |this, cx| {
+        this.questions_filter = amategeko_app::ui::questions::QuestionsFilter::HasImage;
+        cx.notify();
+    });
+    draw_context(cx);
+
+    let img_card = cx
+        .debug_bounds("q_card_173")
+        .expect("image question card should render");
+    assert!(
+        img_card.size.height >= px(40.0),
+        "image card must have visible height, got {:?}",
+        img_card.size.height
+    );
 }

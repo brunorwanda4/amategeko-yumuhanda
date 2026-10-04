@@ -4,7 +4,7 @@ use crate::ui::home::HomeView;
 use crate::ui::questions::{QuestionsFilter, QuestionsView};
 use crate::ui::quiz::QuizView;
 use crate::ui::results::{ResultFilter, ResultsView};
-use crate::ui::scroll::{configure_scrollbar_motion, vertical_scrollbar};
+use crate::ui::scroll::{configure_scrollbar_motion, vertical_scrollbar, ScrollbarContext};
 use crate::ui::settings::{SettingsAction, SettingsView};
 use crate::ui::stats::StatsView;
 use amategeko_core::{
@@ -162,7 +162,23 @@ impl ShellView {
         let now = Instant::now();
 
         #[cfg(debug_assertions)]
-        let initial_scroll = dev_state.as_ref().map(|d| d.scroll_position).unwrap_or(0.0);
+        let initial_scroll = dev_state
+            .as_ref()
+            .map(|d| {
+                let screen_key = match state.active_screen {
+                    Screen::Questions => "questions",
+                    Screen::Stats => "stats",
+                    _ => "general",
+                };
+                if let Some(pos) = d.scroll_positions.get(screen_key) {
+                    *pos
+                } else if d.screen == state.active_screen.clone().into() {
+                    d.scroll_position
+                } else {
+                    0.0
+                }
+            })
+            .unwrap_or(0.0);
 
         #[cfg(debug_assertions)]
         if initial_scroll > 0.0 {
@@ -360,9 +376,11 @@ impl Render for ShellView {
         let content = match active_screen {
             Screen::Home => HomeView::render(
                 &self.state,
-                window_width,
-                &self.home_scroll_handle,
-                reveal_scrollbar,
+                ScrollbarContext {
+                    handle: &self.home_scroll_handle,
+                    is_desktop,
+                    reveal_on_open: reveal_scrollbar,
+                },
                 cx,
                 |this, mode, _, cx| {
                     this.state.start_quiz(mode);
@@ -531,11 +549,17 @@ impl Render for ShellView {
                 |this, filter, _, cx| {
                     this.questions_filter = filter;
                     this.questions_search_focused = false;
+                    this.questions_selected_idx = 0;
+                    this.questions_scroll_handle
+                        .set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
                     this.save_dev_state();
                     cx.notify();
                 },
                 |this, search, _, cx| {
                     this.questions_search = search;
+                    this.questions_selected_idx = 0;
+                    this.questions_scroll_handle
+                        .set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
                     cx.notify();
                 },
                 |this, focused, window, cx| {

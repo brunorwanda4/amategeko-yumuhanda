@@ -1,23 +1,21 @@
 use crate::state::AppState;
 use crate::ui::footer::AppFooter;
-use crate::ui::scroll::vertical_scrollbar;
+use crate::ui::scroll::{vertical_scrollbar, ScrollbarContext};
 use amategeko_core::{t, QuizMode, StatsCalculator};
 use gpui::InteractiveElement as _;
 use gpui_kit::assets::IconName;
 use gpui_kit::base::StyledExt;
+use gpui_kit::component::tooltip::Tooltip;
 use gpui_kit::component::{ActiveTheme, Icon};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
-use gpui_kit::component::tooltip::Tooltip;
 
 pub struct HomeView;
 
 impl HomeView {
     pub fn render<V: 'static>(
         state: &AppState,
-        window_width: Pixels,
-        scroll_handle: &ScrollHandle,
-        reveal_scrollbar: bool,
+        scroll: ScrollbarContext<'_>,
         cx: &mut Context<V>,
         on_start_mode: impl Fn(&mut V, QuizMode, &mut Window, &mut Context<V>) + 'static + Copy,
         on_resume: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
@@ -28,7 +26,7 @@ impl HomeView {
         let stats_summary = StatsCalculator::compute_summary(&state.progress);
         let lang = state.settings.language;
 
-        let is_desktop = window_width >= px(700.0);
+        let is_desktop = scroll.is_desktop;
         let shortcuts_active = is_desktop && state.settings.desktop_shortcuts_enabled;
 
         // Stats values matching the design
@@ -49,7 +47,7 @@ impl HomeView {
 
         div()
             .id("home_view_root")
-            .track_scroll(scroll_handle)
+            .track_scroll(scroll.handle)
             .flex()
             .flex_col()
             .size_full()
@@ -59,9 +57,9 @@ impl HomeView {
             .when(is_desktop, |el| el.p_8())
             .child(vertical_scrollbar(
                 "home_scrollbar",
-                scroll_handle,
+                scroll.handle,
                 is_desktop,
-                reveal_scrollbar,
+                scroll.reveal_on_open,
             ))
             // Max width wrapper for clean desktop centering
             .child(
@@ -155,8 +153,13 @@ impl HomeView {
                                             .cursor_pointer()
                                             .hover(|el| el.opacity(0.9))
                                             .when(shortcuts_active, |el| {
-                                                let hint = format!("{} (Enter)", t("home.resume_btn", lang));
-                                                el.tooltip(move |window, cx| Tooltip::new(hint.clone()).build(window, cx))
+                                                let hint = format!(
+                                                    "{} (Enter)",
+                                                    t("home.resume_btn", lang)
+                                                );
+                                                el.tooltip(move |window, cx| {
+                                                    Tooltip::new(hint.clone()).build(window, cx)
+                                                })
                                             })
                                             .on_click(cx.listener(move |this, _, window, cx| {
                                                 on_resume(this, window, cx);
@@ -463,7 +466,9 @@ impl HomeView {
                                 .border_color(gpui::rgba(0x3e4552ff))
                         })
                         .when_some(tooltip_hint, |el, hint| {
-                            el.tooltip(move |window, cx| Tooltip::new(hint.clone()).build(window, cx))
+                            el.tooltip(move |window, cx| {
+                                Tooltip::new(hint.clone()).build(window, cx)
+                            })
                         })
                         .on_click(cx.listener(move |this, _, window, cx| {
                             on_start_mode(this, mode, window, cx);
