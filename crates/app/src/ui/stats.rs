@@ -1,5 +1,5 @@
 use crate::state::AppState;
-use amategeko_core::{QuizMode, StatsCalculator, Strings};
+use amategeko_core::{t, Language, QuizMode, StatsCalculator};
 use gpui::InteractiveElement as _;
 use gpui_kit::base::StyledExt;
 use gpui_kit::component::button::{Button, ButtonVariants};
@@ -19,6 +19,9 @@ impl StatsView {
     ) -> impl IntoElement {
         let theme = cx.theme();
         let colors = theme.colors;
+
+        let lang = state.settings.language;
+        let q_lang = state.settings.question_language;
 
         let summary = StatsCalculator::compute_summary(&state.progress);
         let total_bank = state.bank.len() as u32;
@@ -51,7 +54,7 @@ impl StatsView {
                             .text_xl()
                             .font_extrabold()
                             .text_color(colors.foreground)
-                            .child(Strings::STATS_TITLE),
+                            .child(t("stats.title", lang)),
                     ),
             )
             // Empty State (if no attempts yet)
@@ -78,18 +81,26 @@ impl StatsView {
                                 .text_lg()
                                 .font_bold()
                                 .text_color(colors.foreground)
-                                .child("Nta mibare iraboneka"),
+                                .child(if lang == Language::En {
+                                    "No statistics available yet"
+                                } else {
+                                    "Nta mibare iraboneka"
+                                }),
                         )
                         .child(
                             div()
                                 .text_sm()
                                 .text_color(colors.muted_foreground)
-                                .child(Strings::STATS_EMPTY),
+                                .child(t("stats.empty", lang)),
                         )
                         .child(
                             Button::new("stats_start_quiz_btn")
                                 .primary()
-                                .label("Tangira Ikizamini")
+                                .label(if lang == Language::En {
+                                    "Start Quiz"
+                                } else {
+                                    "Tangira Ikizamini"
+                                })
                                 .icon(IconName::Play)
                                 .on_click(cx.listener(move |this, _, window, cx| {
                                     on_start_quiz(this, window, cx);
@@ -108,7 +119,7 @@ impl StatsView {
                             .flex_wrap()
                             .gap_3()
                             .child(Self::render_stat_tile(
-                                "Ibizamini byakozwe",
+                                t("stats.total_attempts", lang),
                                 format!("{}", summary.total_attempts),
                                 IconName::Play,
                                 colors.primary,
@@ -116,7 +127,7 @@ impl StatsView {
                                 cx,
                             ))
                             .child(Self::render_stat_tile(
-                                "Impuzandengo",
+                                t("stats.average_score", lang),
                                 format!("{:.1} / 20", summary.average_score),
                                 IconName::ChartPie,
                                 colors.accent,
@@ -124,7 +135,7 @@ impl StatsView {
                                 cx,
                             ))
                             .child(Self::render_stat_tile(
-                                "Amanota yo hejuru",
+                                t("stats.high_score", lang),
                                 format!("{}/20", summary.high_score),
                                 IconName::Star,
                                 colors.warning,
@@ -132,7 +143,7 @@ impl StatsView {
                                 cx,
                             ))
                             .child(Self::render_stat_tile(
-                                "Ijanisha ryo gutsinda",
+                                t("stats.pass_rate", lang),
                                 format!("{:.0}%", summary.pass_rate_percentage),
                                 IconName::Check,
                                 colors.success,
@@ -162,14 +173,17 @@ impl StatsView {
                                             .text_base()
                                             .font_bold()
                                             .text_color(colors.foreground)
-                                            .child(Strings::STATS_RECENT_CHART_TITLE),
+                                            .child(t("stats.recent_chart_title", lang)),
                                     )
                                     .child(
                                         div()
                                             .text_xs()
                                             .font_medium()
                                             .text_color(colors.muted_foreground)
-                                            .child("Amanota asabwa: 12/20"),
+                                            .child(format!(
+                                                "{}: 12/20",
+                                                t("stats.threshold_label", lang)
+                                            )),
                                     ),
                             )
                             // Bar Chart Visual Canvas
@@ -248,14 +262,18 @@ impl StatsView {
                                             .text_base()
                                             .font_bold()
                                             .text_color(colors.foreground)
-                                            .child("Ibibazo byamaze kuboneka"),
+                                            .child(if lang == Language::En {
+                                                "Questions Seen"
+                                            } else {
+                                                "Ibibazo byamaze kuboneka"
+                                            }),
                                     )
                                     .child(
                                         div()
                                             .text_sm()
                                             .font_bold()
                                             .text_color(colors.primary)
-                                            .child(format!("{} kuri {} ({}%)", seen_count, total_bank, seen_percentage)),
+                                            .child(format!("{} / {} ({}%)", seen_count, total_bank, seen_percentage)),
                                     ),
                             )
                             // Progress bar track
@@ -293,7 +311,11 @@ impl StatsView {
                                         .text_base()
                                         .font_bold()
                                         .text_color(colors.foreground)
-                                        .child("Imibare hakurikijwe Uburyo"),
+                                        .child(if lang == Language::En {
+                                            "Statistics by Mode"
+                                        } else {
+                                            "Imibare hakurikijwe Uburyo"
+                                        }),
                                 )
                                 .child(
                                     div()
@@ -302,11 +324,11 @@ impl StatsView {
                                         .gap_2()
                                         .children(summary.mode_summaries.iter().map(|ms| {
                                             let mode_title = match ms.mode {
-                                                QuizMode::Byoroshye => Strings::MODE_EASY_TITLE,
-                                                QuizMode::Hagati => Strings::MODE_MEDIUM_TITLE,
-                                                QuizMode::Bikomeye => Strings::MODE_HARD_TITLE,
-                                                QuizMode::WeakPractice => Strings::HOME_WEAK_TITLE,
-                                                QuizMode::RetryWrong => Strings::RESULTS_RETRY_WRONG,
+                                                QuizMode::Byoroshye => t("mode.easy.title", lang),
+                                                QuizMode::Hagati => t("mode.medium.title", lang),
+                                                QuizMode::Bikomeye => t("mode.hard.title", lang),
+                                                QuizMode::WeakPractice => t("home.weak_title", lang),
+                                                QuizMode::RetryWrong => t("results.retry_wrong", lang),
                                             };
 
                                             let pass_pct = (ms.passed_count * 100).checked_div(ms.attempts_count).unwrap_or(0);
@@ -336,7 +358,11 @@ impl StatsView {
                                                             div()
                                                                 .text_xs()
                                                                 .text_color(colors.muted_foreground)
-                                                                .child(format!("{} ibizamini \u{2022} Wagize {:.1}/20 impuzandengo", ms.attempts_count, ms.average_score)),
+                                                                .child(if lang == Language::En {
+                                                                    format!("{} quizzes \u{2022} {:.1}/20 average", ms.attempts_count, ms.average_score)
+                                                                } else {
+                                                                    format!("{} ibizamini \u{2022} Wagize {:.1}/20 impuzandengo", ms.attempts_count, ms.average_score)
+                                                                }),
                                                         ),
                                                 )
                                                 .child(
@@ -344,7 +370,11 @@ impl StatsView {
                                                         .text_sm()
                                                         .font_bold()
                                                         .text_color(if pass_pct >= 60 { colors.success } else { colors.danger })
-                                                        .child(format!("{}% yatsinze", pass_pct)),
+                                                        .child(if lang == Language::En {
+                                                            format!("{}% passed", pass_pct)
+                                                        } else {
+                                                            format!("{}% yatsinze", pass_pct)
+                                                        }),
                                                 )
                                         })),
                                 ),
@@ -373,12 +403,12 @@ impl StatsView {
                                                 .text_base()
                                                 .font_bold()
                                                 .text_color(colors.foreground)
-                                                .child(Strings::STATS_TOP_MISSED_TITLE),
+                                                .child(t("stats.top_missed_title", lang)),
                                         )
                                         .child(
                                             Button::new("stats_weak_practice_btn")
                                                 .primary()
-                                                .label(Strings::HOME_WEAK_BTN)
+                                                .label(t("home.weak_btn", lang))
                                                 .icon(IconName::Play)
                                                 .on_click(cx.listener(move |this, _, window, cx| {
                                                     on_start_weak_practice(this, window, cx);
@@ -394,11 +424,14 @@ impl StatsView {
                                         .children(summary.most_missed.iter().map(|mq| {
                                             let q_opt = state.bank.get(mq.question_id);
                                             let text_snip = if let Some(q) = q_opt {
-                                                if q.text.len() > 70 {
-                                                    format!("{}...", &q.text[..65])
+                                                let full_text = q.text_for(q_lang);
+                                                if full_text.len() > 70 {
+                                                    format!("{}...", &full_text[..65])
                                                 } else {
-                                                    q.text.clone()
+                                                    full_text.to_string()
                                                 }
+                                            } else if lang == Language::En {
+                                                format!("Question #{}", mq.question_id)
                                             } else {
                                                 format!("Ikibazo cya {}", mq.question_id)
                                             };
@@ -424,7 +457,11 @@ impl StatsView {
                                                                 .text_xs()
                                                                 .font_bold()
                                                                 .text_color(colors.primary)
-                                                                .child(format!("Ikibazo cya {}", mq.question_id)),
+                                                                .child(if lang == Language::En {
+                                                                    format!("Question #{}", mq.question_id)
+                                                                } else {
+                                                                    format!("Ikibazo cya {}", mq.question_id)
+                                                                }),
                                                         )
                                                         .child(
                                                             div()
@@ -442,7 +479,11 @@ impl StatsView {
                                                         .text_xs()
                                                         .font_bold()
                                                         .text_color(colors.primary_foreground)
-                                                        .child(format!("{}x byakoswe", mq.wrong_count)),
+                                                        .child(if lang == Language::En {
+                                                            format!("Missed {}x", mq.wrong_count)
+                                                        } else {
+                                                            format!("{}x byakoswe", mq.wrong_count)
+                                                        }),
                                                 )
                                         })),
                                 ),
@@ -462,40 +503,47 @@ impl StatsView {
         let theme = cx.theme();
         let colors = theme.colors;
 
-        let width_val = if is_desktop { px(160.0) } else { px(150.0) };
-
         div()
             .flex()
-            .flex_col()
-            .flex_1()
-            .min_w(width_val)
+            .flex_row()
+            .items_center()
+            .gap_3()
             .p_4()
-            .rounded_2xl()
+            .rounded_xl()
             .border_1()
             .border_color(colors.border)
             .bg(colors.secondary)
-            .gap_2()
+            .when(is_desktop, |el| el.flex_1().min_w(px(160.0)))
+            .when(!is_desktop, |el| el.w(px(160.0)).flex_1())
             .child(
                 div()
                     .flex()
-                    .flex_row()
                     .items_center()
-                    .justify_between()
-                    .child(
-                        div()
-                            .text_xs()
-                            .font_semibold()
-                            .text_color(colors.muted_foreground)
-                            .child(label),
-                    )
-                    .child(Icon::new(icon).size(px(18.0)).text_color(accent_color)),
+                    .justify_center()
+                    .w(px(40.0))
+                    .h(px(40.0))
+                    .rounded_xl()
+                    .bg(accent_color.opacity(0.15))
+                    .child(Icon::new(icon).size(px(20.0)).text_color(accent_color)),
             )
             .child(
                 div()
-                    .text_xl()
-                    .font_extrabold()
-                    .text_color(colors.foreground)
-                    .child(value),
+                    .flex()
+                    .flex_col()
+                    .child(
+                        div()
+                            .text_xs()
+                            .font_medium()
+                            .text_color(colors.muted_foreground)
+                            .child(label),
+                    )
+                    .child(
+                        div()
+                            .text_base()
+                            .font_bold()
+                            .text_color(colors.foreground)
+                            .child(value),
+                    ),
             )
     }
 }

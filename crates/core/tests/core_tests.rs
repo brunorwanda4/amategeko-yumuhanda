@@ -373,11 +373,21 @@ fn test_i18n_parity_and_timer_strings() {
     let rw_map = rw_json.as_object().expect("rw.json root must be object");
     let en_map = en_json.as_object().expect("en.json root must be object");
 
-    // Parity check
+    // Parity check: same keys in both files
     assert_eq!(
         rw_map.keys().collect::<HashSet<_>>(),
         en_map.keys().collect::<HashSet<_>>()
     );
+
+    // Values non-empty check
+    for (k, v) in rw_map {
+        let s = v.as_str().expect("rw value must be string");
+        assert!(!s.trim().is_empty(), "rw key {k} is empty");
+    }
+    for (k, v) in en_map {
+        let s = v.as_str().expect("en value must be string");
+        assert!(!s.trim().is_empty(), "en key {k} is empty");
+    }
 
     assert_eq!(
         rw_map.get("timer.warning").and_then(|v| v.as_str()),
@@ -409,16 +419,99 @@ fn test_i18n_parity_and_timer_strings() {
     // In-app formatting helpers
     assert_eq!(
         Strings::timer_warning("05:00"),
+        "Time is running low. 05:00 left."
+    );
+    assert_eq!(
+        Strings::timer_warning_rw("05:00"),
         "Igihe kiregereje. Hasigaye 05:00."
     );
     assert_eq!(
         Strings::timer_error("02:00"),
-        "Igihe kigiye kurangira! Hasigaye 02:00."
+        "Time is almost up! 02:00 left."
     );
     assert_eq!(
-        Strings::timer_done(),
+        Strings::timer_error_rw("02:00"),
+        "Igihe kigiye kurangira! Hasigaye 02:00."
+    );
+    assert_eq!(Strings::timer_done(), "Time is up. Exam submitted.");
+    assert_eq!(
+        Strings::timer_done_rw(),
         "Igihe kirarangiye. Ikizamini cyoherejwe."
     );
+}
+
+#[test]
+fn test_settings_defaults_and_language() {
+    let settings = Settings::default();
+    assert_eq!(settings.language, Language::En);
+    assert_eq!(settings.question_language, Language::En);
+    assert!(!settings.show_both_languages);
+    assert_eq!(settings.pass_mark, 12);
+    assert_eq!(settings.medium_duration_mins, 20);
+    assert_eq!(settings.hard_duration_mins, 12);
+}
+
+#[test]
+fn test_bilingual_questions_and_fallback() {
+    let bank = QuestionBank::load_bundled().expect("Failed to load bundled questions");
+    assert_eq!(bank.len(), 390);
+
+    for q in bank.all() {
+        // Primary text in English should not be empty
+        let text_en = q.text_for(Language::En);
+        assert!(!text_en.trim().is_empty());
+
+        // Primary text in Kinyarwanda should not be empty
+        let text_rw = q.text_for(Language::Rw);
+        assert!(!text_rw.trim().is_empty());
+
+        // Secondary text for EN should give RW
+        let sec_for_en = q.secondary_text_for(Language::En);
+        assert!(sec_for_en.is_some());
+        assert_eq!(sec_for_en.unwrap(), text_rw);
+
+        // Secondary text for RW should give EN
+        let sec_for_rw = q.secondary_text_for(Language::Rw);
+        assert!(sec_for_rw.is_some());
+        assert_eq!(sec_for_rw.unwrap(), text_en);
+
+        // Options
+        let opts_en = q.options_for(Language::En);
+        let opts_rw = q.options_for(Language::Rw);
+        assert_eq!(opts_en.len(), opts_rw.len());
+        assert!(opts_en.contains_key(&q.correct));
+        assert!(opts_rw.contains_key(&q.correct));
+    }
+
+    // Test fallback when EN is missing
+    let mut custom_q = Question {
+        id: 9999,
+        text: "Kinyarwanda text".into(),
+        options: [("a".into(), "Kinyarwanda opt".into())]
+            .into_iter()
+            .collect(),
+        correct: "a".into(),
+        image: None,
+        has_image: false,
+        text_en: None,
+        options_en: None,
+        text_rw: Some("Kinyarwanda text".into()),
+        options_rw: Some(
+            [("a".into(), "Kinyarwanda opt".into())]
+                .into_iter()
+                .collect(),
+        ),
+        status_en: None,
+    };
+    // Should fall back to Kinyarwanda
+    assert_eq!(custom_q.text_for(Language::En), "Kinyarwanda text");
+    assert_eq!(
+        custom_q.options_for(Language::En).get("a").unwrap(),
+        "Kinyarwanda opt"
+    );
+
+    custom_q.text_en = Some("English text".into());
+    assert_eq!(custom_q.text_for(Language::En), "English text");
 }
 
 #[test]
@@ -444,6 +537,11 @@ fn test_stats_calculator() {
                     correct: "a".into(),
                     image: None,
                     has_image: false,
+                    text_en: None,
+                    options_en: None,
+                    text_rw: None,
+                    options_rw: None,
+                    status_en: None,
                 },
                 user_answer: Some("a".into()),
                 correct_answer: "a".into(),
@@ -457,6 +555,11 @@ fn test_stats_calculator() {
                     correct: "b".into(),
                     image: None,
                     has_image: false,
+                    text_en: None,
+                    options_en: None,
+                    text_rw: None,
+                    options_rw: None,
+                    status_en: None,
                 },
                 user_answer: Some("c".into()),
                 correct_answer: "b".into(),
@@ -484,6 +587,11 @@ fn test_stats_calculator() {
                 correct: "b".into(),
                 image: None,
                 has_image: false,
+                text_en: None,
+                options_en: None,
+                text_rw: None,
+                options_rw: None,
+                status_en: None,
             },
             user_answer: Some("d".into()),
             correct_answer: "b".into(),

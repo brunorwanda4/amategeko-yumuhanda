@@ -1,6 +1,7 @@
 use crate::state::AppState;
-use amategeko_core::Strings;
+use amategeko_core::{t, Language, ThemeMode};
 use gpui::InteractiveElement as _;
+use gpui_kit::base::Disableable as _;
 use gpui_kit::base::StyledExt;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::switch::Switch;
@@ -21,13 +22,16 @@ pub enum SettingsAction {
     ToggleHardWeightImages,
     ToggleDesktopShortcuts,
     ToggleShowAllAnswersAtEnd,
-    SetTheme(amategeko_core::ThemeMode),
+    SetTheme(ThemeMode),
     DecFontScale,
     IncFontScale,
     RequestClearHistory(bool),
     ConfirmClearHistory,
     ResetDefaults,
     SaveSettings,
+    SetInterfaceLanguage(Language),
+    SetQuestionLanguage(Language),
+    ToggleShowBothLanguages,
 }
 
 pub struct SettingsView;
@@ -43,6 +47,7 @@ impl SettingsView {
         let theme = cx.theme();
         let colors = theme.colors;
         let s = &state.settings;
+        let lang = s.language;
 
         div()
             .id("settings_scroll_view")
@@ -67,9 +72,9 @@ impl SettingsView {
                             .text_2xl()
                             .font_bold()
                             .text_color(colors.foreground)
-                            .child(Strings::SETTINGS_TITLE),
+                            .child(t("settings.title", lang)),
                     )
-                    // SECTION 1: Ikizamini
+                    // SECTION 1: Language / Ururimi
                     .child(
                         div()
                             .flex()
@@ -80,7 +85,7 @@ impl SettingsView {
                                     .text_sm()
                                     .font_semibold()
                                     .text_color(colors.muted_foreground)
-                                    .child("Ikizamini"),
+                                    .child(t("settings.group_language", lang)),
                             )
                             .child(
                                 div()
@@ -90,10 +95,166 @@ impl SettingsView {
                                     .border_1()
                                     .border_color(colors.border)
                                     .bg(colors.secondary)
-                                    // Row 1: Igihe cya Hagati
+                                    // Interface Language
+                                    .child(
+                                        div()
+                                            .flex()
+                                            .flex_row()
+                                            .items_center()
+                                            .justify_between()
+                                            .p_4()
+                                            .child(
+                                                div()
+                                                    .flex()
+                                                    .flex_col()
+                                                    .gap_0p5()
+                                                    .child(
+                                                        div()
+                                                            .text_sm()
+                                                            .font_semibold()
+                                                            .text_color(colors.foreground)
+                                                            .child(t("settings.interface_language", lang)),
+                                                    )
+                                                    .child(
+                                                        div()
+                                                            .text_xs()
+                                                            .text_color(colors.muted_foreground)
+                                                            .child(t("settings.interface_language_desc", lang)),
+                                                    ),
+                                            )
+                                            .child(
+                                                div()
+                                                    .flex()
+                                                    .flex_row()
+                                                    .items_center()
+                                                    .p_1()
+                                                    .gap_1()
+                                                    .rounded_xl()
+                                                    .border_1()
+                                                    .border_color(colors.border)
+                                                    .bg(colors.background)
+                                                    .child(Self::render_theme_tab(
+                                                        "lang_en",
+                                                        "English",
+                                                        s.language == Language::En,
+                                                        &colors,
+                                                        cx,
+                                                        move |this, window, cx| {
+                                                            on_action(this, SettingsAction::SetInterfaceLanguage(Language::En), window, cx);
+                                                        },
+                                                    ))
+                                                    .child(Self::render_theme_tab(
+                                                        "lang_rw",
+                                                        "Ikinyarwanda",
+                                                        s.language == Language::Rw,
+                                                        &colors,
+                                                        cx,
+                                                        move |this, window, cx| {
+                                                            on_action(this, SettingsAction::SetInterfaceLanguage(Language::Rw), window, cx);
+                                                        },
+                                                    )),
+                                            ),
+                                    )
+                                    .child(Self::render_divider(&colors))
+                                    // Question Language
+                                    .child(
+                                        div()
+                                            .flex()
+                                            .flex_row()
+                                            .items_center()
+                                            .justify_between()
+                                            .p_4()
+                                            .child(
+                                                div()
+                                                    .flex()
+                                                    .flex_col()
+                                                    .gap_0p5()
+                                                    .child(
+                                                        div()
+                                                            .text_sm()
+                                                            .font_semibold()
+                                                            .text_color(colors.foreground)
+                                                            .child(t("settings.question_language", lang)),
+                                                    )
+                                                    .child(
+                                                        div()
+                                                            .text_xs()
+                                                            .text_color(colors.muted_foreground)
+                                                            .child(t("settings.question_language_desc", lang)),
+                                                    ),
+                                            )
+                                            .child(
+                                                div()
+                                                    .flex()
+                                                    .flex_row()
+                                                    .items_center()
+                                                    .p_1()
+                                                    .gap_1()
+                                                    .rounded_xl()
+                                                    .border_1()
+                                                    .border_color(colors.border)
+                                                    .bg(colors.background)
+                                                    .child(Self::render_theme_tab(
+                                                        "qlang_en",
+                                                        "English",
+                                                        s.question_language == Language::En,
+                                                        &colors,
+                                                        cx,
+                                                        move |this, window, cx| {
+                                                            on_action(this, SettingsAction::SetQuestionLanguage(Language::En), window, cx);
+                                                        },
+                                                    ))
+                                                    .child(Self::render_theme_tab(
+                                                        "qlang_rw",
+                                                        "Ikinyarwanda",
+                                                        s.question_language == Language::Rw,
+                                                        &colors,
+                                                        cx,
+                                                        move |this, window, cx| {
+                                                            on_action(this, SettingsAction::SetQuestionLanguage(Language::Rw), window, cx);
+                                                        },
+                                                    )),
+                                            ),
+                                    )
+                                    .child(Self::render_divider(&colors))
+                                    // Show both languages switch
+                                    .child(Self::render_switch_row(
+                                        t("settings.show_both_languages", lang),
+                                        t("settings.show_both_languages_desc", lang),
+                                        "sw_show_both_languages",
+                                        s.show_both_languages,
+                                        cx,
+                                        move |this, window, cx| {
+                                            on_action(this, SettingsAction::ToggleShowBothLanguages, window, cx);
+                                        },
+                                    )),
+                            ),
+                    )
+                    // SECTION 2: Quiz Rules & Timing
+                    .child(
+                        div()
+                            .flex()
+                            .flex_col()
+                            .gap_1p5()
+                            .child(
+                                div()
+                                    .text_sm()
+                                    .font_semibold()
+                                    .text_color(colors.muted_foreground)
+                                    .child(t("settings.group_quiz", lang)),
+                            )
+                            .child(
+                                div()
+                                    .flex()
+                                    .flex_col()
+                                    .rounded_2xl()
+                                    .border_1()
+                                    .border_color(colors.border)
+                                    .bg(colors.secondary)
+                                    // Row 1: Medium Time
                                     .child(Self::render_slider_row(
-                                        "Igihe cya Hagati",
-                                        "Iminota y'ikizamini cy'ibibazo 20",
+                                        t("settings.medium_time", lang),
+                                        t("settings.medium_time_desc", lang),
                                         Self::render_slider(
                                             "slider_medium",
                                             s.medium_duration_mins,
@@ -111,10 +272,10 @@ impl SettingsView {
                                         ),
                                     ))
                                     .child(Self::render_divider(&colors))
-                                    // Row 2: Igihe cya Bikomeye
+                                    // Row 2: Hard Time
                                     .child(Self::render_slider_row(
-                                        "Igihe cya Bikomeye",
-                                        "Gito kurusha Hagati",
+                                        t("settings.hard_time", lang),
+                                        t("settings.hard_time_desc", lang),
                                         Self::render_slider(
                                             "slider_hard",
                                             s.hard_duration_mins,
@@ -132,10 +293,10 @@ impl SettingsView {
                                         ),
                                     ))
                                     .child(Self::render_divider(&colors))
-                                    // Row 3: Amanota yo gutsinda
+                                    // Row 3: Pass Mark
                                     .child(Self::render_slider_row(
-                                        "Amanota yo gutsinda",
-                                        "Ibibazo bigomba kuba byujuje kuri 20",
+                                        t("settings.pass_mark", lang),
+                                        t("settings.pass_mark_desc", lang),
                                         Self::render_slider(
                                             "slider_pass",
                                             s.pass_mark,
@@ -154,7 +315,7 @@ impl SettingsView {
                                     )),
                             ),
                     )
-                    // SECTION 2: Isura
+                    // SECTION 3: Appearance & Controls
                     .child(
                         div()
                             .flex()
@@ -165,7 +326,7 @@ impl SettingsView {
                                     .text_sm()
                                     .font_semibold()
                                     .text_color(colors.muted_foreground)
-                                    .child("Isura"),
+                                    .child(t("settings.group_display", lang)),
                             )
                             .child(
                                 div()
@@ -188,7 +349,7 @@ impl SettingsView {
                                                     .text_sm()
                                                     .font_semibold()
                                                     .text_color(colors.foreground)
-                                                    .child("Insanganyamatsiko"),
+                                                    .child(t("settings.theme", lang)),
                                             )
                                             .child(
                                                 div()
@@ -203,32 +364,32 @@ impl SettingsView {
                                                     .bg(colors.background)
                                                     .child(Self::render_theme_tab(
                                                         "theme_light",
-                                                        "Umucyo",
-                                                        s.theme == amategeko_core::ThemeMode::Light,
+                                                        t("settings.theme_light", lang),
+                                                        s.theme == ThemeMode::Light,
                                                         &colors,
                                                         cx,
                                                         move |this, window, cx| {
-                                                            on_action(this, SettingsAction::SetTheme(amategeko_core::ThemeMode::Light), window, cx);
+                                                            on_action(this, SettingsAction::SetTheme(ThemeMode::Light), window, cx);
                                                         },
                                                     ))
                                                     .child(Self::render_theme_tab(
                                                         "theme_dark",
-                                                        "Umwijima",
-                                                        s.theme == amategeko_core::ThemeMode::Dark,
+                                                        t("settings.theme_dark", lang),
+                                                        s.theme == ThemeMode::Dark,
                                                         &colors,
                                                         cx,
                                                         move |this, window, cx| {
-                                                            on_action(this, SettingsAction::SetTheme(amategeko_core::ThemeMode::Dark), window, cx);
+                                                            on_action(this, SettingsAction::SetTheme(ThemeMode::Dark), window, cx);
                                                         },
                                                     ))
                                                     .child(Self::render_theme_tab(
                                                         "theme_system",
-                                                        "Sisitemu",
-                                                        s.theme == amategeko_core::ThemeMode::System,
+                                                        t("settings.theme_system", lang),
+                                                        s.theme == ThemeMode::System,
                                                         &colors,
                                                         cx,
                                                         move |this, window, cx| {
-                                                            on_action(this, SettingsAction::SetTheme(amategeko_core::ThemeMode::System), window, cx);
+                                                            on_action(this, SettingsAction::SetTheme(ThemeMode::System), window, cx);
                                                         },
                                                     )),
                                             ),
@@ -252,14 +413,14 @@ impl SettingsView {
                                                             .text_sm()
                                                             .font_semibold()
                                                             .text_color(colors.foreground)
-                                                            .child("Ubunini bw'inyandiko"),
+                                                            .child(t("settings.font_size", lang)),
                                                     )
                                                     .child(Self::render_slider(
                                                         "slider_font",
-                                                        (s.font_size_scale * 15.0).round() as u32,
-                                                        12,
-                                                        20,
-                                                        "px",
+                                                        (s.font_size_scale * 100.0) as u32,
+                                                        80,
+                                                        130,
+                                                        "%",
                                                         &colors,
                                                         cx,
                                                         move |this, window, cx| {
@@ -281,36 +442,14 @@ impl SettingsView {
                                                         div()
                                                             .text_sm()
                                                             .text_color(colors.foreground)
-                                                            .child(Strings::SETTINGS_FONT_PREVIEW),
+                                                            .child(t("settings.font_preview", lang)),
                                                     ),
                                             ),
-                                    ),
-                            ),
-                    )
-                    // SECTION 3: Imikorere
-                    .child(
-                        div()
-                            .flex()
-                            .flex_col()
-                            .gap_1p5()
-                            .child(
-                                div()
-                                    .text_sm()
-                                    .font_semibold()
-                                    .text_color(colors.muted_foreground)
-                                    .child("Imikorere"),
-                            )
-                            .child(
-                                div()
-                                    .flex()
-                                    .flex_col()
-                                    .rounded_2xl()
-                                    .border_1()
-                                    .border_color(colors.border)
-                                    .bg(colors.secondary)
+                                    )
+                                    .child(Self::render_divider(&colors))
                                     // Easy timer switch
                                     .child(Self::render_switch_row(
-                                        "Erekana igihe cyakoreshejwe muri Byoroshye",
+                                        t("settings.easy_timer", lang),
                                         "Nta mwanya ugenwe, ariko igihe kiragaragara",
                                         "sw_easy_timer",
                                         s.easy_show_timer,
@@ -322,7 +461,7 @@ impl SettingsView {
                                     .child(Self::render_divider(&colors))
                                     // Keyboard shortcuts switch
                                     .child(Self::render_switch_row(
-                                        "Koresha inyuguti za clavier",
+                                        t("settings.desktop_shortcuts", lang),
                                         "A–D, 1–4, Enter, F",
                                         "sw_shortcuts",
                                         s.desktop_shortcuts_enabled,
@@ -334,7 +473,7 @@ impl SettingsView {
                                     .child(Self::render_divider(&colors))
                                     // Hard weight image questions switch
                                     .child(Self::render_switch_row(
-                                        "Shyiramo ibibazo by'ibyapa kenshi muri Bikomeye",
+                                        t("settings.hard_weight", lang),
                                         "Ibyapa n'ibimenyetso by'umuhanda",
                                         "sw_hard_images",
                                         s.hard_weight_images,
@@ -342,22 +481,10 @@ impl SettingsView {
                                         move |this, window, cx| {
                                             on_action(this, SettingsAction::ToggleHardWeightImages, window, cx);
                                         },
-                                    ))
-                                    .child(Self::render_divider(&colors))
-                                    // Show all answers at end switch
-                                    .child(Self::render_switch_row(
-                                        "Erekana ibisubizo byose ku iherezo",
-                                        "Ibyo wakosheje n'ibyo wabonye neza",
-                                        "sw_show_all",
-                                        !s.study_hide_answers,
-                                        cx,
-                                        move |this, window, cx| {
-                                            on_action(this, SettingsAction::ToggleShowAllAnswersAtEnd, window, cx);
-                                        },
                                     )),
                             ),
                     )
-                    // SECTION 4: Amakuru (Clear History)
+                    // SECTION 4: Data & Storage (Clear History)
                     .child(
                         div()
                             .flex()
@@ -368,7 +495,7 @@ impl SettingsView {
                                     .text_sm()
                                     .font_semibold()
                                     .text_color(colors.muted_foreground)
-                                    .child("Amakuru"),
+                                    .child(t("settings.group_data", lang)),
                             )
                             .child(
                                 div()
@@ -395,7 +522,7 @@ impl SettingsView {
                                                             .text_sm()
                                                             .font_semibold()
                                                             .text_color(colors.foreground)
-                                                            .child("Siba amateka y'ibizamini"),
+                                                            .child(t("settings.clear_history", lang)),
                                                     )
                                                     .child(
                                                         div()
@@ -443,7 +570,7 @@ impl SettingsView {
                                     ),
                             ),
                     )
-                    // Bottom Actions: Subiza ku by'ibanze & Bika
+                    // Bottom Actions: Reset Defaults & Save
                     .child(
                         div()
                             .flex()
@@ -455,7 +582,7 @@ impl SettingsView {
                             .child(
                                 Button::new("btn_reset_defaults")
                                     .outline()
-                                    .label("Subiza ku by'ibanze")
+                                    .label(t("settings.reset_defaults", lang))
                                     .on_click(cx.listener(move |this, _, window, cx| {
                                         on_action(this, SettingsAction::ResetDefaults, window, cx);
                                     })),
@@ -463,7 +590,7 @@ impl SettingsView {
                             .child(
                                 Button::new("btn_save_settings")
                                     .primary()
-                                    .label("Bika")
+                                    .label(t("settings.save_btn", lang))
                                     .on_click(cx.listener(move |this, _, window, cx| {
                                         on_action(this, SettingsAction::SaveSettings, window, cx);
                                     })),
@@ -540,122 +667,86 @@ impl SettingsView {
         div()
             .id(id)
             .px_3()
-            .py_1()
+            .py_1p5()
             .rounded_lg()
-            .cursor_pointer()
             .text_xs()
-            .font_semibold()
+            .font_medium()
+            .cursor_pointer()
             .bg(if is_active {
-                colors.foreground
+                colors.secondary
             } else {
-                gpui::hsla(0.0, 0.0, 0.0, 0.0)
+                gpui::transparent_black()
             })
             .text_color(if is_active {
-                colors.background
+                colors.foreground
             } else {
                 colors.muted_foreground
             })
-            .child(label)
+            .hover(|el| el.bg(colors.secondary))
             .on_click(cx.listener(move |this, _, window, cx| {
                 on_select(this, window, cx);
             }))
+            .child(label)
     }
 
     #[allow(clippy::too_many_arguments)]
     fn render_slider<V: 'static>(
         id_prefix: &'static str,
-        val: u32,
+        value: u32,
         min: u32,
         max: u32,
-        suffix: &'static str,
+        unit: &'static str,
         colors: &ThemeColor,
         cx: &mut Context<V>,
         on_dec: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
         on_inc: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
     ) -> impl IntoElement {
-        let pct = if max > min {
-            ((val.saturating_sub(min)) as f32 / (max - min) as f32).clamp(0.0, 1.0)
-        } else {
-            0.5
-        };
-
-        let track_w = 140.0;
-        let thumb_pos = track_w * pct;
+        let is_min = value <= min;
+        let is_max = value >= max;
 
         div()
             .flex()
             .flex_row()
             .items_center()
-            .gap_3()
-            // Interactive track
+            .gap_2()
             .child(
                 div()
-                    .id(format!("{id_prefix}_track"))
-                    .relative()
-                    .w(px(track_w))
-                    .h(px(24.0))
-                    .flex()
-                    .items_center()
-                    .cursor_pointer()
-                    // Left half clicks decrement
-                    .child(
-                        div()
-                            .id(format!("{id_prefix}_dec_zone"))
-                            .absolute()
-                            .left_0()
-                            .top_0()
-                            .w(px(track_w / 2.0))
-                            .h_full()
-                            .on_click(cx.listener(move |this, _, window, cx| {
-                                on_dec(this, window, cx);
-                            })),
-                    )
-                    // Right half clicks increment
-                    .child(
-                        div()
-                            .id(format!("{id_prefix}_inc_zone"))
-                            .absolute()
-                            .right_0()
-                            .top_0()
-                            .w(px(track_w / 2.0))
-                            .h_full()
-                            .on_click(cx.listener(move |this, _, window, cx| {
-                                on_inc(this, window, cx);
-                            })),
-                    )
-                    // The background track bar
-                    .child(div().w_full().h(px(3.0)).rounded_full().bg(colors.border))
-                    // Filled track portion
-                    .child(
-                        div()
-                            .absolute()
-                            .left_0()
-                            .w(px(thumb_pos))
-                            .h(px(3.0))
-                            .rounded_full()
-                            .bg(colors.primary),
-                    )
-                    // The thumb knob (circle)
-                    .child(
-                        div()
-                            .absolute()
-                            .left(px((thumb_pos - 7.0).max(0.0)))
-                            .size(px(14.0))
-                            .rounded_full()
-                            .bg(colors.foreground)
-                            .border_2()
-                            .border_color(colors.background),
-                    ),
-            )
-            // Value display label
-            .child(
-                div()
-                    .w(px(55.0))
+                    .w(px(54.0))
                     .text_sm()
                     .font_bold()
                     .text_right()
                     .text_color(colors.foreground)
-                    .child(format!("{val} {suffix}")),
+                    .child(format!("{value} {unit}")),
+            )
+            .child(
+                div()
+                    .flex()
+                    .flex_row()
+                    .items_center()
+                    .p_0p5()
+                    .gap_1()
+                    .rounded_lg()
+                    .border_1()
+                    .border_color(colors.border)
+                    .bg(colors.background)
+                    .child(
+                        Button::new(format!("{id_prefix}_dec"))
+                            .ghost()
+                            .label("-")
+                            .disabled(is_min)
+                            .on_click(cx.listener(move |this, _, window, cx| {
+                                on_dec(this, window, cx);
+                            })),
+                    )
+                    .child(
+                        Button::new(format!("{id_prefix}_inc"))
+                            .ghost()
+                            .label("+")
+                            .disabled(is_max)
+                            .on_click(cx.listener(move |this, _, window, cx| {
+                                on_inc(this, window, cx);
+                            })),
+                    ),
             )
     }
 }
