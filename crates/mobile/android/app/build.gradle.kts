@@ -33,7 +33,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -60,16 +61,6 @@ android {
     sourceSets {
         getByName("main") {
             jniLibs.srcDirs("src/main/jniLibs")
-        }
-    }
-
-    packaging {
-        // Prevent stripping of the Rust library — cargo already strips in
-        // release mode and stripping again can break backtraces.
-        jniLibs {
-            keepDebugSymbols += listOf(
-                "*/arm64-v8a/libgpui_mobile_app.so"
-            )
         }
     }
 
