@@ -204,9 +204,13 @@ impl QuizView {
                                     .font_bold()
                                     .text_color(colors.foreground)
                                     .child(
-                                        t("quiz.question_progress", lang)
-                                            .replace("{current}", &(current_idx + 1).to_string())
-                                            .replace("{total}", &total_questions.to_string()),
+                                        if is_desktop {
+                                            t("quiz.question_progress", lang)
+                                                .replace("{current}", &(current_idx + 1).to_string())
+                                                .replace("{total}", &total_questions.to_string())
+                                        } else {
+                                            format!("{}/{}", current_idx + 1, total_questions)
+                                        },
                                     ),
                             ),
                     )
