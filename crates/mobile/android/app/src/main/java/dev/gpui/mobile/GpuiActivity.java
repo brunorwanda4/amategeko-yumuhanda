@@ -11,6 +11,9 @@ import android.util.Log;
 import android.view.KeyEvent;
 
 import androidx.core.splashscreen.SplashScreen;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 /**
  * Custom Activity extending NativeActivity that integrates with the
@@ -69,6 +72,17 @@ public class GpuiActivity extends NativeActivity {
         // Route volume keys to the MUSIC stream so they control media volume
         // rather than the ringer/notification volume.
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
+
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        ViewCompat.setOnApplyWindowInsetsListener(getWindow().getDecorView(), (v, insets) -> {
+            androidx.core.graphics.Insets bars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout()
+            );
+            try {
+                nativeSetInsets(bars.left, bars.top, bars.right, bars.bottom);
+            } catch (UnsatisfiedLinkError ignored) {}
+            return insets;
+        });
 
         super.onCreate(savedInstanceState);
     }
@@ -155,6 +169,8 @@ public class GpuiActivity extends NativeActivity {
     /**
      * JNI bridge to check if the Rust NATIVE_INITIALIZED flag is set.
      */
+    private static native void nativeSetInsets(int left, int top, int right, int bottom);
+
     private static native boolean nativeIsInitialized();
 
     /**

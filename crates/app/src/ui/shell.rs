@@ -20,6 +20,79 @@ use gpui_kit::component::tooltip::Tooltip;
 use gpui_kit::component::{ActiveTheme, Icon};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
+
+#[derive(Debug, Clone, Copy, Default)]
+pub struct SafeArea {
+    pub left: f32,
+    pub top: f32,
+    pub right: f32,
+    pub bottom: f32,
+}
+
+static SAFE_AREA: std::sync::Mutex<SafeArea> = std::sync::Mutex::new(SafeArea {
+    left: 0.0,
+    top: 0.0,
+    right: 0.0,
+    bottom: 0.0,
+});
+
+static INSETS_CHANGED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+pub fn get_safe_area() -> SafeArea {
+    SAFE_AREA.lock().map(|s| *s).unwrap_or_default()
+}
+
+pub fn set_safe_area(left: f32, top: f32, right: f32, bottom: f32) {
+    if let Ok(mut lock) = SAFE_AREA.lock() {
+        *lock = SafeArea {
+            left,
+            top,
+            right,
+            bottom,
+        };
+    }
+    INSETS_CHANGED.store(true, std::sync::atomic::Ordering::SeqCst);
+}
+
+#[cfg(target_os = "android")]
+#[no_mangle]
+pub extern "system" fn Java_dev_gpui_mobile_GpuiActivity_nativeSetInsets(
+    _env: *mut std::ffi::c_void,
+    _class: *mut std::ffi::c_void,
+    left: i32,
+    top: i32,
+    right: i32,
+    bottom: i32,
+) {
+    set_safe_area(left as f32, top as f32, right as f32, bottom as f32);
+}
+
+#[cfg(target_os = "android")]
+#[no_mangle]
+pub extern "system" fn Java_dev_gpui_mobile_MainActivity_nativeSetInsets(
+    env: *mut std::ffi::c_void,
+    class: *mut std::ffi::c_void,
+    left: i32,
+    top: i32,
+    right: i32,
+    bottom: i32,
+) {
+    Java_dev_gpui_mobile_GpuiActivity_nativeSetInsets(env, class, left, top, right, bottom);
+}
+
+#[cfg(target_os = "android")]
+#[no_mangle]
+pub extern "system" fn Java_dev_gpui_mobile_example_MainActivity_nativeSetInsets(
+    env: *mut std::ffi::c_void,
+    class: *mut std::ffi::c_void,
+    left: i32,
+    top: i32,
+    right: i32,
+    bottom: i32,
+) {
+    Java_dev_gpui_mobile_GpuiActivity_nativeSetInsets(env, class, left, top, right, bottom);
+}
+
 use std::collections::{HashMap, HashSet};
 use std::time::{Duration, Instant};
 
@@ -108,16 +181,29 @@ pub struct ShellView {
 impl ShellView {
     pub fn new(state: AppState, cx: &mut Context<Self>) -> Self {
         configure_scrollbar_motion(cx);
-        let timer_task = cx.spawn(async move |this, cx| loop {
-            cx.background_executor().timer(Duration::from_secs(1)).await;
-            if this
-                .update(cx, |this, cx| {
-                    this.update_quiz_timer();
-                    cx.notify();
-                })
-                .is_err()
-            {
-                break;
+        let timer_task = cx.spawn(async move |this, cx| {
+            let mut sec_counter = 0;
+            loop {
+                cx.background_executor().timer(Duration::from_millis(50)).await;
+                sec_counter += 1;
+                let timer_tick = sec_counter >= 20;
+                if timer_tick {
+                    sec_counter = 0;
+                }
+                let insets_tick = INSETS_CHANGED.swap(false, std::sync::atomic::Ordering::SeqCst);
+                if timer_tick || insets_tick {
+                    if this
+                        .update(cx, |this, cx| {
+                            if timer_tick {
+                                this.update_quiz_timer();
+                            }
+                            cx.notify();
+                        })
+                        .is_err()
+                    {
+                        break;
+                    }
+                }
             }
         });
 
@@ -773,7 +859,14 @@ impl Render for ShellView {
             .into_any_element(),
         };
 
-        let root = if is_desktop {
+        let scale = window.scale_factor();
+        let safe_area = get_safe_area();
+        let pad_top = px(safe_area.top / scale);
+        let pad_bottom = px(safe_area.bottom / scale);
+        let pad_left = px(safe_area.left / scale);
+        let pad_right = px(safe_area.right / scale);
+
+        let content_layout = if is_desktop {
             // Desktop Layout: Left Sidebar + Content
             let show_sidebar = !(is_in_quiz && self.focus_mode);
 
@@ -781,7 +874,6 @@ impl Render for ShellView {
                 .flex()
                 .flex_row()
                 .size_full()
-                .bg(colors.background)
                 .when(show_sidebar, |el| {
                     el.child(self.render_desktop_sidebar(reveal_scrollbar, cx))
                 })
@@ -792,13 +884,25 @@ impl Render for ShellView {
                 .flex()
                 .flex_col()
                 .size_full()
-                .bg(colors.background)
                 .child(self.render_mobile_top_bar(cx))
                 .child(div().flex_1().size_full().overflow_hidden().child(content))
                 .when(!is_in_quiz, |el| {
                     el.child(self.render_mobile_bottom_bar(cx))
                 })
         };
+
+        let root = div()
+            .size_full()
+            .bg(colors.background)
+            .child(
+                div()
+                    .size_full()
+                    .pt(pad_top)
+                    .pb(pad_bottom)
+                    .pl(pad_left)
+                    .pr(pad_right)
+                    .child(content_layout),
+            );
 
         let banner = self.timer_banner;
         let language = self.state.settings.language;

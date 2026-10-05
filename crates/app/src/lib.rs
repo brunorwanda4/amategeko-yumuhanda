@@ -11,7 +11,7 @@ pub use shortcuts::{ShortcutAction, ShortcutDef, ShortcutRegistry};
 pub use state::{AppState, Screen};
 pub use ui::home::HomeView;
 pub use ui::quiz::QuizView;
-pub use ui::shell::ShellView;
+pub use ui::shell::{get_safe_area, set_safe_area, SafeArea, ShellView};
 
 use gpui_kit::component::{Theme, ThemeMode as GpuiThemeMode};
 
