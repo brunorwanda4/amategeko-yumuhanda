@@ -184,7 +184,9 @@ impl ShellView {
         let timer_task = cx.spawn(async move |this, cx| {
             let mut sec_counter = 0;
             loop {
-                cx.background_executor().timer(Duration::from_millis(50)).await;
+                cx.background_executor()
+                    .timer(Duration::from_millis(50))
+                    .await;
                 sec_counter += 1;
                 let timer_tick = sec_counter >= 20;
                 if timer_tick {
@@ -569,6 +571,10 @@ impl Render for ShellView {
                     cx.notify();
                 },
                 |this, window, cx| {
+                    // Focus/fullscreen is desktop-only; Android/iOS APK never uses it.
+                    if cfg!(any(target_os = "android", target_os = "ios")) {
+                        return;
+                    }
                     this.focus_mode = !this.focus_mode;
                     if this.focus_mode {
                         if !window.is_fullscreen() {
@@ -891,18 +897,15 @@ impl Render for ShellView {
                 })
         };
 
-        let root = div()
-            .size_full()
-            .bg(colors.background)
-            .child(
-                div()
-                    .size_full()
-                    .pt(pad_top)
-                    .pb(pad_bottom)
-                    .pl(pad_left)
-                    .pr(pad_right)
-                    .child(content_layout),
-            );
+        let root = div().size_full().bg(colors.background).child(
+            div()
+                .size_full()
+                .pt(pad_top)
+                .pb(pad_bottom)
+                .pl(pad_left)
+                .pr(pad_right)
+                .child(content_layout),
+        );
 
         let banner = self.timer_banner;
         let language = self.state.settings.language;
@@ -1005,7 +1008,8 @@ impl Render for ShellView {
                     if !is_typing
                         && (this.state.settings.desktop_shortcuts_enabled && is_desktop)
                         && this.state.active_screen == Screen::Quiz
-                        && (event.keystroke.key.eq_ignore_ascii_case("f") || event.keystroke.key == "F")
+                        && (event.keystroke.key.eq_ignore_ascii_case("f")
+                            || event.keystroke.key == "F")
                         && !event.keystroke.modifiers.control
                         && !event.keystroke.modifiers.alt
                         && !event.keystroke.modifiers.platform

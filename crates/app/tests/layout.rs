@@ -320,6 +320,8 @@ fn quiz_view_empty_state_renders_mode_cards_and_starts_quiz(cx: &mut TestAppCont
 
     // Verify quiz has started in Easy mode
     assert!(view.read_with(cx, |this, _| this.state.current_attempt.is_some()));
-    let mode = view.read_with(cx, |this, _| this.state.current_attempt.as_ref().unwrap().mode);
+    let mode = view.read_with(cx, |this, _| {
+        this.state.current_attempt.as_ref().unwrap().mode
+    });
     assert_eq!(mode, QuizMode::Byoroshye);
 }
