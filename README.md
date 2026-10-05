@@ -65,6 +65,25 @@ Built with [GPUI](https://gpui.rs), [GPUI Kit](https://gpui-kit.com/) and [gpui-
 
 ---
 
+## Local Rust development settings
+
+The dev profile uses incremental compilation and line-table debug information.
+Existing optimization levels remain unchanged (workspace code: 1; dependencies: 3).
+On Windows MSVC, `.cargo/config.toml` selects the LLVM linker bundled with this
+machine's stable Rust installation. Its absolute path must be adjusted on another
+machine or if the toolchain installation moves. Other targets keep their linkers.
+
+Local Zed settings in `.zed/settings.json` (git-ignored) select no extra Cargo
+features and preserve manifest defaults. Open the workspace root in Zed. At most
+two analyzer Cargo jobs run, and all-target loading is disabled to reduce memory
+pressure on this 8 GB machine. There is no Tauri subproject.
+Global Zed settings use `cargo check` and a separate
+`target/rust-analyzer` cache. That cache avoids build-lock contention but uses
+additional disk space. Switch `lsp.rust-analyzer.initialization_options.check.command`
+to `clippy` for lint warnings, or run `cargo clippy --workspace --all-targets`.
+
+`sccache` was not installed when this setup was configured, so no wrapper is set.
+
 ## Project Structure
 
 ```

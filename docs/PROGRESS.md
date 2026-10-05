@@ -2,7 +2,23 @@
 
 Tracking milestones for "Amategeko y'Umuhanda" (Rwanda driving-test theory study app in Rust with GPUI + GPUI Kit).
 
-## Milestones
+## Rust development setup (2026-10-05)
+
+- [x] Merge global Zed Rust performance settings without replacing existing values;
+  save a settings backup and validate JSONC preservation.
+- [x] Configure local Zed manifest features, two analyzer Cargo jobs, and reduced
+  target loading; retain the git-ignored `.zed` directory.
+- [x] Make dev incremental compilation explicit, preserve existing optimization
+  levels, and select the installed Windows MSVC `rust-lld.exe`. A standalone
+  compile-and-run smoke test passed after replacing the incompatible
+  `gcc-ld/lld-link.exe` entry point.
+- [x] Review dependency features without changing them: gpui-mobile's broad
+  default plugin set is a candidate for a separately approved mobile audit.
+- [ ] Full verification: cargo check is waiting for an existing cargo build's
+  target-directory lock. Formatting check found pre-existing differences in
+  `crates/app/src/ui/quiz.rs` and `crates/app/tests/layout.rs`; source untouched.
+
+## Application milestones
 
 - [x] **Milestone 1: Question Bank & Asset Extraction** (Completed 2026-10-03)
   - [x] Implement `tools/extract_questions.py` and `tools/requirements.txt`

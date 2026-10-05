@@ -1,2 +1,6 @@
 [env]
 RUST_FONTCONFIG_DLOPEN = "on"
+
+# Use the LLVM linker bundled with this machine's stable Rust toolchain.
+[target.x86_64-pc-windows-msvc]
+linker = 'C:\Users\rbhap\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\x86_64-pc-windows-msvc\bin\rust-lld.exe'
