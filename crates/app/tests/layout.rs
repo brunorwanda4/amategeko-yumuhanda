@@ -29,6 +29,7 @@ impl Render for QuizLayoutHarness {
             |_, _, _| {},
             |_, _, _| {},
             |_, _, _| {},
+            |_, _, _, _| {},
         )
     }
 }
@@ -287,4 +288,38 @@ fn stats_view_in_shell_renders_empty_and_switches_filters(cx: &mut TestAppContex
             expected_filter
         );
     }
+}
+
+#[gpui::test]
+fn quiz_view_empty_state_renders_mode_cards_and_starts_quiz(cx: &mut TestAppContext) {
+    cx.update(gpui_kit::init);
+    let storage = Arc::new(InMemoryStorage::new());
+    let clock = Arc::new(MockClock::new(1_000));
+    let mut state = AppState::new(storage, clock);
+    state.navigate(Screen::Quiz);
+
+    let (view, cx) = cx.add_window_view(move |_, cx| ShellView::new(state, cx));
+    let cx: &mut VisualTestContext = cx;
+    draw_context(cx);
+
+    assert_eq!(
+        view.read_with(cx, |this, _| this.state.active_screen.clone()),
+        Screen::Quiz
+    );
+    assert!(view.read_with(cx, |this, _| this.state.current_attempt.is_none()));
+
+    // Verify empty state mode buttons exist
+    assert!(cx.debug_bounds("empty_quiz_btn_easy").is_some());
+    assert!(cx.debug_bounds("empty_quiz_btn_medium").is_some());
+    assert!(cx.debug_bounds("empty_quiz_btn_hard").is_some());
+
+    // Click easy mode button to start quiz
+    let easy_btn = cx.debug_bounds("empty_quiz_btn_easy").unwrap();
+    cx.simulate_click(easy_btn.center(), gpui::Modifiers::default());
+    draw_context(cx);
+
+    // Verify quiz has started in Easy mode
+    assert!(view.read_with(cx, |this, _| this.state.current_attempt.is_some()));
+    let mode = view.read_with(cx, |this, _| this.state.current_attempt.as_ref().unwrap().mode);
+    assert_eq!(mode, QuizMode::Byoroshye);
 }

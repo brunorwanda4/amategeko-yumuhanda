@@ -32,6 +32,7 @@ impl QuizView {
         on_toggle_focus: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
         on_finish_request: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
         on_abandon_request: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
+        on_start_mode: impl Fn(&mut V, QuizMode, &mut Window, &mut Context<V>) + 'static + Copy,
     ) -> impl IntoElement {
         let theme = cx.theme();
         let colors = theme.colors;
@@ -43,19 +44,14 @@ impl QuizView {
         let attempt = match &state.current_attempt {
             Some(att) => att,
             None => {
-                return div()
-                    .flex()
-                    .flex_col()
-                    .items_center()
-                    .justify_center()
-                    .size_full()
-                    .child(div().text_base().text_color(colors.foreground).child(
-                        if lang == Language::En {
-                            "No active quiz."
-                        } else {
-                            "Nta kizamini kiri gukorwa."
-                        },
-                    ));
+                return Self::render_empty_state(
+                    lang,
+                    is_desktop,
+                    scroll_handle,
+                    reveal_scrollbar,
+                    cx,
+                    on_start_mode,
+                );
             }
         };
 
@@ -992,6 +988,282 @@ impl QuizView {
                                                     }),
                                             ),
                                     )
+                            ),
+                    ),
+            )
+    }
+
+    fn render_empty_state<V: 'static>(
+        lang: Language,
+        is_desktop: bool,
+        scroll_handle: &ScrollHandle,
+        reveal_scrollbar: bool,
+        cx: &mut Context<V>,
+        on_start_mode: impl Fn(&mut V, QuizMode, &mut Window, &mut Context<V>) + 'static + Copy,
+    ) -> gpui::Div {
+        let theme = cx.theme();
+        let colors = theme.colors;
+
+        div()
+            .flex()
+            .flex_col()
+            .size_full()
+            .child(
+                div()
+                    .id("quiz_empty_state_scroll")
+                    .track_scroll(scroll_handle)
+                    .size_full()
+                    .flex()
+                    .flex_col()
+                    .items_center()
+                    .justify_center()
+                    .overflow_y_scroll()
+                    .bg(colors.background)
+                    .p_4()
+                    .when(is_desktop, |el| el.p_8())
+            .child(vertical_scrollbar(
+                "quiz_empty_scrollbar",
+                scroll_handle,
+                is_desktop,
+                reveal_scrollbar,
+            ))
+            .child(
+                div()
+                    .flex()
+                    .flex_col()
+                    .items_center()
+                    .justify_center()
+                    .w_full()
+                    .max_w(px(720.0))
+                    .gap_6()
+                    // Top Icon Badge
+                    .child(
+                        div()
+                            .flex()
+                            .items_center()
+                            .justify_center()
+                            .size(px(72.0))
+                            .rounded_2xl()
+                            .border_1()
+                            .border_color(colors.border)
+                            .bg(colors.secondary)
+                            .child(
+                                Icon::new(IconName::BookOpen)
+                                    .size(px(34.0))
+                                    .text_color(colors.primary),
+                            ),
+                    )
+                    // Title & Description
+                    .child(
+                        div()
+                            .flex()
+                            .flex_col()
+                            .items_center()
+                            .text_center()
+                            .gap_1p5()
+                            .child(
+                                div()
+                                    .text_2xl()
+                                    .font_bold()
+                                    .text_color(colors.foreground)
+                                    .child(t("quiz.no_active", lang)),
+                            )
+                            .child(
+                                div()
+                                    .text_sm()
+                                    .text_color(colors.muted_foreground)
+                                    .max_w(px(420.0))
+                                    .child(t("quiz.no_active_desc", lang)),
+                            ),
+                    )
+                    // Mode Cards: Easy, Medium, Hard
+                    .child(
+                        div()
+                            .flex()
+                            .w_full()
+                            .gap_4()
+                            .when(is_desktop, |el| el.flex_row())
+                            .when(!is_desktop, |el| el.flex_col())
+                            .child(Self::render_empty_mode_card(
+                                "empty_quiz_btn_easy",
+                                QuizMode::Byoroshye,
+                                t("mode.easy.title", lang),
+                                t("mode.easy.badge", lang),
+                                t("mode.easy.desc", lang),
+                                IconName::GraduationCap,
+                                gpui::rgb(0x22c55e),
+                                gpui::rgba(0x22c55e1a),
+                                is_desktop,
+                                t("home.start", lang),
+                                cx,
+                                on_start_mode,
+                            ))
+                            .child(Self::render_empty_mode_card(
+                                "empty_quiz_btn_medium",
+                                QuizMode::Hagati,
+                                t("mode.medium.title", lang),
+                                t("mode.medium.badge", lang),
+                                t("mode.medium.desc", lang),
+                                IconName::Clock,
+                                gpui::rgb(0xf59e0b),
+                                gpui::rgba(0xf59e0b1a),
+                                is_desktop,
+                                t("home.start", lang),
+                                cx,
+                                on_start_mode,
+                            ))
+                            .child(Self::render_empty_mode_card(
+                                "empty_quiz_btn_hard",
+                                QuizMode::Bikomeye,
+                                t("mode.hard.title", lang),
+                                t("mode.hard.badge", lang),
+                                t("mode.hard.desc", lang),
+                                IconName::Flame,
+                                gpui::rgb(0xef4444),
+                                gpui::rgba(0xef44441a),
+                                is_desktop,
+                                t("home.start", lang),
+                                cx,
+                                on_start_mode,
+                            )),
+                    ),
+            )
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn render_empty_mode_card<V: 'static>(
+        id: &'static str,
+        mode: QuizMode,
+        title: &'static str,
+        badge: &'static str,
+        desc: &'static str,
+        icon: IconName,
+        icon_color: impl Into<gpui::Hsla>,
+        badge_bg: impl Into<gpui::Hsla>,
+        is_desktop: bool,
+        start_label: &'static str,
+        cx: &mut Context<V>,
+        on_start_mode: impl Fn(&mut V, QuizMode, &mut Window, &mut Context<V>) + 'static + Copy,
+    ) -> impl IntoElement {
+        let theme = cx.theme();
+        let colors = theme.colors;
+        let icon_color: gpui::Hsla = icon_color.into();
+        let badge_bg: gpui::Hsla = badge_bg.into();
+
+        div()
+            .id(id)
+            .debug_selector(move || id.into())
+            .cursor_pointer()
+            .flex()
+            .when(is_desktop, |el| {
+                el.flex_col()
+                    .items_start()
+                    .justify_between()
+                    .p_5()
+                    .flex_1()
+                    .min_w(px(200.0))
+            })
+            .when(!is_desktop, |el| {
+                el.flex_row()
+                    .items_center()
+                    .justify_between()
+                    .p_4()
+                    .w_full()
+            })
+            .rounded_xl()
+            .border_1()
+            .border_color(colors.border)
+            .bg(colors.secondary)
+            .hover(move |el| el.bg(colors.muted).border_color(icon_color))
+            .on_click(cx.listener(move |this, _, window, cx| {
+                on_start_mode(this, mode, window, cx);
+            }))
+            // Main content
+            .child(
+                div()
+                    .flex()
+                    .when(is_desktop, |el| el.flex_col().items_start().w_full())
+                    .when(!is_desktop, |el| el.flex_row().items_center().gap_3())
+                    // Header row: Icon + Title & badge
+                    .child(
+                        div()
+                            .flex()
+                            .flex_row()
+                            .items_center()
+                            .gap_3()
+                            .child(
+                                div()
+                                    .flex()
+                                    .items_center()
+                                    .justify_center()
+                                    .size(px(40.0))
+                                    .rounded_xl()
+                                    .bg(badge_bg)
+                                    .child(
+                                        Icon::new(icon)
+                                            .size(px(20.0))
+                                            .text_color(icon_color),
+                                    ),
+                            )
+                            .child(
+                                div()
+                                    .flex()
+                                    .flex_col()
+                                    .gap_0p5()
+                                    .child(
+                                        div()
+                                            .text_base()
+                                            .font_bold()
+                                            .text_color(colors.foreground)
+                                            .child(title),
+                                    )
+                                    .child(
+                                        div()
+                                            .text_xs()
+                                            .text_color(colors.muted_foreground)
+                                            .child(badge),
+                                    ),
+                            ),
+                    )
+                    // Description (on desktop only)
+                    .when(is_desktop, |el| {
+                        el.child(
+                            div()
+                                .mt_3()
+                                .text_xs()
+                                .text_color(colors.muted_foreground)
+                                .min_h(px(38.0))
+                                .child(desc),
+                        )
+                    }),
+            )
+            // Action button pill
+            .child(
+                div()
+                    .when(is_desktop, |el| el.mt_4().w_full())
+                    .child(
+                        div()
+                            .flex()
+                            .flex_row()
+                            .items_center()
+                            .justify_center()
+                            .gap_1p5()
+                            .px_3p5()
+                            .py_2()
+                            .rounded_lg()
+                            .bg(colors.primary)
+                            .child(
+                                Icon::new(IconName::Play)
+                                    .size(px(14.0))
+                                    .text_color(colors.primary_foreground),
+                            )
+                            .child(
+                                div()
+                                    .text_xs()
+                                    .font_semibold()
+                                    .text_color(colors.primary_foreground)
+                                    .child(start_label),
                             ),
                     ),
             )

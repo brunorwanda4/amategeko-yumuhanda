@@ -59,6 +59,8 @@
   "quiz.flag": "Flag Question",
   "quiz.hard_no_selection": "Select an answer before confirming",
   "quiz.next": "Next",
+  "quiz.no_active": "No Active Exam",
+  "quiz.no_active_desc": "Select a mode below to start practicing right now.",
   "quiz.no_image": "Road sign image appears here",
   "quiz.previous": "Previous",
   "quiz.question_progress": "Question {current} of {total}",

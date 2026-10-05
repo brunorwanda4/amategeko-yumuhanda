@@ -59,6 +59,8 @@
   "quiz.flag": "Shyiraho ikimenyetso",
   "quiz.hard_no_selection": "Hitamo igisubizo mbere yo kwemeza",
   "quiz.next": "Ibikurikira",
+  "quiz.no_active": "Nta kizamini kiri gukorwa",
+  "quiz.no_active_desc": "Hitamo uburyo bwo gukora ikizamini nonaha.",
   "quiz.no_image": "Ishusho y'icyapa iza hano",
   "quiz.previous": "Ibibanza",
   "quiz.question_progress": "Ikibazo {current} kuri {total}",

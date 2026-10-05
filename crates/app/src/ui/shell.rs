@@ -519,6 +519,11 @@ impl Render for ShellView {
                     this.save_dev_state();
                     cx.notify();
                 },
+                |this, mode, _, cx| {
+                    this.state.start_quiz(mode);
+                    this.save_dev_state();
+                    cx.notify();
+                },
             )
             .into_any_element(),
             Screen::Results => ResultsView::render(
