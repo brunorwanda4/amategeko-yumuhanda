@@ -41,11 +41,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/GpuiTheme"
+        android:enableOnBackInvokedCallback="true"
     >
 
         <activity
-            android:name="dev.gpui.mobile.GpuiActivity"
+            android:name="dev.gpui.mobile.MainActivity"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|keyboard|navigation|uiMode|density"
+            android:enableOnBackInvokedCallback="true"
             android:exported="true"
             android:launchMode="singleTask"
             android:screenOrientation="unspecified"
@@ -74,6 +76,12 @@
                 <data android:scheme="amategeko" />
             </intent-filter>
         </activity>
+
+        <activity-alias
+            android:name="dev.gpui.mobile.GpuiActivity"
+            android:targetActivity="dev.gpui.mobile.MainActivity"
+            android:exported="true"
+        />
 
     </application>
 

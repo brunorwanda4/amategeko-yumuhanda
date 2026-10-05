@@ -177,4 +177,9 @@ public class GpuiActivity extends NativeActivity {
      * JNI bridge to notify Rust of an incoming deeplink URL.
      */
     private static native void nativeOnDeepLink(String url);
+
+    /**
+     * JNI bridge to notify Rust of a back press/gesture.
+     */
+    public native boolean nativeOnBack();
 }

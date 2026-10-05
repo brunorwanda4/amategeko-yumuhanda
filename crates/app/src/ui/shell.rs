@@ -37,6 +37,8 @@ static SAFE_AREA: std::sync::Mutex<SafeArea> = std::sync::Mutex::new(SafeArea {
 });
 
 static INSETS_CHANGED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+static BACK_REQUESTED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+static CAN_GO_BACK: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
 pub fn get_safe_area() -> SafeArea {
     SAFE_AREA.lock().map(|s| *s).unwrap_or_default()
@@ -52,6 +54,19 @@ pub fn set_safe_area(left: f32, top: f32, right: f32, bottom: f32) {
         };
     }
     INSETS_CHANGED.store(true, std::sync::atomic::Ordering::SeqCst);
+}
+
+pub fn handle_native_back() -> bool {
+    if CAN_GO_BACK.load(std::sync::atomic::Ordering::SeqCst) {
+        BACK_REQUESTED.store(true, std::sync::atomic::Ordering::SeqCst);
+        #[cfg(target_os = "android")]
+        {
+            gpui_mobile::TEXT_INPUT_DIRTY.store(true, std::sync::atomic::Ordering::Release);
+        }
+        true
+    } else {
+        false
+    }
 }
 
 #[cfg(target_os = "android")]
@@ -91,6 +106,42 @@ pub extern "system" fn Java_dev_gpui_mobile_example_MainActivity_nativeSetInsets
     bottom: i32,
 ) {
     Java_dev_gpui_mobile_GpuiActivity_nativeSetInsets(env, class, left, top, right, bottom);
+}
+
+#[cfg(target_os = "android")]
+#[no_mangle]
+pub extern "system" fn Java_dev_gpui_mobile_MainActivity_nativeOnBack(
+    _env: *mut std::ffi::c_void,
+    _this_or_class: *mut std::ffi::c_void,
+) -> bool {
+    handle_native_back()
+}
+
+#[cfg(target_os = "android")]
+#[no_mangle]
+pub extern "system" fn Java_dev_gpui_mobile_GpuiActivity_nativeOnBack(
+    _env: *mut std::ffi::c_void,
+    _this_or_class: *mut std::ffi::c_void,
+) -> bool {
+    handle_native_back()
+}
+
+#[cfg(target_os = "android")]
+#[no_mangle]
+pub extern "system" fn Java_dev_gpui_mobile_example_MainActivity_nativeOnBack(
+    _env: *mut std::ffi::c_void,
+    _this_or_class: *mut std::ffi::c_void,
+) -> bool {
+    handle_native_back()
+}
+
+#[cfg(target_os = "android")]
+#[no_mangle]
+pub extern "system" fn Java_dev_gpui_mobile_example_GpuiActivity_nativeOnBack(
+    _env: *mut std::ffi::c_void,
+    _this_or_class: *mut std::ffi::c_void,
+) -> bool {
+    handle_native_back()
 }
 
 use std::collections::{HashMap, HashSet};
@@ -185,17 +236,21 @@ impl ShellView {
             let mut sec_counter = 0;
             loop {
                 cx.background_executor()
-                    .timer(Duration::from_millis(50))
+                    .timer(Duration::from_millis(16))
                     .await;
                 sec_counter += 1;
-                let timer_tick = sec_counter >= 20;
+                let timer_tick = sec_counter >= 60;
                 if timer_tick {
                     sec_counter = 0;
                 }
                 let insets_tick = INSETS_CHANGED.swap(false, std::sync::atomic::Ordering::SeqCst);
-                if timer_tick || insets_tick {
+                let back_tick = BACK_REQUESTED.swap(false, std::sync::atomic::Ordering::SeqCst);
+                if timer_tick || insets_tick || back_tick {
                     if this
                         .update(cx, |this, cx| {
+                            if back_tick {
+                                this.perform_go_back(None, cx);
+                            }
                             if timer_tick {
                                 this.update_quiz_timer();
                             }
@@ -290,7 +345,7 @@ impl ShellView {
             }
         }
 
-        Self {
+        let view = Self {
             state,
             results_filter: initial_results_filter,
             results_expanded: HashSet::new(),
@@ -328,7 +383,77 @@ impl ShellView {
             timer_banner: None,
             timer_banner_hide_at: None,
             _timer_task: timer_task,
+        };
+        view.update_can_go_back();
+        view
+    }
+
+    pub fn can_go_back(&self) -> bool {
+        self.show_help_dialog
+            || self.show_finish_confirm_dialog
+            || self.stats_confirm_clear
+            || self.settings_confirm_clear
+            || self.questions_search_focused
+            || self.focus_mode
+            || self.state.active_screen != Screen::Home
+    }
+
+    pub fn update_can_go_back(&self) {
+        CAN_GO_BACK.store(self.can_go_back(), std::sync::atomic::Ordering::SeqCst);
+    }
+
+    pub fn perform_go_back(&mut self, mut window: Option<&mut Window>, cx: &mut Context<Self>) -> bool {
+        let handled = if self.show_help_dialog {
+            self.show_help_dialog = false;
+            true
+        } else if self.show_finish_confirm_dialog {
+            self.show_finish_confirm_dialog = false;
+            true
+        } else if self.stats_confirm_clear {
+            self.stats_confirm_clear = false;
+            true
+        } else if self.settings_confirm_clear {
+            self.settings_confirm_clear = false;
+            true
+        } else if self.questions_search_focused {
+            self.set_questions_search_focused(false, None, cx);
+            true
+        } else if self.focus_mode {
+            self.focus_mode = false;
+            if let Some(w) = window.as_deref_mut() {
+                if w.is_fullscreen() {
+                    w.toggle_fullscreen();
+                }
+            }
+            true
+        } else if self.state.active_screen == Screen::Quiz {
+            if self.state.current_attempt.is_some() {
+                self.show_finish_confirm_dialog = true;
+            } else {
+                if let Some(w) = window.as_deref_mut() {
+                    if w.is_fullscreen() {
+                        w.toggle_fullscreen();
+                    }
+                }
+                self.focus_mode = false;
+                self.state.discard_in_progress();
+                self.state.navigate(Screen::Home);
+                self.save_dev_state();
+            }
+            true
+        } else if self.state.active_screen != Screen::Home {
+            self.state.navigate(Screen::Home);
+            self.save_dev_state();
+            true
+        } else {
+            false
+        };
+
+        if handled {
+            cx.notify();
         }
+        self.update_can_go_back();
+        handled
     }
 
     pub fn current_scroll_handle(&self) -> &gpui::ScrollHandle {
@@ -464,6 +589,11 @@ impl ShellView {
 
 impl Render for ShellView {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        if BACK_REQUESTED.swap(false, std::sync::atomic::Ordering::SeqCst) {
+            self.perform_go_back(Some(window), cx);
+        }
+        self.update_can_go_back();
+
         #[cfg(debug_assertions)]
         {
             let current_scroll = self.current_scroll_handle().offset().y.as_f32().abs();
@@ -1091,34 +1221,7 @@ impl Render for ShellView {
                             }
                         }
                         ShortcutAction::CloseOrBack => {
-                            if this.show_help_dialog {
-                                this.show_help_dialog = false;
-                            } else if this.show_finish_confirm_dialog {
-                                this.show_finish_confirm_dialog = false;
-                            } else if this.stats_confirm_clear {
-                                this.stats_confirm_clear = false;
-                            } else if this.settings_confirm_clear {
-                                this.settings_confirm_clear = false;
-                            } else if this.questions_search_focused {
-                                this.set_questions_search_focused(false, None, cx);
-                            } else if this.state.active_screen == Screen::Results {
-                                this.state.navigate(Screen::Home);
-                            } else if this.focus_mode {
-                                this.focus_mode = false;
-                                if window.is_fullscreen() {
-                                    window.toggle_fullscreen();
-                                }
-                            } else if this.state.active_screen == Screen::Quiz {
-                                if window.is_fullscreen() {
-                                    window.toggle_fullscreen();
-                                }
-                                this.focus_mode = false;
-                                this.state.discard_in_progress();
-                                this.state.navigate(Screen::Home);
-                            } else if this.state.active_screen != Screen::Home {
-                                this.state.navigate(Screen::Home);
-                            }
-                            cx.notify();
+                            this.perform_go_back(Some(window), cx);
                         }
                         ShortcutAction::NavHome => {
                             if this.questions_search_focused {
