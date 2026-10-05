@@ -109,7 +109,10 @@ impl QuizView {
             t("quiz.next", lang)
         };
 
-        let shortcuts_active = is_desktop && state.settings.desktop_shortcuts_enabled;
+        let shortcuts_active = crate::shortcuts_ui_active(
+            is_desktop,
+            state.settings.desktop_shortcuts_enabled,
+        );
 
         div()
             .flex()
@@ -399,9 +402,7 @@ impl QuizView {
                                 )
                             })
                             // Focus / Fullscreen: desktop OS only (not Android/iOS APK)
-                            .when(
-                                !cfg!(any(target_os = "android", target_os = "ios")),
-                                |el| {
+                            .when(!crate::is_native_mobile(), |el| {
                                     let focus_tooltip = if shortcuts_active {
                                         if is_focus_mode {
                                             format!("{} (F)", t("quiz.focus_exit", lang))

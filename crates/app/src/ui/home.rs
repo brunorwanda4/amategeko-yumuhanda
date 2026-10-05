@@ -27,7 +27,10 @@ impl HomeView {
         let lang = state.settings.language;
 
         let is_desktop = scroll.is_desktop;
-        let shortcuts_active = is_desktop && state.settings.desktop_shortcuts_enabled;
+        let shortcuts_active = crate::shortcuts_ui_active(
+            is_desktop,
+            state.settings.desktop_shortcuts_enabled,
+        );
 
         // Stats values matching the design
         let total_questions = state.bank.len();

@@ -163,6 +163,7 @@ dependencies = [
  "anyhow",
  "gpui-kit",
  "gpui-pre",
+ "gpui-pre-mobile",
  "log",
  "rand 0.8.8",
  "rust-embed",

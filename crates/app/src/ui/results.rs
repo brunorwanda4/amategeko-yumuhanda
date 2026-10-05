@@ -126,7 +126,10 @@ impl ResultsView {
             .filter(|qr| !qr.is_correct && qr.user_answer.is_some())
             .count();
         let total_mistakes = (total as usize).saturating_sub(score as usize);
-        let shortcuts_active = is_desktop && state.settings.desktop_shortcuts_enabled;
+        let shortcuts_active = crate::shortcuts_ui_active(
+            is_desktop,
+            state.settings.desktop_shortcuts_enabled,
+        );
 
         // Filter question results
         let filtered_questions: Vec<(usize, &QuestionResult)> = result

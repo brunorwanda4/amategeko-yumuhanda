@@ -49,7 +49,10 @@ impl QuestionsView {
         let lang = state.settings.language;
         let q_lang = state.settings.question_language;
         let show_both = state.settings.show_both_languages;
-        let shortcuts_active = is_desktop && state.settings.desktop_shortcuts_enabled;
+        let shortcuts_active = crate::shortcuts_ui_active(
+            is_desktop,
+            state.settings.desktop_shortcuts_enabled,
+        );
 
         let has_image_only = filter == QuestionsFilter::HasImage;
         let starred_only = filter == QuestionsFilter::Starred;
@@ -234,7 +237,7 @@ impl QuestionsView {
                                 })),
                         )
                     })
-                    .when(search_query.is_empty(), |el| {
+                    .when(search_query.is_empty() && shortcuts_active, |el| {
                         let mod_name = crate::shortcuts::KeyCombo::primary_modifier_name();
                         el.child(
                             div()
