@@ -1,6 +1,11 @@
 [env]
 RUST_FONTCONFIG_DLOPEN = "on"
 
-# Use the LLVM linker bundled with this machine's stable Rust toolchain.
+# Use the LLVM linker bundled with the active Rust toolchain.
 [target.x86_64-pc-windows-msvc]
-linker = 'C:\Users\rbhap\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\x86_64-pc-windows-msvc\bin\rust-lld.exe'
+linker = "rust-lld.exe"
+
+# Optional: first install with `cargo install sccache --locked` and verify
+# `sccache --version`, then uncomment both lines below.
+# [build]
+# rustc-wrapper = "sccache"

@@ -68,10 +68,10 @@ Built with [GPUI](https://gpui.rs), [GPUI Kit](https://gpui-kit.com/) and [gpui-
 ## Local Rust development settings
 
 The dev profile uses incremental compilation and line-table debug information.
-Existing optimization levels remain unchanged (workspace code: 1; dependencies: 3).
-On Windows MSVC, `.cargo/config.toml` selects the LLVM linker bundled with this
-machine's stable Rust installation. Its absolute path must be adjusted on another
-machine or if the toolchain installation moves. Other targets keep their linkers.
+Workspace code keeps optimization level 1; dependencies use level 2.
+On Windows MSVC, `.cargo/config.toml` selects `rust-lld.exe` bundled with the active
+Rust toolchain, without a machine-specific absolute path. Other targets keep
+their linkers.
 
 Local Zed settings in `.zed/settings.json` (git-ignored) select no extra Cargo
 features and preserve manifest defaults. Open the workspace root in Zed. At most
@@ -83,6 +83,11 @@ additional disk space. Switch `lsp.rust-analyzer.initialization_options.check.co
 to `clippy` for lint warnings, or run `cargo clippy --workspace --all-targets`.
 
 `sccache` was not installed when this setup was configured, so no wrapper is set.
+Install it with `cargo install sccache --locked`, then enable the commented wrapper
+in `.cargo/config.toml`. Run `bacon` for continuous desktop checks (already installed
+on this machine). Local VS Code settings isolate rust-analyzer's target directory
+and enable Clippy. See [Rust build performance](docs/BUILD_PERFORMANCE.md) for the
+dependency audit, timing results, Windows options, and daily commands.
 
 ## Project Structure
 

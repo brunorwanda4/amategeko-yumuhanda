@@ -36,4 +36,4 @@ debug = "line-tables-only"
 incremental = true
 
 [profile.dev.package."*"]
-opt-level = 3
+opt-level = 2

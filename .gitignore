@@ -108,6 +108,7 @@ dev_state.json
 *~
 .fleet/
 .zed/
+.vscode
 
 # ---------------------------------------------------------------
 # Operating system

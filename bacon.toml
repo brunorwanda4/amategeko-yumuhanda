@@ -1,0 +1,14 @@
+# Keep the default save/check loop focused on the desktop application.
+default_job = "check"
+
+[jobs.check]
+command = ["cargo", "check", "-p", "desktop", "--color", "always"]
+need_stdout = false
+
+[jobs.clippy]
+command = ["cargo", "clippy", "-p", "desktop", "--all-targets", "--color", "always", "--", "-D", "warnings"]
+need_stdout = false
+
+[jobs.test]
+command = ["cargo", "test", "-p", "amategeko-core", "--color", "always"]
+need_stdout = true
