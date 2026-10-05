@@ -898,6 +898,26 @@ impl Render for ShellView {
                         }
                     }
 
+                    if !is_typing
+                        && (this.state.settings.desktop_shortcuts_enabled && is_desktop)
+                        && this.state.active_screen == Screen::Quiz
+                        && (event.keystroke.key.eq_ignore_ascii_case("f") || event.keystroke.key == "F")
+                        && !event.keystroke.modifiers.control
+                        && !event.keystroke.modifiers.alt
+                        && !event.keystroke.modifiers.platform
+                    {
+                        this.focus_mode = !this.focus_mode;
+                        if this.focus_mode {
+                            if !window.is_fullscreen() {
+                                window.toggle_fullscreen();
+                            }
+                        } else if window.is_fullscreen() {
+                            window.toggle_fullscreen();
+                        }
+                        cx.notify();
+                        return;
+                    }
+
                     let action = this.registry.resolve_event(
                         event,
                         this.state.active_screen.clone(),

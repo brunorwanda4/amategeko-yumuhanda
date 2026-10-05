@@ -159,13 +159,15 @@ impl QuizView {
                                             .size(px(14.0))
                                             .text_color(colors.muted_foreground),
                                     )
-                                    .child(
-                                        div()
-                                            .text_xs()
-                                            .font_medium()
-                                            .text_color(colors.muted_foreground)
-                                            .child(t("dialog.abandon.confirm", lang)),
-                                    )
+                                    .when(is_desktop, |el| {
+                                        el.child(
+                                            div()
+                                                .text_xs()
+                                                .font_medium()
+                                                .text_color(colors.muted_foreground)
+                                                .child(t("dialog.abandon.confirm", lang)),
+                                        )
+                                    })
                                     .when(shortcuts_active && !is_hard, |el| {
                                         el.child(
                                             div()
@@ -361,7 +363,7 @@ impl QuizView {
                                     colors.muted_foreground
                                 };
                                 let flag_tooltip = if shortcuts_active {
-                                    format!("{} (F)", t("quiz.flag", lang))
+                                    format!("{} (M)", t("quiz.flag", lang))
                                 } else {
                                     t("quiz.flag", lang).to_string()
                                 };
@@ -398,7 +400,13 @@ impl QuizView {
                             })
                             // Focus / Fullscreen mode toggle
                             .child({
-                                let focus_tooltip = if is_focus_mode {
+                                let focus_tooltip = if shortcuts_active {
+                                    if is_focus_mode {
+                                        format!("{} (F)", t("quiz.focus_exit", lang))
+                                    } else {
+                                        format!("{} (F)", t("quiz.focus_mode", lang))
+                                    }
+                                } else if is_focus_mode {
                                     t("quiz.focus_exit", lang).to_string()
                                 } else {
                                     t("quiz.focus_mode", lang).to_string()

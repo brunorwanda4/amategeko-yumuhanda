@@ -57,6 +57,8 @@
   "quiz.easy_wrong": "Siko. Igisubizo cy'ukuri ni {option}.",
   "quiz.finish": "Soza ikizamini",
   "quiz.flag": "Shyiraho ikimenyetso",
+  "quiz.focus_exit": "Ishyiraho ikibazo",
+  "quiz.focus_mode": "Ishyiraho ikibazo",
   "quiz.hard_no_selection": "Hitamo igisubizo mbere yo kwemeza",
   "quiz.next": "Ibikurikira",
   "quiz.no_active": "Nta kizamini kiri gukorwa",

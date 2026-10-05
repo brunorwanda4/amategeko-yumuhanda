@@ -57,6 +57,8 @@
   "quiz.easy_wrong": "Incorrect. The right answer is {option}.",
   "quiz.finish": "Finish Quiz",
   "quiz.flag": "Flag Question",
+  "quiz.focus_exit": "Exit Focus Mode",
+  "quiz.focus_mode": "Enter Focus Mode",
   "quiz.hard_no_selection": "Select an answer before confirming",
   "quiz.next": "Next",
   "quiz.no_active": "No Active Exam",

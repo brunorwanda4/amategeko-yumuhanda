@@ -507,11 +507,11 @@ impl ShortcutRegistry {
             custom_hint: Some("→"),
         });
         self.shortcuts.push(ShortcutDef {
-            key: KeyCombo::plain("f"),
+            key: KeyCombo::plain("m"),
             action: ShortcutAction::FlagQuestion,
             scopes: vec![ShortcutScope::QuizMedium],
             label_key: "shortcuts.flag_question",
-            custom_hint: Some("F"),
+            custom_hint: Some("M"),
         });
         self.shortcuts.push(ShortcutDef {
             key: KeyCombo::ctrl_enter(),
@@ -828,7 +828,7 @@ impl ShortcutRegistry {
                         t("shortcuts.prev_question", lang).to_string(),
                     ),
                     (
-                        "F".to_string(),
+                        "M".to_string(),
                         t("shortcuts.flag_question", lang).to_string(),
                     ),
                     (
