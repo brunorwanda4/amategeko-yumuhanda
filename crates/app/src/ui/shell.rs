@@ -1004,6 +1004,21 @@ impl Render for ShellView {
                             event.keystroke.modifiers.control || event.keystroke.modifiers.platform;
                         let is_alt = event.keystroke.modifiers.alt;
 
+                        if key.eq_ignore_ascii_case("escape")
+                            || key.eq_ignore_ascii_case("enter")
+                        {
+                            this.set_questions_search_focused(false, None, cx);
+                            return;
+                        }
+
+                        // On mobile platforms (Android/iOS APK), character typing and backspaces
+                        // are handled exclusively through the soft-keyboard IME bridge
+                        // (drain_pending_into_search). gpui-mobile delivers both IME callbacks
+                        // and KeyDown events; processing characters here on mobile causes double typing.
+                        if crate::is_native_mobile() {
+                            return;
+                        }
+
                         if key.eq_ignore_ascii_case("backspace") {
                             if is_ctrl {
                                 this.questions_search.clear();
@@ -1011,11 +1026,6 @@ impl Render for ShellView {
                                 this.questions_search.pop();
                             }
                             cx.notify();
-                            return;
-                        } else if key.eq_ignore_ascii_case("escape")
-                            || key.eq_ignore_ascii_case("enter")
-                        {
-                            this.set_questions_search_focused(false, None, cx);
                             return;
                         } else if key.eq_ignore_ascii_case("space") || key == " " {
                             this.questions_search.push(' ');

@@ -235,7 +235,7 @@ impl QuestionsView {
                                 })),
                         )
                     })
-                    .when(search_query.is_empty() && shortcuts_active && shortcuts_active, |el| {
+                    .when(search_query.is_empty() && shortcuts_active, |el| {
                         let mod_name = crate::shortcuts::KeyCombo::primary_modifier_name();
                         el.child(
                             div()

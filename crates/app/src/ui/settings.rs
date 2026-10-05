@@ -287,6 +287,7 @@ impl SettingsView {
                                                 on_action(this, SettingsAction::IncMediumTime, window, cx);
                                             },
                                         ),
+                                        is_desktop,
                                     ))
                                     .child(Self::render_divider(&colors))
                                     // Row 2: Hard Time
@@ -308,6 +309,7 @@ impl SettingsView {
                                                 on_action(this, SettingsAction::IncHardTime, window, cx);
                                             },
                                         ),
+                                        is_desktop,
                                     ))
                                     .child(Self::render_divider(&colors))
                                     // Row 3: Pass Mark
@@ -329,6 +331,7 @@ impl SettingsView {
                                                 on_action(this, SettingsAction::IncPassMark, window, cx);
                                             },
                                         ),
+                                        is_desktop,
                                     )),
                             ),
                     )
@@ -357,9 +360,12 @@ impl SettingsView {
                                     .child(
                                         div()
                                             .flex()
-                                            .flex_row()
-                                            .items_center()
-                                            .justify_between()
+                                            .when(is_desktop, |el| {
+                                                el.flex_row().items_center().justify_between()
+                                            })
+                                            .when(!is_desktop, |el| {
+                                                el.flex_col().items_start().gap_3()
+                                            })
                                             .p_4()
                                             .child(
                                                 div()
@@ -422,9 +428,12 @@ impl SettingsView {
                                             .child(
                                                 div()
                                                     .flex()
-                                                    .flex_row()
-                                                    .items_center()
-                                                    .justify_between()
+                                                    .when(is_desktop, |el| {
+                                                        el.flex_row().items_center().justify_between()
+                                                    })
+                                                    .when(!is_desktop, |el| {
+                                                        el.flex_col().items_start().gap_3()
+                                                    })
                                                     .child(
                                                         div()
                                                             .text_sm()
@@ -644,12 +653,16 @@ impl SettingsView {
         title: &'static str,
         subtitle: &'static str,
         slider_control: impl IntoElement,
+        is_desktop: bool,
     ) -> impl IntoElement {
         div()
             .flex()
-            .flex_row()
-            .items_center()
-            .justify_between()
+            .when(is_desktop, |el| {
+                el.flex_row().items_center().justify_between()
+            })
+            .when(!is_desktop, |el| {
+                el.flex_col().items_start().gap_3()
+            })
             .p_4()
             .child(
                 div()
@@ -676,8 +689,11 @@ impl SettingsView {
             .items_center()
             .justify_between()
             .p_4()
+            .gap_3()
             .child(
                 div()
+                    .flex_1()
+                    .min_w_0()
                     .flex()
                     .flex_col()
                     .gap_0p5()
