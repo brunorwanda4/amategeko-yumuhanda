@@ -325,3 +325,42 @@ fn quiz_view_empty_state_renders_mode_cards_and_starts_quiz(cx: &mut TestAppCont
     });
     assert_eq!(mode, QuizMode::Byoroshye);
 }
+
+#[gpui::test]
+fn questions_search_focus_and_mobile_ime_drain(cx: &mut TestAppContext) {
+    cx.update(gpui_kit::init);
+    let storage = Arc::new(InMemoryStorage::new());
+    let clock = Arc::new(MockClock::new(1_000));
+    let mut state = AppState::new(storage, clock);
+    state.navigate(Screen::Questions);
+
+    let (view, cx) = cx.add_window_view(move |_, cx| ShellView::new(state, cx));
+    let cx: &mut VisualTestContext = cx;
+    draw_context(cx);
+
+    // Focus search
+    view.update(cx, |this, cx| {
+        this.set_questions_search_focused(true, None, cx);
+    });
+    assert!(view.read_with(cx, |this, _| this.questions_search_focused));
+
+    // Simulate IME text arrival from soft keyboard
+    amategeko_app::mobile_ime::push_pending_test("ihangane");
+    draw_context(cx);
+
+    assert_eq!(
+        view.read_with(cx, |this, _| this.questions_search.clone()),
+        "ihangane"
+    );
+
+    // Simulate IME submit (newline / Done key)
+    amategeko_app::mobile_ime::push_pending_test("\n");
+    draw_context(cx);
+
+    // Should have dismissed search focus
+    assert!(!view.read_with(cx, |this, _| this.questions_search_focused));
+    assert_eq!(
+        view.read_with(cx, |this, _| this.questions_search.clone()),
+        "ihangane"
+    );
+}

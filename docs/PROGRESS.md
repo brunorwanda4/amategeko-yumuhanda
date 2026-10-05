@@ -90,6 +90,7 @@ Tracking milestones for "Amategeko y'Umuhanda" (Rwanda driving-test theory study
   - [x] Restore the saved theme during desktop and mobile startup (2026-10-04)
   - [x] Refresh the quiz layout and add fullscreen focus mode and keyboard shortcuts (2026-10-04)
   - [x] Hide quiz focus mode on Android/iOS APK only (desktop OS keeps it, including narrow windows) (2026-10-05)
+  - [x] Wire soft keyboard IME bridge for Questions search and hide desktop shortcut hints on Android/iOS APK (2026-10-06)
   - [x] Implement Medium and Hard timer warning states (2026-10-04: level-aware pill, remaining-time bar, dismissible alerts, reduced-motion-safe pulse, and expiry submission)
   - [x] Desktop keyboard shortcut registry (`crates/app/src/shortcuts.rs`) with help dialog (`?` / `F1`), button badges, input focus detection, mode restrictions (Hard strict mode disables navigation/back; Easy blocks Next before answering; Medium Ctrl+Enter finish confirmation), and desktop-only Settings switch (Cmd on macOS, Ctrl elsewhere). Note: Stats 1–4 filters are registered in registry but their action is deferred until stats screen filter controls are built. (2026-10-04)
   - [x] Add responsive author credit footer to Home and Settings (2026-10-04)

@@ -476,7 +476,7 @@ impl SettingsView {
                                         },
                                     ))
                                     // Keyboard shortcuts switch (desktop only)
-                                    .when(is_desktop, |el| {
+                                    .when(is_desktop && !crate::is_native_mobile(), |el| {
                                         let sub = if cfg!(target_os = "macos") {
                                             "Cmd+1..5, A–D, Enter, ? / F1"
                                         } else {
@@ -621,7 +621,7 @@ impl SettingsView {
                                 let mut btn = Button::new("btn_save_settings")
                                     .primary()
                                     .label(t("settings.save_btn", lang));
-                                if is_desktop && s.desktop_shortcuts_enabled {
+                                if crate::shortcuts_ui_active(is_desktop, s.desktop_shortcuts_enabled) {
                                     let shortcut_str = if cfg!(target_os = "macos") { "Cmd+S" } else { "Ctrl+S" };
                                     btn = btn.tooltip(format!("{} ({shortcut_str})", t("settings.save_btn", lang)));
                                 }
