@@ -9,8 +9,15 @@ use std::borrow::Cow;
 /// The one and only app font family (real family name from the font's name table).
 pub const FONT_FAMILY: &str = "Inter";
 
-static FONT_REGULAR: &[u8] = include_bytes!("../../../assets/fonts/Inter-Regular.ttf");
-static FONT_BOLD: &[u8] = include_bytes!("../../../assets/fonts/Inter-Bold.ttf");
+/// Static weights 400, 500, 600, 700, 800 so `font_normal`, `font_medium`,
+/// `font_semibold`, `font_bold` and `font_extrabold` each get their own face.
+static FONT_FILES: [&[u8]; 5] = [
+    include_bytes!("../../../assets/fonts/Inter-Regular.ttf"),
+    include_bytes!("../../../assets/fonts/Inter-Medium.ttf"),
+    include_bytes!("../../../assets/fonts/Inter-SemiBold.ttf"),
+    include_bytes!("../../../assets/fonts/Inter-Bold.ttf"),
+    include_bytes!("../../../assets/fonts/Inter-ExtraBold.ttf"),
+];
 
 #[derive(Clone, Copy)]
 struct FontPrefs {
@@ -26,7 +33,7 @@ impl Global for FontPrefs {}
 pub fn init_fonts(scale: f32, cx: &mut App) {
     let family_loaded = match cx
         .text_system()
-        .add_fonts(vec![Cow::Borrowed(FONT_REGULAR), Cow::Borrowed(FONT_BOLD)])
+        .add_fonts(FONT_FILES.iter().map(|b| Cow::Borrowed(*b)).collect())
     {
         Ok(()) => true,
         Err(err) => {

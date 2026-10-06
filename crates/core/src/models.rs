@@ -272,6 +272,10 @@ pub struct Settings {
     pub question_language: Language,
     #[serde(default)]
     pub show_both_languages: bool,
+    /// Show the answer options of each quiz question in a different order.
+    /// Stored answers and the correct answer keep their original keys.
+    #[serde(default)]
+    pub shuffle_options: bool,
 }
 
 impl Default for Settings {
@@ -289,6 +293,7 @@ impl Default for Settings {
             language: Language::En,
             question_language: Language::En,
             show_both_languages: false,
+            shuffle_options: false,
         }
     }
 }
@@ -357,6 +362,31 @@ impl Attempt {
         self.flags.contains(&self.current_index)
     }
 
+    /// Option keys of question `idx` in the order they are shown on screen.
+    ///
+    /// Without `shuffle` this is the original order (a, b, c, d). With `shuffle`
+    /// the order is mixed, but it only depends on the attempt id and the question,
+    /// so it stays the same across re-renders and when an attempt is resumed.
+    /// The keys themselves never change, so saved answers and `correct` stay valid.
+    pub fn option_order(&self, idx: usize, lang: Language, shuffle: bool) -> Vec<String> {
+        let Some(question) = self.questions.get(idx) else {
+            return Vec::new();
+        };
+        let mut keys: Vec<String> = question.options_for(lang).keys().cloned().collect();
+        if shuffle {
+            let seed = stable_seed(&self.id, question.id, idx);
+            shuffle_with_seed(&mut keys, seed);
+        }
+        keys
+    }
+
+    /// Option key shown at screen position `position` (0 = first row) of the current question.
+    pub fn option_key_at(&self, lang: Language, shuffle: bool, position: usize) -> Option<String> {
+        self.option_order(self.current_index, lang, shuffle)
+            .into_iter()
+            .nth(position)
+    }
+
     pub fn unanswered_indices(&self) -> Vec<usize> {
         (0..self.questions.len())
             .filter(|i| !self.answers.contains_key(i))
@@ -367,6 +397,36 @@ impl Attempt {
     pub fn total_duration_secs(&self) -> Option<u32> {
         self.deadline_secs
             .map(|deadline| deadline.saturating_sub(self.start_time_secs) as u32)
+    }
+}
+
+/// FNV-1a hash. Written by hand so the result never changes between Rust versions
+/// (an attempt saved before an update must show the same order after it).
+fn stable_seed(attempt_id: &str, question_id: u32, idx: usize) -> u64 {
+    let mut hash: u64 = 0xcbf2_9ce4_8422_2325;
+    let mut feed = |byte: u8| {
+        hash ^= u64::from(byte);
+        hash = hash.wrapping_mul(0x0100_0000_01b3);
+    };
+    attempt_id.bytes().for_each(&mut feed);
+    question_id.to_le_bytes().into_iter().for_each(&mut feed);
+    (idx as u64).to_le_bytes().into_iter().for_each(&mut feed);
+    hash
+}
+
+/// Deterministic Fisher-Yates shuffle driven by a splitmix64 generator.
+fn shuffle_with_seed<T>(items: &mut [T], seed: u64) {
+    let mut state = seed;
+    let mut next = || {
+        state = state.wrapping_add(0x9e37_79b9_7f4a_7c15);
+        let mut z = state;
+        z = (z ^ (z >> 30)).wrapping_mul(0xbf58_476d_1ce4_e5b9);
+        z = (z ^ (z >> 27)).wrapping_mul(0x94d0_49bb_1331_11eb);
+        z ^ (z >> 31)
+    };
+    for i in (1..items.len()).rev() {
+        let j = (next() % (i as u64 + 1)) as usize;
+        items.swap(i, j);
     }
 }
 

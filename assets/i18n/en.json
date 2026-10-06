@@ -143,6 +143,8 @@
   "settings.save_btn": "Save Changes",
   "settings.show_both_languages": "Show both languages",
   "settings.show_both_languages_desc": "Display secondary translation under questions and options",
+  "settings.shuffle_options": "Shuffle answer options",
+  "settings.shuffle_options_desc": "Show the options in a different order in each quiz. The correct answer stays the same.",
   "settings.theme": "Theme",
   "settings.theme_dark": "Dark",
   "settings.theme_light": "Light",

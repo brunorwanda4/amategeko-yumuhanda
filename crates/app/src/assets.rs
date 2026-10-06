@@ -7,6 +7,7 @@ use std::path::Path;
 
 #[derive(RustEmbed)]
 #[folder = "../../assets"]
+#[exclude = "fonts/*"]
 pub struct EmbeddedAppAssets;
 
 #[derive(Clone, Copy, Debug, Default)]

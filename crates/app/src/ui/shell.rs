@@ -1060,6 +1060,11 @@ impl Render for ShellView {
                                 !this.state.settings.show_both_languages;
                             this.state.save_settings(this.state.settings.clone());
                         }
+                        SettingsAction::ToggleShuffleOptions => {
+                            this.state.settings.shuffle_options =
+                                !this.state.settings.shuffle_options;
+                            this.state.save_settings(this.state.settings.clone());
+                        }
                     }
                     cx.notify();
                 },
@@ -1313,8 +1318,20 @@ impl Render for ShellView {
                                 .map(|a| a.is_current_locked())
                                 .unwrap_or(false);
                             if !locked {
-                                this.state.record_current_answer(&opt.to_string());
-                                cx.notify();
+                                // The shortcut letter is the screen position (A = first row),
+                                // which maps to a different option key when options are shuffled.
+                                let position = (opt as usize).saturating_sub('a' as usize);
+                                let key = this.state.current_attempt.as_ref().and_then(|a| {
+                                    a.option_key_at(
+                                        this.state.settings.question_language,
+                                        this.state.settings.shuffle_options,
+                                        position,
+                                    )
+                                });
+                                if let Some(key) = key {
+                                    this.state.record_current_answer(&key);
+                                    cx.notify();
+                                }
                             }
                         }
                         ShortcutAction::NextOrConfirm => {

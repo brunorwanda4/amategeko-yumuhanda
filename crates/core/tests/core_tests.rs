@@ -483,9 +483,117 @@ fn test_settings_defaults_and_language() {
     assert_eq!(settings.language, Language::En);
     assert_eq!(settings.question_language, Language::En);
     assert!(!settings.show_both_languages);
+    assert!(!settings.shuffle_options);
     assert_eq!(settings.pass_mark, 12);
     assert_eq!(settings.medium_duration_mins, 20);
     assert_eq!(settings.hard_duration_mins, 12);
+}
+
+#[test]
+fn test_old_settings_file_loads_without_shuffle_options() {
+    let mut value = serde_json::to_value(Settings::default()).unwrap();
+    value.as_object_mut().unwrap().remove("shuffle_options");
+    let loaded: Settings = serde_json::from_value(value).unwrap();
+    assert!(!loaded.shuffle_options);
+}
+
+#[test]
+fn test_option_order_unshuffled_is_original() {
+    let bank = QuestionBank::load_bundled().expect("Failed to load bundled questions");
+    let attempt = QuizEngine::start_quiz(
+        &bank,
+        QuizMode::Hagati,
+        &Settings::default(),
+        &HashMap::new(),
+        1000,
+    )
+    .expect("Quiz start failed");
+
+    for idx in 0..attempt.total_questions() {
+        let expected: Vec<String> = attempt.questions[idx]
+            .options_for(Language::En)
+            .keys()
+            .cloned()
+            .collect();
+        assert_eq!(attempt.option_order(idx, Language::En, false), expected);
+    }
+}
+
+#[test]
+fn test_option_order_shuffled_is_stable_and_keeps_all_keys() {
+    let bank = QuestionBank::load_bundled().expect("Failed to load bundled questions");
+    let attempt = QuizEngine::start_quiz(
+        &bank,
+        QuizMode::Hagati,
+        &Settings::default(),
+        &HashMap::new(),
+        1000,
+    )
+    .expect("Quiz start failed");
+
+    let mut changed = 0;
+    for idx in 0..attempt.total_questions() {
+        let original = attempt.option_order(idx, Language::En, false);
+        let first = attempt.option_order(idx, Language::En, true);
+        let second = attempt.option_order(idx, Language::En, true);
+
+        // Same attempt and question always gives the same order.
+        assert_eq!(first, second);
+
+        // Same set of keys, so saved answers and the correct key stay valid.
+        let mut sorted = first.clone();
+        sorted.sort();
+        assert_eq!(sorted, original);
+        assert!(first.contains(&attempt.questions[idx].correct));
+
+        if first != original {
+            changed += 1;
+        }
+    }
+    assert!(changed > 0, "shuffle never changed the order");
+}
+
+#[test]
+fn test_option_order_differs_between_attempts() {
+    let bank = QuestionBank::load_bundled().expect("Failed to load bundled questions");
+    let start = |now| {
+        QuizEngine::start_quiz_with_questions(
+            QuizMode::Byoroshye,
+            bank.all()[..30].to_vec(),
+            &Settings::default(),
+            now,
+        )
+        .expect("Quiz start failed")
+    };
+    let first = start(1000);
+    let second = start(2000);
+
+    let differs = (0..first.total_questions()).any(|i| {
+        first.option_order(i, Language::En, true) != second.option_order(i, Language::En, true)
+    });
+    assert!(differs);
+}
+
+#[test]
+fn test_option_key_at_maps_screen_position_to_key() {
+    let bank = QuestionBank::load_bundled().expect("Failed to load bundled questions");
+    let attempt = QuizEngine::start_quiz(
+        &bank,
+        QuizMode::Byoroshye,
+        &Settings::default(),
+        &HashMap::new(),
+        1000,
+    )
+    .expect("Quiz start failed");
+
+    let order = attempt.option_order(0, Language::En, true);
+    for (pos, key) in order.iter().enumerate() {
+        assert_eq!(
+            attempt.option_key_at(Language::En, true, pos).as_ref(),
+            Some(key)
+        );
+    }
+    assert_eq!(attempt.option_key_at(Language::En, true, order.len()), None);
 }
 
 #[test]

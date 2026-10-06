@@ -35,6 +35,7 @@ pub enum SettingsAction {
     SetInterfaceLanguage(Language),
     SetQuestionLanguage(Language),
     ToggleShowBothLanguages,
+    ToggleShuffleOptions,
 }
 
 pub struct SettingsView;
@@ -515,6 +516,18 @@ impl SettingsView {
                                         cx,
                                         move |this, window, cx| {
                                             on_action(this, SettingsAction::ToggleHardWeightImages, window, cx);
+                                        },
+                                    ))
+                                    .child(Self::render_divider(&colors))
+                                    // Shuffle answer options switch
+                                    .child(Self::render_switch_row(
+                                        t("settings.shuffle_options", lang),
+                                        t("settings.shuffle_options_desc", lang),
+                                        "sw_shuffle_options",
+                                        s.shuffle_options,
+                                        cx,
+                                        move |this, window, cx| {
+                                            on_action(this, SettingsAction::ToggleShuffleOptions, window, cx);
                                         },
                                     )),
                             ),

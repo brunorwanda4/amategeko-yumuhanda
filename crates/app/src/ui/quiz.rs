@@ -64,6 +64,16 @@ impl QuizView {
             Some(q) => q,
             None => return div().child("Question not found"),
         };
+        let option_order = attempt.option_order(
+            current_idx,
+            q_lang,
+            state.settings.shuffle_options,
+        );
+        let correct_badge = option_order
+            .iter()
+            .position(|option_id| option_id.eq_ignore_ascii_case(&current_q.correct))
+            .map(|position| char::from(b'A' + position as u8).to_string())
+            .unwrap_or_else(|| current_q.correct.to_uppercase());
 
         let user_ans = attempt.current_answer().cloned();
         let is_locked = attempt.is_current_locked();
@@ -748,12 +758,12 @@ impl QuizView {
                                                 let exp_text = if is_correct {
                                                     t("quiz.easy_correct", lang).replace(
                                                         "{option}",
-                                                        &current_q.correct.to_uppercase(),
+                                                        &correct_badge,
                                                     )
                                                 } else {
                                                     t("quiz.easy_wrong", lang).replace(
                                                         "{option}",
-                                                        &current_q.correct.to_uppercase(),
+                                                        &correct_badge,
                                                     )
                                                 };
                                                 div()
@@ -805,21 +815,23 @@ impl QuizView {
                                     // Options list
                                     .child(div().flex().flex_col().w_full().min_w_0().overflow_hidden().gap_3().children({
                                         let opts = current_q.options_for(q_lang);
-                                        let mut keys: Vec<&String> = opts.keys().collect();
-                                        keys.sort();
-                                        keys.into_iter().map(|letter| {
+                                        option_order.into_iter().enumerate().map(|(position, option_id)| {
+                                            let option_id = option_id.as_str();
+                                            // Badge shows the screen position, so the rows always read A, B, C, D.
+                                            let badge = char::from(b'A' + position as u8).to_string();
                                             let opt_text =
-                                                opts.get(letter).cloned().unwrap_or_default();
+                                                opts.get(option_id).cloned().unwrap_or_default();
                                             let sec_opt = if show_both {
                                                 current_q
-                                                    .secondary_option_for(q_lang, letter)
+                                                    .secondary_option_for(q_lang, option_id)
                                                     .map(|s| s.to_string())
                                             } else {
                                                 None
                                             };
                                             Self::render_option_card(
                                                 attempt,
-                                                letter,
+                                                option_id,
+                                                &badge,
                                                 &opt_text,
                                                 sec_opt.as_deref(),
                                                 &current_q.correct,
@@ -1283,10 +1295,11 @@ impl QuizView {
     #[allow(clippy::too_many_arguments)]
     fn render_option_card<V: 'static>(
         attempt: &Attempt,
-        letter: &str,
+        option_id: &str,
+        badge_label: &str,
         text: &str,
         secondary_text: Option<&str>,
-        correct_letter: &str,
+        correct_option_id: &str,
         user_selection: Option<&str>,
         is_locked: bool,
         lang: Language,
@@ -1298,9 +1311,9 @@ impl QuizView {
         let colors = theme.colors;
 
         let is_selected = user_selection
-            .map(|s| s.eq_ignore_ascii_case(letter))
+            .map(|s| s.eq_ignore_ascii_case(option_id))
             .unwrap_or(false);
-        let is_correct_option = letter.eq_ignore_ascii_case(correct_letter);
+        let is_correct_option = option_id.eq_ignore_ascii_case(correct_option_id);
 
         let (border_color, bg_color, text_color, badge_bg, badge_border, badge_text, icon_element) =
             if attempt.mode.provides_instant_feedback() {
@@ -1382,11 +1395,11 @@ impl QuizView {
                 }
             };
 
-        let letter_owned = letter.to_string();
+        let option_id_owned = option_id.to_string();
 
         div()
-            .id(format!("option_card_{letter}"))
-            .debug_selector(|| format!("quiz-option-row-{letter}"))
+            .id(format!("option_card_{option_id}"))
+            .debug_selector(|| format!("quiz-option-row-{option_id}"))
             .flex()
             .flex_row()
             .items_start()
@@ -1406,19 +1419,19 @@ impl QuizView {
                     .hover(|e| e.bg(colors.accent).border_color(colors.primary))
             })
             .when(shortcuts_active && !is_locked, |el| {
-                let hint = letter.to_uppercase();
+                let hint = badge_label.to_string();
                 let tooltip = format!("{}: {hint}", t("shortcuts.choose_option", lang));
                 el.tooltip(move |window, cx| Tooltip::new(tooltip.clone()).build(window, cx))
             })
             .on_click(cx.listener(move |this, _, window, cx| {
                 if !is_locked {
-                    on_select_option(this, &letter_owned, window, cx);
+                    on_select_option(this, &option_id_owned, window, cx);
                 }
             }))
             // Badge containing letter: A, B, C, D
             .child(
                 div()
-                    .debug_selector(|| format!("quiz-option-badge-{letter}"))
+                    .debug_selector(|| format!("quiz-option-badge-{option_id}"))
                     .flex()
                     .items_center()
                     .justify_center()
@@ -1433,13 +1446,13 @@ impl QuizView {
                             .text_sm()
                             .font_bold()
                             .text_color(badge_text)
-                            .child(letter.to_uppercase()),
+                            .child(badge_label.to_string()),
                     ),
             )
             // Option text (primary + optional secondary)
             .child(
                 div()
-                    .debug_selector(|| format!("quiz-option-text-{letter}"))
+                    .debug_selector(|| format!("quiz-option-text-{option_id}"))
                     .flex_1()
                     .flex_col()
                     .min_w_0()
