@@ -1,9 +1,12 @@
 use amategeko_core::*;
+use rand::seq::SliceRandom;
 use std::sync::Arc;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Screen {
     Home,
+    /// Quiz page (Ikizamini): pick a mode and start an exam.
+    QuizStart,
     Quiz,
     Results,
     Questions,
@@ -30,7 +33,7 @@ impl From<Screen> for amategeko_core::dev::DevScreen {
     fn from(s: Screen) -> Self {
         match s {
             Screen::Home => amategeko_core::dev::DevScreen::Home,
-            Screen::Quiz => amategeko_core::dev::DevScreen::Quiz,
+            Screen::Quiz | Screen::QuizStart => amategeko_core::dev::DevScreen::Quiz,
             Screen::Results => amategeko_core::dev::DevScreen::Results,
             Screen::Questions => amategeko_core::dev::DevScreen::Browse,
             Screen::Stats => amategeko_core::dev::DevScreen::Stats,
@@ -118,21 +121,59 @@ impl AppState {
         let now = self.clock.now_seconds();
         let stats = &self.progress.question_stats;
         match QuizEngine::start_quiz(&self.bank, mode, &self.settings, stats, now) {
-            Ok(attempt) => {
-                #[allow(unused_mut)]
-                let mut attempt = attempt;
-                #[cfg(debug_assertions)]
-                if let Some(secs) = self.debug_timer_override {
-                    amategeko_core::dev::apply_timer_override(&mut attempt, secs, now);
-                }
-                let _ = self.storage.save_in_progress(&attempt);
-                self.current_attempt = Some(attempt);
-                self.active_screen = Screen::Quiz;
-            }
+            Ok(attempt) => self.begin_attempt(attempt, now),
             Err(e) => {
                 log::error!("Failed to start quiz: {e}");
             }
         }
+    }
+
+    /// Starts a quiz from the quiz page. Easy draws up to 20 random questions from
+    /// `set`; Medium and Hard always use the whole bank, so `set` is ignored for them.
+    pub fn start_quiz_in_set(&mut self, mode: QuizMode, set: QuestionSet) {
+        if mode != QuizMode::Byoroshye || set == QuestionSet::All {
+            self.start_quiz(mode);
+            return;
+        }
+
+        let now = self.clock.now_seconds();
+        let mut pool = set.filter_questions(
+            self.bank.all(),
+            &self.progress.starred_questions,
+            &self.progress.question_stats,
+        );
+        pool.shuffle(&mut rand::thread_rng());
+        pool.truncate(20);
+
+        match QuizEngine::start_quiz_with_questions(mode, pool, &self.settings, now) {
+            Ok(attempt) => self.begin_attempt(attempt, now),
+            Err(e) => {
+                log::error!("Failed to start quiz from set: {e}");
+            }
+        }
+    }
+
+    /// Number of questions in `set`, computed from the bank and the saved progress.
+    pub fn question_set_count(&self, set: QuestionSet) -> usize {
+        set.count(
+            self.bank.all(),
+            &self.progress.starred_questions,
+            &self.progress.question_stats,
+        )
+    }
+
+    fn begin_attempt(&mut self, attempt: Attempt, now: u64) {
+        #[allow(unused_mut)]
+        let mut attempt = attempt;
+        #[cfg(debug_assertions)]
+        if let Some(secs) = self.debug_timer_override {
+            amategeko_core::dev::apply_timer_override(&mut attempt, secs, now);
+        }
+        #[cfg(not(debug_assertions))]
+        let _ = now;
+        let _ = self.storage.save_in_progress(&attempt);
+        self.current_attempt = Some(attempt);
+        self.active_screen = Screen::Quiz;
     }
 
     pub fn start_retry_wrong(&mut self) {

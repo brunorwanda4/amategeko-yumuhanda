@@ -663,9 +663,7 @@ impl SettingsView {
             .when(is_desktop, |el| {
                 el.flex_row().items_center().justify_between()
             })
-            .when(!is_desktop, |el| {
-                el.flex_col().items_start().gap_3()
-            })
+            .when(!is_desktop, |el| el.flex_col().items_start().gap_3())
             .p_4()
             .child(
                 div()

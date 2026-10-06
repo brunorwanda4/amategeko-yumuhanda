@@ -109,10 +109,8 @@ impl QuizView {
             t("quiz.next", lang)
         };
 
-        let shortcuts_active = crate::shortcuts_ui_active(
-            is_desktop,
-            state.settings.desktop_shortcuts_enabled,
-        );
+        let shortcuts_active =
+            crate::shortcuts_ui_active(is_desktop, state.settings.desktop_shortcuts_enabled);
 
         div()
             .flex()

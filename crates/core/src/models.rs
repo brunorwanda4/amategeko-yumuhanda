@@ -122,6 +122,72 @@ impl Question {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
+pub enum QuestionSet {
+    #[default]
+    All,
+    Signs,
+    Rules,
+    NotSeen,
+    Starred,
+    Mistakes,
+}
+
+impl QuestionSet {
+    /// Every set, in the order the quiz page shows them.
+    pub const ALL_SETS: [QuestionSet; 6] = [
+        QuestionSet::All,
+        QuestionSet::Signs,
+        QuestionSet::Rules,
+        QuestionSet::NotSeen,
+        QuestionSet::Starred,
+        QuestionSet::Mistakes,
+    ];
+
+    /// Whether a single question belongs to this set.
+    pub fn contains(
+        &self,
+        q: &Question,
+        starred: &std::collections::HashSet<u32>,
+        stats: &std::collections::HashMap<u32, QuestionStat>,
+    ) -> bool {
+        match self {
+            QuestionSet::All => true,
+            QuestionSet::Signs => q.has_image,
+            QuestionSet::Rules => !q.has_image,
+            QuestionSet::NotSeen => stats.get(&q.id).map_or(0, |s| s.seen_count) == 0,
+            QuestionSet::Starred => starred.contains(&q.id),
+            QuestionSet::Mistakes => stats.get(&q.id).map_or(0, |s| s.wrong_count) > 0,
+        }
+    }
+
+    /// Number of questions in this set, without cloning them.
+    pub fn count(
+        &self,
+        questions: &[Question],
+        starred: &std::collections::HashSet<u32>,
+        stats: &std::collections::HashMap<u32, QuestionStat>,
+    ) -> usize {
+        questions
+            .iter()
+            .filter(|q| self.contains(q, starred, stats))
+            .count()
+    }
+
+    pub fn filter_questions(
+        &self,
+        questions: &[Question],
+        starred: &std::collections::HashSet<u32>,
+        stats: &std::collections::HashMap<u32, QuestionStat>,
+    ) -> Vec<Question> {
+        questions
+            .iter()
+            .filter(|q| self.contains(q, starred, stats))
+            .cloned()
+            .collect()
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum QuizMode {
     /// Learning mode: instant feedback, no countdown, answer locked after first tap.
@@ -161,6 +227,7 @@ impl QuizMode {
     }
 
     pub fn has_countdown(&self) -> bool {
+        /*  */
         matches!(self, QuizMode::Hagati | QuizMode::Bikomeye)
     }
 
@@ -385,5 +452,90 @@ impl Progress {
 
     pub fn is_starred(&self, question_id: u32) -> bool {
         self.starred_questions.contains(&question_id)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_question_set_filter() {
+        let q1 = Question {
+            id: 1,
+            text: "Q1".into(),
+            options: std::collections::BTreeMap::new(),
+            correct: "a".into(),
+            image: Some("sign.png".into()),
+            has_image: true,
+            text_en: None,
+            options_en: None,
+            text_rw: None,
+            options_rw: None,
+            status_en: None,
+        };
+        let q2 = Question {
+            id: 2,
+            text: "Q2".into(),
+            options: std::collections::BTreeMap::new(),
+            correct: "b".into(),
+            image: None,
+            has_image: false,
+            text_en: None,
+            options_en: None,
+            text_rw: None,
+            options_rw: None,
+            status_en: None,
+        };
+        let questions = vec![q1, q2];
+        let mut starred = std::collections::HashSet::new();
+        starred.insert(1);
+        let mut stats = std::collections::HashMap::new();
+        stats.insert(
+            2,
+            QuestionStat {
+                question_id: 2,
+                seen_count: 1,
+                correct_count: 0,
+                wrong_count: 1,
+            },
+        );
+
+        assert_eq!(
+            QuestionSet::All
+                .filter_questions(&questions, &starred, &stats)
+                .len(),
+            2
+        );
+        assert_eq!(
+            QuestionSet::Signs
+                .filter_questions(&questions, &starred, &stats)
+                .len(),
+            1
+        );
+        assert_eq!(
+            QuestionSet::Rules
+                .filter_questions(&questions, &starred, &stats)
+                .len(),
+            1
+        );
+        assert_eq!(
+            QuestionSet::NotSeen
+                .filter_questions(&questions, &starred, &stats)
+                .len(),
+            1
+        );
+        assert_eq!(
+            QuestionSet::Starred
+                .filter_questions(&questions, &starred, &stats)
+                .len(),
+            1
+        );
+        assert_eq!(
+            QuestionSet::Mistakes
+                .filter_questions(&questions, &starred, &stats)
+                .len(),
+            1
+        );
     }
 }

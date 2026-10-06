@@ -132,6 +132,10 @@ pub enum ShortcutAction {
     StartHard,
     ResumeExam,
 
+    // Quiz page (mode picker)
+    SelectQuizMode(u8), // 1 = Easy, 2 = Medium, 3 = Hard
+    StartSelectedQuiz,
+
     // Quiz
     ChooseOption(char), // 'a' | 'b' | 'c' | 'd'
     NextOrConfirm,
@@ -206,6 +210,7 @@ impl ShortcutAction {
 pub enum ShortcutScope {
     Global,
     Home,
+    QuizStart,
     QuizAll,
     QuizEasy,
     QuizMedium,
@@ -246,6 +251,7 @@ impl ShortcutDef {
             match scope {
                 ShortcutScope::Global => return true,
                 ShortcutScope::Home if screen == crate::Screen::Home => return true,
+                ShortcutScope::QuizStart if screen == crate::Screen::QuizStart => return true,
                 ShortcutScope::QuizAll if screen == crate::Screen::Quiz => return true,
                 ShortcutScope::QuizEasy
                     if screen == crate::Screen::Quiz
@@ -388,6 +394,24 @@ impl ShortcutRegistry {
             action: ShortcutAction::ResumeExam,
             scopes: vec![ShortcutScope::Home],
             label_key: "shortcuts.home_resume",
+            custom_hint: Some("Enter"),
+        });
+
+        // 2b. Quiz page (mode picker) shortcuts
+        for (key, n) in [("1", 1u8), ("2", 2), ("3", 3)] {
+            self.shortcuts.push(ShortcutDef {
+                key: KeyCombo::plain(key),
+                action: ShortcutAction::SelectQuizMode(n),
+                scopes: vec![ShortcutScope::QuizStart],
+                label_key: "shortcuts.quiz_pick_mode",
+                custom_hint: Some(key),
+            });
+        }
+        self.shortcuts.push(ShortcutDef {
+            key: KeyCombo::plain("enter"),
+            action: ShortcutAction::StartSelectedQuiz,
+            scopes: vec![ShortcutScope::QuizStart],
+            label_key: "shortcuts.quiz_start_mode",
             custom_hint: Some("Enter"),
         });
 
