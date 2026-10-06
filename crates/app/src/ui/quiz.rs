@@ -1,5 +1,5 @@
 use crate::state::AppState;
-use crate::ui::scroll::vertical_scrollbar;
+use crate::ui::scroll::{vertical_scrollbar, DragScroll};
 use amategeko_core::{t, Attempt, Language, QuizMode, QuizTimer, TimerLevel, TimerState};
 use gpui::InteractiveElement as _;
 use gpui_kit::assets::IconName;
@@ -587,6 +587,7 @@ impl QuizView {
                 div()
                     .id("quiz_content_scroll")
                     .track_scroll(scroll_handle)
+.drag_scroll(scroll_handle)
                     .flex()
                     .flex_col()
                     .flex_1()
@@ -1027,6 +1028,7 @@ impl QuizView {
             div()
                 .id("quiz_empty_state_scroll")
                 .track_scroll(scroll_handle)
+                .drag_scroll(scroll_handle)
                 .size_full()
                 .flex()
                 .flex_col()

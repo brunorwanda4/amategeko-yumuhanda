@@ -104,8 +104,10 @@ fn main() {
             };
 
             let storage_for_window = storage.clone();
+            let initial_font_scale = app_state.settings.font_size_scale;
             cx.open_window(options, move |window, cx| {
                 amategeko_app::apply_theme(initial_theme, Some(window), cx);
+                window.set_rem_size(px(amategeko_core::rem_px(initial_font_scale)));
 
                 let storage_for_close = storage_for_window.clone();
                 window.on_window_should_close(cx, move |window, _cx| {

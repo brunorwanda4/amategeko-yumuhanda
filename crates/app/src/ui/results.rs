@@ -1,5 +1,5 @@
 use crate::state::AppState;
-use crate::ui::scroll::vertical_scrollbar;
+use crate::ui::scroll::{vertical_scrollbar, DragScroll};
 use amategeko_core::{t, Language, QuestionResult, QuizMode};
 use gpui::InteractiveElement as _;
 use gpui_kit::assets::IconName;
@@ -51,6 +51,7 @@ impl ResultsView {
                 return div()
                     .id("results_empty_scroll")
                     .track_scroll(scroll_handle)
+                    .drag_scroll(scroll_handle)
                     .flex()
                     .flex_col()
                     .items_center()
@@ -524,6 +525,7 @@ impl ResultsView {
                 div()
                     .id("results_scroll_view")
                     .track_scroll(scroll_handle)
+.drag_scroll(scroll_handle)
                     .relative()
                     .flex()
                     .flex_col()

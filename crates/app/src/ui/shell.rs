@@ -1015,18 +1015,33 @@ impl Render for ShellView {
                         }
                         SettingsAction::DecFontScale => {
                             this.state.settings.font_size_scale =
-                                (this.state.settings.font_size_scale - 0.05).max(0.80);
+                                ((this.state.settings.font_size_scale - 0.05) * 20.0).round()
+                                    / 20.0;
+                            this.state.settings.font_size_scale =
+                                this.state.settings.font_size_scale.clamp(0.8, 1.3);
                             this.state.save_settings(this.state.settings.clone());
+                            window.set_rem_size(px(amategeko_core::rem_px(
+                                this.state.settings.font_size_scale,
+                            )));
                         }
                         SettingsAction::IncFontScale => {
                             this.state.settings.font_size_scale =
-                                (this.state.settings.font_size_scale + 0.05).min(1.33);
+                                ((this.state.settings.font_size_scale + 0.05) * 20.0).round()
+                                    / 20.0;
+                            this.state.settings.font_size_scale =
+                                this.state.settings.font_size_scale.clamp(0.8, 1.3);
                             this.state.save_settings(this.state.settings.clone());
+                            window.set_rem_size(px(amategeko_core::rem_px(
+                                this.state.settings.font_size_scale,
+                            )));
                         }
                         SettingsAction::ResetDefaults => {
                             this.state.settings = amategeko_core::Settings::default();
                             this.state.save_settings(this.state.settings.clone());
                             crate::apply_theme(this.state.settings.theme, Some(window), cx);
+                            window.set_rem_size(px(amategeko_core::rem_px(
+                                this.state.settings.font_size_scale,
+                            )));
                         }
                         SettingsAction::SaveSettings => {
                             this.state.save_settings(this.state.settings.clone());

@@ -1,7 +1,7 @@
 use crate::state::AppState;
 use crate::ui::footer::AppFooter;
 use crate::ui::layout::{page_column, page_max_width, PagePadding as _};
-use crate::ui::scroll::{vertical_scrollbar, ScrollbarContext};
+use crate::ui::scroll::{vertical_scrollbar, DragScroll, ScrollbarContext};
 
 use amategeko_core::{t, tf, Language, QuestionSet, QuizMode, StatsCalculator};
 use gpui::InteractiveElement as _;
@@ -216,6 +216,7 @@ impl HomeView {
                 div()
                     .id("home_scroll")
                     .track_scroll(scroll.handle)
+                    .drag_scroll(scroll.handle)
                     .flex_1()
                     .min_h_0()
                     .overflow_y_scroll()

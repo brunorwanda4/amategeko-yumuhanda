@@ -1,6 +1,6 @@
 use crate::state::AppState;
 use crate::ui::layout::{page_column, PagePadding as _};
-use crate::ui::scroll::vertical_scrollbar;
+use crate::ui::scroll::{vertical_scrollbar, DragScroll};
 use amategeko_core::{t, Language, Question};
 use gpui::InteractiveElement as _;
 use gpui_kit::base::StyledExt;
@@ -358,6 +358,7 @@ impl QuestionsView {
                             .id("questions_scroll_view")
                             .debug_selector(|| "questions_scroll_view".into())
                             .track_scroll(scroll_handle)
+.drag_scroll(scroll_handle)
                             .relative()
                             .flex()
                             .flex_col()

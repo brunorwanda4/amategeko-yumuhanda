@@ -1,6 +1,6 @@
 use crate::state::AppState;
 use crate::ui::layout::{page_column, PagePadding as _};
-use crate::ui::scroll::vertical_scrollbar;
+use crate::ui::scroll::{vertical_scrollbar, DragScroll};
 use amategeko_core::{t, tf, StatsCalculator, StatsFilter};
 use gpui::InteractiveElement as _;
 use gpui_kit::base::Disableable as _;
@@ -44,6 +44,7 @@ impl StatsView {
         div()
             .id("stats_scroll_view")
             .track_scroll(scroll_handle)
+            .drag_scroll(scroll_handle)
             .flex()
             .flex_col()
             .size_full()
