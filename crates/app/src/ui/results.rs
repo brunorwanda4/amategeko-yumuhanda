@@ -57,7 +57,8 @@ impl ResultsView {
                     .items_center()
                     .justify_center()
                     .size_full()
-                    .p_6()
+                    .p_4()
+                    .when(is_desktop, |el| el.p_6())
                     .gap_4()
                     .child(vertical_scrollbar(
                         "results_empty_scrollbar",
@@ -151,7 +152,8 @@ impl ResultsView {
             .flex_col()
             .size_full()
             .bg(colors.background)
-            .p_6()
+            .p_4()
+            .when(is_desktop, |el| el.p_6())
             .gap_4()
             // 1. Page Heading
             .child(
@@ -171,14 +173,18 @@ impl ResultsView {
                 div()
                     .flex_none()
                     .flex()
-                    .flex_row()
+                    .when(is_desktop, |el| el.flex_row())
+                    .when(!is_desktop, |el| el.flex_col())
                     .items_center()
-                    .p_6()
+                    .justify_center()
+                    .p_4()
+                    .when(is_desktop, |el| el.p_6())
                     .rounded_2xl()
                     .border_1()
                     .border_color(colors.border)
                     .bg(colors.secondary)
-                    .gap_6()
+                    .gap_4()
+                    .when(is_desktop, |el| el.gap_6())
                     // Circular score gauge
                     .child(
                         div()
@@ -186,7 +192,7 @@ impl ResultsView {
                             .flex_col()
                             .items_center()
                             .justify_center()
-                            .size(px(88.0))
+                            .size(if is_desktop { px(88.0) } else { px(64.0) })
                             .rounded_full()
                             .border_4()
                             .border_color(if is_passed {
@@ -216,6 +222,7 @@ impl ResultsView {
                             .flex()
                             .flex_col()
                             .gap_1p5()
+                            .when(!is_desktop, |el| el.items_center())
                             // Score percentage + Passed / Failed pill
                             .child(
                                 div()
@@ -223,6 +230,7 @@ impl ResultsView {
                                     .flex_row()
                                     .items_center()
                                     .gap_3()
+                                    .when(!is_desktop, |el| el.justify_center())
                                     .child(
                                         div()
                                             .text_3xl()
@@ -279,7 +287,9 @@ impl ResultsView {
                                 div()
                                     .flex()
                                     .flex_row()
+                                    .flex_wrap()
                                     .items_center()
+                                    .justify_center()
                                     .gap_2()
                                     .pt_1()
                                     .child(
@@ -345,8 +355,11 @@ impl ResultsView {
                     .flex_none()
                     .flex()
                     .flex_row()
+                    .flex_wrap()
                     .items_center()
-                    .gap_3()
+                    .justify_center()
+                    .gap_2()
+                    .when(is_desktop, |el| el.gap_3())
                     // All 20
                     .child({
                         let is_active = filter == ResultFilter::All;
@@ -361,7 +374,8 @@ impl ResultsView {
                         div()
                             .id("filter_all_chip")
                             .cursor_pointer()
-                            .px_4()
+                            .px_3()
+                            .when(is_desktop, |el| el.px_4())
                             .py_2()
                             .rounded_xl()
                             .border_1()
@@ -419,7 +433,8 @@ impl ResultsView {
                         div()
                             .id("filter_wrong_chip")
                             .cursor_pointer()
-                            .px_4()
+                            .px_3()
+                            .when(is_desktop, |el| el.px_4())
                             .py_2()
                             .rounded_xl()
                             .border_1()
@@ -476,7 +491,8 @@ impl ResultsView {
                         div()
                             .id("filter_unanswered_chip")
                             .cursor_pointer()
-                            .px_4()
+                            .px_3()
+                            .when(is_desktop, |el| el.px_4())
                             .py_2()
                             .rounded_xl()
                             .border_1()
@@ -525,7 +541,7 @@ impl ResultsView {
                 div()
                     .id("results_scroll_view")
                     .track_scroll(scroll_handle)
-.drag_scroll(scroll_handle)
+                    .drag_scroll(scroll_handle)
                     .relative()
                     .flex()
                     .flex_col()
@@ -586,8 +602,10 @@ impl ResultsView {
                                         .flex_row()
                                         .items_start()
                                         .justify_between()
-                                        .p_4()
-                                        .gap_4()
+                                        .p_3()
+                                        .when(is_desktop, |el| el.p_4())
+                                        .gap_3()
+                                        .when(is_desktop, |el| el.gap_4())
                                         .cursor_pointer()
                                         .hover(|h| h.bg(colors.accent.opacity(0.15)))
                                         .on_click(cx.listener(move |this, _, window, cx| {
@@ -598,7 +616,8 @@ impl ResultsView {
                                                 .flex()
                                                 .flex_row()
                                                 .items_start()
-                                                .gap_3()
+                                                .gap_2()
+                                                .when(is_desktop, |el| el.gap_3())
                                                 .flex_1()
                                                 .min_w_0()
                                                 // Question Index Number (e.g. "1.")
@@ -746,19 +765,20 @@ impl ResultsView {
                                                 .flex()
                                                 .flex_row()
                                                 .items_center()
-                                                .gap_3()
+                                                .gap_2()
+                                                .when(is_desktop, |el| el.gap_3())
                                                 .flex_none()
                                                 .child(if is_correct {
                                                     Icon::new(IconName::CircleCheck)
-                                                        .size(px(20.0))
+                                                        .size(px(if is_desktop { 20.0 } else { 18.0 }))
                                                         .text_color(colors.success)
                                                 } else if user_ans.is_some() {
                                                     Icon::new(IconName::CircleX)
-                                                        .size(px(20.0))
+                                                        .size(px(if is_desktop { 20.0 } else { 18.0 }))
                                                         .text_color(colors.danger)
                                                 } else {
                                                     Icon::new(IconName::CircleAlert)
-                                                        .size(px(20.0))
+                                                        .size(px(if is_desktop { 20.0 } else { 18.0 }))
                                                         .text_color(colors.muted_foreground)
                                                 })
                                                 .child(
@@ -767,7 +787,7 @@ impl ResultsView {
                                                     } else {
                                                         IconName::ChevronDown
                                                     })
-                                                    .size(px(18.0))
+                                                    .size(px(if is_desktop { 18.0 } else { 16.0 }))
                                                     .text_color(colors.muted_foreground),
                                                 ),
                                         ),
@@ -778,9 +798,12 @@ impl ResultsView {
                                         div()
                                             .flex()
                                             .flex_col()
-                                            .px_4()
-                                            .pb_4()
-                                            .gap_3()
+                                            .px_3()
+                                            .when(is_desktop, |el| el.px_4())
+                                            .pb_3()
+                                            .when(is_desktop, |el| el.pb_4())
+                                            .gap_2()
+                                            .when(is_desktop, |el| el.gap_3())
                                             // Sign image if available
                                             .when(q.has_image, |img_el| {
                                                 img_el.child(
@@ -788,7 +811,8 @@ impl ResultsView {
                                                         .flex()
                                                         .items_center()
                                                         .justify_center()
-                                                        .p_3()
+                                                        .p_2()
+                                                        .when(is_desktop, |el| el.p_3())
                                                         .rounded_xl()
                                                         .border_1()
                                                         .border_color(colors.border)
@@ -798,7 +822,7 @@ impl ResultsView {
                                                                 "assets/images/q{}.png",
                                                                 q.id
                                                             ))
-                                                            .max_h(px(160.0))
+                                                            .max_h(px(if is_desktop { 160.0 } else { 120.0 }))
                                                             .rounded_lg(),
                                                         ),
                                                 )
@@ -873,19 +897,23 @@ impl ResultsView {
                                                             .items_center()
                                                             .justify_between()
                                                             .w_full()
-                                                            .px_4()
-                                                            .py_3()
+                                                            .px_3()
+                                                            .when(is_desktop, |el| el.px_4())
+                                                            .py_2()
+                                                            .when(is_desktop, |el| el.py_3())
                                                             .rounded_xl()
                                                             .border_1()
                                                             .border_color(opt_border)
                                                             .bg(opt_bg)
-                                                            .gap_3()
+                                                            .gap_2()
+                                                            .when(is_desktop, |el| el.gap_3())
                                                             .child(
                                                                 div()
                                                                     .flex()
                                                                     .flex_row()
                                                                     .items_start()
-                                                                    .gap_3()
+                                                                    .gap_2()
+                                                                    .when(is_desktop, |el| el.gap_3())
                                                                     .flex_1()
                                                                     .min_w_0()
                                                                     .child(
@@ -925,7 +953,9 @@ impl ResultsView {
                     .flex_row()
                     .flex_wrap()
                     .items_center()
-                    .gap_3()
+                    .justify_center()
+                    .gap_2()
+                    .when(is_desktop, |el| el.gap_3())
                     .pt_1()
                     // Try again button
                     .child({
@@ -945,8 +975,10 @@ impl ResultsView {
                             .flex_row()
                             .items_center()
                             .gap_2()
-                            .px_4()
-                            .py_2p5()
+                            .px_3()
+                            .when(is_desktop, |el| el.px_4())
+                            .py_2()
+                            .when(is_desktop, |el| el.py_2p5())
                             .rounded_xl()
                             .border_1()
                             .border_color(colors.border)
@@ -991,8 +1023,10 @@ impl ResultsView {
                                 .flex_row()
                                 .items_center()
                                 .gap_2()
-                                .px_4()
-                                .py_2p5()
+                                .px_3()
+                                .when(is_desktop, |el| el.px_4())
+                                .py_2()
+                                .when(is_desktop, |el| el.py_2p5())
                                 .rounded_xl()
                                 .border_1()
                                 .border_color(colors.border)
@@ -1033,8 +1067,10 @@ impl ResultsView {
                             .flex_row()
                             .items_center()
                             .gap_2()
-                            .px_4()
-                            .py_2p5()
+                            .px_3()
+                            .when(is_desktop, |el| el.px_4())
+                            .py_2()
+                            .when(is_desktop, |el| el.py_2p5())
                             .rounded_xl()
                             .border_1()
                             .border_color(colors.border)

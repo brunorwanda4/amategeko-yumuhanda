@@ -105,3 +105,4 @@ Tracking milestones for "Amategeko y'Umuhanda" (Rwanda driving-test theory study
 ## Releases
 
 - [x] **Version 1.0.0** (2026-10-06): aligned desktop and Android version metadata and prepared downloadable Windows and Android ARM64 release artifacts.
+- [x] **Version 1.1.0** (2026-10-06): recovered all verifiable questions from the supplied PDF, corrected answer extraction, and prepared updated Windows and Android ARM64 builds.

@@ -1,4 +1,4 @@
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.1.0"
 #ifndef MyAppBinary
 #define MyAppBinary "target\release\amategeko.exe"
 #endif
@@ -12,7 +12,7 @@ DefaultDirName={autopf}\Amategeko
 DefaultGroupName=Amategeko y'Umuhanda
 PrivilegesRequired=lowest
 OutputDir=dist
-OutputBaseFilename=Amategeko-Setup
+OutputBaseFilename=Amategeko-y-Umuhanda-v{#MyAppVersion}-Windows-Setup
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
