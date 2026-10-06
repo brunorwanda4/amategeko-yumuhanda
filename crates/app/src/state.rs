@@ -5,8 +5,6 @@ use std::sync::Arc;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Screen {
     Home,
-    /// Quiz page (Ikizamini): pick a mode and start an exam.
-    QuizStart,
     Quiz,
     Results,
     Questions,
@@ -33,7 +31,7 @@ impl From<Screen> for amategeko_core::dev::DevScreen {
     fn from(s: Screen) -> Self {
         match s {
             Screen::Home => amategeko_core::dev::DevScreen::Home,
-            Screen::Quiz | Screen::QuizStart => amategeko_core::dev::DevScreen::Quiz,
+            Screen::Quiz => amategeko_core::dev::DevScreen::Quiz,
             Screen::Results => amategeko_core::dev::DevScreen::Results,
             Screen::Questions => amategeko_core::dev::DevScreen::Browse,
             Screen::Stats => amategeko_core::dev::DevScreen::Stats,

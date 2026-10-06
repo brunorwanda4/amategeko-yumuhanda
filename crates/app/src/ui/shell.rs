@@ -1,9 +1,9 @@
 use crate::shortcuts::{ShortcutAction, ShortcutRegistry};
 use crate::state::{AppState, Screen};
-use crate::ui::home::HomeView;
+use crate::ui::home::{HomeAction, HomeProps, HomeView};
 use crate::ui::questions::{QuestionsFilter, QuestionsView};
 use crate::ui::quiz::QuizView;
-use crate::ui::quiz_start::{QuizStartAction, QuizStartProps, QuizStartView};
+
 use crate::ui::results::{ResultFilter, ResultsView};
 use crate::ui::scroll::{configure_scrollbar_motion, vertical_scrollbar, ScrollbarContext};
 use crate::ui::settings::{SettingsAction, SettingsView};
@@ -212,7 +212,7 @@ pub struct ShellView {
     pub stats_scroll_handle: gpui::ScrollHandle,
     home_scroll_handle: gpui::ScrollHandle,
     quiz_scroll_handle: gpui::ScrollHandle,
-    quiz_start_scroll_handle: gpui::ScrollHandle,
+
     quiz_selected_mode: QuizMode,
     quiz_selected_set: QuestionSet,
     quiz_starting: Option<(QuizMode, Instant)>,
@@ -372,7 +372,7 @@ impl ShellView {
             stats_scroll_handle,
             home_scroll_handle: gpui::ScrollHandle::default(),
             quiz_scroll_handle: gpui::ScrollHandle::default(),
-            quiz_start_scroll_handle: gpui::ScrollHandle::default(),
+
             quiz_selected_mode: QuizMode::Byoroshye,
             quiz_selected_set: QuestionSet::All,
             quiz_starting: None,
@@ -398,24 +398,27 @@ impl ShellView {
         view
     }
 
-    /// How long "Starting {mode}…" stays in the quiz page's bottom bar.
+    /// How long "Starting {mode}…" stays in Home's bottom bar.
     const QUIZ_STARTING_MESSAGE: Duration = Duration::from_millis(1600);
 
-    fn handle_quiz_start_action(&mut self, action: QuizStartAction, cx: &mut Context<Self>) {
+    fn handle_home_action(&mut self, action: HomeAction, cx: &mut Context<Self>) {
         match action {
-            QuizStartAction::SelectMode(mode) => self.quiz_selected_mode = mode,
-            QuizStartAction::SelectSet(set) => self.quiz_selected_set = set,
-            QuizStartAction::Play(mode) => self.play_from_quiz_page(mode),
-            QuizStartAction::Resume => self.state.resume_attempt(),
-            QuizStartAction::Discard => self.state.discard_in_progress(),
+            HomeAction::SelectMode(mode) => self.quiz_selected_mode = mode,
+            HomeAction::SelectSet(set) => self.quiz_selected_set = set,
+            HomeAction::Play(mode) => self.play_from_home(mode),
+            HomeAction::PlayMistakes => self
+                .state
+                .start_quiz_in_set(QuizMode::Byoroshye, QuestionSet::Mistakes),
+            HomeAction::Resume => self.state.resume_attempt(),
+            HomeAction::Discard => self.state.discard_in_progress(),
         }
         self.save_dev_state();
         cx.notify();
     }
 
-    fn play_from_quiz_page(&mut self, mode: QuizMode) {
+    fn play_from_home(&mut self, mode: QuizMode) {
         self.quiz_selected_mode = mode;
-        let set = QuizStartView::effective_set(&self.state, self.quiz_selected_set);
+        let set = HomeView::effective_set(&self.state, self.quiz_selected_set);
         self.state.start_quiz_in_set(mode, set);
         self.quiz_starting = Some((mode, Instant::now() + Self::QUIZ_STARTING_MESSAGE));
     }
@@ -674,7 +677,7 @@ impl Render for ShellView {
         }
         let reveal_dialog_scrollbar = now < self.dialog_scrollbar_reveal_until;
 
-        let quiz_start_props = QuizStartProps {
+        let home_props = HomeProps {
             selected_mode: self.quiz_selected_mode,
             selected_set: self.quiz_selected_set,
             starting: self
@@ -684,47 +687,16 @@ impl Render for ShellView {
         };
 
         let content = match active_screen {
-            Screen::QuizStart => QuizStartView::render(
-                &self.state,
-                quiz_start_props,
-                ScrollbarContext {
-                    handle: &self.quiz_start_scroll_handle,
-                    is_desktop,
-                    reveal_on_open: reveal_scrollbar,
-                },
-                cx,
-                |this, action, _, cx| this.handle_quiz_start_action(action, cx),
-            )
-            .into_any_element(),
             Screen::Home => HomeView::render(
                 &self.state,
+                home_props,
                 ScrollbarContext {
                     handle: &self.home_scroll_handle,
                     is_desktop,
                     reveal_on_open: reveal_scrollbar,
                 },
                 cx,
-                |this, mode, _, cx| {
-                    if mode == QuizMode::WeakPractice {
-                        // Home's "My mistakes" card: Easy with the Mistakes set.
-                        this.state
-                            .start_quiz_in_set(QuizMode::Byoroshye, QuestionSet::Mistakes);
-                    } else {
-                        this.state.start_quiz(mode);
-                    }
-                    this.save_dev_state();
-                    cx.notify();
-                },
-                |this, _, cx| {
-                    this.state.resume_attempt();
-                    this.save_dev_state();
-                    cx.notify();
-                },
-                |this, _, cx| {
-                    this.state.discard_in_progress();
-                    this.save_dev_state();
-                    cx.notify();
-                },
+                |this, action, _, cx| this.handle_home_action(action, cx),
             )
             .into_any_element(),
             Screen::Quiz => QuizView::render(
@@ -1297,7 +1269,7 @@ impl Render for ShellView {
                             if this.questions_search_focused {
                                 this.set_questions_search_focused(false, None, cx);
                             }
-                            this.state.navigate(Screen::QuizStart);
+                            this.state.navigate(Screen::Quiz);
                             cx.notify();
                         }
                         ShortcutAction::NavQuestions => {
@@ -1318,22 +1290,7 @@ impl Render for ShellView {
                             this.state.navigate(Screen::Settings);
                             cx.notify();
                         }
-                        ShortcutAction::StartEasy => {
-                            this.state.start_quiz(QuizMode::Byoroshye);
-                            cx.notify();
-                        }
-                        ShortcutAction::StartMedium => {
-                            this.state.start_quiz(QuizMode::Hagati);
-                            cx.notify();
-                        }
-                        ShortcutAction::StartHard => {
-                            this.state.start_quiz(QuizMode::Bikomeye);
-                            cx.notify();
-                        }
-                        ShortcutAction::ResumeExam => {
-                            this.state.resume_attempt();
-                            cx.notify();
-                        }
+
                         ShortcutAction::SelectQuizMode(n) => {
                             this.quiz_selected_mode = match n {
                                 2 => QuizMode::Hagati,
@@ -1343,7 +1300,7 @@ impl Render for ShellView {
                             cx.notify();
                         }
                         ShortcutAction::StartSelectedQuiz => {
-                            this.play_from_quiz_page(this.quiz_selected_mode);
+                            this.play_from_home(this.quiz_selected_mode);
                             this.save_dev_state();
                             cx.notify();
                         }
@@ -1570,7 +1527,6 @@ impl Render for ShellView {
             );
 
         if is_in_quiz
-            || active_screen == Screen::QuizStart
             || active_screen == Screen::Questions
             || active_screen == Screen::Results
             || active_screen == Screen::Stats
@@ -1765,8 +1721,8 @@ impl ShellView {
                         "nav_quiz",
                         t("nav.quiz", lang),
                         IconName::Play,
-                        matches!(active, Screen::Quiz | Screen::QuizStart),
-                        Screen::QuizStart,
+                        matches!(active, Screen::Quiz),
+                        Screen::Quiz,
                         cx,
                     ))
                     .child(self.render_desktop_nav_item(
@@ -1879,7 +1835,7 @@ impl ShellView {
         };
         let shortcut_action = match &target_screen {
             Screen::Home => ShortcutAction::NavHome,
-            Screen::Quiz | Screen::QuizStart => ShortcutAction::NavQuiz,
+            Screen::Quiz => ShortcutAction::NavQuiz,
             Screen::Questions => ShortcutAction::NavQuestions,
             Screen::Stats | Screen::Results => ShortcutAction::NavStats,
             Screen::Settings => ShortcutAction::NavSettings,
@@ -1952,7 +1908,7 @@ impl ShellView {
 
         let title = match self.state.active_screen {
             Screen::Home => t("app.title", lang),
-            Screen::Quiz | Screen::QuizStart => t("nav.quiz", lang),
+            Screen::Quiz => t("nav.quiz", lang),
             Screen::Results => t("results.title", lang),
             Screen::Questions => t("nav.questions", lang),
             Screen::Stats => t("nav.stats", lang),
@@ -2006,8 +1962,8 @@ impl ShellView {
                 "m_quiz",
                 t("nav.quiz", lang),
                 IconName::Play,
-                matches!(active, Screen::Quiz | Screen::QuizStart),
-                Screen::QuizStart,
+                matches!(active, Screen::Quiz),
+                Screen::Quiz,
                 cx,
             ))
             .child(self.render_mobile_nav_item(

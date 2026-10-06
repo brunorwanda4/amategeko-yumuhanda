@@ -326,6 +326,93 @@ fn quiz_view_empty_state_renders_mode_cards_and_starts_quiz(cx: &mut TestAppCont
     assert_eq!(mode, QuizMode::Byoroshye);
 }
 
+fn home_state(language: Language) -> AppState {
+    let storage = Arc::new(InMemoryStorage::new());
+    let clock = Arc::new(MockClock::new(1_000));
+    let mut state = AppState::new(storage, clock);
+    state.settings.language = language;
+    state.navigate(Screen::Home);
+    state
+}
+
+#[gpui::test]
+fn home_cards_and_chips_fit_minimum_and_desktop_widths(cx: &mut TestAppContext) {
+    cx.update(gpui_kit::init);
+
+    for language in [Language::Rw, Language::En] {
+        for width in [480.0, 900.0] {
+            let state = home_state(language);
+            let window = cx.open_window(size(px(width), px(900.0)), move |_, cx| {
+                ShellView::new(state, cx)
+            });
+            cx.run_until_parked();
+            let mut visual = VisualTestContext::from_window(window.into(), cx);
+            visual.update(|window, cx| window.draw(cx).clear(cx));
+
+            let cards = ["quiz_mode_easy", "quiz_mode_medium", "quiz_mode_hard"];
+            let plays = ["quiz_play_easy", "quiz_play_medium", "quiz_play_hard"];
+            for (card_id, play_id) in cards.into_iter().zip(plays) {
+                let card = visual
+                    .debug_bounds(card_id)
+                    .expect("mode card should render");
+                let play = visual
+                    .debug_bounds(play_id)
+                    .expect("play button should render");
+                assert!(card.right() <= px(width), "{card_id} overflows at {width}");
+                assert!(play.right() <= card.right(), "{play_id} leaves its card");
+                assert!(play.size.width >= px(38.0));
+                if width < 700.0 {
+                    assert!(play.size.height >= px(44.0), "touch target too small");
+                }
+            }
+
+            for chip_id in [
+                "quiz_set_0",
+                "quiz_set_1",
+                "quiz_set_2",
+                "quiz_set_3",
+                "quiz_set_4",
+                "quiz_set_5",
+            ] {
+                let chip = visual.debug_bounds(chip_id).expect("chip should render");
+                assert!(chip.right() <= px(width), "{chip_id} overflows at {width}");
+            }
+        }
+    }
+}
+
+#[gpui::test]
+fn home_card_selects_and_play_starts_that_mode(cx: &mut TestAppContext) {
+    cx.update(gpui_kit::init);
+    let state = home_state(Language::En);
+    let (view, cx) = cx.add_window_view(move |_, cx| ShellView::new(state, cx));
+    let cx: &mut VisualTestContext = cx;
+    draw_context(cx);
+
+    // Easy is selected by default, so the set chips are visible.
+    assert!(cx.debug_bounds("quiz_set_0").is_some());
+
+    // Tapping the Medium card only selects it: no quiz starts, chips go away.
+    let medium = cx.debug_bounds("quiz_mode_medium").unwrap();
+    cx.simulate_click(medium.center(), gpui::Modifiers::default());
+    draw_context(cx);
+    assert!(view.read_with(cx, |this, _| this.state.current_attempt.is_none()));
+    assert!(cx.debug_bounds("quiz_set_0").is_none());
+
+    // PLAY on the Hard card starts Hard at once, even though Medium is selected.
+    let play = cx.debug_bounds("quiz_play_hard").unwrap();
+    cx.simulate_click(play.center(), gpui::Modifiers::default());
+    draw_context(cx);
+    let mode = view.read_with(cx, |this, _| {
+        this.state.current_attempt.as_ref().map(|a| a.mode)
+    });
+    assert_eq!(mode, Some(QuizMode::Bikomeye));
+    assert_eq!(
+        view.read_with(cx, |this, _| this.state.active_screen.clone()),
+        Screen::Quiz
+    );
+}
+
 #[gpui::test]
 fn questions_search_focus_and_mobile_ime_drain(cx: &mut TestAppContext) {
     cx.update(gpui_kit::init);

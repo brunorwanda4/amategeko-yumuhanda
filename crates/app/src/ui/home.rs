@@ -1,7 +1,8 @@
 use crate::state::AppState;
 use crate::ui::footer::AppFooter;
 use crate::ui::scroll::{vertical_scrollbar, ScrollbarContext};
-use amategeko_core::{t, QuizMode, StatsCalculator};
+use amategeko_core::stats::timestamp_to_day_month_str;
+use amategeko_core::{t, tf, Language, QuestionSet, QuizMode, StatsCalculator};
 use gpui::InteractiveElement as _;
 use gpui_kit::assets::IconName;
 use gpui_kit::base::StyledExt;
@@ -10,28 +11,235 @@ use gpui_kit::component::{ActiveTheme, Icon};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
 
+/// Number of questions in a full exam.
+const EXAM_QUESTIONS: usize = 20;
+
+/// Everything the quiz page can ask its host to do.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum HomeAction {
+    /// Select a mode card (updates tiles and chips, does not start).
+    SelectMode(QuizMode),
+    /// Pick the question set used by Easy.
+    SelectSet(QuestionSet),
+    /// Start the given mode now.
+    Play(QuizMode),
+    /// Start Easy with the Mistakes set (the "My mistakes" card).
+    PlayMistakes,
+    Resume,
+    Discard,
+}
+
+/// UI state owned by the host view.
+#[derive(Debug, Clone, Copy)]
+pub struct HomeProps {
+    pub selected_mode: QuizMode,
+    pub selected_set: QuestionSet,
+    /// Mode that was just started; shows "Starting {mode}…" in the bottom bar.
+    pub starting: Option<QuizMode>,
+}
+
+struct ModeInfo {
+    mode: QuizMode,
+    key: &'static str,
+    name: &'static str,
+    desc: &'static str,
+    short: &'static str,
+    tag: &'static str,
+    play_label: &'static str,
+    icon: IconName,
+    color: gpui::Hsla,
+}
+
 pub struct HomeView;
 
+/// Localised name of a quiz mode as used on the quiz page.
+pub fn mode_name(mode: QuizMode, lang: Language) -> &'static str {
+    match mode {
+        QuizMode::Byoroshye => t("mode.easy", lang),
+        QuizMode::Hagati => t("mode.med", lang),
+        QuizMode::Bikomeye => t("mode.hard", lang),
+        other => other.title(lang),
+    }
+}
+
+fn set_label(set: QuestionSet, lang: Language) -> &'static str {
+    match set {
+        QuestionSet::All => t("set.all", lang),
+        QuestionSet::Signs => t("set.sign", lang),
+        QuestionSet::Rules => t("set.rule", lang),
+        QuestionSet::NotSeen => t("set.new", lang),
+        QuestionSet::Starred => t("set.star", lang),
+        QuestionSet::Mistakes => t("set.mis", lang),
+    }
+}
+
 impl HomeView {
+    /// The set Easy will really use: falls back to All if the picked set became empty.
+    pub fn effective_set(state: &AppState, selected: QuestionSet) -> QuestionSet {
+        if state.question_set_count(selected) == 0 {
+            QuestionSet::All
+        } else {
+            selected
+        }
+    }
+
     pub fn render<V: 'static>(
         state: &AppState,
+        props: HomeProps,
         scroll: ScrollbarContext<'_>,
         cx: &mut Context<V>,
-        on_start_mode: impl Fn(&mut V, QuizMode, &mut Window, &mut Context<V>) + 'static + Copy,
-        on_resume: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
-        on_discard: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
+        on_action: impl Fn(&mut V, HomeAction, &mut Window, &mut Context<V>) + 'static + Copy,
     ) -> impl IntoElement {
         let theme = cx.theme();
         let colors = theme.colors;
-        let stats_summary = StatsCalculator::compute_summary(&state.progress);
         let lang = state.settings.language;
-
         let is_desktop = scroll.is_desktop;
         let shortcuts_active =
             crate::shortcuts_ui_active(is_desktop, state.settings.desktop_shortcuts_enabled);
 
-        // Stats values matching the design
-        let total_questions = state.bank.len();
+        let selected_mode = props.selected_mode;
+        let is_easy = selected_mode == QuizMode::Byoroshye;
+        let set = Self::effective_set(state, props.selected_set);
+        let set_count = state.question_set_count(set);
+
+        let modes = [
+            ModeInfo {
+                mode: QuizMode::Byoroshye,
+                key: "easy",
+                name: t("mode.easy", lang),
+                desc: t("mode.easy.desc", lang),
+                short: t("mode.easy.short", lang),
+                tag: t("tag.learning", lang),
+                play_label: t("mode.easy.play_label", lang),
+                icon: IconName::GraduationCap,
+                color: colors.success,
+            },
+            ModeInfo {
+                mode: QuizMode::Hagati,
+                key: "medium",
+                name: t("mode.med", lang),
+                desc: t("mode.med.desc", lang),
+                short: t("mode.med.short", lang),
+                tag: t("tag.practice", lang),
+                play_label: t("mode.med.play_label", lang),
+                icon: IconName::Clock,
+                color: colors.warning,
+            },
+            ModeInfo {
+                mode: QuizMode::Bikomeye,
+                key: "hard",
+                name: t("mode.hard", lang),
+                desc: t("mode.hard.desc", lang),
+                short: t("mode.hard.short", lang),
+                tag: t("tag.strict", lang),
+                play_label: t("mode.hard.play_label", lang),
+                icon: IconName::Flame,
+                color: colors.danger,
+            },
+        ];
+
+        // "What to expect" tiles come from Settings and the chosen set.
+        let exam_total = state.bank.len().min(EXAM_QUESTIONS);
+        let minutes = |n: u32| tf("val.min", lang, &[("n", &n.to_string())]);
+        let (q_val, time_val, answers_val, nav_val) = match selected_mode {
+            QuizMode::Byoroshye => (
+                set_count.min(EXAM_QUESTIONS).to_string(),
+                t("val.nolimit", lang).to_string(),
+                t("val.instant", lang).to_string(),
+                t("val.free", lang).to_string(),
+            ),
+            QuizMode::Hagati => (
+                exam_total.to_string(),
+                minutes(state.settings.medium_duration_mins),
+                t("val.end", lang).to_string(),
+                t("val.freeflag", lang).to_string(),
+            ),
+            _ => (
+                exam_total.to_string(),
+                minutes(state.settings.hard_duration_mins),
+                t("val.end", lang).to_string(),
+                t("val.no", lang).to_string(),
+            ),
+        };
+        let facts = [
+            (t("tile.q", lang), q_val),
+            (t("tile.time", lang), time_val),
+            (t("tile.answers", lang), answers_val),
+            (t("tile.nav", lang), nav_val),
+        ];
+
+        let few_note = (is_easy && set_count > 0 && set_count < EXAM_QUESTIONS)
+            .then(|| tf("quiz.few", lang, &[("n", &set_count.to_string())]));
+
+        let bar_text = match props.starting {
+            Some(mode) => tf("quiz.starting", lang, &[("mode", mode_name(mode, lang))]),
+            None => Self::last_attempt_text(state, lang),
+        };
+
+        let banner = state.current_attempt.as_ref().map(|att| {
+            let detail = format!(
+                "{}: {}/{}",
+                att.mode.title(lang),
+                att.answered_count(),
+                att.total_questions()
+            );
+            Self::resume_banner(detail, lang, is_desktop, cx, on_action)
+        });
+
+        let chips: Vec<_> = QuestionSet::ALL_SETS
+            .iter()
+            .enumerate()
+            .map(|(idx, kind)| {
+                Self::chip(
+                    idx,
+                    *kind,
+                    set_label(*kind, lang),
+                    state.question_set_count(*kind),
+                    *kind == set,
+                    is_desktop,
+                    cx,
+                    on_action,
+                )
+            })
+            .collect();
+
+        let mode_cards: Vec<_> = modes
+            .iter()
+            .map(|info| {
+                Self::mode_card(info, info.mode == selected_mode, is_desktop, cx, on_action)
+            })
+            .collect();
+
+        let fact_tiles: Vec<_> = facts
+            .into_iter()
+            .map(|(label, value)| Self::fact_tile(label, value, cx))
+            .collect();
+        let mut fact_tiles = fact_tiles.into_iter();
+
+        let facts_el = if is_desktop {
+            div()
+                .flex()
+                .flex_row()
+                .gap_2()
+                .children(fact_tiles)
+                .into_any_element()
+        } else {
+            let row1 = div()
+                .flex()
+                .flex_row()
+                .gap_2()
+                .children(fact_tiles.by_ref().take(2));
+            let row2 = div().flex().flex_row().gap_2().children(fact_tiles);
+            div()
+                .flex()
+                .flex_col()
+                .gap_2()
+                .child(row1)
+                .child(row2)
+                .into_any_element()
+        };
+
+        let stats_summary = StatsCalculator::compute_summary(&state.progress);
         let last_score_display = if let Some(last) = state.progress.attempts.last() {
             format!("{} / {}", last.score, last.total)
         } else if let Some(last) = &state.last_result {
@@ -39,82 +247,70 @@ impl HomeView {
         } else {
             "— / 20".to_string()
         };
-
         let pass_rate_display = if stats_summary.total_attempts > 0 {
             format!("{:.0}%", stats_summary.pass_rate_percentage)
         } else {
             "—".to_string()
         };
+        let stat_tiles = div()
+            .flex()
+            .gap_3()
+            .when(is_desktop, |el| el.flex_row())
+            .when(!is_desktop, |el| el.flex_col())
+            .child(Self::render_stat_tile(
+                t("questions.filter_all", lang),
+                &state.bank.len().to_string(),
+                cx,
+            ))
+            .child(Self::render_stat_tile(
+                t("results.title", lang),
+                &last_score_display,
+                cx,
+            ))
+            .child(Self::render_stat_tile(
+                t("stats.pass_rate", lang),
+                &pass_rate_display,
+                cx,
+            ));
+        let weak_card = Self::render_weak_card(lang, is_desktop, cx, on_action);
+        let footer = AppFooter::render(is_desktop, px(720.0), lang, cx);
+
+        let label_el = |text: &'static str| {
+            div()
+                .text_xs()
+                .text_color(colors.muted_foreground)
+                .child(text)
+        };
 
         div()
-            .id("home_view_root")
-            .track_scroll(scroll.handle)
             .flex()
             .flex_col()
             .size_full()
-            .overflow_y_scroll()
             .bg(colors.background)
-            .p_4()
-            .when(is_desktop, |el| el.p_8())
-            .child(vertical_scrollbar(
-                "home_scrollbar",
-                scroll.handle,
-                is_desktop,
-                scroll.reveal_on_open,
-            ))
-            // Max width wrapper for clean desktop centering
             .child(
                 div()
-                    .flex()
-                    .flex_col()
-                    .w_full()
-                    .max_w(px(1040.0))
-                    .mx_auto()
-                    .gap_6()
-                    // Header / Greeting
+                    .id("home_scroll")
+                    .track_scroll(scroll.handle)
+                    .flex_1()
+                    .min_h_0()
+                    .overflow_y_scroll()
+                    .p_4()
+                    .when(is_desktop, |el| el.p_6())
+                    .child(vertical_scrollbar(
+                        "home_scrollbar",
+                        scroll.handle,
+                        is_desktop,
+                        scroll.reveal_on_open,
+                    ))
                     .child(
                         div()
                             .flex()
                             .flex_col()
-                            .gap_1()
-                            .child(
-                                div()
-                                    .text_2xl()
-                                    .font_bold()
-                                    .text_color(colors.foreground)
-                                    .child(t("home.welcome", lang)),
-                            )
-                            .child(
-                                div()
-                                    .text_sm()
-                                    .text_color(colors.muted_foreground)
-                                    .child(t("home.choose_mode", lang)),
-                            ),
-                    )
-                    // In-Progress Attempt Banner (if an attempt is active)
-                    .children(state.current_attempt.as_ref().map(|att| {
-                        let answered = att.answered_count();
-                        let total = att.total_questions();
-                        let mode_title = match att.mode {
-                            QuizMode::Byoroshye => t("mode.easy.title", lang),
-                            QuizMode::Hagati => t("mode.medium.title", lang),
-                            QuizMode::Bikomeye => t("mode.hard.title", lang),
-                            QuizMode::WeakPractice => t("home.weak_title", lang),
-                            QuizMode::RetryWrong => t("results.retry_wrong", lang),
-                        };
-
-                        div()
-                            .flex()
-                            .flex_col()
-                            .when(is_desktop, |el| {
-                                el.flex_row().items_center().justify_between()
-                            })
-                            .gap_3()
-                            .p_4()
-                            .rounded_xl()
-                            .border_1()
-                            .border_color(colors.primary)
-                            .bg(colors.secondary)
+                            .w_full()
+                            .max_w(px(720.0))
+                            .mx_auto()
+                            .gap_4()
+                            .children(banner)
                             .child(
                                 div()
                                     .flex()
@@ -122,371 +318,193 @@ impl HomeView {
                                     .gap_1()
                                     .child(
                                         div()
-                                            .text_base()
-                                            .font_bold()
-                                            .text_color(colors.primary)
-                                            .child(t("home.resume_title", lang)),
+                                            .text_xl()
+                                            .font_semibold()
+                                            .text_color(colors.foreground)
+                                            .child(t("quiz.title", lang)),
                                     )
-                                    .child(
-                                        div()
-                                            .text_xs()
-                                            .text_color(colors.muted_foreground)
-                                            .child(format!("{mode_title}: {answered}/{total}")),
-                                    ),
-                            )
-                            .child(
-                                div()
-                                    .flex()
-                                    .flex_row()
-                                    .items_center()
-                                    .gap_3()
-                                    .child(
-                                        div()
-                                            .id("resume_quiz_btn")
-                                            .flex()
-                                            .flex_row()
-                                            .items_center()
-                                            .justify_center()
-                                            .px_4()
-                                            .py_2()
-                                            .rounded_lg()
-                                            .bg(colors.primary)
-                                            .cursor_pointer()
-                                            .hover(|el| el.opacity(0.9))
-                                            .when(shortcuts_active, |el| {
-                                                let hint = format!(
-                                                    "{} (Enter)",
-                                                    t("home.resume_btn", lang)
-                                                );
-                                                el.tooltip(move |window, cx| {
-                                                    Tooltip::new(hint.clone()).build(window, cx)
-                                                })
-                                            })
-                                            .on_click(cx.listener(move |this, _, window, cx| {
-                                                on_resume(this, window, cx);
-                                            }))
-                                            .child(
-                                                div()
-                                                    .text_sm()
-                                                    .font_semibold()
-                                                    .text_color(colors.primary_foreground)
-                                                    .child(t("home.resume_btn", lang)),
-                                            ),
-                                    )
-                                    .child(
-                                        div()
-                                            .id("discard_quiz_btn")
-                                            .flex()
-                                            .flex_row()
-                                            .items_center()
-                                            .justify_center()
-                                            .px_4()
-                                            .py_2()
-                                            .rounded_lg()
-                                            .border_1()
-                                            .border_color(colors.border)
-                                            .bg(colors.secondary)
-                                            .cursor_pointer()
-                                            .hover(|el| el.bg(colors.muted))
-                                            .on_click(cx.listener(move |this, _, window, cx| {
-                                                on_discard(this, window, cx);
-                                            }))
-                                            .child(
-                                                div()
-                                                    .text_sm()
-                                                    .font_medium()
-                                                    .text_color(colors.foreground)
-                                                    .child(t("home.discard_btn", lang)),
-                                            ),
-                                    ),
-                            )
-                    }))
-                    // 3 Mode Cards Row
-                    .child(
-                        div()
-                            .flex()
-                            .gap_4()
-                            .when(is_desktop, |el| el.flex_row())
-                            .when(!is_desktop, |el| el.flex_col())
-                            // Card 1: Easy
-                            .child(Self::render_mode_card(
-                                QuizMode::Byoroshye,
-                                t("mode.easy.title", lang),
-                                t("mode.easy.desc", lang),
-                                t("home.start", lang),
-                                IconName::GraduationCap,
-                                gpui::rgb(0x22c55e),
-                                gpui::rgba(0x0e2f1bff),
-                                is_desktop,
-                                shortcuts_active,
-                                cx,
-                                on_start_mode,
-                            ))
-                            // Card 2: Medium
-                            .child(Self::render_mode_card(
-                                QuizMode::Hagati,
-                                t("mode.medium.title", lang),
-                                t("mode.medium.desc", lang),
-                                t("home.start", lang),
-                                IconName::Clock,
-                                gpui::rgb(0xf59e0b),
-                                gpui::rgba(0x382405ff),
-                                is_desktop,
-                                shortcuts_active,
-                                cx,
-                                on_start_mode,
-                            ))
-                            // Card 3: Hard
-                            .child(Self::render_mode_card(
-                                QuizMode::Bikomeye,
-                                t("mode.hard.title", lang),
-                                t("mode.hard.desc", lang),
-                                t("home.start", lang),
-                                IconName::Flame,
-                                gpui::rgb(0xef4444),
-                                gpui::rgba(0x3b1115ff),
-                                is_desktop,
-                                shortcuts_active,
-                                cx,
-                                on_start_mode,
-                            )),
-                    )
-                    // 3 Stat Tiles
-                    .child(
-                        div()
-                            .flex()
-                            .gap_4()
-                            .when(is_desktop, |el| el.flex_row())
-                            .when(!is_desktop, |el| el.flex_col())
-                            .child(Self::render_stat_tile(
-                                t("questions.filter_all", lang),
-                                &total_questions.to_string(),
-                                cx,
-                            ))
-                            .child(Self::render_stat_tile(
-                                t("results.title", lang),
-                                &last_score_display,
-                                cx,
-                            ))
-                            .child(Self::render_stat_tile(
-                                t("stats.pass_rate", lang),
-                                &pass_rate_display,
-                                cx,
-                            )),
-                    )
-                    // Bottom Practice Card: Frequently Missed Questions
-                    .child(
-                        div()
-                            .flex()
-                            .flex_col()
-                            .when(is_desktop, |el| {
-                                el.flex_row().items_center().justify_between()
-                            })
-                            .gap_4()
-                            .p_5()
-                            .rounded_xl()
-                            .border_1()
-                            .border_color(colors.border)
-                            .bg(colors.secondary)
-                            // Left side: target icon + titles
-                            .child(
-                                div()
-                                    .flex()
-                                    .flex_row()
-                                    .items_center()
-                                    .gap_4()
-                                    .child(
-                                        div()
-                                            .flex()
-                                            .items_center()
-                                            .justify_center()
-                                            .size(px(42.0))
-                                            .rounded_xl()
-                                            .bg(gpui::rgba(0x22262eff))
-                                            .child(
-                                                Icon::new(IconName::Target)
-                                                    .size(px(22.0))
-                                                    .text_color(colors.foreground),
-                                            ),
-                                    )
-                                    .child(
-                                        div()
-                                            .flex()
-                                            .flex_col()
-                                            .gap_0p5()
-                                            .child(
-                                                div()
-                                                    .text_base()
-                                                    .font_bold()
-                                                    .text_color(colors.foreground)
-                                                    .child(t("home.weak_title", lang)),
-                                            )
-                                            .child(
-                                                div()
-                                                    .text_xs()
-                                                    .text_color(colors.muted_foreground)
-                                                    .child(t("home.weak_desc", lang)),
-                                            ),
-                                    ),
-                            )
-                            // Right side: Action Button
-                            .child(
-                                div()
-                                    .id("start_weak_practice_btn")
-                                    .flex()
-                                    .flex_row()
-                                    .items_center()
-                                    .justify_center()
-                                    .gap_2()
-                                    .px_4()
-                                    .py_2p5()
-                                    .rounded_lg()
-                                    .border_1()
-                                    .border_color(colors.border)
-                                    .bg(gpui::rgba(0x1a1e24ff))
-                                    .cursor_pointer()
-                                    .hover(|el| {
-                                        el.bg(gpui::rgba(0x252a32ff))
-                                            .border_color(gpui::rgba(0x3e4552ff))
-                                    })
-                                    .on_click(cx.listener(move |this, _, window, cx| {
-                                        on_start_mode(this, QuizMode::WeakPractice, window, cx);
-                                    }))
                                     .child(
                                         div()
                                             .text_sm()
-                                            .font_semibold()
-                                            .text_color(colors.foreground)
-                                            .child(t("home.weak_btn", lang)),
-                                    )
-                                    .child(
-                                        Icon::new(IconName::ArrowRight)
-                                            .size(px(16.0))
-                                            .text_color(colors.foreground),
+                                            .text_color(colors.muted_foreground)
+                                            .child(t("quiz.sub", lang)),
                                     ),
-                            ),
-                    ),
+                            )
+                            .child(label_el(t("quiz.mode", lang)))
+                            .child(
+                                div()
+                                    .flex()
+                                    .gap_3()
+                                    .when(is_desktop, |el| el.flex_row())
+                                    .when(!is_desktop, |el| el.flex_col())
+                                    .children(mode_cards),
+                            )
+                            .when(is_easy, |el| {
+                                el.child(label_el(t("quiz.from", lang))).child(
+                                    div().flex().flex_row().flex_wrap().gap_2().children(chips),
+                                )
+                            })
+                            .when(is_easy, |el| {
+                                el.child(
+                                    div()
+                                        .min_h(px(16.0))
+                                        .text_xs()
+                                        .text_color(colors.warning)
+                                        .children(few_note),
+                                )
+                            })
+                            .when(!is_easy, |el| {
+                                el.child(
+                                    div()
+                                        .min_h(px(16.0))
+                                        .text_xs()
+                                        .text_color(colors.muted_foreground)
+                                        .child(t("quiz.examnote", lang)),
+                                )
+                            })
+                            .child(label_el(t("quiz.expect", lang)))
+                            .child(facts_el)
+                            .child(
+                                div()
+                                    .text_xs()
+                                    .text_color(colors.muted_foreground)
+                                    .child(tf(
+                                        "quiz.pass",
+                                        lang,
+                                        &[("p", &state.settings.pass_mark.to_string())],
+                                    )),
+                            )
+                            .child(stat_tiles)
+                            .child(weak_card),
+                    )
+                    .child(footer),
             )
-            .child(AppFooter::render(is_desktop, px(1040.0), lang, cx))
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    fn render_mode_card<V: 'static>(
-        mode: QuizMode,
-        title: &'static str,
-        desc: &'static str,
-        start_label: &'static str,
-        icon: IconName,
-        icon_color: impl Into<gpui::Hsla>,
-        badge_bg: impl Into<gpui::Hsla>,
-        is_desktop: bool,
-        shortcuts_active: bool,
-        cx: &mut Context<V>,
-        on_start_mode: impl Fn(&mut V, QuizMode, &mut Window, &mut Context<V>) + 'static + Copy,
-    ) -> impl IntoElement {
-        let theme = cx.theme();
-        let colors = theme.colors;
-
-        let shortcut_key = match mode {
-            QuizMode::Byoroshye => Some("1"),
-            QuizMode::Hagati => Some("2"),
-            QuizMode::Bikomeye => Some("3"),
-            _ => None,
-        };
-        let tooltip_hint = if shortcuts_active {
-            shortcut_key.map(|k| format!("{start_label} ({k})"))
-        } else {
-            None
-        };
-
-        div()
-            .id(format!("card_mode_{title}"))
-            .flex()
-            .flex_col()
-            .flex_1()
-            .when(is_desktop, |el| el.min_w(px(240.0)))
-            .p_5()
-            .rounded_xl()
-            .border_1()
-            .border_color(colors.border)
-            .bg(colors.secondary)
-            // Header: Icon badge + Title
             .child(
                 div()
                     .flex()
                     .flex_row()
                     .items_center()
                     .gap_3()
+                    .px_4()
+                    .py_3()
+                    .border_t_1()
+                    .border_color(colors.border)
+                    .bg(colors.secondary)
+                    .child(
+                        div()
+                            .flex_1()
+                            .min_w_0()
+                            .text_xs()
+                            .text_color(colors.muted_foreground)
+                            .when(!is_desktop, |el| el.text_center())
+                            .child(bar_text),
+                    )
+                    .when(is_desktop && shortcuts_active, |el| {
+                        el.child(
+                            div()
+                                .text_xs()
+                                .text_color(colors.muted_foreground)
+                                .child(t("quiz.keys", lang)),
+                        )
+                    }),
+            )
+    }
+
+    fn render_weak_card<V: 'static>(
+        lang: Language,
+        is_desktop: bool,
+        cx: &mut Context<V>,
+        on_action: impl Fn(&mut V, HomeAction, &mut Window, &mut Context<V>) + 'static + Copy,
+    ) -> impl IntoElement {
+        let theme = cx.theme();
+        let colors = theme.colors;
+
+        div()
+            .flex()
+            .flex_col()
+            .when(is_desktop, |el| {
+                el.flex_row().items_center().justify_between()
+            })
+            .gap_4()
+            .p_5()
+            .rounded_xl()
+            .border_1()
+            .border_color(colors.border)
+            .bg(colors.secondary)
+            .child(
+                div()
+                    .flex()
+                    .flex_row()
+                    .items_center()
+                    .gap_4()
+                    .min_w_0()
                     .child(
                         div()
                             .flex()
+                            .flex_none()
                             .items_center()
                             .justify_center()
-                            .size(px(40.0))
+                            .size(px(42.0))
                             .rounded_xl()
-                            .bg(badge_bg.into())
-                            .child(Icon::new(icon).size(px(20.0)).text_color(icon_color.into())),
+                            .bg(colors.muted.opacity(0.4))
+                            .child(
+                                Icon::new(IconName::Target)
+                                    .size(px(22.0))
+                                    .text_color(colors.foreground),
+                            ),
                     )
                     .child(
                         div()
-                            .text_lg()
-                            .font_bold()
-                            .text_color(colors.foreground)
-                            .child(title),
+                            .flex()
+                            .flex_col()
+                            .min_w_0()
+                            .gap_0p5()
+                            .child(
+                                div()
+                                    .text_base()
+                                    .font_bold()
+                                    .text_color(colors.foreground)
+                                    .child(t("home.weak_title", lang)),
+                            )
+                            .child(
+                                div()
+                                    .text_xs()
+                                    .text_color(colors.muted_foreground)
+                                    .child(t("home.weak_desc", lang)),
+                            ),
                     ),
             )
-            // Card Description
             .child(
                 div()
-                    .mt_4()
-                    .text_xs()
-                    .text_color(colors.muted_foreground)
-                    .min_h(px(44.0))
-                    .child(desc),
-            )
-            // Bottom Action Button: Start
-            .child(
-                div().mt_6().w_full().child(
-                    div()
-                        .id(format!("btn_mode_{title}"))
-                        .flex()
-                        .flex_row()
-                        .items_center()
-                        .justify_center()
-                        .gap_2()
-                        .w_full()
-                        .py_2p5()
-                        .px_4()
-                        .rounded_lg()
-                        .border_1()
-                        .border_color(colors.border)
-                        .bg(gpui::rgba(0x1a1e24ff))
-                        .cursor_pointer()
-                        .hover(|el| {
-                            el.bg(gpui::rgba(0x252a32ff))
-                                .border_color(gpui::rgba(0x3e4552ff))
-                        })
-                        .when_some(tooltip_hint, |el, hint| {
-                            el.tooltip(move |window, cx| {
-                                Tooltip::new(hint.clone()).build(window, cx)
-                            })
-                        })
-                        .on_click(cx.listener(move |this, _, window, cx| {
-                            on_start_mode(this, mode, window, cx);
-                        }))
-                        .child(
-                            Icon::new(IconName::Play)
-                                .size(px(14.0))
-                                .text_color(colors.foreground),
-                        )
-                        .child(
-                            div()
-                                .text_sm()
-                                .font_semibold()
-                                .text_color(colors.foreground)
-                                .child(start_label),
-                        ),
-                ),
+                    .id("start_weak_practice_btn")
+                    .flex()
+                    .flex_row()
+                    .items_center()
+                    .justify_center()
+                    .gap_2()
+                    .px_4()
+                    .min_h(px(if is_desktop { 40.0 } else { 44.0 }))
+                    .rounded_lg()
+                    .border_1()
+                    .border_color(colors.border)
+                    .bg(colors.muted.opacity(0.4))
+                    .cursor_pointer()
+                    .hover(|el| el.bg(colors.muted))
+                    .on_click(cx.listener(move |this, _, window, cx| {
+                        on_action(this, HomeAction::PlayMistakes, window, cx);
+                    }))
+                    .child(
+                        div()
+                            .text_sm()
+                            .font_semibold()
+                            .text_color(colors.foreground)
+                            .child(t("home.weak_btn", lang)),
+                    )
+                    .child(
+                        Icon::new(IconName::ArrowRight)
+                            .size(px(16.0))
+                            .text_color(colors.foreground),
+                    ),
             )
     }
 
@@ -521,6 +539,373 @@ impl HomeView {
                     .font_bold()
                     .text_color(colors.foreground)
                     .child(value.to_string()),
+            )
+    }
+
+    fn last_attempt_text(state: &AppState, lang: Language) -> String {
+        match state.progress.attempts.last() {
+            Some(last) => {
+                let result = if last.passed {
+                    t("quiz.passed", lang)
+                } else {
+                    t("quiz.failed", lang)
+                };
+                tf(
+                    "quiz.last",
+                    lang,
+                    &[
+                        ("mode", mode_name(last.mode, lang)),
+                        ("score", &last.score.to_string()),
+                        ("result", result),
+                        ("date", &timestamp_to_day_month_str(last.timestamp_secs)),
+                    ],
+                )
+            }
+            None => t("quiz.none", lang).to_string(),
+        }
+    }
+
+    fn resume_banner<V: 'static>(
+        detail: String,
+        lang: Language,
+        is_desktop: bool,
+        cx: &mut Context<V>,
+        on_action: impl Fn(&mut V, HomeAction, &mut Window, &mut Context<V>) + 'static + Copy,
+    ) -> impl IntoElement {
+        let theme = cx.theme();
+        let colors = theme.colors;
+        let min_h = if is_desktop { 36.0 } else { 44.0 };
+
+        div()
+            .flex()
+            .flex_col()
+            .when(is_desktop, |el| {
+                el.flex_row().items_center().justify_between()
+            })
+            .gap_3()
+            .p_4()
+            .rounded_xl()
+            .border_1()
+            .border_color(colors.primary)
+            .bg(colors.secondary)
+            .child(
+                div()
+                    .flex()
+                    .flex_col()
+                    .gap_0p5()
+                    .min_w_0()
+                    .child(
+                        div()
+                            .text_base()
+                            .font_semibold()
+                            .text_color(colors.primary)
+                            .child(t("resume.title", lang)),
+                    )
+                    .child(
+                        div()
+                            .text_xs()
+                            .text_color(colors.muted_foreground)
+                            .child(detail),
+                    ),
+            )
+            .child(
+                div()
+                    .flex()
+                    .flex_row()
+                    .items_center()
+                    .gap_2()
+                    .child(
+                        div()
+                            .id("quiz_discard_btn")
+                            .flex()
+                            .items_center()
+                            .justify_center()
+                            .min_h(px(min_h))
+                            .px_4()
+                            .rounded_lg()
+                            .border_1()
+                            .border_color(colors.border)
+                            .bg(colors.secondary)
+                            .cursor_pointer()
+                            .hover(|el| el.bg(colors.muted))
+                            .when(!is_desktop, |el| el.flex_1())
+                            .on_click(cx.listener(move |this, _, window, cx| {
+                                on_action(this, HomeAction::Discard, window, cx);
+                            }))
+                            .child(
+                                div()
+                                    .text_sm()
+                                    .font_medium()
+                                    .text_color(colors.foreground)
+                                    .child(t("resume.discard", lang)),
+                            ),
+                    )
+                    .child(
+                        div()
+                            .id("quiz_resume_btn")
+                            .flex()
+                            .items_center()
+                            .justify_center()
+                            .min_h(px(min_h))
+                            .px_4()
+                            .rounded_lg()
+                            .bg(colors.primary)
+                            .cursor_pointer()
+                            .hover(|el| el.opacity(0.9))
+                            .when(!is_desktop, |el| el.flex_1())
+                            .on_click(cx.listener(move |this, _, window, cx| {
+                                on_action(this, HomeAction::Resume, window, cx);
+                            }))
+                            .child(
+                                div()
+                                    .text_sm()
+                                    .font_semibold()
+                                    .text_color(colors.primary_foreground)
+                                    .child(t("resume.go", lang)),
+                            ),
+                    ),
+            )
+    }
+
+    fn mode_card<V: 'static>(
+        info: &ModeInfo,
+        selected: bool,
+        is_desktop: bool,
+        cx: &mut Context<V>,
+        on_action: impl Fn(&mut V, HomeAction, &mut Window, &mut Context<V>) + 'static + Copy,
+    ) -> impl IntoElement {
+        let theme = cx.theme();
+        let colors = theme.colors;
+        let mode = info.mode;
+
+        let tile = div()
+            .flex()
+            .flex_none()
+            .items_center()
+            .justify_center()
+            .size(px(32.0))
+            .rounded_lg()
+            .bg(info.color.opacity(0.15))
+            .child(
+                Icon::new(info.icon.clone())
+                    .size(px(18.0))
+                    .text_color(info.color),
+            );
+
+        let play = Self::play_button(info, is_desktop, cx, on_action);
+
+        let card_id = format!("quiz_mode_{}", info.key);
+        let base = div()
+            .id(card_id.clone())
+            .debug_selector(move || card_id)
+            .flex()
+            .min_w_0()
+            .rounded_xl()
+            .bg(colors.secondary)
+            .cursor_pointer()
+            .hover(|el| el.bg(colors.muted.opacity(0.4)))
+            .when(selected, |el| {
+                el.border_2().border_color(colors.foreground).p(px(11.0))
+            })
+            .when(!selected, |el| {
+                el.border_1().border_color(colors.border).p(px(12.0))
+            })
+            .on_click(cx.listener(move |this, _, window, cx| {
+                on_action(this, HomeAction::SelectMode(mode), window, cx);
+            }));
+
+        if is_desktop {
+            base.flex_1()
+                .flex_col()
+                .gap_2()
+                .child(
+                    div()
+                        .flex()
+                        .flex_row()
+                        .items_center()
+                        .gap_3()
+                        .child(tile)
+                        .child(
+                            div()
+                                .flex_1()
+                                .min_w_0()
+                                .text_base()
+                                .font_semibold()
+                                .text_color(colors.foreground)
+                                .child(info.name),
+                        )
+                        .child(play),
+                )
+                .child(
+                    div()
+                        .text_xs()
+                        .text_color(colors.muted_foreground)
+                        .child(info.desc),
+                )
+                .child(
+                    div().flex().flex_row().child(
+                        div()
+                            .px_2()
+                            .py_0p5()
+                            .rounded_md()
+                            .bg(colors.muted.opacity(0.4))
+                            .text_xs()
+                            .text_color(colors.muted_foreground)
+                            .child(info.tag),
+                    ),
+                )
+        } else {
+            base.flex_row()
+                .items_center()
+                .gap_3()
+                .w_full()
+                .child(tile)
+                .child(
+                    div()
+                        .flex()
+                        .flex_col()
+                        .flex_1()
+                        .min_w_0()
+                        .gap_0p5()
+                        .child(
+                            div()
+                                .text_base()
+                                .font_semibold()
+                                .text_color(colors.foreground)
+                                .child(info.name),
+                        )
+                        .child(
+                            div()
+                                .text_xs()
+                                .text_color(colors.muted_foreground)
+                                .child(info.short),
+                        ),
+                )
+                .child(play)
+        }
+    }
+
+    fn play_button<V: 'static>(
+        info: &ModeInfo,
+        is_desktop: bool,
+        cx: &mut Context<V>,
+        on_action: impl Fn(&mut V, HomeAction, &mut Window, &mut Context<V>) + 'static + Copy,
+    ) -> impl IntoElement {
+        let theme = cx.theme();
+        let colors = theme.colors;
+        let mode = info.mode;
+        // The tooltip doubles as the button's accessible name ("Start Easy").
+        let label = info.play_label;
+        let size = if is_desktop { 38.0 } else { 44.0 };
+
+        let play_id = format!("quiz_play_{}", info.key);
+        div()
+            .id(play_id.clone())
+            .debug_selector(move || play_id)
+            .flex()
+            .flex_none()
+            .items_center()
+            .justify_center()
+            .size(px(size))
+            .rounded_lg()
+            .border_1()
+            .border_color(colors.border)
+            .bg(colors.secondary)
+            .cursor_pointer()
+            .hover(|el| el.bg(colors.muted))
+            .tooltip(move |window, cx| Tooltip::new(label).build(window, cx))
+            .on_click(cx.listener(move |this, _, window, cx| {
+                cx.stop_propagation();
+                on_action(this, HomeAction::Play(mode), window, cx);
+            }))
+            .child(
+                Icon::new(IconName::Play)
+                    .size(px(16.0))
+                    .text_color(colors.foreground),
+            )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn chip<V: 'static>(
+        idx: usize,
+        kind: QuestionSet,
+        label: &'static str,
+        count: usize,
+        selected: bool,
+        is_desktop: bool,
+        cx: &mut Context<V>,
+        on_action: impl Fn(&mut V, HomeAction, &mut Window, &mut Context<V>) + 'static + Copy,
+    ) -> impl IntoElement {
+        let theme = cx.theme();
+        let colors = theme.colors;
+        let disabled = count == 0;
+        let listener = cx.listener(move |this, _, window, cx| {
+            on_action(this, HomeAction::SelectSet(kind), window, cx);
+        });
+
+        let chip_id = format!("quiz_set_{idx}");
+        div()
+            .id(chip_id.clone())
+            .debug_selector(move || chip_id)
+            .flex()
+            .flex_row()
+            .items_center()
+            .gap_1p5()
+            .px_3()
+            .min_h(px(if is_desktop { 32.0 } else { 44.0 }))
+            .rounded_lg()
+            .border_1()
+            .border_color(if selected {
+                colors.foreground
+            } else {
+                colors.border
+            })
+            .when(selected, |el| el.bg(colors.muted.opacity(0.4)))
+            .when(disabled, |el| el.opacity(0.4).cursor_not_allowed())
+            .when(!disabled, move |el| {
+                el.cursor_pointer()
+                    .hover(|el| el.bg(colors.muted.opacity(0.4)))
+                    .on_click(listener)
+            })
+            .child(div().text_sm().text_color(colors.foreground).child(label))
+            .child(
+                div()
+                    .text_xs()
+                    .text_color(colors.muted_foreground)
+                    .child(count.to_string()),
+            )
+    }
+
+    fn fact_tile<V: 'static>(
+        label: &'static str,
+        value: String,
+        cx: &mut Context<V>,
+    ) -> impl IntoElement {
+        let theme = cx.theme();
+        let colors = theme.colors;
+
+        div()
+            .flex()
+            .flex_col()
+            .flex_1()
+            .min_w_0()
+            .gap_0p5()
+            .px_3()
+            .py_2p5()
+            .rounded_lg()
+            .bg(colors.muted.opacity(0.4))
+            .child(
+                div()
+                    .text_xs()
+                    .text_color(colors.muted_foreground)
+                    .child(label),
+            )
+            .child(
+                div()
+                    .text_sm()
+                    .font_semibold()
+                    .text_color(colors.foreground)
+                    .child(value),
             )
     }
 }

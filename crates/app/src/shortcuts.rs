@@ -126,13 +126,7 @@ pub enum ShortcutAction {
     CloseOrBack,
     ShowHelp,
 
-    // Home
-    StartEasy,
-    StartMedium,
-    StartHard,
-    ResumeExam,
-
-    // Quiz page (mode picker)
+    // Home (mode picker)
     SelectQuizMode(u8), // 1 = Easy, 2 = Medium, 3 = Hard
     StartSelectedQuiz,
 
@@ -210,7 +204,6 @@ impl ShortcutAction {
 pub enum ShortcutScope {
     Global,
     Home,
-    QuizStart,
     QuizAll,
     QuizEasy,
     QuizMedium,
@@ -251,7 +244,7 @@ impl ShortcutDef {
             match scope {
                 ShortcutScope::Global => return true,
                 ShortcutScope::Home if screen == crate::Screen::Home => return true,
-                ShortcutScope::QuizStart if screen == crate::Screen::QuizStart => return true,
+
                 ShortcutScope::QuizAll if screen == crate::Screen::Quiz => return true,
                 ShortcutScope::QuizEasy
                     if screen == crate::Screen::Quiz
@@ -367,42 +360,12 @@ impl ShortcutRegistry {
             custom_hint: Some("F1"),
         });
 
-        // 2. Home screen shortcuts
-        self.shortcuts.push(ShortcutDef {
-            key: KeyCombo::plain("1"),
-            action: ShortcutAction::StartEasy,
-            scopes: vec![ShortcutScope::Home],
-            label_key: "shortcuts.home_easy",
-            custom_hint: Some("1"),
-        });
-        self.shortcuts.push(ShortcutDef {
-            key: KeyCombo::plain("2"),
-            action: ShortcutAction::StartMedium,
-            scopes: vec![ShortcutScope::Home],
-            label_key: "shortcuts.home_medium",
-            custom_hint: Some("2"),
-        });
-        self.shortcuts.push(ShortcutDef {
-            key: KeyCombo::plain("3"),
-            action: ShortcutAction::StartHard,
-            scopes: vec![ShortcutScope::Home],
-            label_key: "shortcuts.home_hard",
-            custom_hint: Some("3"),
-        });
-        self.shortcuts.push(ShortcutDef {
-            key: KeyCombo::plain("enter"),
-            action: ShortcutAction::ResumeExam,
-            scopes: vec![ShortcutScope::Home],
-            label_key: "shortcuts.home_resume",
-            custom_hint: Some("Enter"),
-        });
-
-        // 2b. Quiz page (mode picker) shortcuts
+        // 2. Home screen shortcuts (mode picker): 1/2/3 select, Enter starts the selected mode
         for (key, n) in [("1", 1u8), ("2", 2), ("3", 3)] {
             self.shortcuts.push(ShortcutDef {
                 key: KeyCombo::plain(key),
                 action: ShortcutAction::SelectQuizMode(n),
-                scopes: vec![ShortcutScope::QuizStart],
+                scopes: vec![ShortcutScope::Home],
                 label_key: "shortcuts.quiz_pick_mode",
                 custom_hint: Some(key),
             });
@@ -410,7 +373,7 @@ impl ShortcutRegistry {
         self.shortcuts.push(ShortcutDef {
             key: KeyCombo::plain("enter"),
             action: ShortcutAction::StartSelectedQuiz,
-            scopes: vec![ShortcutScope::QuizStart],
+            scopes: vec![ShortcutScope::Home],
             label_key: "shortcuts.quiz_start_mode",
             custom_hint: Some("Enter"),
         });
@@ -802,15 +765,13 @@ impl ShortcutRegistry {
             (
                 "shortcuts.home_mode",
                 vec![
-                    ("1".to_string(), t("shortcuts.home_easy", lang).to_string()),
                     (
-                        "2".to_string(),
-                        t("shortcuts.home_medium", lang).to_string(),
+                        "1-3".to_string(),
+                        t("shortcuts.quiz_pick_mode", lang).to_string(),
                     ),
-                    ("3".to_string(), t("shortcuts.home_hard", lang).to_string()),
                     (
                         "Enter".to_string(),
-                        t("shortcuts.home_resume", lang).to_string(),
+                        t("shortcuts.quiz_start_mode", lang).to_string(),
                     ),
                 ],
             ),

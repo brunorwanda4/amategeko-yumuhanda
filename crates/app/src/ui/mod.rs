@@ -2,7 +2,6 @@ pub mod footer;
 pub mod home;
 pub mod questions;
 pub mod quiz;
-pub mod quiz_start;
 pub mod results;
 pub mod scroll;
 pub mod settings;
