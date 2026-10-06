@@ -1,4 +1,7 @@
-#define MyAppVersion "0.1.0"
+#define MyAppVersion "1.0.0"
+#ifndef MyAppBinary
+#define MyAppBinary "target\release\amategeko.exe"
+#endif
 
 [Setup]
 AppId={{C0B9A8BF-9D6D-43D5-B4FD-9241E33F9D3B}
@@ -20,7 +23,7 @@ UninstallDisplayIcon={app}\amategeko.exe
 Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription: "Additional shortcuts:"; Flags: unchecked
 
 [Files]
-Source: "target\release\amategeko.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#MyAppBinary}"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{autoprograms}\Amategeko y'Umuhanda"; Filename: "{app}\amategeko.exe"
