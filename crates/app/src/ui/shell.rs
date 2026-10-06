@@ -1020,9 +1020,7 @@ impl Render for ShellView {
                             this.state.settings.font_size_scale =
                                 this.state.settings.font_size_scale.clamp(0.8, 1.3);
                             this.state.save_settings(this.state.settings.clone());
-                            window.set_rem_size(px(amategeko_core::rem_px(
-                                this.state.settings.font_size_scale,
-                            )));
+                            crate::set_font_scale(this.state.settings.font_size_scale, window, cx);
                         }
                         SettingsAction::IncFontScale => {
                             this.state.settings.font_size_scale =
@@ -1031,17 +1029,13 @@ impl Render for ShellView {
                             this.state.settings.font_size_scale =
                                 this.state.settings.font_size_scale.clamp(0.8, 1.3);
                             this.state.save_settings(this.state.settings.clone());
-                            window.set_rem_size(px(amategeko_core::rem_px(
-                                this.state.settings.font_size_scale,
-                            )));
+                            crate::set_font_scale(this.state.settings.font_size_scale, window, cx);
                         }
                         SettingsAction::ResetDefaults => {
                             this.state.settings = amategeko_core::Settings::default();
                             this.state.save_settings(this.state.settings.clone());
+                            crate::set_font_scale(this.state.settings.font_size_scale, window, cx);
                             crate::apply_theme(this.state.settings.theme, Some(window), cx);
-                            window.set_rem_size(px(amategeko_core::rem_px(
-                                this.state.settings.font_size_scale,
-                            )));
                         }
                         SettingsAction::SaveSettings => {
                             this.state.save_settings(this.state.settings.clone());

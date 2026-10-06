@@ -53,7 +53,7 @@ impl<E: InteractiveElement> DragScroll for E {
                     return;
                 }
                 drag.active = true;
-                drag.last = event.position;
+                drag.last = drag.start;
             }
             let delta = event.position.y - drag.last.y;
             drag.last = event.position;
@@ -137,9 +137,9 @@ mod tests {
     use super::*;
     use amategeko_core::Question;
     use gpui::{
-        div, point, Context, InteractiveElement as _, IntoElement, ParentElement as _, Render,
-        ScrollDelta, ScrollWheelEvent, StatefulInteractiveElement as _, Styled as _,
-        TestAppContext, VisualTestContext, Window,
+        div, point, Context, IntoElement, ParentElement as _, Render, ScrollDelta,
+        ScrollWheelEvent, StatefulInteractiveElement as _, Styled as _, TestAppContext,
+        VisualTestContext, Window,
     };
 
     struct ScrollHarness {

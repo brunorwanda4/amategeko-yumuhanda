@@ -1,0 +1,11 @@
+Utendo (Utendo-Regular.ttf v3.000, Utendo-Bold.ttf v3.005)
+
+Copyright (c) LyonsType, 2024-2025. All rights reserved.
+Designer: Daniel P. Lyons
+Source: lyonstype4.wixsite.com/wordmark (from the font's name table, IDs 0, 8, 9, 12)
+
+License: UNCLEAR. The font files contain no license name or license URL
+(name IDs 13 and 14 are empty). The only notice is "All rights reserved".
+The project owner supplied these files and asked to embed them in the app.
+Written permission from LyonsType to embed and redistribute the font
+should be obtained and recorded here before any public release.

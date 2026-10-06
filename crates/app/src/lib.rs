@@ -1,12 +1,14 @@
 //! Shared UI for Amategeko y'Umuhanda (Desktop & Mobile).
 
 pub mod assets;
+pub mod font;
 pub mod mobile_ime;
 pub mod platform_ui;
 pub mod shortcuts;
 pub mod state;
 
 pub use assets::AppAssets;
+pub use font::{init_fonts, set_font_scale, FONT_FAMILY};
 pub mod ui;
 
 pub use platform_ui::{is_native_mobile, shortcuts_ui_active};
@@ -35,5 +37,7 @@ pub fn apply_theme(
             Theme::change(GpuiThemeMode::Dark, window, cx);
         }
     }
+    // Theme::change resets fonts from the theme config; re-apply ours.
+    font::apply_font_to_theme(cx);
     ui::scroll::configure_scrollbar_motion(cx);
 }

@@ -54,6 +54,7 @@ fn main() {
             }
 
             let initial_theme = app_state.settings.theme;
+            amategeko_app::init_fonts(app_state.settings.font_size_scale, cx);
             amategeko_app::apply_theme(initial_theme, None, cx);
 
             let primary_id = cx.primary_display().map(|d| d.id());

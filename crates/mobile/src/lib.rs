@@ -69,6 +69,7 @@ fn android_main(app: android_activity::AndroidApp) {
             let app_state = AppState::new(storage.clone(), clock.clone());
             let initial_theme = app_state.settings.theme;
             let initial_font_scale = app_state.settings.font_size_scale;
+            amategeko_app::init_fonts(initial_font_scale, cx);
             amategeko_app::apply_theme(initial_theme, None, cx);
 
             cx.open_window(WindowOptions::default(), |window, cx| {
@@ -95,6 +96,7 @@ pub extern "C" fn gpui_ios_register_app() {
         let app_state = AppState::new(storage.clone(), clock.clone());
         let initial_theme = app_state.settings.theme;
         let initial_font_scale = app_state.settings.font_size_scale;
+        amategeko_app::init_fonts(initial_font_scale, cx);
         amategeko_app::apply_theme(initial_theme, None, cx);
 
         cx.open_window(WindowOptions::default(), |window, cx| {
