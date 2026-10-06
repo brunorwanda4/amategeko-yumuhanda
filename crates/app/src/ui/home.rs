@@ -1,7 +1,8 @@
 use crate::state::AppState;
 use crate::ui::footer::AppFooter;
+use crate::ui::layout::{page_column, page_max_width, PagePadding as _};
 use crate::ui::scroll::{vertical_scrollbar, ScrollbarContext};
-use amategeko_core::stats::timestamp_to_day_month_str;
+
 use amategeko_core::{t, tf, Language, QuestionSet, QuizMode, StatsCalculator};
 use gpui::InteractiveElement as _;
 use gpui_kit::assets::IconName;
@@ -34,8 +35,6 @@ pub enum HomeAction {
 pub struct HomeProps {
     pub selected_mode: QuizMode,
     pub selected_set: QuestionSet,
-    /// Mode that was just started; shows "Starting {mode}…" in the bottom bar.
-    pub starting: Option<QuizMode>,
 }
 
 struct ModeInfo {
@@ -51,16 +50,6 @@ struct ModeInfo {
 }
 
 pub struct HomeView;
-
-/// Localised name of a quiz mode as used on the quiz page.
-pub fn mode_name(mode: QuizMode, lang: Language) -> &'static str {
-    match mode {
-        QuizMode::Byoroshye => t("mode.easy", lang),
-        QuizMode::Hagati => t("mode.med", lang),
-        QuizMode::Bikomeye => t("mode.hard", lang),
-        other => other.title(lang),
-    }
-}
 
 fn set_label(set: QuestionSet, lang: Language) -> &'static str {
     match set {
@@ -138,43 +127,8 @@ impl HomeView {
             },
         ];
 
-        // "What to expect" tiles come from Settings and the chosen set.
-        let exam_total = state.bank.len().min(EXAM_QUESTIONS);
-        let minutes = |n: u32| tf("val.min", lang, &[("n", &n.to_string())]);
-        let (q_val, time_val, answers_val, nav_val) = match selected_mode {
-            QuizMode::Byoroshye => (
-                set_count.min(EXAM_QUESTIONS).to_string(),
-                t("val.nolimit", lang).to_string(),
-                t("val.instant", lang).to_string(),
-                t("val.free", lang).to_string(),
-            ),
-            QuizMode::Hagati => (
-                exam_total.to_string(),
-                minutes(state.settings.medium_duration_mins),
-                t("val.end", lang).to_string(),
-                t("val.freeflag", lang).to_string(),
-            ),
-            _ => (
-                exam_total.to_string(),
-                minutes(state.settings.hard_duration_mins),
-                t("val.end", lang).to_string(),
-                t("val.no", lang).to_string(),
-            ),
-        };
-        let facts = [
-            (t("tile.q", lang), q_val),
-            (t("tile.time", lang), time_val),
-            (t("tile.answers", lang), answers_val),
-            (t("tile.nav", lang), nav_val),
-        ];
-
         let few_note = (is_easy && set_count > 0 && set_count < EXAM_QUESTIONS)
             .then(|| tf("quiz.few", lang, &[("n", &set_count.to_string())]));
-
-        let bar_text = match props.starting {
-            Some(mode) => tf("quiz.starting", lang, &[("mode", mode_name(mode, lang))]),
-            None => Self::last_attempt_text(state, lang),
-        };
 
         let banner = state.current_attempt.as_ref().map(|att| {
             let detail = format!(
@@ -210,35 +164,6 @@ impl HomeView {
             })
             .collect();
 
-        let fact_tiles: Vec<_> = facts
-            .into_iter()
-            .map(|(label, value)| Self::fact_tile(label, value, cx))
-            .collect();
-        let mut fact_tiles = fact_tiles.into_iter();
-
-        let facts_el = if is_desktop {
-            div()
-                .flex()
-                .flex_row()
-                .gap_2()
-                .children(fact_tiles)
-                .into_any_element()
-        } else {
-            let row1 = div()
-                .flex()
-                .flex_row()
-                .gap_2()
-                .children(fact_tiles.by_ref().take(2));
-            let row2 = div().flex().flex_row().gap_2().children(fact_tiles);
-            div()
-                .flex()
-                .flex_col()
-                .gap_2()
-                .child(row1)
-                .child(row2)
-                .into_any_element()
-        };
-
         let stats_summary = StatsCalculator::compute_summary(&state.progress);
         let last_score_display = if let Some(last) = state.progress.attempts.last() {
             format!("{} / {}", last.score, last.total)
@@ -273,7 +198,7 @@ impl HomeView {
                 cx,
             ));
         let weak_card = Self::render_weak_card(lang, is_desktop, cx, on_action);
-        let footer = AppFooter::render(is_desktop, px(720.0), lang, cx);
+        let footer = AppFooter::render(is_desktop, page_max_width(), lang, cx);
 
         let label_el = |text: &'static str| {
             div()
@@ -294,8 +219,7 @@ impl HomeView {
                     .flex_1()
                     .min_h_0()
                     .overflow_y_scroll()
-                    .p_4()
-                    .when(is_desktop, |el| el.p_6())
+                    .page_padding(is_desktop)
                     .child(vertical_scrollbar(
                         "home_scrollbar",
                         scroll.handle,
@@ -303,34 +227,24 @@ impl HomeView {
                         scroll.reveal_on_open,
                     ))
                     .child(
-                        div()
-                            .flex()
-                            .flex_col()
-                            .w_full()
-                            .max_w(px(720.0))
-                            .mx_auto()
+                        page_column()
                             .gap_4()
                             .children(banner)
                             .child(
-                                div()
-                                    .flex()
-                                    .flex_col()
-                                    .gap_1()
-                                    .child(
-                                        div()
-                                            .text_xl()
-                                            .font_semibold()
-                                            .text_color(colors.foreground)
-                                            .child(t("quiz.title", lang)),
-                                    )
-                                    .child(
-                                        div()
-                                            .text_sm()
-                                            .text_color(colors.muted_foreground)
-                                            .child(t("quiz.sub", lang)),
-                                    ),
+                                div().flex().flex_col().gap_1().child(
+                                    div()
+                                        .text_xl()
+                                        .font_semibold()
+                                        .text_color(colors.foreground)
+                                        .child(t("quiz.title", lang)),
+                                ), // .child(
+                                   //     div()
+                                   //         .text_sm()
+                                   //         .text_color(colors.muted_foreground)
+                                   //         .child(t("quiz.sub", lang)),
+                                   // ),
                             )
-                            .child(label_el(t("quiz.mode", lang)))
+                            // .child(label_el(t("quiz.mode", lang)))
                             .child(
                                 div()
                                     .flex()
@@ -362,51 +276,18 @@ impl HomeView {
                                         .child(t("quiz.examnote", lang)),
                                 )
                             })
-                            .child(label_el(t("quiz.expect", lang)))
-                            .child(facts_el)
-                            .child(
-                                div()
-                                    .text_xs()
-                                    .text_color(colors.muted_foreground)
-                                    .child(tf(
-                                        "quiz.pass",
-                                        lang,
-                                        &[("p", &state.settings.pass_mark.to_string())],
-                                    )),
-                            )
+                            .when(is_desktop && shortcuts_active, |el| {
+                                el.child(
+                                    div()
+                                        .text_xs()
+                                        .text_color(colors.muted_foreground)
+                                        .child(t("quiz.keys", lang)),
+                                )
+                            })
                             .child(stat_tiles)
                             .child(weak_card),
                     )
                     .child(footer),
-            )
-            .child(
-                div()
-                    .flex()
-                    .flex_row()
-                    .items_center()
-                    .gap_3()
-                    .px_4()
-                    .py_3()
-                    .border_t_1()
-                    .border_color(colors.border)
-                    .bg(colors.secondary)
-                    .child(
-                        div()
-                            .flex_1()
-                            .min_w_0()
-                            .text_xs()
-                            .text_color(colors.muted_foreground)
-                            .when(!is_desktop, |el| el.text_center())
-                            .child(bar_text),
-                    )
-                    .when(is_desktop && shortcuts_active, |el| {
-                        el.child(
-                            div()
-                                .text_xs()
-                                .text_color(colors.muted_foreground)
-                                .child(t("quiz.keys", lang)),
-                        )
-                    }),
             )
     }
 
@@ -540,29 +421,6 @@ impl HomeView {
                     .text_color(colors.foreground)
                     .child(value.to_string()),
             )
-    }
-
-    fn last_attempt_text(state: &AppState, lang: Language) -> String {
-        match state.progress.attempts.last() {
-            Some(last) => {
-                let result = if last.passed {
-                    t("quiz.passed", lang)
-                } else {
-                    t("quiz.failed", lang)
-                };
-                tf(
-                    "quiz.last",
-                    lang,
-                    &[
-                        ("mode", mode_name(last.mode, lang)),
-                        ("score", &last.score.to_string()),
-                        ("result", result),
-                        ("date", &timestamp_to_day_month_str(last.timestamp_secs)),
-                    ],
-                )
-            }
-            None => t("quiz.none", lang).to_string(),
-        }
     }
 
     fn resume_banner<V: 'static>(
@@ -873,39 +731,6 @@ impl HomeView {
                     .text_xs()
                     .text_color(colors.muted_foreground)
                     .child(count.to_string()),
-            )
-    }
-
-    fn fact_tile<V: 'static>(
-        label: &'static str,
-        value: String,
-        cx: &mut Context<V>,
-    ) -> impl IntoElement {
-        let theme = cx.theme();
-        let colors = theme.colors;
-
-        div()
-            .flex()
-            .flex_col()
-            .flex_1()
-            .min_w_0()
-            .gap_0p5()
-            .px_3()
-            .py_2p5()
-            .rounded_lg()
-            .bg(colors.muted.opacity(0.4))
-            .child(
-                div()
-                    .text_xs()
-                    .text_color(colors.muted_foreground)
-                    .child(label),
-            )
-            .child(
-                div()
-                    .text_sm()
-                    .font_semibold()
-                    .text_color(colors.foreground)
-                    .child(value),
             )
     }
 }

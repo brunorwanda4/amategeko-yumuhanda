@@ -1,5 +1,6 @@
 pub mod footer;
 pub mod home;
+pub mod layout;
 pub mod questions;
 pub mod quiz;
 pub mod results;

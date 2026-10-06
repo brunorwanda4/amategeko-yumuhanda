@@ -1,5 +1,6 @@
 use crate::state::AppState;
 use crate::ui::footer::AppFooter;
+use crate::ui::layout::{page_column, page_max_width, PagePadding as _};
 use crate::ui::scroll::vertical_scrollbar;
 use amategeko_core::{t, Language, ThemeMode};
 use gpui::InteractiveElement as _;
@@ -61,8 +62,7 @@ impl SettingsView {
             .size_full()
             .overflow_y_scroll()
             .bg(colors.background)
-            .p_4()
-            .when(is_desktop, |el| el.p_6())
+            .page_padding(is_desktop)
             .child(vertical_scrollbar(
                 "settings_scrollbar",
                 scroll_handle,
@@ -70,12 +70,7 @@ impl SettingsView {
                 reveal_scrollbar,
             ))
             .child(
-                div()
-                    .flex()
-                    .flex_col()
-                    .w_full()
-                    .max_w(px(720.0))
-                    .mx_auto()
+                page_column()
                     .gap_6()
                     // Page Title Header
                     .child(
@@ -644,7 +639,7 @@ impl SettingsView {
                     ),
             )
             .when(is_desktop, |settings| {
-                settings.child(AppFooter::render(true, px(720.0), lang, cx))
+                settings.child(AppFooter::render(true, page_max_width(), lang, cx))
             })
     }
 

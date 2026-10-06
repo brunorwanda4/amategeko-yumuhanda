@@ -215,7 +215,7 @@ pub struct ShellView {
 
     quiz_selected_mode: QuizMode,
     quiz_selected_set: QuestionSet,
-    quiz_starting: Option<(QuizMode, Instant)>,
+
     results_scroll_handle: gpui::ScrollHandle,
     settings_scroll_handle: gpui::ScrollHandle,
     sidebar_scroll_handle: gpui::ScrollHandle,
@@ -375,7 +375,7 @@ impl ShellView {
 
             quiz_selected_mode: QuizMode::Byoroshye,
             quiz_selected_set: QuestionSet::All,
-            quiz_starting: None,
+
             results_scroll_handle,
             settings_scroll_handle: gpui::ScrollHandle::default(),
             sidebar_scroll_handle: gpui::ScrollHandle::default(),
@@ -398,9 +398,6 @@ impl ShellView {
         view
     }
 
-    /// How long "Starting {mode}…" stays in Home's bottom bar.
-    const QUIZ_STARTING_MESSAGE: Duration = Duration::from_millis(1600);
-
     fn handle_home_action(&mut self, action: HomeAction, cx: &mut Context<Self>) {
         match action {
             HomeAction::SelectMode(mode) => self.quiz_selected_mode = mode,
@@ -420,7 +417,6 @@ impl ShellView {
         self.quiz_selected_mode = mode;
         let set = HomeView::effective_set(&self.state, self.quiz_selected_set);
         self.state.start_quiz_in_set(mode, set);
-        self.quiz_starting = Some((mode, Instant::now() + Self::QUIZ_STARTING_MESSAGE));
     }
 
     pub fn can_go_back(&self) -> bool {
@@ -680,10 +676,6 @@ impl Render for ShellView {
         let home_props = HomeProps {
             selected_mode: self.quiz_selected_mode,
             selected_set: self.quiz_selected_set,
-            starting: self
-                .quiz_starting
-                .filter(|(_, until)| now < *until)
-                .map(|(mode, _)| mode),
         };
 
         let content = match active_screen {

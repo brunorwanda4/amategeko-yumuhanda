@@ -877,13 +877,15 @@ impl QuizView {
                                                             .size(px(16.0))
                                                             .text_color(colors.foreground),
                                                     )
-                                                    .child(
-                                                        div()
-                                                            .text_sm()
-                                                            .font_medium()
-                                                            .text_color(colors.foreground)
-                                                            .child(t("quiz.previous", lang)),
-                                                    )
+                                                    .when(is_desktop, |el| {
+                                                        el.child(
+                                                            div()
+                                                                .text_sm()
+                                                                .font_medium()
+                                                                .text_color(colors.foreground)
+                                                                .child(t("quiz.previous", lang)),
+                                                        )
+                                                    })
                                             })
                                             // Right Actions: Simbuka (Skip) & Ibikurikira (Next) / Soza (Finish)
                                             .child(
@@ -995,11 +997,13 @@ impl QuizView {
                                                                     .text_color(colors.foreground)
                                                                     .child(next_btn_label),
                                                             )
-                                                            .child(
-                                                                Icon::new(IconName::ArrowRight)
-                                                                    .size(px(16.0))
-                                                                    .text_color(colors.foreground),
-                                                            )
+                                                            .when(is_desktop, |el| {
+                                                                el.child(
+                                                                    Icon::new(IconName::ArrowRight)
+                                                                        .size(px(16.0))
+                                                                        .text_color(colors.foreground),
+                                                                )
+                                                            })
                                                     }),
                                             ),
                                     )
