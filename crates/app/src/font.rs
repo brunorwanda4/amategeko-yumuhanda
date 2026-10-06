@@ -7,10 +7,10 @@ use gpui_kit::component::Theme;
 use std::borrow::Cow;
 
 /// The one and only app font family (real family name from the font's name table).
-pub const FONT_FAMILY: &str = "Utendo";
+pub const FONT_FAMILY: &str = "Inter";
 
-static FONT_REGULAR: &[u8] = include_bytes!("../../../assets/fonts/Utendo-Regular.ttf");
-static FONT_BOLD: &[u8] = include_bytes!("../../../assets/fonts/Utendo-Bold.ttf");
+static FONT_REGULAR: &[u8] = include_bytes!("../../../assets/fonts/Inter-Regular.ttf");
+static FONT_BOLD: &[u8] = include_bytes!("../../../assets/fonts/Inter-Bold.ttf");
 
 #[derive(Clone, Copy)]
 struct FontPrefs {
