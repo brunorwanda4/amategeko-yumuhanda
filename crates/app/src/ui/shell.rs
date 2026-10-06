@@ -657,7 +657,8 @@ impl Render for ShellView {
         }
 
         let active_screen = self.state.active_screen.clone();
-        let is_in_quiz = active_screen == Screen::Quiz;
+        let is_in_quiz =
+            active_screen == Screen::Quiz && self.state.current_attempt.is_some();
         let now = Instant::now();
         if active_screen != self.last_scrollbar_screen {
             self.last_scrollbar_screen = active_screen.clone();
