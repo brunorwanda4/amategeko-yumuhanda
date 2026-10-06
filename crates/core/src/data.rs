@@ -53,6 +53,7 @@ impl QuestionBank {
         overrides_json: &str,
     ) -> Result<Self> {
         let mut questions: Vec<Question> = serde_json::from_str(questions_rw_json)?;
+        let mut overridden_ids = HashSet::new();
         for q in &mut questions {
             q.text = normalize_whitespace(&q.text);
         }
@@ -66,6 +67,7 @@ impl QuestionBank {
                 let id_str = q.id.to_string();
                 if let Some(override_q) = overrides.get(&id_str) {
                     *q = override_q.clone();
+                    overridden_ids.insert(q.id);
                 }
             }
         }
@@ -119,23 +121,23 @@ impl QuestionBank {
             q.text_rw = Some(rw_text.clone());
             q.options_rw = Some(rw_options.clone());
 
-            if let Some(en_q) = en_by_id.remove(&q.id) {
-                if !en_q.text.trim().is_empty() {
-                    q.text_en = Some(en_q.text.clone());
-                    q.options_en = Some(en_q.options.clone());
-                    q.status_en = en_q.status;
+            // An override can change option positions, so its previous English
+            // translation is unsafe until the owner reviews that mapping again.
+            if !overridden_ids.contains(&q.id) {
+                if let Some(en_q) = en_by_id.remove(&q.id) {
+                    if !en_q.text.trim().is_empty() {
+                        q.text_en = Some(en_q.text.clone());
+                        q.options_en = Some(en_q.options.clone());
+                        q.status_en = en_q.status;
 
-                    // Set default question language to English
-                    q.text = en_q.text;
-                    q.options = en_q.options;
-                } else {
-                    q.text_en = None;
-                    q.options_en = None;
+                        // Set default question language to English
+                        q.text = en_q.text;
+                        q.options = en_q.options;
+                    } else {
+                        q.text_en = None;
+                        q.options_en = None;
+                    }
                 }
-            } else {
-                // English missing: falls back to Kinyarwanda
-                q.text_en = None;
-                q.options_en = None;
             }
 
             by_id.insert(q.id, idx);

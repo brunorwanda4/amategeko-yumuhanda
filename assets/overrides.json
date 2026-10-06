@@ -1,1 +1,158 @@
-{}
+{
+  "82": {
+    "id": 82,
+    "text": "Ibiziga by'ibinyabiziga bigendeshwa na\nmoteri n'ibya velomoteri kimwe n'ibya\nromoruki zabyo bigomba kuba byambaye\ninziga zihagwa zifite amano n'ubujyakuzimu\nbutari munsi ya milimetero imwe ku migongo\nyabyo yose nubudodo bwabyo ntibugire ahantu\nna hamwe bugaragara kandi ntibugire aho\nbyacitse bikomeye mu mpande zabyo ariko\nibyo ntibikurikizwa ku binyabiziga bikurikira:",
+    "options": {
+      "a": "ibinyabiziga bidapakiye kandi bitajya birenza umuvuduko wa km 25 mu isaha ahateganye",
+      "b": "ibinyabiziga bya police bijya ahatarenga km 25 uvuye aho biba",
+      "c": "A na B ni ibisubizo by'ukuri",
+      "d": "nta gisubizo cy'ukuri kirimo"
+    },
+    "correct": "a",
+    "image": null,
+    "has_image": false
+  },
+  "187": {
+    "id": 187,
+    "text": "Niki ugomba gukora igihe uhagaze ku\nmuhanda igihe cy'ibihu?",
+    "options": {
+      "a": "Kureka amatara ndanga akaguma yaka",
+      "b": "Kureka amatara yo k,ubisikana na kamena-bihu akaguma yaka",
+      "c": "Kureka amatara yo kubisikana akaguma yaka",
+      "d": "Kureka amatara y'urugendo akaguma yaka"
+    },
+    "correct": "a",
+    "image": null,
+    "has_image": false
+  },
+  "188": {
+    "id": 188,
+    "text": "Iki cyapa cyivuga iki?",
+    "options": {
+      "a": "Umuvuduko ntarengwa 30 km/h",
+      "b": "Iherezo ry'umuvuduko muke ntarengwa utegetswe.",
+      "c": "Iherezo ry'Umuvuduko muto utegetswe",
+      "d": "Umuvuduko uri hejuru 30 km/h"
+    },
+    "correct": "b",
+    "image": "q188.png",
+    "has_image": true
+  },
+  "215": {
+    "id": 215,
+    "text": "Umurongo ucagaguye wera mu muhanda\nusobanura iki?",
+    "options": {
+      "a": "Birabujijwe kuwurenga",
+      "b": "Birabujijwe kuhahagarara",
+      "c": "Wegereye ahaguteza ibyago",
+      "d": "Kunyuranaho ntibyemewe"
+    },
+    "correct": "a",
+    "image": "q215.png",
+    "has_image": true
+  },
+  "224": {
+    "id": 224,
+    "text": "Ugeze ahabereye impanuka yo mumuhanda\nbwambere ugasanga abakomeretse bikomeye.\nwakiriza icyarimwe amatara y'ibyerekezo\nbyombi, niki kindi ushobora gukora?",
+    "options": {
+      "a": "Kumenya neza niba imbangukiragutabara yahamagawe",
+      "b": "Guhagarika ibinyabiziga bindi no kubasaba ubufasha",
+      "c": "A na b ni ibisubizo by'ukuri",
+      "d": "Nta gisubizo cy'ukuri"
+    },
+    "correct": "a",
+    "image": null,
+    "has_image": false
+  },
+  "226": {
+    "id": 226,
+    "text": "Wakoze impanuka yo mu muhanda ,  ni\nikihe cyangombwa polisi ishobora kugusaba\nkucyerekana ?",
+    "options": {
+      "a": "Icyemezo cy'iyandikwa ryi ikinyabiziga",
+      "b": "Uruhusa rwa burundu rwo gutwara ikinyabiziga",
+      "c": "Uruhushya rwagateganyo",
+      "d": "Imikorere y'ikinyabiziga"
+    },
+    "correct": "b",
+    "image": null,
+    "has_image": false
+  },
+  "229": {
+    "id": 229,
+    "text": "Icyapa gikoze mw'ishusho ya\nmpandeshatu kimenyesha:",
+    "options": {
+      "a": "ibyago",
+      "b": "ibibujijwe",
+      "c": "ibitegetswe",
+      "d": "ntagisubizo cy'ukuri kirimo"
+    },
+    "correct": "a",
+    "image": "q229.png",
+    "has_image": true
+  },
+  "230": {
+    "id": 230,
+    "text": "Iki cyapa gisobanura :",
+    "options": {
+      "a": "uburenganzira bwo gutambuka mbere",
+      "b": "uburenganzira bwo gutambuka mbere mu yandi masangano y'umuhanda akwegereye",
+      "c": "ibyago imbere mu masangano y'umuhanda ukwegereye",
+      "d": "a na b ni ibisubizo by'ukuri"
+    },
+    "correct": "a",
+    "image": "q230.png",
+    "has_image": true
+  },
+  "252": {
+    "id": 252,
+    "text": "Amatara y'urugendo, mu gihe cy'ibihu:",
+    "options": {
+      "a": "Ni meza kuko atuma ureba kure",
+      "b": "Ni mabi kuko arakugarukira akaguhuma amaso",
+      "c": "Akwizeza ko abandi bakubona",
+      "d": "Nta gisubizo cy'ukuri"
+    },
+    "correct": "b",
+    "image": null,
+    "has_image": false
+  },
+  "257": {
+    "id": 257,
+    "text": "Igihe umuyobozi w'inyamaswa, afite\ninyamaswa idatuje, asaba ko ibinyabiziga\nbihagarara:",
+    "options": {
+      "a": "Umuyobozi w'ikinyabiziga agomba guhagarara",
+      "b": "Umuyobozi w'ikinyabizigaagomba kuvuza ihoni  agukomeza",
+      "c": "Umuyobozi w'ikinyabiziga agomba kugabanya umuvuduko",
+      "d": "Ibisubizo byose ni ukuri"
+    },
+    "correct": "a",
+    "image": null,
+    "has_image": false
+  },
+  "258": {
+    "id": 258,
+    "text": "Iyo mu muhanda hashushanyijemo\numurongo wera ucagaguye, ntugomba",
+    "options": {
+      "a": "Ntugomba kujya mu kindi gice cy'umuhanda",
+      "b": "Ushobora kujya mu kindi gice cy'umuhanda bibaye ngombwa",
+      "c": "Agomba guhagarika ikinyabiziga",
+      "d": "Nta gisubizo cy'ukuri"
+    },
+    "correct": "b",
+    "image": null,
+    "has_image": false
+  },
+  "352": {
+    "id": 352,
+    "text": "Mpagaze mu murongo  wo guhagarara\numwanya muto",
+    "options": {
+      "a": "Nshobora gukata iburyo",
+      "b": "Nshobora gukata ibumoso",
+      "c": "Nshobora gukata ibumoso  cyangwa iburyo",
+      "d": "Ntagisubizo cy'ukuri kirimo"
+    },
+    "correct": "b",
+    "image": "q352.png",
+    "has_image": true
+  }
+}

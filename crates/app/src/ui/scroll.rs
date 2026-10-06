@@ -246,7 +246,7 @@ mod tests {
             .text
             .clone();
 
-        assert_eq!(questions.len(), 390);
+        assert_eq!(questions.len(), 403);
 
         let (view, cx) = cx.add_window_view(move |_, _| ScrollHarness {
             handle: ScrollHandle::default(),
