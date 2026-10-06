@@ -1,14 +1,16 @@
 use crate::shortcuts::{ShortcutAction, ShortcutRegistry};
 use crate::state::{AppState, Screen};
-use crate::ui::home::HomeView;
+use crate::ui::home::{HomeAction, HomeProps, HomeView};
 use crate::ui::questions::{QuestionsFilter, QuestionsView};
 use crate::ui::quiz::QuizView;
+
 use crate::ui::results::{ResultFilter, ResultsView};
 use crate::ui::scroll::{configure_scrollbar_motion, vertical_scrollbar, ScrollbarContext};
 use crate::ui::settings::{SettingsAction, SettingsView};
 use crate::ui::stats::StatsView;
 use amategeko_core::{
-    t, QuizEngine, QuizMode, QuizTimer, Strings, TimerLevel, TimerState, TimerTracker,
+    t, QuestionSet, QuizEngine, QuizMode, QuizTimer, StatsFilter, Strings, TimerLevel, TimerState,
+    TimerTracker,
 };
 use gpui::FocusHandle;
 use gpui::InteractiveElement as _;
@@ -20,6 +22,130 @@ use gpui_kit::component::tooltip::Tooltip;
 use gpui_kit::component::{ActiveTheme, Icon};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
+
+#[derive(Debug, Clone, Copy, Default)]
+pub struct SafeArea {
+    pub left: f32,
+    pub top: f32,
+    pub right: f32,
+    pub bottom: f32,
+}
+
+static SAFE_AREA: std::sync::Mutex<SafeArea> = std::sync::Mutex::new(SafeArea {
+    left: 0.0,
+    top: 0.0,
+    right: 0.0,
+    bottom: 0.0,
+});
+
+static INSETS_CHANGED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+static BACK_REQUESTED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+static CAN_GO_BACK: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+pub fn get_safe_area() -> SafeArea {
+    SAFE_AREA.lock().map(|s| *s).unwrap_or_default()
+}
+
+pub fn set_safe_area(left: f32, top: f32, right: f32, bottom: f32) {
+    if let Ok(mut lock) = SAFE_AREA.lock() {
+        *lock = SafeArea {
+            left,
+            top,
+            right,
+            bottom,
+        };
+    }
+    INSETS_CHANGED.store(true, std::sync::atomic::Ordering::SeqCst);
+}
+
+pub fn handle_native_back() -> bool {
+    if CAN_GO_BACK.load(std::sync::atomic::Ordering::SeqCst) {
+        BACK_REQUESTED.store(true, std::sync::atomic::Ordering::SeqCst);
+        #[cfg(target_os = "android")]
+        {
+            gpui_mobile::TEXT_INPUT_DIRTY.store(true, std::sync::atomic::Ordering::Release);
+        }
+        true
+    } else {
+        false
+    }
+}
+
+#[cfg(target_os = "android")]
+#[no_mangle]
+pub extern "system" fn Java_dev_gpui_mobile_GpuiActivity_nativeSetInsets(
+    _env: *mut std::ffi::c_void,
+    _class: *mut std::ffi::c_void,
+    left: i32,
+    top: i32,
+    right: i32,
+    bottom: i32,
+) {
+    set_safe_area(left as f32, top as f32, right as f32, bottom as f32);
+}
+
+#[cfg(target_os = "android")]
+#[no_mangle]
+pub extern "system" fn Java_dev_gpui_mobile_MainActivity_nativeSetInsets(
+    env: *mut std::ffi::c_void,
+    class: *mut std::ffi::c_void,
+    left: i32,
+    top: i32,
+    right: i32,
+    bottom: i32,
+) {
+    Java_dev_gpui_mobile_GpuiActivity_nativeSetInsets(env, class, left, top, right, bottom);
+}
+
+#[cfg(target_os = "android")]
+#[no_mangle]
+pub extern "system" fn Java_dev_gpui_mobile_example_MainActivity_nativeSetInsets(
+    env: *mut std::ffi::c_void,
+    class: *mut std::ffi::c_void,
+    left: i32,
+    top: i32,
+    right: i32,
+    bottom: i32,
+) {
+    Java_dev_gpui_mobile_GpuiActivity_nativeSetInsets(env, class, left, top, right, bottom);
+}
+
+#[cfg(target_os = "android")]
+#[no_mangle]
+pub extern "system" fn Java_dev_gpui_mobile_MainActivity_nativeOnBack(
+    _env: *mut std::ffi::c_void,
+    _this_or_class: *mut std::ffi::c_void,
+) -> bool {
+    handle_native_back()
+}
+
+#[cfg(target_os = "android")]
+#[no_mangle]
+pub extern "system" fn Java_dev_gpui_mobile_GpuiActivity_nativeOnBack(
+    _env: *mut std::ffi::c_void,
+    _this_or_class: *mut std::ffi::c_void,
+) -> bool {
+    handle_native_back()
+}
+
+#[cfg(target_os = "android")]
+#[no_mangle]
+pub extern "system" fn Java_dev_gpui_mobile_example_MainActivity_nativeOnBack(
+    _env: *mut std::ffi::c_void,
+    _this_or_class: *mut std::ffi::c_void,
+) -> bool {
+    handle_native_back()
+}
+
+#[cfg(target_os = "android")]
+#[no_mangle]
+pub extern "system" fn Java_dev_gpui_mobile_example_GpuiActivity_nativeOnBack(
+    _env: *mut std::ffi::c_void,
+    _this_or_class: *mut std::ffi::c_void,
+) -> bool {
+    handle_native_back()
+}
+
 use std::collections::{HashMap, HashSet};
 use std::time::{Duration, Instant};
 
@@ -74,6 +200,7 @@ pub struct ShellView {
     pub questions_expanded: HashSet<u32>,
     pub questions_revealed: HashMap<u32, String>,
     pub settings_confirm_clear: bool,
+    pub stats_confirm_clear: bool,
     pub focus_mode: bool,
     pub focus_handle: FocusHandle,
     pub registry: ShortcutRegistry,
@@ -85,6 +212,10 @@ pub struct ShellView {
     pub stats_scroll_handle: gpui::ScrollHandle,
     home_scroll_handle: gpui::ScrollHandle,
     quiz_scroll_handle: gpui::ScrollHandle,
+
+    quiz_selected_mode: QuizMode,
+    quiz_selected_set: QuestionSet,
+
     results_scroll_handle: gpui::ScrollHandle,
     settings_scroll_handle: gpui::ScrollHandle,
     sidebar_scroll_handle: gpui::ScrollHandle,
@@ -107,16 +238,35 @@ pub struct ShellView {
 impl ShellView {
     pub fn new(state: AppState, cx: &mut Context<Self>) -> Self {
         configure_scrollbar_motion(cx);
-        let timer_task = cx.spawn(async move |this, cx| loop {
-            cx.background_executor().timer(Duration::from_secs(1)).await;
-            if this
-                .update(cx, |this, cx| {
-                    this.update_quiz_timer();
-                    cx.notify();
-                })
-                .is_err()
-            {
-                break;
+        let timer_task = cx.spawn(async move |this, cx| {
+            let mut sec_counter = 0;
+            loop {
+                cx.background_executor()
+                    .timer(Duration::from_millis(16))
+                    .await;
+                sec_counter += 1;
+                let timer_tick = sec_counter >= 60;
+                if timer_tick {
+                    sec_counter = 0;
+                }
+                let insets_tick = INSETS_CHANGED.swap(false, std::sync::atomic::Ordering::SeqCst);
+                let back_tick = BACK_REQUESTED.swap(false, std::sync::atomic::Ordering::SeqCst);
+                if timer_tick || insets_tick || back_tick {
+                    if this
+                        .update(cx, |this, cx| {
+                            if back_tick {
+                                this.perform_go_back(None, cx);
+                            }
+                            if timer_tick {
+                                this.update_quiz_timer();
+                            }
+                            cx.notify();
+                        })
+                        .is_err()
+                    {
+                        break;
+                    }
+                }
             }
         });
 
@@ -201,7 +351,7 @@ impl ShellView {
             }
         }
 
-        Self {
+        let view = Self {
             state,
             results_filter: initial_results_filter,
             results_expanded: HashSet::new(),
@@ -210,6 +360,7 @@ impl ShellView {
             questions_expanded: HashSet::new(),
             questions_revealed: HashMap::new(),
             settings_confirm_clear: false,
+            stats_confirm_clear: false,
             focus_mode: false,
             focus_handle: cx.focus_handle(),
             registry: ShortcutRegistry::new(),
@@ -221,6 +372,10 @@ impl ShellView {
             stats_scroll_handle,
             home_scroll_handle: gpui::ScrollHandle::default(),
             quiz_scroll_handle: gpui::ScrollHandle::default(),
+
+            quiz_selected_mode: QuizMode::Byoroshye,
+            quiz_selected_set: QuestionSet::All,
+
             results_scroll_handle,
             settings_scroll_handle: gpui::ScrollHandle::default(),
             sidebar_scroll_handle: gpui::ScrollHandle::default(),
@@ -238,7 +393,102 @@ impl ShellView {
             timer_banner: None,
             timer_banner_hide_at: None,
             _timer_task: timer_task,
+        };
+        view.update_can_go_back();
+        view
+    }
+
+    fn handle_home_action(&mut self, action: HomeAction, cx: &mut Context<Self>) {
+        match action {
+            HomeAction::SelectMode(mode) => self.quiz_selected_mode = mode,
+            HomeAction::SelectSet(set) => self.quiz_selected_set = set,
+            HomeAction::Play(mode) => self.play_from_home(mode),
+            HomeAction::PlayMistakes => self
+                .state
+                .start_quiz_in_set(QuizMode::Byoroshye, QuestionSet::Mistakes),
+            HomeAction::Resume => self.state.resume_attempt(),
+            HomeAction::Discard => self.state.discard_in_progress(),
         }
+        self.save_dev_state();
+        cx.notify();
+    }
+
+    fn play_from_home(&mut self, mode: QuizMode) {
+        self.quiz_selected_mode = mode;
+        let set = HomeView::effective_set(&self.state, self.quiz_selected_set);
+        self.state.start_quiz_in_set(mode, set);
+    }
+
+    pub fn can_go_back(&self) -> bool {
+        self.show_help_dialog
+            || self.show_finish_confirm_dialog
+            || self.stats_confirm_clear
+            || self.settings_confirm_clear
+            || self.questions_search_focused
+            || self.focus_mode
+            || self.state.active_screen != Screen::Home
+    }
+
+    pub fn update_can_go_back(&self) {
+        CAN_GO_BACK.store(self.can_go_back(), std::sync::atomic::Ordering::SeqCst);
+    }
+
+    pub fn perform_go_back(
+        &mut self,
+        mut window: Option<&mut Window>,
+        cx: &mut Context<Self>,
+    ) -> bool {
+        let handled = if self.show_help_dialog {
+            self.show_help_dialog = false;
+            true
+        } else if self.show_finish_confirm_dialog {
+            self.show_finish_confirm_dialog = false;
+            true
+        } else if self.stats_confirm_clear {
+            self.stats_confirm_clear = false;
+            true
+        } else if self.settings_confirm_clear {
+            self.settings_confirm_clear = false;
+            true
+        } else if self.questions_search_focused {
+            self.set_questions_search_focused(false, None, cx);
+            true
+        } else if self.focus_mode {
+            self.focus_mode = false;
+            if let Some(w) = window.as_deref_mut() {
+                if w.is_fullscreen() {
+                    w.toggle_fullscreen();
+                }
+            }
+            true
+        } else if self.state.active_screen == Screen::Quiz {
+            if self.state.current_attempt.is_some() {
+                self.show_finish_confirm_dialog = true;
+            } else {
+                if let Some(w) = window.as_deref_mut() {
+                    if w.is_fullscreen() {
+                        w.toggle_fullscreen();
+                    }
+                }
+                self.focus_mode = false;
+                self.state.discard_in_progress();
+                self.state.navigate(Screen::Home);
+                self.save_dev_state();
+            }
+            true
+        } else if self.state.active_screen != Screen::Home {
+            self.state.navigate(Screen::Home);
+            self.save_dev_state();
+            true
+        } else {
+            false
+        };
+
+        if handled {
+            cx.notify();
+        }
+        self.update_can_go_back();
+        handled
     }
 
     pub fn current_scroll_handle(&self) -> &gpui::ScrollHandle {
@@ -349,10 +599,36 @@ impl ShellView {
             }
         }
     }
+
+    pub fn set_questions_search_focused(
+        &mut self,
+        focused: bool,
+        window: Option<&mut Window>,
+        cx: &mut Context<Self>,
+    ) {
+        let changed = self.questions_search_focused != focused;
+        self.questions_search_focused = focused;
+        if focused {
+            if let Some(window) = window {
+                window.focus(&self.focus_handle, cx);
+            }
+            crate::mobile_ime::begin_search_ime();
+        } else if changed {
+            crate::mobile_ime::end_search_ime();
+        }
+        if changed {
+            cx.notify();
+        }
+    }
 }
 
 impl Render for ShellView {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        if BACK_REQUESTED.swap(false, std::sync::atomic::Ordering::SeqCst) {
+            self.perform_go_back(Some(window), cx);
+        }
+        self.update_can_go_back();
+
         #[cfg(debug_assertions)]
         {
             let current_scroll = self.current_scroll_handle().offset().y.as_f32().abs();
@@ -367,8 +643,21 @@ impl Render for ShellView {
         let window_width = window.bounds().size.width;
         let is_desktop = window_width >= px(700.0);
 
+        if self.questions_search_focused && self.state.active_screen == Screen::Questions {
+            let res = crate::mobile_ime::drain_pending_into_search(&mut self.questions_search);
+            if res.changed {
+                self.questions_selected_idx = 0;
+                self.questions_scroll_handle
+                    .set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
+            }
+            if res.submitted {
+                self.questions_search_focused = false;
+                crate::mobile_ime::end_search_ime();
+            }
+        }
+
         let active_screen = self.state.active_screen.clone();
-        let is_in_quiz = active_screen == Screen::Quiz;
+        let is_in_quiz = active_screen == Screen::Quiz && self.state.current_attempt.is_some();
         let now = Instant::now();
         if active_screen != self.last_scrollbar_screen {
             self.last_scrollbar_screen = active_screen.clone();
@@ -384,30 +673,22 @@ impl Render for ShellView {
         }
         let reveal_dialog_scrollbar = now < self.dialog_scrollbar_reveal_until;
 
+        let home_props = HomeProps {
+            selected_mode: self.quiz_selected_mode,
+            selected_set: self.quiz_selected_set,
+        };
+
         let content = match active_screen {
             Screen::Home => HomeView::render(
                 &self.state,
+                home_props,
                 ScrollbarContext {
                     handle: &self.home_scroll_handle,
                     is_desktop,
                     reveal_on_open: reveal_scrollbar,
                 },
                 cx,
-                |this, mode, _, cx| {
-                    this.state.start_quiz(mode);
-                    this.save_dev_state();
-                    cx.notify();
-                },
-                |this, _, cx| {
-                    this.state.resume_attempt();
-                    this.save_dev_state();
-                    cx.notify();
-                },
-                |this, _, cx| {
-                    this.state.discard_in_progress();
-                    this.save_dev_state();
-                    cx.notify();
-                },
+                |this, action, _, cx| this.handle_home_action(action, cx),
             )
             .into_any_element(),
             Screen::Quiz => QuizView::render(
@@ -481,6 +762,10 @@ impl Render for ShellView {
                     cx.notify();
                 },
                 |this, window, cx| {
+                    // Focus/fullscreen is desktop-only; Android/iOS APK never uses it.
+                    if cfg!(any(target_os = "android", target_os = "ios")) {
+                        return;
+                    }
                     this.focus_mode = !this.focus_mode;
                     if this.focus_mode {
                         if !window.is_fullscreen() {
@@ -517,6 +802,11 @@ impl Render for ShellView {
                     this.save_dev_state();
                     cx.notify();
                 },
+                |this, mode, _, cx| {
+                    this.state.start_quiz(mode);
+                    this.save_dev_state();
+                    cx.notify();
+                },
             )
             .into_any_element(),
             Screen::Results => ResultsView::render(
@@ -529,7 +819,8 @@ impl Render for ShellView {
                 cx,
                 |this, filter, _, cx| {
                     this.results_filter = filter;
-                    this.results_scroll_handle.set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
+                    this.results_scroll_handle
+                        .set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
                     this.save_dev_state();
                     cx.notify();
                 },
@@ -572,7 +863,7 @@ impl Render for ShellView {
                 cx,
                 |this, filter, _, cx| {
                     this.questions_filter = filter;
-                    this.questions_search_focused = false;
+                    this.set_questions_search_focused(false, None, cx);
                     this.questions_selected_idx = 0;
                     this.questions_scroll_handle
                         .set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
@@ -587,11 +878,7 @@ impl Render for ShellView {
                     cx.notify();
                 },
                 |this, focused, window, cx| {
-                    this.questions_search_focused = focused;
-                    if focused {
-                        window.focus(&this.focus_handle, cx);
-                    }
-                    cx.notify();
+                    this.set_questions_search_focused(focused, Some(window), cx);
                 },
                 |this, hide, _, cx| {
                     this.state.settings.study_hide_answers = hide;
@@ -611,10 +898,16 @@ impl Render for ShellView {
                     } else {
                         this.questions_expanded.insert(qid);
                     }
+                    if this.questions_search_focused {
+                        this.set_questions_search_focused(false, None, cx);
+                    }
                     cx.notify();
                 },
                 |this, qid, opt, _, cx| {
                     this.questions_revealed.insert(qid, opt);
+                    if this.questions_search_focused {
+                        this.set_questions_search_focused(false, None, cx);
+                    }
                     cx.notify();
                 },
             )
@@ -624,14 +917,25 @@ impl Render for ShellView {
                 is_desktop,
                 &self.stats_scroll_handle,
                 reveal_scrollbar,
+                StatsFilter::parse_str(&self.stats_filter),
+                self.stats_confirm_clear,
                 cx,
+                |this, filter, _, cx| {
+                    this.stats_filter = filter.as_str().to_string();
+                    this.save_dev_state();
+                    cx.notify();
+                },
+                |this, confirm, _, cx| {
+                    this.stats_confirm_clear = confirm;
+                    cx.notify();
+                },
                 |this, _, cx| {
-                    this.state.start_quiz(QuizMode::WeakPractice);
+                    this.state.clear_history();
                     this.save_dev_state();
                     cx.notify();
                 },
                 |this, _, cx| {
-                    this.state.start_quiz(QuizMode::Byoroshye);
+                    this.state.start_quiz(QuizMode::WeakPractice);
                     this.save_dev_state();
                     cx.notify();
                 },
@@ -711,17 +1015,26 @@ impl Render for ShellView {
                         }
                         SettingsAction::DecFontScale => {
                             this.state.settings.font_size_scale =
-                                (this.state.settings.font_size_scale - 0.05).max(0.80);
+                                ((this.state.settings.font_size_scale - 0.05) * 20.0).round()
+                                    / 20.0;
+                            this.state.settings.font_size_scale =
+                                this.state.settings.font_size_scale.clamp(0.8, 1.3);
                             this.state.save_settings(this.state.settings.clone());
+                            crate::set_font_scale(this.state.settings.font_size_scale, window, cx);
                         }
                         SettingsAction::IncFontScale => {
                             this.state.settings.font_size_scale =
-                                (this.state.settings.font_size_scale + 0.05).min(1.33);
+                                ((this.state.settings.font_size_scale + 0.05) * 20.0).round()
+                                    / 20.0;
+                            this.state.settings.font_size_scale =
+                                this.state.settings.font_size_scale.clamp(0.8, 1.3);
                             this.state.save_settings(this.state.settings.clone());
+                            crate::set_font_scale(this.state.settings.font_size_scale, window, cx);
                         }
                         SettingsAction::ResetDefaults => {
                             this.state.settings = amategeko_core::Settings::default();
                             this.state.save_settings(this.state.settings.clone());
+                            crate::set_font_scale(this.state.settings.font_size_scale, window, cx);
                             crate::apply_theme(this.state.settings.theme, Some(window), cx);
                         }
                         SettingsAction::SaveSettings => {
@@ -747,6 +1060,11 @@ impl Render for ShellView {
                                 !this.state.settings.show_both_languages;
                             this.state.save_settings(this.state.settings.clone());
                         }
+                        SettingsAction::ToggleShuffleOptions => {
+                            this.state.settings.shuffle_options =
+                                !this.state.settings.shuffle_options;
+                            this.state.save_settings(this.state.settings.clone());
+                        }
                     }
                     cx.notify();
                 },
@@ -754,7 +1072,14 @@ impl Render for ShellView {
             .into_any_element(),
         };
 
-        let root = if is_desktop {
+        let scale = window.scale_factor();
+        let safe_area = get_safe_area();
+        let pad_top = px(safe_area.top / scale);
+        let pad_bottom = px(safe_area.bottom / scale);
+        let pad_left = px(safe_area.left / scale);
+        let pad_right = px(safe_area.right / scale);
+
+        let content_layout = if is_desktop {
             // Desktop Layout: Left Sidebar + Content
             let show_sidebar = !(is_in_quiz && self.focus_mode);
 
@@ -762,7 +1087,6 @@ impl Render for ShellView {
                 .flex()
                 .flex_row()
                 .size_full()
-                .bg(colors.background)
                 .when(show_sidebar, |el| {
                     el.child(self.render_desktop_sidebar(reveal_scrollbar, cx))
                 })
@@ -773,13 +1097,22 @@ impl Render for ShellView {
                 .flex()
                 .flex_col()
                 .size_full()
-                .bg(colors.background)
                 .child(self.render_mobile_top_bar(cx))
                 .child(div().flex_1().size_full().overflow_hidden().child(content))
                 .when(!is_in_quiz, |el| {
                     el.child(self.render_mobile_bottom_bar(cx))
                 })
         };
+
+        let root = div().size_full().bg(colors.background).child(
+            div()
+                .size_full()
+                .pt(pad_top)
+                .pb(pad_bottom)
+                .pl(pad_left)
+                .pr(pad_right)
+                .child(content_layout),
+        );
 
         let banner = self.timer_banner;
         let language = self.state.settings.language;
@@ -842,18 +1175,25 @@ impl Render for ShellView {
                             event.keystroke.modifiers.control || event.keystroke.modifiers.platform;
                         let is_alt = event.keystroke.modifiers.alt;
 
+                        if key.eq_ignore_ascii_case("escape") || key.eq_ignore_ascii_case("enter") {
+                            this.set_questions_search_focused(false, None, cx);
+                            return;
+                        }
+
+                        // On mobile platforms (Android/iOS APK), character typing and backspaces
+                        // are handled exclusively through the soft-keyboard IME bridge
+                        // (drain_pending_into_search). gpui-mobile delivers both IME callbacks
+                        // and KeyDown events; processing characters here on mobile causes double typing.
+                        if crate::is_native_mobile() {
+                            return;
+                        }
+
                         if key.eq_ignore_ascii_case("backspace") {
                             if is_ctrl {
                                 this.questions_search.clear();
                             } else {
                                 this.questions_search.pop();
                             }
-                            cx.notify();
-                            return;
-                        } else if key.eq_ignore_ascii_case("escape")
-                            || key.eq_ignore_ascii_case("enter")
-                        {
-                            this.questions_search_focused = false;
                             cx.notify();
                             return;
                         } else if key.eq_ignore_ascii_case("space") || key == " " {
@@ -879,11 +1219,34 @@ impl Render for ShellView {
                         }
                     }
 
+                    if !is_typing
+                        && (this.state.settings.desktop_shortcuts_enabled && is_desktop)
+                        && this.state.active_screen == Screen::Quiz
+                        && (event.keystroke.key.eq_ignore_ascii_case("f")
+                            || event.keystroke.key == "F")
+                        && !event.keystroke.modifiers.control
+                        && !event.keystroke.modifiers.alt
+                        && !event.keystroke.modifiers.platform
+                    {
+                        this.focus_mode = !this.focus_mode;
+                        if this.focus_mode {
+                            if !window.is_fullscreen() {
+                                window.toggle_fullscreen();
+                            }
+                        } else if window.is_fullscreen() {
+                            window.toggle_fullscreen();
+                        }
+                        cx.notify();
+                        return;
+                    }
+
                     let action = this.registry.resolve_event(
                         event,
                         this.state.active_screen.clone(),
                         this.state.current_attempt.as_ref().map(|a| a.mode),
-                        this.state.settings.desktop_shortcuts_enabled && is_desktop,
+                        this.state.settings.desktop_shortcuts_enabled
+                            && is_desktop
+                            && !crate::is_native_mobile(),
                         is_typing,
                     );
 
@@ -893,42 +1256,48 @@ impl Render for ShellView {
 
                     match action {
                         ShortcutAction::ShowHelp => {
-                            this.show_help_dialog = !this.show_help_dialog;
+                            if !crate::is_native_mobile() {
+                                this.show_help_dialog = !this.show_help_dialog;
+                                cx.notify();
+                            }
+                        }
+                        ShortcutAction::ToggleTheme => {
+                            let theme = match this.state.settings.theme {
+                                amategeko_core::ThemeMode::Dark => {
+                                    amategeko_core::ThemeMode::Light
+                                }
+                                amategeko_core::ThemeMode::Light => {
+                                    amategeko_core::ThemeMode::Dark
+                                }
+                                amategeko_core::ThemeMode::System => {
+                                    if cx.theme().mode
+                                        == gpui_kit::component::ThemeMode::Dark
+                                    {
+                                        amategeko_core::ThemeMode::Light
+                                    } else {
+                                        amategeko_core::ThemeMode::Dark
+                                    }
+                                }
+                            };
+                            this.state.settings.theme = theme;
+                            this.state.save_settings(this.state.settings.clone());
+                            crate::apply_theme(theme, Some(window), cx);
                             cx.notify();
                         }
                         ShortcutAction::CloseOrBack => {
-                            if this.show_help_dialog {
-                                this.show_help_dialog = false;
-                            } else if this.show_finish_confirm_dialog {
-                                this.show_finish_confirm_dialog = false;
-                            } else if this.settings_confirm_clear {
-                                this.settings_confirm_clear = false;
-                            } else if this.questions_search_focused {
-                                this.questions_search_focused = false;
-                            } else if this.state.active_screen == Screen::Results {
-                                this.state.navigate(Screen::Home);
-                            } else if this.focus_mode {
-                                this.focus_mode = false;
-                                if window.is_fullscreen() {
-                                    window.toggle_fullscreen();
-                                }
-                            } else if this.state.active_screen == Screen::Quiz {
-                                if window.is_fullscreen() {
-                                    window.toggle_fullscreen();
-                                }
-                                this.focus_mode = false;
-                                this.state.discard_in_progress();
-                                this.state.navigate(Screen::Home);
-                            } else if this.state.active_screen != Screen::Home {
-                                this.state.navigate(Screen::Home);
-                            }
-                            cx.notify();
+                            this.perform_go_back(Some(window), cx);
                         }
                         ShortcutAction::NavHome => {
+                            if this.questions_search_focused {
+                                this.set_questions_search_focused(false, None, cx);
+                            }
                             this.state.navigate(Screen::Home);
                             cx.notify();
                         }
                         ShortcutAction::NavQuiz => {
+                            if this.questions_search_focused {
+                                this.set_questions_search_focused(false, None, cx);
+                            }
                             this.state.navigate(Screen::Quiz);
                             cx.notify();
                         }
@@ -937,27 +1306,31 @@ impl Render for ShellView {
                             cx.notify();
                         }
                         ShortcutAction::NavStats => {
+                            if this.questions_search_focused {
+                                this.set_questions_search_focused(false, None, cx);
+                            }
                             this.state.navigate(Screen::Stats);
                             cx.notify();
                         }
                         ShortcutAction::NavSettings => {
+                            if this.questions_search_focused {
+                                this.set_questions_search_focused(false, None, cx);
+                            }
                             this.state.navigate(Screen::Settings);
                             cx.notify();
                         }
-                        ShortcutAction::StartEasy => {
-                            this.state.start_quiz(QuizMode::Byoroshye);
+
+                        ShortcutAction::SelectQuizMode(n) => {
+                            this.quiz_selected_mode = match n {
+                                2 => QuizMode::Hagati,
+                                3 => QuizMode::Bikomeye,
+                                _ => QuizMode::Byoroshye,
+                            };
                             cx.notify();
                         }
-                        ShortcutAction::StartMedium => {
-                            this.state.start_quiz(QuizMode::Hagati);
-                            cx.notify();
-                        }
-                        ShortcutAction::StartHard => {
-                            this.state.start_quiz(QuizMode::Bikomeye);
-                            cx.notify();
-                        }
-                        ShortcutAction::ResumeExam => {
-                            this.state.resume_attempt();
+                        ShortcutAction::StartSelectedQuiz => {
+                            this.play_from_home(this.quiz_selected_mode);
+                            this.save_dev_state();
                             cx.notify();
                         }
                         ShortcutAction::ChooseOption(opt) => {
@@ -968,8 +1341,20 @@ impl Render for ShellView {
                                 .map(|a| a.is_current_locked())
                                 .unwrap_or(false);
                             if !locked {
-                                this.state.record_current_answer(&opt.to_string());
-                                cx.notify();
+                                // The shortcut letter is the screen position (A = first row),
+                                // which maps to a different option key when options are shuffled.
+                                let position = (opt as usize).saturating_sub('a' as usize);
+                                let key = this.state.current_attempt.as_ref().and_then(|a| {
+                                    a.option_key_at(
+                                        this.state.settings.question_language,
+                                        this.state.settings.shuffle_options,
+                                        position,
+                                    )
+                                });
+                                if let Some(key) = key {
+                                    this.state.record_current_answer(&key);
+                                    cx.notify();
+                                }
                             }
                         }
                         ShortcutAction::NextOrConfirm => {
@@ -1076,23 +1461,24 @@ impl Render for ShellView {
                         }
                         ShortcutAction::FilterResultsAll => {
                             this.results_filter = ResultFilter::All;
-                            this.results_scroll_handle.set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
+                            this.results_scroll_handle
+                                .set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
                             cx.notify();
                         }
                         ShortcutAction::FilterResultsCorrect => {
                             this.results_filter = ResultFilter::Correct;
-                            this.results_scroll_handle.set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
+                            this.results_scroll_handle
+                                .set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
                             cx.notify();
                         }
                         ShortcutAction::FilterResultsWrong => {
                             this.results_filter = ResultFilter::Mistakes;
-                            this.results_scroll_handle.set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
+                            this.results_scroll_handle
+                                .set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
                             cx.notify();
                         }
                         ShortcutAction::FocusSearch => {
-                            this.questions_search_focused = true;
-                            window.focus(&this.focus_handle, cx);
-                            cx.notify();
+                            this.set_questions_search_focused(true, Some(window), cx);
                         }
                         ShortcutAction::MoveUp => {
                             if this.questions_selected_idx > 0 {
@@ -1161,8 +1547,17 @@ impl Render for ShellView {
                             this.questions_revealed.clear();
                             cx.notify();
                         }
-                        ShortcutAction::FilterStats(_) => {
-                            // Stats screen filter controls are not built yet; skipped per task instructions.
+                        ShortcutAction::FilterStats(idx) => {
+                            let new_filter = match idx {
+                                1 => StatsFilter::All,
+                                2 => StatsFilter::Easy,
+                                3 => StatsFilter::Medium,
+                                4 => StatsFilter::Hard,
+                                _ => StatsFilter::All,
+                            };
+                            this.stats_filter = new_filter.as_str().to_string();
+                            this.save_dev_state();
+                            cx.notify();
                         }
                         ShortcutAction::SaveSettings => {
                             this.state.save_settings(this.state.settings.clone());
@@ -1172,12 +1567,16 @@ impl Render for ShellView {
                 }),
             );
 
-        if is_in_quiz || active_screen == Screen::Questions || active_screen == Screen::Results {
+        if is_in_quiz
+            || active_screen == Screen::Questions
+            || active_screen == Screen::Results
+            || active_screen == Screen::Stats
+        {
             window.focus(&self.focus_handle, cx);
         }
 
         // Dialog overlays
-        let help_dialog = if is_desktop && self.show_help_dialog {
+        let help_dialog = if is_desktop && !crate::is_native_mobile() && self.show_help_dialog {
             Some(self.registry.render_help_dialog(
                 language,
                 &self.help_dialog_scroll_handle,
@@ -1393,57 +1792,64 @@ impl ShellView {
                     )),
             )
             .child(div().flex_1()) // spacer to push help button to bottom
-            .child(
-                div()
-                    .id("sidebar_help_button")
-                    .flex()
-                    .flex_row()
-                    .items_center()
-                    .w_full()
-                    .min_w_0()
-                    .overflow_hidden()
-                    .px_3()
-                    .py_2()
-                    .rounded_xl()
-                    .cursor_pointer()
-                    .hover(|el| el.bg(colors.sidebar_accent))
-                    .tooltip({
-                        let tooltip = self
-                            .registry
-                            .tooltip_for_action(ShortcutAction::ShowHelp, lang, true, shortcuts_on)
-                            .unwrap_or_else(|| t("shortcuts.title", lang).to_string());
-                        move |window, cx| Tooltip::new(tooltip.clone()).build(window, cx)
-                    })
-                    .on_click(cx.listener(|this, _, _, cx| {
-                        this.show_help_dialog = !this.show_help_dialog;
-                        cx.notify();
-                    }))
-                    .child(
-                        div()
-                            .flex()
-                            .flex_row()
-                            .items_center()
-                            .gap_2()
-                            .min_w_0()
-                            .overflow_hidden()
-                            .child(
-                                Icon::new(IconName::BookOpen)
-                                    .size(px(16.0))
-                                    .text_color(colors.muted_foreground),
-                            )
-                            .child(
-                                div()
-                                    .min_w_0()
-                                    .overflow_hidden()
-                                    .whitespace_nowrap()
-                                    .text_ellipsis()
-                                    .text_xs()
-                                    .font_medium()
-                                    .text_color(colors.muted_foreground)
-                                    .child(t("shortcuts.title", lang)),
-                            ),
-                    ),
-            )
+            .when(!crate::is_native_mobile(), |el| {
+                el.child(
+                    div()
+                        .id("sidebar_help_button")
+                        .flex()
+                        .flex_row()
+                        .items_center()
+                        .w_full()
+                        .min_w_0()
+                        .overflow_hidden()
+                        .px_3()
+                        .py_2()
+                        .rounded_xl()
+                        .cursor_pointer()
+                        .hover(|el| el.bg(colors.sidebar_accent))
+                        .tooltip({
+                            let tooltip = self
+                                .registry
+                                .tooltip_for_action(
+                                    ShortcutAction::ShowHelp,
+                                    lang,
+                                    true,
+                                    shortcuts_on,
+                                )
+                                .unwrap_or_else(|| t("shortcuts.title", lang).to_string());
+                            move |window, cx| Tooltip::new(tooltip.clone()).build(window, cx)
+                        })
+                        .on_click(cx.listener(|this, _, _, cx| {
+                            this.show_help_dialog = !this.show_help_dialog;
+                            cx.notify();
+                        }))
+                        .child(
+                            div()
+                                .flex()
+                                .flex_row()
+                                .items_center()
+                                .gap_2()
+                                .min_w_0()
+                                .overflow_hidden()
+                                .child(
+                                    Icon::new(IconName::BookOpen)
+                                        .size(px(16.0))
+                                        .text_color(colors.muted_foreground),
+                                )
+                                .child(
+                                    div()
+                                        .min_w_0()
+                                        .overflow_hidden()
+                                        .whitespace_nowrap()
+                                        .text_ellipsis()
+                                        .text_xs()
+                                        .font_medium()
+                                        .text_color(colors.muted_foreground)
+                                        .child(t("shortcuts.title", lang)),
+                                ),
+                        ),
+                )
+            })
     }
 
     fn render_desktop_nav_item(
@@ -1481,7 +1887,7 @@ impl ShellView {
                 shortcut_action,
                 self.state.settings.language,
                 true,
-                self.state.settings.desktop_shortcuts_enabled,
+                self.state.settings.desktop_shortcuts_enabled && !crate::is_native_mobile(),
             )
             .unwrap_or_else(|| label.to_string());
 
@@ -1501,6 +1907,9 @@ impl ShellView {
             .hover(|el| el.bg(colors.sidebar_accent))
             .tooltip(move |window, cx| Tooltip::new(tooltip.clone()).build(window, cx))
             .on_click(cx.listener(move |this, _, _, cx| {
+                if this.questions_search_focused {
+                    this.set_questions_search_focused(false, None, cx);
+                }
                 this.state.navigate(target_screen.clone());
                 this.save_dev_state();
                 cx.notify();
@@ -1651,6 +2060,9 @@ impl ShellView {
             .p_2()
             .cursor_pointer()
             .on_click(cx.listener(move |this, _, _, cx| {
+                if this.questions_search_focused {
+                    this.set_questions_search_focused(false, None, cx);
+                }
                 this.state.navigate(target_screen.clone());
                 this.save_dev_state();
                 cx.notify();

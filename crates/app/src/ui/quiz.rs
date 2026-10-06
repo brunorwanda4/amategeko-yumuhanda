@@ -1,5 +1,5 @@
 use crate::state::AppState;
-use crate::ui::scroll::vertical_scrollbar;
+use crate::ui::scroll::{vertical_scrollbar, DragScroll};
 use amategeko_core::{t, Attempt, Language, QuizMode, QuizTimer, TimerLevel, TimerState};
 use gpui::InteractiveElement as _;
 use gpui_kit::assets::IconName;
@@ -32,6 +32,7 @@ impl QuizView {
         on_toggle_focus: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
         on_finish_request: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
         on_abandon_request: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
+        on_start_mode: impl Fn(&mut V, QuizMode, &mut Window, &mut Context<V>) + 'static + Copy,
     ) -> impl IntoElement {
         let theme = cx.theme();
         let colors = theme.colors;
@@ -43,19 +44,14 @@ impl QuizView {
         let attempt = match &state.current_attempt {
             Some(att) => att,
             None => {
-                return div()
-                    .flex()
-                    .flex_col()
-                    .items_center()
-                    .justify_center()
-                    .size_full()
-                    .child(div().text_base().text_color(colors.foreground).child(
-                        if lang == Language::En {
-                            "No active quiz."
-                        } else {
-                            "Nta kizamini kiri gukorwa."
-                        },
-                    ));
+                return Self::render_empty_state(
+                    lang,
+                    is_desktop,
+                    scroll_handle,
+                    reveal_scrollbar,
+                    cx,
+                    on_start_mode,
+                );
             }
         };
 
@@ -68,6 +64,13 @@ impl QuizView {
             Some(q) => q,
             None => return div().child("Question not found"),
         };
+        let option_order =
+            attempt.option_order(current_idx, q_lang, state.settings.shuffle_options);
+        let correct_badge = option_order
+            .iter()
+            .position(|option_id| option_id.eq_ignore_ascii_case(&current_q.correct))
+            .map(|position| char::from(b'A' + position as u8).to_string())
+            .unwrap_or_else(|| current_q.correct.to_uppercase());
 
         let user_ans = attempt.current_answer().cloned();
         let is_locked = attempt.is_current_locked();
@@ -113,7 +116,8 @@ impl QuizView {
             t("quiz.next", lang)
         };
 
-        let shortcuts_active = is_desktop && state.settings.desktop_shortcuts_enabled;
+        let shortcuts_active =
+            crate::shortcuts_ui_active(is_desktop, state.settings.desktop_shortcuts_enabled);
 
         div()
             .flex()
@@ -163,13 +167,15 @@ impl QuizView {
                                             .size(px(14.0))
                                             .text_color(colors.muted_foreground),
                                     )
-                                    .child(
-                                        div()
-                                            .text_xs()
-                                            .font_medium()
-                                            .text_color(colors.muted_foreground)
-                                            .child(t("dialog.abandon.confirm", lang)),
-                                    )
+                                    .when(is_desktop, |el| {
+                                        el.child(
+                                            div()
+                                                .text_xs()
+                                                .font_medium()
+                                                .text_color(colors.muted_foreground)
+                                                .child(t("dialog.abandon.confirm", lang)),
+                                        )
+                                    })
                                     .when(shortcuts_active && !is_hard, |el| {
                                         el.child(
                                             div()
@@ -208,13 +214,17 @@ impl QuizView {
                                     .font_bold()
                                     .text_color(colors.foreground)
                                     .child(
-                                        t("quiz.question_progress", lang)
-                                            .replace("{current}", &(current_idx + 1).to_string())
-                                            .replace("{total}", &total_questions.to_string()),
+                                        if is_desktop {
+                                            t("quiz.question_progress", lang)
+                                                .replace("{current}", &(current_idx + 1).to_string())
+                                                .replace("{total}", &total_questions.to_string())
+                                        } else {
+                                            format!("{}/{}", current_idx + 1, total_questions)
+                                        },
                                     ),
                             ),
                     )
-                    // Right: Timer + Flag (medium) + Focus Toggle + Star Button
+                    // Right: Timer + Flag (medium) + Focus Toggle (desktop OS) + Star Button
                     .child(
                         div()
                             .flex()
@@ -361,7 +371,7 @@ impl QuizView {
                                     colors.muted_foreground
                                 };
                                 let flag_tooltip = if shortcuts_active {
-                                    format!("{} (F)", t("quiz.flag", lang))
+                                    format!("{} (M)", t("quiz.flag", lang))
                                 } else {
                                     t("quiz.flag", lang).to_string()
                                 };
@@ -396,56 +406,64 @@ impl QuizView {
                                         ),
                                 )
                             })
-                            // Focus / Fullscreen mode toggle
-                            .child({
-                                let focus_tooltip = if is_focus_mode {
-                                    t("quiz.focus_exit", lang).to_string()
-                                } else {
-                                    t("quiz.focus_mode", lang).to_string()
-                                };
-                                div()
-                                    .id("focus_mode_btn")
-                                    .flex()
-                                    .items_center()
-                                    .justify_center()
-                                    .w(px(36.0))
-                                    .h(px(36.0))
-                                    .rounded_lg()
-                                    .border_1()
-                                    .border_color(if is_focus_mode {
-                                        colors.primary
-                                    } else {
-                                        colors.border
-                                    })
-                                    .bg(if is_focus_mode {
-                                        colors.accent
-                                    } else {
-                                        colors.secondary
-                                    })
-                                    .cursor_pointer()
-                                    .hover(|el| el.bg(colors.accent))
-                                    .tooltip(move |window, cx| {
-                                        Tooltip::new(focus_tooltip.clone()).build(window, cx)
-                                    })
-                                    .on_click(cx.listener(move |this, _, window, cx| {
-                                        on_toggle_focus(this, window, cx);
-                                    }))
-                                    .child(
-                                        Icon::new(if is_focus_mode {
-                                            IconName::Minimize
+                            // Focus / Fullscreen: desktop OS only (not Android/iOS APK)
+                            .when(!crate::is_native_mobile(), |el| {
+                                    let focus_tooltip = if shortcuts_active {
+                                        if is_focus_mode {
+                                            format!("{} (F)", t("quiz.focus_exit", lang))
                                         } else {
-                                            IconName::Maximize
-                                        })
-                                        .size(px(16.0))
-                                        .text_color(
-                                            if is_focus_mode {
+                                            format!("{} (F)", t("quiz.focus_mode", lang))
+                                        }
+                                    } else if is_focus_mode {
+                                        t("quiz.focus_exit", lang).to_string()
+                                    } else {
+                                        t("quiz.focus_mode", lang).to_string()
+                                    };
+                                    el.child(
+                                        div()
+                                            .id("focus_mode_btn")
+                                            .flex()
+                                            .items_center()
+                                            .justify_center()
+                                            .w(px(36.0))
+                                            .h(px(36.0))
+                                            .rounded_lg()
+                                            .border_1()
+                                            .border_color(if is_focus_mode {
                                                 colors.primary
                                             } else {
-                                                colors.foreground
-                                            },
-                                        ),
+                                                colors.border
+                                            })
+                                            .bg(if is_focus_mode {
+                                                colors.accent
+                                            } else {
+                                                colors.secondary
+                                            })
+                                            .cursor_pointer()
+                                            .hover(|el| el.bg(colors.accent))
+                                            .tooltip(move |window, cx| {
+                                                Tooltip::new(focus_tooltip.clone())
+                                                    .build(window, cx)
+                                            })
+                                            .on_click(cx.listener(move |this, _, window, cx| {
+                                                on_toggle_focus(this, window, cx);
+                                            }))
+                                            .child(
+                                                Icon::new(if is_focus_mode {
+                                                    IconName::Minimize
+                                                } else {
+                                                    IconName::Maximize
+                                                })
+                                                .size(px(16.0))
+                                                .text_color(if is_focus_mode {
+                                                    colors.primary
+                                                } else {
+                                                    colors.foreground
+                                                }),
+                                            ),
                                     )
-                            })
+                                },
+                            )
                             // Star / Bookmark toggle
                             .child({
                                 let star_tooltip = if shortcuts_active && attempt.mode == QuizMode::Byoroshye {
@@ -558,7 +576,7 @@ impl QuizView {
 
                                 div()
                                     .id(format!("progress_seg_{i}"))
-                                    .debug_selector(move || format!("progress_seg_{i}").into())
+                                    .debug_selector(move || format!("progress_seg_{i}"))
                                     .flex_1()
                                     .h(px(4.0))
                                     .rounded_full()
@@ -576,6 +594,7 @@ impl QuizView {
                 div()
                     .id("quiz_content_scroll")
                     .track_scroll(scroll_handle)
+.drag_scroll(scroll_handle)
                     .flex()
                     .flex_col()
                     .flex_1()
@@ -736,12 +755,12 @@ impl QuizView {
                                                 let exp_text = if is_correct {
                                                     t("quiz.easy_correct", lang).replace(
                                                         "{option}",
-                                                        &current_q.correct.to_uppercase(),
+                                                        &correct_badge,
                                                     )
                                                 } else {
                                                     t("quiz.easy_wrong", lang).replace(
                                                         "{option}",
-                                                        &current_q.correct.to_uppercase(),
+                                                        &correct_badge,
                                                     )
                                                 };
                                                 div()
@@ -793,21 +812,23 @@ impl QuizView {
                                     // Options list
                                     .child(div().flex().flex_col().w_full().min_w_0().overflow_hidden().gap_3().children({
                                         let opts = current_q.options_for(q_lang);
-                                        let mut keys: Vec<&String> = opts.keys().collect();
-                                        keys.sort();
-                                        keys.into_iter().map(|letter| {
+                                        option_order.into_iter().enumerate().map(|(position, option_id)| {
+                                            let option_id = option_id.as_str();
+                                            // Badge shows the screen position, so the rows always read A, B, C, D.
+                                            let badge = char::from(b'A' + position as u8).to_string();
                                             let opt_text =
-                                                opts.get(letter).cloned().unwrap_or_default();
+                                                opts.get(option_id).cloned().unwrap_or_default();
                                             let sec_opt = if show_both {
                                                 current_q
-                                                    .secondary_option_for(q_lang, letter)
+                                                    .secondary_option_for(q_lang, option_id)
                                                     .map(|s| s.to_string())
                                             } else {
                                                 None
                                             };
                                             Self::render_option_card(
                                                 attempt,
-                                                letter,
+                                                option_id,
+                                                &badge,
                                                 &opt_text,
                                                 sec_opt.as_deref(),
                                                 &current_q.correct,
@@ -866,13 +887,15 @@ impl QuizView {
                                                             .size(px(16.0))
                                                             .text_color(colors.foreground),
                                                     )
-                                                    .child(
-                                                        div()
-                                                            .text_sm()
-                                                            .font_medium()
-                                                            .text_color(colors.foreground)
-                                                            .child(t("quiz.previous", lang)),
-                                                    )
+                                                    .when(is_desktop, |el| {
+                                                        el.child(
+                                                            div()
+                                                                .text_sm()
+                                                                .font_medium()
+                                                                .text_color(colors.foreground)
+                                                                .child(t("quiz.previous", lang)),
+                                                        )
+                                                    })
                                             })
                                             // Right Actions: Simbuka (Skip) & Ibikurikira (Next) / Soza (Finish)
                                             .child(
@@ -984,11 +1007,13 @@ impl QuizView {
                                                                     .text_color(colors.foreground)
                                                                     .child(next_btn_label),
                                                             )
-                                                            .child(
-                                                                Icon::new(IconName::ArrowRight)
-                                                                    .size(px(16.0))
-                                                                    .text_color(colors.foreground),
-                                                            )
+                                                            .when(is_desktop, |el| {
+                                                                el.child(
+                                                                    Icon::new(IconName::ArrowRight)
+                                                                        .size(px(16.0))
+                                                                        .text_color(colors.foreground),
+                                                                )
+                                                            })
                                                     }),
                                             ),
                                     )
@@ -997,13 +1022,281 @@ impl QuizView {
             )
     }
 
+    fn render_empty_state<V: 'static>(
+        lang: Language,
+        is_desktop: bool,
+        scroll_handle: &ScrollHandle,
+        reveal_scrollbar: bool,
+        cx: &mut Context<V>,
+        on_start_mode: impl Fn(&mut V, QuizMode, &mut Window, &mut Context<V>) + 'static + Copy,
+    ) -> gpui::Div {
+        let theme = cx.theme();
+        let colors = theme.colors;
+
+        div().flex().flex_col().size_full().child(
+            div()
+                .id("quiz_empty_state_scroll")
+                .track_scroll(scroll_handle)
+                .drag_scroll(scroll_handle)
+                .size_full()
+                .flex()
+                .flex_col()
+                .items_center()
+                .justify_center()
+                .overflow_y_scroll()
+                .bg(colors.background)
+                .p_4()
+                .when(is_desktop, |el| el.p_8())
+                .child(vertical_scrollbar(
+                    "quiz_empty_scrollbar",
+                    scroll_handle,
+                    is_desktop,
+                    reveal_scrollbar,
+                ))
+                .child(
+                    div()
+                        .flex()
+                        .flex_col()
+                        .items_center()
+                        .justify_center()
+                        .w_full()
+                        .max_w(px(720.0))
+                        .gap_6()
+                        // Top Icon Badge
+                        .child(
+                            div()
+                                .flex()
+                                .items_center()
+                                .justify_center()
+                                .size(px(72.0))
+                                .rounded_2xl()
+                                .border_1()
+                                .border_color(colors.border)
+                                .bg(colors.secondary)
+                                .child(
+                                    Icon::new(IconName::BookOpen)
+                                        .size(px(34.0))
+                                        .text_color(colors.primary),
+                                ),
+                        )
+                        // Title & Description
+                        .child(
+                            div()
+                                .flex()
+                                .flex_col()
+                                .items_center()
+                                .text_center()
+                                .gap_1p5()
+                                .child(
+                                    div()
+                                        .text_2xl()
+                                        .font_bold()
+                                        .text_color(colors.foreground)
+                                        .child(t("quiz.no_active", lang)),
+                                )
+                                .child(
+                                    div()
+                                        .text_sm()
+                                        .text_color(colors.muted_foreground)
+                                        .max_w(px(420.0))
+                                        .child(t("quiz.no_active_desc", lang)),
+                                ),
+                        )
+                        // Mode Cards: Easy, Medium, Hard
+                        .child(
+                            div()
+                                .flex()
+                                .w_full()
+                                .gap_4()
+                                .when(is_desktop, |el| el.flex_row())
+                                .when(!is_desktop, |el| el.flex_col())
+                                .child(Self::render_empty_mode_card(
+                                    "empty_quiz_btn_easy",
+                                    QuizMode::Byoroshye,
+                                    t("mode.easy.title", lang),
+                                    t("mode.easy.badge", lang),
+                                    t("mode.easy.desc", lang),
+                                    IconName::GraduationCap,
+                                    gpui::rgb(0x22c55e),
+                                    gpui::rgba(0x22c55e1a),
+                                    is_desktop,
+                                    t("home.start", lang),
+                                    cx,
+                                    on_start_mode,
+                                ))
+                                .child(Self::render_empty_mode_card(
+                                    "empty_quiz_btn_medium",
+                                    QuizMode::Hagati,
+                                    t("mode.medium.title", lang),
+                                    t("mode.medium.badge", lang),
+                                    t("mode.medium.desc", lang),
+                                    IconName::Clock,
+                                    gpui::rgb(0xf59e0b),
+                                    gpui::rgba(0xf59e0b1a),
+                                    is_desktop,
+                                    t("home.start", lang),
+                                    cx,
+                                    on_start_mode,
+                                ))
+                                .child(Self::render_empty_mode_card(
+                                    "empty_quiz_btn_hard",
+                                    QuizMode::Bikomeye,
+                                    t("mode.hard.title", lang),
+                                    t("mode.hard.badge", lang),
+                                    t("mode.hard.desc", lang),
+                                    IconName::Flame,
+                                    gpui::rgb(0xef4444),
+                                    gpui::rgba(0xef44441a),
+                                    is_desktop,
+                                    t("home.start", lang),
+                                    cx,
+                                    on_start_mode,
+                                )),
+                        ),
+                ),
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn render_empty_mode_card<V: 'static>(
+        id: &'static str,
+        mode: QuizMode,
+        title: &'static str,
+        badge: &'static str,
+        desc: &'static str,
+        icon: IconName,
+        icon_color: impl Into<gpui::Hsla>,
+        badge_bg: impl Into<gpui::Hsla>,
+        is_desktop: bool,
+        start_label: &'static str,
+        cx: &mut Context<V>,
+        on_start_mode: impl Fn(&mut V, QuizMode, &mut Window, &mut Context<V>) + 'static + Copy,
+    ) -> impl IntoElement {
+        let theme = cx.theme();
+        let colors = theme.colors;
+        let icon_color: gpui::Hsla = icon_color.into();
+        let badge_bg: gpui::Hsla = badge_bg.into();
+
+        div()
+            .id(id)
+            .debug_selector(move || id.into())
+            .cursor_pointer()
+            .flex()
+            .when(is_desktop, |el| {
+                el.flex_col()
+                    .items_start()
+                    .justify_between()
+                    .p_5()
+                    .flex_1()
+                    .min_w(px(200.0))
+            })
+            .when(!is_desktop, |el| {
+                el.flex_row()
+                    .items_center()
+                    .justify_between()
+                    .p_4()
+                    .w_full()
+            })
+            .rounded_xl()
+            .border_1()
+            .border_color(colors.border)
+            .bg(colors.secondary)
+            .hover(move |el| el.bg(colors.muted).border_color(icon_color))
+            .on_click(cx.listener(move |this, _, window, cx| {
+                on_start_mode(this, mode, window, cx);
+            }))
+            // Main content
+            .child(
+                div()
+                    .flex()
+                    .when(is_desktop, |el| el.flex_col().items_start().w_full())
+                    .when(!is_desktop, |el| el.flex_row().items_center().gap_3())
+                    // Header row: Icon + Title & badge
+                    .child(
+                        div()
+                            .flex()
+                            .flex_row()
+                            .items_center()
+                            .gap_3()
+                            .child(
+                                div()
+                                    .flex()
+                                    .items_center()
+                                    .justify_center()
+                                    .size(px(40.0))
+                                    .rounded_xl()
+                                    .bg(badge_bg)
+                                    .child(Icon::new(icon).size(px(20.0)).text_color(icon_color)),
+                            )
+                            .child(
+                                div()
+                                    .flex()
+                                    .flex_col()
+                                    .gap_0p5()
+                                    .child(
+                                        div()
+                                            .text_base()
+                                            .font_bold()
+                                            .text_color(colors.foreground)
+                                            .child(title),
+                                    )
+                                    .child(
+                                        div()
+                                            .text_xs()
+                                            .text_color(colors.muted_foreground)
+                                            .child(badge),
+                                    ),
+                            ),
+                    )
+                    // Description (on desktop only)
+                    .when(is_desktop, |el| {
+                        el.child(
+                            div()
+                                .mt_3()
+                                .text_xs()
+                                .text_color(colors.muted_foreground)
+                                .min_h(px(38.0))
+                                .child(desc),
+                        )
+                    }),
+            )
+            // Action button pill
+            .child(
+                div().when(is_desktop, |el| el.mt_4().w_full()).child(
+                    div()
+                        .flex()
+                        .flex_row()
+                        .items_center()
+                        .justify_center()
+                        .gap_1p5()
+                        .px_3p5()
+                        .py_2()
+                        .rounded_lg()
+                        .bg(colors.primary)
+                        .child(
+                            Icon::new(IconName::Play)
+                                .size(px(14.0))
+                                .text_color(colors.primary_foreground),
+                        )
+                        .child(
+                            div()
+                                .text_xs()
+                                .font_semibold()
+                                .text_color(colors.primary_foreground)
+                                .child(start_label),
+                        ),
+                ),
+            )
+    }
+
     #[allow(clippy::too_many_arguments)]
     fn render_option_card<V: 'static>(
         attempt: &Attempt,
-        letter: &str,
+        option_id: &str,
+        badge_label: &str,
         text: &str,
         secondary_text: Option<&str>,
-        correct_letter: &str,
+        correct_option_id: &str,
         user_selection: Option<&str>,
         is_locked: bool,
         lang: Language,
@@ -1015,9 +1308,9 @@ impl QuizView {
         let colors = theme.colors;
 
         let is_selected = user_selection
-            .map(|s| s.eq_ignore_ascii_case(letter))
+            .map(|s| s.eq_ignore_ascii_case(option_id))
             .unwrap_or(false);
-        let is_correct_option = letter.eq_ignore_ascii_case(correct_letter);
+        let is_correct_option = option_id.eq_ignore_ascii_case(correct_option_id);
 
         let (border_color, bg_color, text_color, badge_bg, badge_border, badge_text, icon_element) =
             if attempt.mode.provides_instant_feedback() {
@@ -1099,11 +1392,11 @@ impl QuizView {
                 }
             };
 
-        let letter_owned = letter.to_string();
+        let option_id_owned = option_id.to_string();
 
         div()
-            .id(format!("option_card_{letter}"))
-            .debug_selector(|| format!("quiz-option-row-{letter}"))
+            .id(format!("option_card_{option_id}"))
+            .debug_selector(|| format!("quiz-option-row-{option_id}"))
             .flex()
             .flex_row()
             .items_start()
@@ -1123,19 +1416,19 @@ impl QuizView {
                     .hover(|e| e.bg(colors.accent).border_color(colors.primary))
             })
             .when(shortcuts_active && !is_locked, |el| {
-                let hint = letter.to_uppercase();
+                let hint = badge_label.to_string();
                 let tooltip = format!("{}: {hint}", t("shortcuts.choose_option", lang));
                 el.tooltip(move |window, cx| Tooltip::new(tooltip.clone()).build(window, cx))
             })
             .on_click(cx.listener(move |this, _, window, cx| {
                 if !is_locked {
-                    on_select_option(this, &letter_owned, window, cx);
+                    on_select_option(this, &option_id_owned, window, cx);
                 }
             }))
             // Badge containing letter: A, B, C, D
             .child(
                 div()
-                    .debug_selector(|| format!("quiz-option-badge-{letter}"))
+                    .debug_selector(|| format!("quiz-option-badge-{option_id}"))
                     .flex()
                     .items_center()
                     .justify_center()
@@ -1150,13 +1443,13 @@ impl QuizView {
                             .text_sm()
                             .font_bold()
                             .text_color(badge_text)
-                            .child(letter.to_uppercase()),
+                            .child(badge_label.to_string()),
                     ),
             )
             // Option text (primary + optional secondary)
             .child(
                 div()
-                    .debug_selector(|| format!("quiz-option-text-{letter}"))
+                    .debug_selector(|| format!("quiz-option-text-{option_id}"))
                     .flex_1()
                     .flex_col()
                     .min_w_0()

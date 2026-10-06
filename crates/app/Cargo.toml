@@ -15,5 +15,9 @@ log.workspace = true
 rust-embed.workspace = true
 anyhow.workspace = true
 
+# Soft keyboard show/hide + IME text callback for questions search (APK only).
+[target.'cfg(any(target_os = "android", target_os = "ios"))'.dependencies]
+gpui-mobile.workspace = true
+
 [dev-dependencies]
 gpui = { workspace = true, features = ["test-support"] }

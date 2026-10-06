@@ -1,5 +1,5 @@
 use crate::state::AppState;
-use crate::ui::scroll::vertical_scrollbar;
+use crate::ui::scroll::{vertical_scrollbar, DragScroll};
 use amategeko_core::{t, Language, QuestionResult, QuizMode};
 use gpui::InteractiveElement as _;
 use gpui_kit::assets::IconName;
@@ -51,6 +51,7 @@ impl ResultsView {
                 return div()
                     .id("results_empty_scroll")
                     .track_scroll(scroll_handle)
+                    .drag_scroll(scroll_handle)
                     .flex()
                     .flex_col()
                     .items_center()
@@ -126,7 +127,8 @@ impl ResultsView {
             .filter(|qr| !qr.is_correct && qr.user_answer.is_some())
             .count();
         let total_mistakes = (total as usize).saturating_sub(score as usize);
-        let shortcuts_active = is_desktop && state.settings.desktop_shortcuts_enabled;
+        let shortcuts_active =
+            crate::shortcuts_ui_active(is_desktop, state.settings.desktop_shortcuts_enabled);
 
         // Filter question results
         let filtered_questions: Vec<(usize, &QuestionResult)> = result
@@ -523,6 +525,7 @@ impl ResultsView {
                 div()
                     .id("results_scroll_view")
                     .track_scroll(scroll_handle)
+.drag_scroll(scroll_handle)
                     .relative()
                     .flex()
                     .flex_col()

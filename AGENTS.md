@@ -207,3 +207,5 @@ Do not claim something works unless you ran it. If you could not run it (for exa
 - Rust: follow `rustfmt` defaults. Prefer small functions, clear names, and explicit error types (`thiserror`) in `core`. Comments explain why, not what. Public items in `core` have doc comments. Keep UI code thin: state and rules live in `core`; `app` only renders and forwards events.
 - Website: TypeScript strict mode, small components, content in MDX under `website/content/`, links to the repo and releases from one constant file (`lib/config.ts`).
 - Reply to the owner in simple English. Kinyarwanda is used only for in-app text and the Kinyarwanda parts of the website.
+
+The app font is fixed (FONT_FAMILY). Never add a font family setting and never hard-code another font.

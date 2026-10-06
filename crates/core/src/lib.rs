@@ -8,6 +8,7 @@ pub mod data;
 #[cfg(debug_assertions)]
 pub mod dev;
 pub mod error;
+pub mod font;
 pub mod i18n;
 pub mod models;
 pub mod platform;
@@ -21,11 +22,14 @@ pub use data::QuestionBank;
 #[cfg(debug_assertions)]
 pub use dev::*;
 pub use error::{AppError, Result};
+pub use font::rem_px;
 pub use i18n::{t, tf, I18n, Strings};
 pub use models::*;
 pub use platform::{Clock, InMemoryStorage, MockClock, Storage, SystemClock};
 pub use quiz::QuizEngine;
-pub use stats::{MostMissedQuestion, StatsCalculator, StatsSummary};
+pub use stats::{
+    MostMissedQuestion, RecentAttemptStat, StatsCalculator, StatsFilter, StatsSummary,
+};
 pub use timer::{
     level, QuizTimer, TimerLevel, TimerState, TimerTracker, ERROR_THRESHOLD_PERCENT,
     WARNING_THRESHOLD_PERCENT,

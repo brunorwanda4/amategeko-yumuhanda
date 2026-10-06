@@ -125,12 +125,11 @@ pub enum ShortcutAction {
     NavSettings,
     CloseOrBack,
     ShowHelp,
+    ToggleTheme,
 
-    // Home
-    StartEasy,
-    StartMedium,
-    StartHard,
-    ResumeExam,
+    // Home (mode picker)
+    SelectQuizMode(u8), // 1 = Easy, 2 = Medium, 3 = Hard
+    StartSelectedQuiz,
 
     // Quiz
     ChooseOption(char), // 'a' | 'b' | 'c' | 'd'
@@ -192,6 +191,7 @@ impl ShortcutAction {
             ShortcutAction::ChooseOption(_)
                 | ShortcutAction::NextOrConfirm
                 | ShortcutAction::ShowHelp
+                | ShortcutAction::ToggleTheme
         )
     }
 
@@ -246,6 +246,7 @@ impl ShortcutDef {
             match scope {
                 ShortcutScope::Global => return true,
                 ShortcutScope::Home if screen == crate::Screen::Home => return true,
+
                 ShortcutScope::QuizAll if screen == crate::Screen::Quiz => return true,
                 ShortcutScope::QuizEasy
                     if screen == crate::Screen::Quiz
@@ -360,34 +361,29 @@ impl ShortcutRegistry {
             label_key: "shortcuts.help",
             custom_hint: Some("F1"),
         });
+        self.shortcuts.push(ShortcutDef {
+            key: KeyCombo::ctrl("i"),
+            action: ShortcutAction::ToggleTheme,
+            scopes: vec![ShortcutScope::Global],
+            label_key: "settings.theme",
+            custom_hint: Some(if mod_name == "Cmd" { "Cmd+I" } else { "Ctrl+I" }),
+        });
 
-        // 2. Home screen shortcuts
-        self.shortcuts.push(ShortcutDef {
-            key: KeyCombo::plain("1"),
-            action: ShortcutAction::StartEasy,
-            scopes: vec![ShortcutScope::Home],
-            label_key: "shortcuts.home_easy",
-            custom_hint: Some("1"),
-        });
-        self.shortcuts.push(ShortcutDef {
-            key: KeyCombo::plain("2"),
-            action: ShortcutAction::StartMedium,
-            scopes: vec![ShortcutScope::Home],
-            label_key: "shortcuts.home_medium",
-            custom_hint: Some("2"),
-        });
-        self.shortcuts.push(ShortcutDef {
-            key: KeyCombo::plain("3"),
-            action: ShortcutAction::StartHard,
-            scopes: vec![ShortcutScope::Home],
-            label_key: "shortcuts.home_hard",
-            custom_hint: Some("3"),
-        });
+        // 2. Home screen shortcuts (mode picker): 1/2/3 select, Enter starts the selected mode
+        for (key, n) in [("1", 1u8), ("2", 2), ("3", 3)] {
+            self.shortcuts.push(ShortcutDef {
+                key: KeyCombo::plain(key),
+                action: ShortcutAction::SelectQuizMode(n),
+                scopes: vec![ShortcutScope::Home],
+                label_key: "shortcuts.quiz_pick_mode",
+                custom_hint: Some(key),
+            });
+        }
         self.shortcuts.push(ShortcutDef {
             key: KeyCombo::plain("enter"),
-            action: ShortcutAction::ResumeExam,
+            action: ShortcutAction::StartSelectedQuiz,
             scopes: vec![ShortcutScope::Home],
-            label_key: "shortcuts.home_resume",
+            label_key: "shortcuts.quiz_start_mode",
             custom_hint: Some("Enter"),
         });
 
@@ -507,11 +503,11 @@ impl ShortcutRegistry {
             custom_hint: Some("→"),
         });
         self.shortcuts.push(ShortcutDef {
-            key: KeyCombo::plain("f"),
+            key: KeyCombo::plain("m"),
             action: ShortcutAction::FlagQuestion,
             scopes: vec![ShortcutScope::QuizMedium],
             label_key: "shortcuts.flag_question",
-            custom_hint: Some("F"),
+            custom_hint: Some("M"),
         });
         self.shortcuts.push(ShortcutDef {
             key: KeyCombo::ctrl_enter(),
@@ -772,21 +768,23 @@ impl ShortcutRegistry {
                         "Esc".to_string(),
                         t("shortcuts.close_or_back", lang).to_string(),
                     ),
+                    (
+                        format!("{mod_name}+I"),
+                        t("settings.theme", lang).to_string(),
+                    ),
                     ("? / F1".to_string(), t("shortcuts.help", lang).to_string()),
                 ],
             ),
             (
                 "shortcuts.home_mode",
                 vec![
-                    ("1".to_string(), t("shortcuts.home_easy", lang).to_string()),
                     (
-                        "2".to_string(),
-                        t("shortcuts.home_medium", lang).to_string(),
+                        "1-3".to_string(),
+                        t("shortcuts.quiz_pick_mode", lang).to_string(),
                     ),
-                    ("3".to_string(), t("shortcuts.home_hard", lang).to_string()),
                     (
                         "Enter".to_string(),
-                        t("shortcuts.home_resume", lang).to_string(),
+                        t("shortcuts.quiz_start_mode", lang).to_string(),
                     ),
                 ],
             ),
@@ -828,7 +826,7 @@ impl ShortcutRegistry {
                         t("shortcuts.prev_question", lang).to_string(),
                     ),
                     (
-                        "F".to_string(),
+                        "M".to_string(),
                         t("shortcuts.flag_question", lang).to_string(),
                     ),
                     (

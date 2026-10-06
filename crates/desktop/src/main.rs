@@ -1,10 +1,22 @@
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
 use amategeko_app::{AppAssets, AppState, ShellView};
 use amategeko_core::{Storage, SystemClock};
 use directories::ProjectDirs;
 use gpui_kit::component::Root;
 use gpui_kit::*;
-use std::path::PathBuf;
+use std::io;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
+
+const LEGACY_MIGRATION_MARKER: &str = ".legacy-data-migrated-v1";
+const PERSISTED_FILES: &[&str] = &[
+    "settings.json",
+    "progress.json",
+    "in_progress.json",
+    "window.json",
+    "window.json.bak",
+];
 
 struct DesktopStorage {
     storage_dir: PathBuf,
@@ -16,13 +28,72 @@ impl Storage for DesktopStorage {
     }
 }
 
+fn prepare_storage_dir() -> io::Result<PathBuf> {
+    let project_dirs = ProjectDirs::from("rw", "amategeko", "AmategekoYumuhanda")
+        .ok_or_else(|| io::Error::other("Windows app-data directory is unavailable"))?;
+    let storage_dir = project_dirs.data_dir().to_path_buf();
+    std::fs::create_dir_all(&storage_dir)?;
+    migrate_legacy_data(&storage_dir)?;
+    Ok(storage_dir)
+}
+
+fn migrate_legacy_data(storage_dir: &Path) -> io::Result<()> {
+    let marker = storage_dir.join(LEGACY_MIGRATION_MARKER);
+    if marker.exists() {
+        return Ok(());
+    }
+
+    let mut legacy_dirs = Vec::new();
+    if let Ok(current_dir) = std::env::current_dir() {
+        legacy_dirs.push(current_dir.join("data"));
+    }
+    if let Ok(executable) = std::env::current_exe() {
+        if let Some(parent) = executable.parent() {
+            legacy_dirs.push(parent.join("data"));
+        }
+    }
+
+    for legacy_dir in legacy_dirs {
+        for filename in PERSISTED_FILES {
+            let source = legacy_dir.join(filename);
+            let destination = storage_dir.join(filename);
+            if source.is_file() && !destination.exists() {
+                std::fs::copy(source, destination)?;
+            }
+        }
+    }
+
+    #[cfg(debug_assertions)]
+    {
+        let filename = amategeko_core::dev::DEV_STATE_FILE;
+        for legacy_dir in [
+            std::env::current_dir().ok().map(|path| path.join("data")),
+            std::env::current_exe()
+                .ok()
+                .and_then(|path| path.parent().map(|parent| parent.join("data"))),
+        ]
+        .into_iter()
+        .flatten()
+        {
+            let source = legacy_dir.join(filename);
+            let destination = storage_dir.join(filename);
+            if source.is_file() && !destination.exists() {
+                std::fs::copy(source, destination)?;
+            }
+        }
+    }
+
+    std::fs::write(marker, b"migrated\n")
+}
+
 fn main() {
-    let storage_dir =
-        if let Some(proj_dirs) = ProjectDirs::from("rw", "amategeko", "AmategekoYumuhanda") {
-            proj_dirs.data_dir().to_path_buf()
-        } else {
-            PathBuf::from("data")
-        };
+    let storage_dir = match prepare_storage_dir() {
+        Ok(storage_dir) => storage_dir,
+        Err(error) => {
+            eprintln!("Unable to prepare the application data folder: {error}");
+            return;
+        }
+    };
 
     let storage = Arc::new(DesktopStorage { storage_dir });
     let clock = Arc::new(SystemClock);
@@ -54,6 +125,7 @@ fn main() {
             }
 
             let initial_theme = app_state.settings.theme;
+            amategeko_app::init_fonts(app_state.settings.font_size_scale, cx);
             amategeko_app::apply_theme(initial_theme, None, cx);
 
             let primary_id = cx.primary_display().map(|d| d.id());
@@ -104,8 +176,10 @@ fn main() {
             };
 
             let storage_for_window = storage.clone();
+            let initial_font_scale = app_state.settings.font_size_scale;
             cx.open_window(options, move |window, cx| {
                 amategeko_app::apply_theme(initial_theme, Some(window), cx);
+                window.set_rem_size(px(amategeko_core::rem_px(initial_font_scale)));
 
                 let storage_for_close = storage_for_window.clone();
                 window.on_window_should_close(cx, move |window, _cx| {

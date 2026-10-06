@@ -122,6 +122,72 @@ impl Question {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
+pub enum QuestionSet {
+    #[default]
+    All,
+    Signs,
+    Rules,
+    NotSeen,
+    Starred,
+    Mistakes,
+}
+
+impl QuestionSet {
+    /// Every set, in the order the quiz page shows them.
+    pub const ALL_SETS: [QuestionSet; 6] = [
+        QuestionSet::All,
+        QuestionSet::Signs,
+        QuestionSet::Rules,
+        QuestionSet::NotSeen,
+        QuestionSet::Starred,
+        QuestionSet::Mistakes,
+    ];
+
+    /// Whether a single question belongs to this set.
+    pub fn contains(
+        &self,
+        q: &Question,
+        starred: &std::collections::HashSet<u32>,
+        stats: &std::collections::HashMap<u32, QuestionStat>,
+    ) -> bool {
+        match self {
+            QuestionSet::All => true,
+            QuestionSet::Signs => q.has_image,
+            QuestionSet::Rules => !q.has_image,
+            QuestionSet::NotSeen => stats.get(&q.id).map_or(0, |s| s.seen_count) == 0,
+            QuestionSet::Starred => starred.contains(&q.id),
+            QuestionSet::Mistakes => stats.get(&q.id).map_or(0, |s| s.wrong_count) > 0,
+        }
+    }
+
+    /// Number of questions in this set, without cloning them.
+    pub fn count(
+        &self,
+        questions: &[Question],
+        starred: &std::collections::HashSet<u32>,
+        stats: &std::collections::HashMap<u32, QuestionStat>,
+    ) -> usize {
+        questions
+            .iter()
+            .filter(|q| self.contains(q, starred, stats))
+            .count()
+    }
+
+    pub fn filter_questions(
+        &self,
+        questions: &[Question],
+        starred: &std::collections::HashSet<u32>,
+        stats: &std::collections::HashMap<u32, QuestionStat>,
+    ) -> Vec<Question> {
+        questions
+            .iter()
+            .filter(|q| self.contains(q, starred, stats))
+            .cloned()
+            .collect()
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum QuizMode {
     /// Learning mode: instant feedback, no countdown, answer locked after first tap.
@@ -161,6 +227,7 @@ impl QuizMode {
     }
 
     pub fn has_countdown(&self) -> bool {
+        /*  */
         matches!(self, QuizMode::Hagati | QuizMode::Bikomeye)
     }
 
@@ -205,6 +272,10 @@ pub struct Settings {
     pub question_language: Language,
     #[serde(default)]
     pub show_both_languages: bool,
+    /// Show the answer options of each quiz question in a different order.
+    /// Stored answers and the correct answer keep their original keys.
+    #[serde(default)]
+    pub shuffle_options: bool,
 }
 
 impl Default for Settings {
@@ -222,6 +293,7 @@ impl Default for Settings {
             language: Language::En,
             question_language: Language::En,
             show_both_languages: false,
+            shuffle_options: false,
         }
     }
 }
@@ -290,6 +362,31 @@ impl Attempt {
         self.flags.contains(&self.current_index)
     }
 
+    /// Option keys of question `idx` in the order they are shown on screen.
+    ///
+    /// Without `shuffle` this is the original order (a, b, c, d). With `shuffle`
+    /// the order is mixed, but it only depends on the attempt id and the question,
+    /// so it stays the same across re-renders and when an attempt is resumed.
+    /// The keys themselves never change, so saved answers and `correct` stay valid.
+    pub fn option_order(&self, idx: usize, lang: Language, shuffle: bool) -> Vec<String> {
+        let Some(question) = self.questions.get(idx) else {
+            return Vec::new();
+        };
+        let mut keys: Vec<String> = question.options_for(lang).keys().cloned().collect();
+        if shuffle {
+            let seed = stable_seed(&self.id, question.id, idx);
+            shuffle_with_seed(&mut keys, seed);
+        }
+        keys
+    }
+
+    /// Option key shown at screen position `position` (0 = first row) of the current question.
+    pub fn option_key_at(&self, lang: Language, shuffle: bool, position: usize) -> Option<String> {
+        self.option_order(self.current_index, lang, shuffle)
+            .into_iter()
+            .nth(position)
+    }
+
     pub fn unanswered_indices(&self) -> Vec<usize> {
         (0..self.questions.len())
             .filter(|i| !self.answers.contains_key(i))
@@ -300,6 +397,36 @@ impl Attempt {
     pub fn total_duration_secs(&self) -> Option<u32> {
         self.deadline_secs
             .map(|deadline| deadline.saturating_sub(self.start_time_secs) as u32)
+    }
+}
+
+/// FNV-1a hash. Written by hand so the result never changes between Rust versions
+/// (an attempt saved before an update must show the same order after it).
+fn stable_seed(attempt_id: &str, question_id: u32, idx: usize) -> u64 {
+    let mut hash: u64 = 0xcbf2_9ce4_8422_2325;
+    let mut feed = |byte: u8| {
+        hash ^= u64::from(byte);
+        hash = hash.wrapping_mul(0x0100_0000_01b3);
+    };
+    attempt_id.bytes().for_each(&mut feed);
+    question_id.to_le_bytes().into_iter().for_each(&mut feed);
+    (idx as u64).to_le_bytes().into_iter().for_each(&mut feed);
+    hash
+}
+
+/// Deterministic Fisher-Yates shuffle driven by a splitmix64 generator.
+fn shuffle_with_seed<T>(items: &mut [T], seed: u64) {
+    let mut state = seed;
+    let mut next = || {
+        state = state.wrapping_add(0x9e37_79b9_7f4a_7c15);
+        let mut z = state;
+        z = (z ^ (z >> 30)).wrapping_mul(0xbf58_476d_1ce4_e5b9);
+        z = (z ^ (z >> 27)).wrapping_mul(0x94d0_49bb_1331_11eb);
+        z ^ (z >> 31)
+    };
+    for i in (1..items.len()).rev() {
+        let j = (next() % (i as u64 + 1)) as usize;
+        items.swap(i, j);
     }
 }
 
@@ -385,5 +512,90 @@ impl Progress {
 
     pub fn is_starred(&self, question_id: u32) -> bool {
         self.starred_questions.contains(&question_id)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_question_set_filter() {
+        let q1 = Question {
+            id: 1,
+            text: "Q1".into(),
+            options: std::collections::BTreeMap::new(),
+            correct: "a".into(),
+            image: Some("sign.png".into()),
+            has_image: true,
+            text_en: None,
+            options_en: None,
+            text_rw: None,
+            options_rw: None,
+            status_en: None,
+        };
+        let q2 = Question {
+            id: 2,
+            text: "Q2".into(),
+            options: std::collections::BTreeMap::new(),
+            correct: "b".into(),
+            image: None,
+            has_image: false,
+            text_en: None,
+            options_en: None,
+            text_rw: None,
+            options_rw: None,
+            status_en: None,
+        };
+        let questions = vec![q1, q2];
+        let mut starred = std::collections::HashSet::new();
+        starred.insert(1);
+        let mut stats = std::collections::HashMap::new();
+        stats.insert(
+            2,
+            QuestionStat {
+                question_id: 2,
+                seen_count: 1,
+                correct_count: 0,
+                wrong_count: 1,
+            },
+        );
+
+        assert_eq!(
+            QuestionSet::All
+                .filter_questions(&questions, &starred, &stats)
+                .len(),
+            2
+        );
+        assert_eq!(
+            QuestionSet::Signs
+                .filter_questions(&questions, &starred, &stats)
+                .len(),
+            1
+        );
+        assert_eq!(
+            QuestionSet::Rules
+                .filter_questions(&questions, &starred, &stats)
+                .len(),
+            1
+        );
+        assert_eq!(
+            QuestionSet::NotSeen
+                .filter_questions(&questions, &starred, &stats)
+                .len(),
+            1
+        );
+        assert_eq!(
+            QuestionSet::Starred
+                .filter_questions(&questions, &starred, &stats)
+                .len(),
+            1
+        );
+        assert_eq!(
+            QuestionSet::Mistakes
+                .filter_questions(&questions, &starred, &stats)
+                .len(),
+            1
+        );
     }
 }

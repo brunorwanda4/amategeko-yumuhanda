@@ -65,6 +65,30 @@ Built with [GPUI](https://gpui.rs), [GPUI Kit](https://gpui-kit.com/) and [gpui-
 
 ---
 
+## Local Rust development settings
+
+The dev profile uses incremental compilation and line-table debug information.
+Workspace code keeps optimization level 1; dependencies use level 2.
+On Windows MSVC, `.cargo/config.toml` selects `rust-lld.exe` bundled with the active
+Rust toolchain, without a machine-specific absolute path. Other targets keep
+their linkers.
+
+Local Zed settings in `.zed/settings.json` (git-ignored) select no extra Cargo
+features and preserve manifest defaults. Open the workspace root in Zed. At most
+two analyzer Cargo jobs run, and all-target loading is disabled to reduce memory
+pressure on this 8 GB machine. There is no Tauri subproject.
+Global Zed settings use `cargo check` and a separate
+`target/rust-analyzer` cache. That cache avoids build-lock contention but uses
+additional disk space. Switch `lsp.rust-analyzer.initialization_options.check.command`
+to `clippy` for lint warnings, or run `cargo clippy --workspace --all-targets`.
+
+`sccache` was not installed when this setup was configured, so no wrapper is set.
+Install it with `cargo install sccache --locked`, then enable the commented wrapper
+in `.cargo/config.toml`. Run `bacon` for continuous desktop checks (already installed
+on this machine). Local VS Code settings isolate rust-analyzer's target directory
+and enable Clippy. See [Rust build performance](docs/BUILD_PERFORMANCE.md) for the
+dependency audit, timing results, Windows options, and daily commands.
+
 ## Project Structure
 
 ```
@@ -170,6 +194,12 @@ cargo run -p desktop
 cargo build -p desktop --release
 ```
 The optimized executable will be located at `target/release/amategeko.exe`.
+
+## Build and install (Windows)
+
+Install Inno Setup 6, then run the installer build from the repository root:
+`.\scripts\build-installer.ps1`
+The installer is written to `dist\Amategeko-Setup.exe`.
 
 ---
 

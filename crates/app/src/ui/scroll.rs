@@ -1,7 +1,78 @@
+use std::cell::Cell;
 use std::time::Duration;
 
+use gpui::{InteractiveElement, MouseButton, Pixels, Point};
 use gpui_kit::component::scroll::{Scrollbar, ScrollbarMode, ScrollbarMotion, ScrollbarStyles};
 use gpui_kit::{px, App, ElementId, ScrollHandle};
+
+/// Movement (in pixels) before a press turns into a drag, so taps and clicks still work.
+const DRAG_THRESHOLD: f32 = 6.0;
+
+#[derive(Clone, Copy)]
+struct DragState {
+    start: Point<Pixels>,
+    last: Point<Pixels>,
+    active: bool,
+}
+
+thread_local! {
+    // Only one pointer drags at a time, so one slot is enough.
+    static DRAG: Cell<Option<DragState>> = const { Cell::new(None) };
+}
+
+/// Lets a scroll container be scrolled by dragging its content.
+///
+/// On Windows (laptops, tablets) GPUI reports a finger or pen drag as plain mouse
+/// down/move/up and never as a scroll event, so the mouse wheel works but dragging
+/// the screen does not. This adds that missing drag-to-scroll.
+pub trait DragScroll: Sized {
+    fn drag_scroll(self, handle: &ScrollHandle) -> Self;
+}
+
+impl<E: InteractiveElement> DragScroll for E {
+    fn drag_scroll(self, handle: &ScrollHandle) -> Self {
+        let handle = handle.clone();
+        self.on_mouse_down(MouseButton::Left, |event, _, _| {
+            DRAG.set(Some(DragState {
+                start: event.position,
+                last: event.position,
+                active: false,
+            }));
+        })
+        .on_mouse_move(move |event, window, cx| {
+            let Some(mut drag) = DRAG.get() else {
+                return;
+            };
+            if event.pressed_button != Some(MouseButton::Left) {
+                DRAG.set(None);
+                return;
+            }
+            if !drag.active {
+                let moved = (event.position.y - drag.start.y).abs();
+                if moved < px(DRAG_THRESHOLD) {
+                    return;
+                }
+                drag.active = true;
+                drag.last = drag.start;
+            }
+            let delta = event.position.y - drag.last.y;
+            drag.last = event.position;
+            DRAG.set(Some(drag));
+
+            let mut offset = handle.offset();
+            offset.y += delta;
+            handle.set_offset(offset);
+            window.refresh();
+            cx.stop_propagation();
+        })
+        .capture_any_mouse_up(|_, _, cx| {
+            if DRAG.take().is_some_and(|drag| drag.active) {
+                // A drag must not also count as a click on whatever is under the finger.
+                cx.stop_propagation();
+            }
+        })
+    }
+}
 
 #[derive(Clone, Copy)]
 pub struct ScrollbarContext<'a> {
@@ -66,9 +137,9 @@ mod tests {
     use super::*;
     use amategeko_core::Question;
     use gpui::{
-        div, point, Context, InteractiveElement as _, IntoElement, ParentElement as _, Render,
-        ScrollDelta, ScrollWheelEvent, StatefulInteractiveElement as _, Styled as _,
-        TestAppContext, VisualTestContext, Window,
+        div, point, Context, IntoElement, ParentElement as _, Render, ScrollDelta,
+        ScrollWheelEvent, StatefulInteractiveElement as _, Styled as _, TestAppContext,
+        VisualTestContext, Window,
     };
 
     struct ScrollHarness {
@@ -85,6 +156,7 @@ mod tests {
                 .h(px(240.0))
                 .relative()
                 .track_scroll(&self.handle)
+                .drag_scroll(&self.handle)
                 .overflow_y_scroll()
                 .pr_3()
                 .child(vertical_scrollbar(
@@ -108,6 +180,50 @@ mod tests {
         cx.update(|window, cx| {
             _ = window.draw(cx);
         });
+    }
+
+    #[gpui::test]
+    fn dragging_the_content_scrolls_it(cx: &mut TestAppContext) {
+        cx.update(gpui_kit::init);
+        let (view, cx) = cx.add_window_view(move |_, _| ScrollHarness {
+            handle: ScrollHandle::default(),
+            width: 320.0,
+            longest_question: String::from("Question"),
+        });
+        let cx: &mut VisualTestContext = cx;
+        draw(cx);
+
+        let none = gpui::Modifiers::default();
+        cx.simulate_mouse_down(point(px(100.0), px(200.0)), MouseButton::Left, none);
+        cx.simulate_mouse_move(point(px(100.0), px(120.0)), MouseButton::Left, none);
+        draw(cx);
+        cx.simulate_mouse_up(point(px(100.0), px(120.0)), MouseButton::Left, none);
+        draw(cx);
+
+        // Dragging up by 80px moves the content up (offset goes negative).
+        let offset = view.read_with(cx, |view, _| view.handle.offset().y);
+        assert!(offset < px(-40.0), "offset was {offset:?}");
+    }
+
+    #[gpui::test]
+    fn a_small_movement_is_a_tap_not_a_drag(cx: &mut TestAppContext) {
+        cx.update(gpui_kit::init);
+        let (view, cx) = cx.add_window_view(move |_, _| ScrollHarness {
+            handle: ScrollHandle::default(),
+            width: 320.0,
+            longest_question: String::from("Question"),
+        });
+        let cx: &mut VisualTestContext = cx;
+        draw(cx);
+
+        let none = gpui::Modifiers::default();
+        cx.simulate_mouse_down(point(px(100.0), px(200.0)), MouseButton::Left, none);
+        cx.simulate_mouse_move(point(px(100.0), px(197.0)), MouseButton::Left, none);
+        cx.simulate_mouse_up(point(px(100.0), px(197.0)), MouseButton::Left, none);
+        draw(cx);
+
+        let offset = view.read_with(cx, |view, _| view.handle.offset().y);
+        assert_eq!(offset, px(0.0));
     }
 
     #[gpui::test]

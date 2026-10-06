@@ -33,7 +33,9 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("debug")
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -63,16 +65,6 @@ android {
         }
     }
 
-    packaging {
-        // Prevent stripping of the Rust library — cargo already strips in
-        // release mode and stripping again can break backtraces.
-        jniLibs {
-            keepDebugSymbols += listOf(
-                "*/arm64-v8a/libgpui_mobile_app.so"
-            )
-        }
-    }
-
     // Lint configuration — relaxed for an example project.
     lint {
         abortOnError = false
@@ -81,6 +73,8 @@ android {
 }
 
 dependencies {
+    // AndroidX back dispatcher used by MainActivity.
+    implementation("androidx.activity:activity:1.9.3")
     // AndroidX core for NotificationCompat (used by GpuiNotifications)
     implementation("androidx.core:core:1.12.0")
     // AndroidX SplashScreen compat (used by GpuiActivity to hold splash until native init)

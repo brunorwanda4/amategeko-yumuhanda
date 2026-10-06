@@ -7,7 +7,7 @@ use std::path::Path;
 
 #[derive(RustEmbed)]
 #[folder = "../../assets"]
-#[include = "images/**/*.png"]
+#[exclude = "fonts/*"]
 pub struct EmbeddedAppAssets;
 
 #[derive(Clone, Copy, Debug, Default)]
@@ -31,6 +31,9 @@ impl AssetSource for AppAssets {
 
         // 2. Try gpui-kit AllAssets (for UI icons)
         if let Ok(Some(data)) = AllAssets.load(path) {
+            return Ok(Some(data));
+        }
+        if let Ok(Some(data)) = AllAssets.load(rel_path) {
             return Ok(Some(data));
         }
 

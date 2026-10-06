@@ -1,6 +1,7 @@
 use crate::state::AppState;
 use crate::ui::footer::AppFooter;
-use crate::ui::scroll::vertical_scrollbar;
+use crate::ui::layout::{page_column, page_max_width, PagePadding as _};
+use crate::ui::scroll::{vertical_scrollbar, DragScroll};
 use amategeko_core::{t, Language, ThemeMode};
 use gpui::InteractiveElement as _;
 use gpui_kit::base::Disableable as _;
@@ -34,6 +35,7 @@ pub enum SettingsAction {
     SetInterfaceLanguage(Language),
     SetQuestionLanguage(Language),
     ToggleShowBothLanguages,
+    ToggleShuffleOptions,
 }
 
 pub struct SettingsView;
@@ -56,13 +58,13 @@ impl SettingsView {
         div()
             .id("settings_scroll_view")
             .track_scroll(scroll_handle)
+.drag_scroll(scroll_handle)
             .flex()
             .flex_col()
             .size_full()
             .overflow_y_scroll()
             .bg(colors.background)
-            .p_4()
-            .when(is_desktop, |el| el.p_6())
+            .page_padding(is_desktop)
             .child(vertical_scrollbar(
                 "settings_scrollbar",
                 scroll_handle,
@@ -70,12 +72,7 @@ impl SettingsView {
                 reveal_scrollbar,
             ))
             .child(
-                div()
-                    .flex()
-                    .flex_col()
-                    .w_full()
-                    .max_w(px(720.0))
-                    .mx_auto()
+                page_column()
                     .gap_6()
                     // Page Title Header
                     .child(
@@ -110,9 +107,12 @@ impl SettingsView {
                                     .child(
                                         div()
                                             .flex()
-                                            .flex_row()
-                                            .items_center()
-                                            .justify_between()
+                                            .when(is_desktop, |el| {
+                                                    el.flex_row().items_center().justify_between()
+                                                })
+                                                .when(!is_desktop, |el| {
+                                                    el.flex_col().items_start().gap_3()
+                                                })
                                             .p_4()
                                             .child(
                                                 div()
@@ -171,9 +171,12 @@ impl SettingsView {
                                     .child(
                                         div()
                                             .flex()
-                                            .flex_row()
-                                            .items_center()
-                                            .justify_between()
+                                            .when(is_desktop, |el| {
+                                                el.flex_row().items_center().justify_between()
+                                            })
+                                            .when(!is_desktop, |el| {
+                                                el.flex_col().items_start().gap_3()
+                                            })
                                             .p_4()
                                             .child(
                                                 div()
@@ -281,6 +284,7 @@ impl SettingsView {
                                                 on_action(this, SettingsAction::IncMediumTime, window, cx);
                                             },
                                         ),
+                                        is_desktop,
                                     ))
                                     .child(Self::render_divider(&colors))
                                     // Row 2: Hard Time
@@ -302,6 +306,7 @@ impl SettingsView {
                                                 on_action(this, SettingsAction::IncHardTime, window, cx);
                                             },
                                         ),
+                                        is_desktop,
                                     ))
                                     .child(Self::render_divider(&colors))
                                     // Row 3: Pass Mark
@@ -323,6 +328,7 @@ impl SettingsView {
                                                 on_action(this, SettingsAction::IncPassMark, window, cx);
                                             },
                                         ),
+                                        is_desktop,
                                     )),
                             ),
                     )
@@ -351,9 +357,12 @@ impl SettingsView {
                                     .child(
                                         div()
                                             .flex()
-                                            .flex_row()
-                                            .items_center()
-                                            .justify_between()
+                                            .when(is_desktop, |el| {
+                                                el.flex_row().items_center().justify_between()
+                                            })
+                                            .when(!is_desktop, |el| {
+                                                el.flex_col().items_start().gap_3()
+                                            })
                                             .p_4()
                                             .child(
                                                 div()
@@ -416,9 +425,12 @@ impl SettingsView {
                                             .child(
                                                 div()
                                                     .flex()
-                                                    .flex_row()
-                                                    .items_center()
-                                                    .justify_between()
+                                                    .when(is_desktop, |el| {
+                                                        el.flex_row().items_center().justify_between()
+                                                    })
+                                                    .when(!is_desktop, |el| {
+                                                        el.flex_col().items_start().gap_3()
+                                                    })
                                                     .child(
                                                         div()
                                                             .text_sm()
@@ -470,7 +482,7 @@ impl SettingsView {
                                         },
                                     ))
                                     // Keyboard shortcuts switch (desktop only)
-                                    .when(is_desktop, |el| {
+                                    .when(is_desktop && !crate::is_native_mobile(), |el| {
                                         let sub = if cfg!(target_os = "macos") {
                                             "Cmd+1..5, A–D, Enter, ? / F1"
                                         } else {
@@ -505,6 +517,18 @@ impl SettingsView {
                                         move |this, window, cx| {
                                             on_action(this, SettingsAction::ToggleHardWeightImages, window, cx);
                                         },
+                                    ))
+                                    .child(Self::render_divider(&colors))
+                                    // Shuffle answer options switch
+                                    .child(Self::render_switch_row(
+                                        t("settings.shuffle_options", lang),
+                                        t("settings.shuffle_options_desc", lang),
+                                        "sw_shuffle_options",
+                                        s.shuffle_options,
+                                        cx,
+                                        move |this, window, cx| {
+                                            on_action(this, SettingsAction::ToggleShuffleOptions, window, cx);
+                                        },
                                     )),
                             ),
                     )
@@ -533,9 +557,12 @@ impl SettingsView {
                                     .child(
                                         div()
                                             .flex()
-                                            .flex_row()
-                                            .items_center()
-                                            .justify_between()
+                                            .when(is_desktop, |el| {
+                                                el.flex_row().items_center().justify_between()
+                                            })
+                                            .when(!is_desktop, |el| {
+                                                el.flex_col().items_start().gap_3()
+                                            })
                                             .child(
                                                 div()
                                                     .flex()
@@ -615,7 +642,7 @@ impl SettingsView {
                                 let mut btn = Button::new("btn_save_settings")
                                     .primary()
                                     .label(t("settings.save_btn", lang));
-                                if is_desktop && s.desktop_shortcuts_enabled {
+                                if crate::shortcuts_ui_active(is_desktop, s.desktop_shortcuts_enabled) {
                                     let shortcut_str = if cfg!(target_os = "macos") { "Cmd+S" } else { "Ctrl+S" };
                                     btn = btn.tooltip(format!("{} ({shortcut_str})", t("settings.save_btn", lang)));
                                 }
@@ -626,7 +653,7 @@ impl SettingsView {
                     ),
             )
             .when(is_desktop, |settings| {
-                settings.child(AppFooter::render(true, px(720.0), lang, cx))
+                settings.child(AppFooter::render(true, page_max_width(), lang, cx))
             })
     }
 
@@ -638,12 +665,14 @@ impl SettingsView {
         title: &'static str,
         subtitle: &'static str,
         slider_control: impl IntoElement,
+        is_desktop: bool,
     ) -> impl IntoElement {
         div()
             .flex()
-            .flex_row()
-            .items_center()
-            .justify_between()
+            .when(is_desktop, |el| {
+                el.flex_row().items_center().justify_between()
+            })
+            .when(!is_desktop, |el| el.flex_col().items_start().gap_3())
             .p_4()
             .child(
                 div()
@@ -670,8 +699,11 @@ impl SettingsView {
             .items_center()
             .justify_between()
             .p_4()
+            .gap_3()
             .child(
                 div()
+                    .flex_1()
+                    .min_w_0()
                     .flex()
                     .flex_col()
                     .gap_0p5()

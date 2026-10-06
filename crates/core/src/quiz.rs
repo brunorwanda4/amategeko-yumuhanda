@@ -43,6 +43,36 @@ impl QuizEngine {
         ))
     }
 
+    /// Starts a quiz with an explicit set of pre-filtered questions.
+    pub fn start_quiz_with_questions(
+        mode: QuizMode,
+        questions: Vec<Question>,
+        settings: &Settings,
+        now_secs: u64,
+    ) -> Result<Attempt> {
+        if questions.is_empty() {
+            return Err(AppError::InvalidData(
+                "Nta bibazo bibonetse byo gutangiza ikizamini".to_string(),
+            ));
+        }
+
+        let allowed_duration_secs = match mode {
+            QuizMode::Hagati => Some((settings.medium_duration_mins as u64) * 60),
+            QuizMode::Bikomeye => Some((settings.hard_duration_mins as u64) * 60),
+            QuizMode::Byoroshye | QuizMode::WeakPractice | QuizMode::RetryWrong => None,
+        };
+
+        let id = format!("attempt_{}_{}", mode.title_kinyarwanda(), now_secs);
+
+        Ok(Attempt::new(
+            id,
+            mode,
+            questions,
+            now_secs,
+            allowed_duration_secs,
+        ))
+    }
+
     /// Starts a "Retry Wrong" quiz from the failed or unanswered questions of a prior result.
     pub fn start_retry_wrong(previous_result: &AttemptResult, now_secs: u64) -> Result<Attempt> {
         let wrong_questions: Vec<Question> = previous_result

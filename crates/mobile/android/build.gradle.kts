@@ -56,7 +56,7 @@ tasks.register<Exec>("buildRustDebug") {
 
 tasks.register("buildAll") {
     group = "rust"
-    description = "Build Rust library (release) and then assemble the debug APK."
+    description = "Build Rust library (release) and then assemble the release APK."
     dependsOn("buildRustRelease")
-    finalizedBy(":app:assembleDebug")
+    finalizedBy(":app:assembleRelease")
 }
