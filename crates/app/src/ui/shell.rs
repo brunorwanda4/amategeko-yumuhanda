@@ -251,8 +251,8 @@ impl ShellView {
                 }
                 let insets_tick = INSETS_CHANGED.swap(false, std::sync::atomic::Ordering::SeqCst);
                 let back_tick = BACK_REQUESTED.swap(false, std::sync::atomic::Ordering::SeqCst);
-                if timer_tick || insets_tick || back_tick {
-                    if this
+                if (timer_tick || insets_tick || back_tick)
+                    && this
                         .update(cx, |this, cx| {
                             if back_tick {
                                 this.perform_go_back(None, cx);
@@ -263,9 +263,8 @@ impl ShellView {
                             cx.notify();
                         })
                         .is_err()
-                    {
-                        break;
-                    }
+                {
+                    break;
                 }
             }
         });
@@ -433,11 +432,7 @@ impl ShellView {
         CAN_GO_BACK.store(self.can_go_back(), std::sync::atomic::Ordering::SeqCst);
     }
 
-    pub fn perform_go_back(
-        &mut self,
-        mut window: Option<&mut Window>,
-        cx: &mut Context<Self>,
-    ) -> bool {
+    pub fn perform_go_back(&mut self, window: Option<&mut Window>, cx: &mut Context<Self>) -> bool {
         let handled = if self.show_help_dialog {
             self.show_help_dialog = false;
             true
@@ -455,7 +450,7 @@ impl ShellView {
             true
         } else if self.focus_mode {
             self.focus_mode = false;
-            if let Some(w) = window.as_deref_mut() {
+            if let Some(w) = window {
                 if w.is_fullscreen() {
                     w.toggle_fullscreen();
                 }
@@ -465,7 +460,7 @@ impl ShellView {
             if self.state.current_attempt.is_some() {
                 self.show_finish_confirm_dialog = true;
             } else {
-                if let Some(w) = window.as_deref_mut() {
+                if let Some(w) = window {
                     if w.is_fullscreen() {
                         w.toggle_fullscreen();
                     }
@@ -1263,16 +1258,10 @@ impl Render for ShellView {
                         }
                         ShortcutAction::ToggleTheme => {
                             let theme = match this.state.settings.theme {
-                                amategeko_core::ThemeMode::Dark => {
-                                    amategeko_core::ThemeMode::Light
-                                }
-                                amategeko_core::ThemeMode::Light => {
-                                    amategeko_core::ThemeMode::Dark
-                                }
+                                amategeko_core::ThemeMode::Dark => amategeko_core::ThemeMode::Light,
+                                amategeko_core::ThemeMode::Light => amategeko_core::ThemeMode::Dark,
                                 amategeko_core::ThemeMode::System => {
-                                    if cx.theme().mode
-                                        == gpui_kit::component::ThemeMode::Dark
-                                    {
+                                    if cx.theme().mode == gpui_kit::component::ThemeMode::Dark {
                                         amategeko_core::ThemeMode::Light
                                     } else {
                                         amategeko_core::ThemeMode::Dark

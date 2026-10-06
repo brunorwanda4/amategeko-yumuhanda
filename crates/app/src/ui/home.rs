@@ -545,11 +545,7 @@ impl HomeView {
             .size(px(32.0))
             .rounded_lg()
             .bg(info.color.opacity(0.15))
-            .child(
-                Icon::new(info.icon.clone())
-                    .size(px(18.0))
-                    .text_color(info.color),
-            );
+            .child(Icon::new(info.icon).size(px(18.0)).text_color(info.color));
 
         let play = Self::play_button(info, is_desktop, cx, on_action);
 

@@ -8,6 +8,13 @@ Built with [GPUI](https://gpui.rs), [GPUI Kit](https://gpui-kit.com/) and [gpui-
 
 > **Disclaimer:** This is a study tool designed to aid preparation for the provisional driving license exam. The question bank is extracted from study materials. Always confirm official rules and regulations with the Rwanda National Police (RNP).
 
+## Download version 1.0.0
+
+Download the latest release from [GitHub Releases](https://github.com/brunorwanda4/amategeko-yumuhanda/releases/latest):
+
+- **Windows:** `Amategeko-y-Umuhanda-v1.0.0-Windows-Setup.exe`
+- **Android:** `Amategeko-y-Umuhanda-v1.0.0-Android-arm64.apk` (Android 8.0 or newer, ARM64)
+
 ---
 
 ## Features

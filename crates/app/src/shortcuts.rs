@@ -191,7 +191,6 @@ impl ShortcutAction {
             ShortcutAction::ChooseOption(_)
                 | ShortcutAction::NextOrConfirm
                 | ShortcutAction::ShowHelp
-                | ShortcutAction::ToggleTheme
         )
     }
 

@@ -157,7 +157,7 @@ checksum = "683d7910e743518b0e34f1186f92494becacb047c7b6bf616c96772180fef923"
 
 [[package]]
 name = "amategeko-app"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "amategeko-core",
  "anyhow",
@@ -173,7 +173,7 @@ dependencies = [
 
 [[package]]
 name = "amategeko-core"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "rand 0.8.8",
  "serde",
@@ -1468,7 +1468,7 @@ dependencies = [
 
 [[package]]
 name = "desktop"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "amategeko-app",
  "amategeko-core",
@@ -4204,7 +4204,7 @@ dependencies = [
 
 [[package]]
 name = "mobile"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "amategeko-app",
  "amategeko-core",
