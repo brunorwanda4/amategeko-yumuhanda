@@ -632,18 +632,20 @@ impl QuizView {
                                         .child(
                                             div()
                                                 .w_full()
-                                                .min_h(px(320.0))
-                                                .h(px(340.0))
-                                                .rounded_2xl()
-                                                .border_1()
-                                                .border_dashed()
-                                                .border_color(colors.border)
-                                                .bg(colors.secondary)
                                                 .flex()
                                                 .flex_col()
                                                 .items_center()
                                                 .justify_center()
-                                                .p_4()
+                                                .when(is_desktop, |el| {
+                                                    el.min_h(px(320.0))
+                                                        .h(px(340.0))
+                                                        .rounded_2xl()
+                                                        .border_1()
+                                                        .border_dashed()
+                                                        .border_color(colors.border)
+                                                        .bg(colors.secondary)
+                                                        .p_4()
+                                                })
                                                 .child(
                                                     img(format!(
                                                         "assets/images/q{}.png",
