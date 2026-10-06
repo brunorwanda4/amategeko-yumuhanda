@@ -73,6 +73,8 @@ android {
 }
 
 dependencies {
+    // AndroidX back dispatcher used by MainActivity.
+    implementation("androidx.activity:activity:1.9.3")
     // AndroidX core for NotificationCompat (used by GpuiNotifications)
     implementation("androidx.core:core:1.12.0")
     // AndroidX SplashScreen compat (used by GpuiActivity to hold splash until native init)
