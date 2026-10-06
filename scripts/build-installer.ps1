@@ -11,12 +11,13 @@ try {
     }
 
     $isccCandidates = @(
+        "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe",
         "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe",
         "$env:ProgramFiles\Inno Setup 6\ISCC.exe"
     )
     $iscc = $isccCandidates | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
     if (-not $iscc) {
-        throw "ISCC.exe was not found. Install Inno Setup 6 in its default Program Files location."
+        throw "ISCC.exe was not found. Install Inno Setup 6 in its default user or Program Files location."
     }
 
     & $iscc (Join-Path $repoRoot "installer.iss")
