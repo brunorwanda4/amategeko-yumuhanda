@@ -1,18 +1,21 @@
-//! Embeds the Windows app icon into the executable.
-
+#[cfg(windows)]
 fn main() {
-    println!("cargo:rerun-if-changed=resources/app.rc");
-    println!("cargo:rerun-if-changed=resources/app.ico");
+    const ICON_PATH: &str = "../../assets/icon.ico";
 
-    // Only Windows targets have exe resources; other targets need nothing.
-    if std::env::var("CARGO_CFG_TARGET_OS").as_deref() != Ok("windows") {
-        return;
-    }
+    println!("cargo:rerun-if-changed={ICON_PATH}");
 
-    // A missing resource compiler only loses the icon, so warn instead of failing.
-    if let Err(err) =
-        embed_resource::compile("resources/app.rc", embed_resource::NONE).manifest_optional()
-    {
-        println!("cargo:warning=app icon not embedded: {err}");
+    let version = env!("CARGO_PKG_VERSION");
+    let mut resource = winresource::WindowsResource::new();
+    resource.set_icon(ICON_PATH);
+    resource.set("ProductName", "Amategeko y'Umuhanda");
+    resource.set("FileDescription", "Amategeko y'Umuhanda");
+    resource.set("FileVersion", version);
+    resource.set("ProductVersion", version);
+
+    if let Err(error) = resource.compile() {
+        panic!("failed to compile Windows resources: {error}");
     }
 }
+
+#[cfg(not(windows))]
+fn main() {}

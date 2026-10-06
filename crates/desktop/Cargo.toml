@@ -17,5 +17,4 @@ directories.workspace = true
 log.workspace = true
 
 [build-dependencies]
-# Already in Cargo.lock via GPUI; compiles resources/app.rc (exe icon).
-embed-resource = "3.0.11"
+winresource = "0.1"

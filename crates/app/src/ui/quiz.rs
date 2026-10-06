@@ -64,11 +64,8 @@ impl QuizView {
             Some(q) => q,
             None => return div().child("Question not found"),
         };
-        let option_order = attempt.option_order(
-            current_idx,
-            q_lang,
-            state.settings.shuffle_options,
-        );
+        let option_order =
+            attempt.option_order(current_idx, q_lang, state.settings.shuffle_options);
         let correct_badge = option_order
             .iter()
             .position(|option_id| option_id.eq_ignore_ascii_case(&current_q.correct))

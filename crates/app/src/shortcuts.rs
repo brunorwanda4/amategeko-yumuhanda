@@ -125,6 +125,7 @@ pub enum ShortcutAction {
     NavSettings,
     CloseOrBack,
     ShowHelp,
+    ToggleTheme,
 
     // Home (mode picker)
     SelectQuizMode(u8), // 1 = Easy, 2 = Medium, 3 = Hard
@@ -190,6 +191,7 @@ impl ShortcutAction {
             ShortcutAction::ChooseOption(_)
                 | ShortcutAction::NextOrConfirm
                 | ShortcutAction::ShowHelp
+                | ShortcutAction::ToggleTheme
         )
     }
 
@@ -358,6 +360,13 @@ impl ShortcutRegistry {
             scopes: vec![ShortcutScope::Global],
             label_key: "shortcuts.help",
             custom_hint: Some("F1"),
+        });
+        self.shortcuts.push(ShortcutDef {
+            key: KeyCombo::ctrl("i"),
+            action: ShortcutAction::ToggleTheme,
+            scopes: vec![ShortcutScope::Global],
+            label_key: "settings.theme",
+            custom_hint: Some(if mod_name == "Cmd" { "Cmd+I" } else { "Ctrl+I" }),
         });
 
         // 2. Home screen shortcuts (mode picker): 1/2/3 select, Enter starts the selected mode
@@ -758,6 +767,10 @@ impl ShortcutRegistry {
                     (
                         "Esc".to_string(),
                         t("shortcuts.close_or_back", lang).to_string(),
+                    ),
+                    (
+                        format!("{mod_name}+I"),
+                        t("settings.theme", lang).to_string(),
                     ),
                     ("? / F1".to_string(), t("shortcuts.help", lang).to_string()),
                 ],

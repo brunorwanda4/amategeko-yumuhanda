@@ -195,6 +195,12 @@ cargo build -p desktop --release
 ```
 The optimized executable will be located at `target/release/amategeko.exe`.
 
+## Build and install (Windows)
+
+Install Inno Setup 6, then run the installer build from the repository root:
+`.\scripts\build-installer.ps1`
+The installer is written to `dist\Amategeko-Setup.exe`.
+
 ---
 
 ### 2. Android Mobile (ARM64 APK)

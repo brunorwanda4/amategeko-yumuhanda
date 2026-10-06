@@ -657,8 +657,7 @@ impl Render for ShellView {
         }
 
         let active_screen = self.state.active_screen.clone();
-        let is_in_quiz =
-            active_screen == Screen::Quiz && self.state.current_attempt.is_some();
+        let is_in_quiz = active_screen == Screen::Quiz && self.state.current_attempt.is_some();
         let now = Instant::now();
         if active_screen != self.last_scrollbar_screen {
             self.last_scrollbar_screen = active_screen.clone();
@@ -1261,6 +1260,29 @@ impl Render for ShellView {
                                 this.show_help_dialog = !this.show_help_dialog;
                                 cx.notify();
                             }
+                        }
+                        ShortcutAction::ToggleTheme => {
+                            let theme = match this.state.settings.theme {
+                                amategeko_core::ThemeMode::Dark => {
+                                    amategeko_core::ThemeMode::Light
+                                }
+                                amategeko_core::ThemeMode::Light => {
+                                    amategeko_core::ThemeMode::Dark
+                                }
+                                amategeko_core::ThemeMode::System => {
+                                    if cx.theme().mode
+                                        == gpui_kit::component::ThemeMode::Dark
+                                    {
+                                        amategeko_core::ThemeMode::Light
+                                    } else {
+                                        amategeko_core::ThemeMode::Dark
+                                    }
+                                }
+                            };
+                            this.state.settings.theme = theme;
+                            this.state.save_settings(this.state.settings.clone());
+                            crate::apply_theme(theme, Some(window), cx);
+                            cx.notify();
                         }
                         ShortcutAction::CloseOrBack => {
                             this.perform_go_back(Some(window), cx);
