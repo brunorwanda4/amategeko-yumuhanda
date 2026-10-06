@@ -28,6 +28,12 @@ OPTION_MARKER_RE = re.compile(
 # established app ID even though its override no longer matches that raw text.
 SOURCE_ID_OVERRIDES = {(40, 271): 230}
 
+# Question 272 is visibly present on source page 42, but its heading was lost
+# when the source was converted to the landscape/two-up PDF. A matching copy
+# preserves the heading. Keep the recovered record at the end of the app data
+# so existing question IDs and saved progress remain stable.
+RECOVERED_IMAGE_RECTS = {404: (41, (91.6, 72.5, 198.1, 179.0))}
+
 
 def normalize_text(text):
     return text.replace("\u2019", "'").replace("\u2018", "'").replace("`", "'")
@@ -184,6 +190,26 @@ def assign_stable_ids(parsed_questions, existing_questions):
         used_ids.add(assigned_id)
 
     return sorted(parsed_questions, key=lambda question: question["id"])
+
+
+def append_missing_override_questions(final_questions, overrides):
+    """Append complete reviewed overrides that have no extracted base record."""
+    existing_ids = {question["id"] for question in final_questions}
+    recovered = []
+    for key, override in overrides.items():
+        if not key.isdigit() or not isinstance(override, dict):
+            continue
+        question_id = int(key)
+        required = {"id", "text", "options", "correct", "image", "has_image"}
+        if question_id in existing_ids or not required.issubset(override):
+            continue
+        if override["id"] != question_id:
+            continue
+        recovered.append(dict(override))
+
+    final_questions.extend(recovered)
+    final_questions.sort(key=lambda question: question["id"])
+    return recovered
 
 def find_pdf_path():
     candidates = [
@@ -418,6 +444,38 @@ def extract_questions():
                 "page": page_number + 1,
                 "reasons": reasons,
                 "question": question_obj
+            })
+
+    recovered_questions = append_missing_override_questions(final_questions, overrides)
+    for question_obj in recovered_questions:
+        assigned_id = question_obj["id"]
+        image_source = RECOVERED_IMAGE_RECTS.get(assigned_id)
+        if image_source:
+            page_number, rect_values = image_source
+            crop_rect = fitz.Rect(rect_values)
+            crop_rect.x0 = max(0, crop_rect.x0 - 2)
+            crop_rect.y0 = max(0, crop_rect.y0 - 2)
+            crop_rect.x1 = min(doc[page_number].rect.width, crop_rect.x1 + 2)
+            crop_rect.y1 = min(doc[page_number].rect.height, crop_rect.y1 + 2)
+            pix = doc[page_number].get_pixmap(clip=crop_rect, dpi=144)
+            pix.save(os.path.join(images_dir, question_obj["image"]))
+
+        reasons = []
+        if len(question_obj["options"]) not in (3, 4):
+            reasons.append(f"options_count_{len(question_obj['options'])}")
+        if question_obj.get("correct") not in question_obj["options"]:
+            reasons.append("invalid_or_missing_correct_answer")
+        if not question_obj.get("text"):
+            reasons.append("empty_prompt")
+        if question_obj.get("has_image") and not image_source:
+            reasons.append("missing_recovered_image_source")
+        if reasons:
+            review_list.append({
+                "id": assigned_id,
+                "pdf_num": None,
+                "page": None,
+                "reasons": reasons,
+                "question": question_obj,
             })
 
     # Step 4: Write output questions.json

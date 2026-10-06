@@ -154,5 +154,18 @@
     "correct": "b",
     "image": "q352.png",
     "has_image": true
+  },
+  "404": {
+    "id": 404,
+    "text": "Iki cyapa gisobanura:",
+    "options": {
+      "a": "Ntihanyurwa n'abanyamaguru",
+      "b": "Akayira kabanyamaguru",
+      "c": "Aho abanayamaguru bambukira",
+      "d": "B na c ni ibisubizo by'ukuri"
+    },
+    "correct": "a",
+    "image": "q404.png",
+    "has_image": true
   }
 }
