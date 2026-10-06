@@ -104,7 +104,7 @@ impl QuestionsView {
                 page_column()
                     .h_full()
                     .gap_3p5()
-                    // Top Bar: Page Title + Showing Count (e.g. "Ibibazo" on left, "Birerekana 8 muri 433" on right)
+                    // Top Bar: page title and a count computed from the loaded bank.
                     .child(
                         div()
                             .flex()

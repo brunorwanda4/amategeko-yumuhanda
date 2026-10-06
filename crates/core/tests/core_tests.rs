@@ -4,7 +4,7 @@ use std::collections::{HashMap, HashSet};
 #[test]
 fn test_question_bank_load_bundled() {
     let bank = QuestionBank::load_bundled().expect("Failed to load bundled questions");
-    assert_eq!(bank.len(), 390);
+    assert_eq!(bank.len(), 403);
 
     for q in bank.all() {
         assert!(q.id > 0);
@@ -33,7 +33,7 @@ fn test_question_bank_search_and_filter() {
 
     // Filter by image
     let res_img = bank.search("", true, false, false, &starred, &stats);
-    assert_eq!(res_img.len(), 128);
+    assert_eq!(res_img.len(), 129);
     for q in res_img {
         assert!(q.has_image);
     }
@@ -599,7 +599,7 @@ fn test_option_key_at_maps_screen_position_to_key() {
 #[test]
 fn test_bilingual_questions_and_fallback() {
     let bank = QuestionBank::load_bundled().expect("Failed to load bundled questions");
-    assert_eq!(bank.len(), 390);
+    assert_eq!(bank.len(), 403);
 
     for q in bank.all() {
         // Primary text in English should not be empty
@@ -615,10 +615,13 @@ fn test_bilingual_questions_and_fallback() {
         assert!(sec_for_en.is_some());
         assert_eq!(sec_for_en.unwrap(), text_rw);
 
-        // Secondary text for RW should give EN
+        // Secondary text for RW is available only for reviewed translations.
         let sec_for_rw = q.secondary_text_for(Language::Rw);
-        assert!(sec_for_rw.is_some());
-        assert_eq!(sec_for_rw.unwrap(), text_en);
+        if let Some(sec_for_rw) = sec_for_rw {
+            assert_eq!(sec_for_rw, text_en);
+        } else {
+            assert_eq!(text_en, text_rw);
+        }
 
         // Options
         let opts_en = q.options_for(Language::En);
@@ -627,6 +630,17 @@ fn test_bilingual_questions_and_fallback() {
         assert!(opts_en.contains_key(&q.correct));
         assert!(opts_rw.contains_key(&q.correct));
     }
+
+    // Source-corrected questions do not reuse stale English option mappings.
+    let corrected = bank.get(82).expect("corrected question 82 must exist");
+    assert_eq!(
+        corrected.text_for(Language::En),
+        corrected.text_for(Language::Rw)
+    );
+    assert_eq!(
+        corrected.options_for(Language::En),
+        corrected.options_for(Language::Rw)
+    );
 
     // Test fallback when EN is missing
     let mut custom_q = Question {
