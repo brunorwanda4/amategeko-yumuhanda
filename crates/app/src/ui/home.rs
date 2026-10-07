@@ -204,38 +204,55 @@ impl HomeView {
             .bg(tokens.surface)
             .text_color(tokens.fg)
             .rounded(px(24.0))
-            .p(px(if is_desktop { 28.0 } else { 22.0 }))
+            .p(px(if is_desktop { 28.0 } else { 16.0 }))
             .w_full()
             .flex()
             .when(is_desktop, |el| el.flex_row().items_end().gap(px(30.0)))
-            .when(!is_desktop, |el| el.flex_col().gap(px(18.0)))
+            .when(!is_desktop, |el| el.flex_col().gap(px(12.0)))
             .child(
                 // Big number "3 muri 404"
                 div()
                     .flex()
                     .when(is_desktop, |el| el.flex_col().gap(px(12.0)))
-                    .when(!is_desktop, |el| el.flex_row().items_end().gap(px(10.0)))
+                    .when(!is_desktop, |el| el.flex_row().items_center().gap(px(12.0)))
                     .child(
                         div()
                             .font_family(DISPLAY_FONT)
                             .font_extrabold()
-                            .text_size(px(if is_desktop { 112.0 } else { 76.0 }))
-                            .line_height(px(if is_desktop { 96.0 } else { 68.0 }))
+                            .text_size(px(if is_desktop { 112.0 } else { 56.0 }))
+                            .line_height(px(if is_desktop { 96.0 } else { 50.0 }))
                             .text_color(colors.primary)
                             .child(resume_number.to_string()),
                     )
                     .child(
                         div()
-                            .font_family(BODY_FONT)
-                            .font_medium()
-                            .text_sm()
-                            .text_color(tokens.muted)
-                            .when(!is_desktop, |el| el.pb(px(6.0)))
-                            .child(tf(
-                                "study.of_total",
-                                lang,
-                                &[("total", &total_study.to_string())],
-                            )),
+                            .flex()
+                            .flex_col()
+                            .min_w_0()
+                            .gap_0p5()
+                            .child(
+                                div()
+                                    .font_family(BODY_FONT)
+                                    .font_medium()
+                                    .text_sm()
+                                    .text_color(tokens.muted)
+                                    .child(tf(
+                                        "study.of_total",
+                                        lang,
+                                        &[("total", &total_study.to_string())],
+                                    )),
+                            )
+                            .when(!is_desktop, |el| {
+                                el.child(
+                                    div()
+                                        .font_family(DISPLAY_FONT)
+                                        .font_bold()
+                                        .text_lg()
+                                        .whitespace_normal()
+                                        .text_color(tokens.fg)
+                                        .child(t("study.title", lang)),
+                                )
+                            }),
                     ),
             )
             .child(
@@ -245,24 +262,26 @@ impl HomeView {
                     .min_w_0()
                     .flex()
                     .flex_col()
-                    .child(
-                        div()
-                            .font_family(DISPLAY_FONT)
-                            .font_bold()
-                            .text_size(px(if is_desktop { 26.0 } else { 22.0 }))
-                            .line_height(px(if is_desktop { 30.0 } else { 26.0 }))
-                            .mb(px(6.0))
-                            .text_color(tokens.fg)
-                            .child(t("study.title", lang)),
-                    )
-                    .child(
-                        div()
-                            .font_family(BODY_FONT)
-                            .text_sm()
-                            .mb(px(18.0))
-                            .text_color(tokens.muted)
-                            .child(t("study.sub", lang)),
-                    )
+                    .when(is_desktop, |el| {
+                        el.child(
+                            div()
+                                .font_family(DISPLAY_FONT)
+                                .font_bold()
+                                .text_size(px(26.0))
+                                .line_height(px(30.0))
+                                .mb(px(6.0))
+                                .text_color(tokens.fg)
+                                .child(t("study.title", lang)),
+                        )
+                        .child(
+                            div()
+                                .font_family(BODY_FONT)
+                                .text_sm()
+                                .mb(px(18.0))
+                                .text_color(tokens.muted)
+                                .child(t("study.sub", lang)),
+                        )
+                    })
                     .child(
                         // Thin progress bar
                         div()
@@ -304,7 +323,9 @@ impl HomeView {
                 div()
                     .flex()
                     .when(is_desktop, |el| el.flex_col().gap(px(8.0)).items_stretch())
-                    .when(!is_desktop, |el| el.flex_row().gap(px(8.0)).items_center())
+                    .when(!is_desktop, |el| {
+                        el.flex_row().justify_center().gap(px(8.0)).items_center()
+                    })
                     .child(
                         div()
                             .id("study_continue_btn")
@@ -317,18 +338,20 @@ impl HomeView {
                             .rounded_full()
                             .px_5()
                             .py_3()
+                            .when(!is_desktop, |el| {
+                                el.min_h(px(44.0)).px_4().py_2().gap_2().text_xs()
+                            })
                             .font_semibold()
                             .text_sm()
                             .bg(colors.primary)
                             .text_color(colors.primary_foreground)
                             .hover(|el| el.opacity(0.9))
-                            .when(!is_desktop, |el| el.flex_1())
                             .on_click(cx.listener(move |this, _, window, cx| {
                                 on_action(this, HomeAction::PlayStudy, window, cx);
                             }))
                             .child(
                                 Icon::new(IconName::Play)
-                                    .size(px(16.0))
+                                    .size(px(if is_desktop { 16.0 } else { 14.0 }))
                                     .text_color(colors.primary_foreground),
                             )
                             .child(t("resume.go", lang)),
@@ -345,6 +368,9 @@ impl HomeView {
                             .rounded_full()
                             .px_5()
                             .py_3()
+                            .when(!is_desktop, |el| {
+                                el.min_h(px(44.0)).px_4().py_2().gap_2().text_xs()
+                            })
                             .font_semibold()
                             .text_sm()
                             .border_1()
@@ -352,7 +378,6 @@ impl HomeView {
                             .bg(gpui::transparent_black())
                             .text_color(colors.primary)
                             .hover(|el| el.bg(colors.primary.opacity(0.1)))
-                            .when(!is_desktop, |el| el.flex_1())
                             .on_click(cx.listener(move |this, _, window, cx| {
                                 on_action(this, HomeAction::RestartStudy, window, cx);
                             }))
