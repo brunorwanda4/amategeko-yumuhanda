@@ -279,6 +279,11 @@ impl QuestionBank {
         let mut rng = thread_rng();
 
         match mode {
+            QuizMode::Study => {
+                let mut questions = self.questions.clone();
+                questions.sort_by_key(|question| question.id);
+                questions
+            }
             QuizMode::WeakPractice => {
                 // Collect questions with mistakes, sorted by wrong_count descending
                 let mut mistakes: Vec<(u32, &Question)> = self

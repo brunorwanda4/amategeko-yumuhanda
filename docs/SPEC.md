@@ -166,6 +166,10 @@ The app supports Kinyarwanda (`rw`, default) and English (`en`).
 ### 15.4 Screens
 - Settings: add a "Ururimi / Language" group with two segmented controls (interface, questions) and the "show both languages" switch.
 - Home, Quiz, Results, Browse, Stats: every label comes from the i18n files. Check that English text fits in buttons and chips on mobile (English is often shorter, but some labels are longer).
+- Quiz includes Study all questions: every question appears in ascending ID order with Easy-mode feedback and no timer.
+- Study progress stores the current question ID and locked answers after every answer or navigation, without creating exam history.
+- Reopening Study resumes by ID, using the next greater ID when the saved question is no longer present.
+- The counter can jump to a clamped question number; finishing offers mistakes practice, restart, or Home.
 - Results and Browse: show a small language badge (RW / EN) if the question language differs from the interface language.
 
 ### 15.5 Milestones

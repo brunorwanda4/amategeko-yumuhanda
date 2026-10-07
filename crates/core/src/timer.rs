@@ -168,6 +168,7 @@ impl QuizTimer {
                     TimerState::None
                 }
             }
+            QuizMode::Study => TimerState::None,
         }
     }
 

@@ -18,10 +18,13 @@ pub const DEFAULT_WINDOW_SIZE: Size = Size {
     height: 750.0,
 };
 
+pub const MIN_WINDOW_W: f32 = 360.0;
+pub const MIN_WINDOW_H: f32 = 460.0;
+
 /// Preferred minimum window size. Narrow windows use the mobile layout (< 700 px).
 pub const MIN_WINDOW_SIZE: Size = Size {
-    width: 480.0,
-    height: 520.0,
+    width: MIN_WINDOW_W,
+    height: MIN_WINDOW_H,
 };
 
 /// Space kept free between the window and the display edges.
@@ -132,12 +135,36 @@ fn max_size_on(display: &Rect) -> Size {
     }
 }
 
+/// Minimum desktop window size fitted to the display's usable bounds.
+pub fn min_size(display_w: f32, display_h: f32) -> (f32, f32) {
+    (
+        MIN_WINDOW_W.min((display_w - 2.0 * SCREEN_MARGIN).max(0.0)),
+        MIN_WINDOW_H.min((display_h - 2.0 * SCREEN_MARGIN).max(0.0)),
+    )
+}
+
 /// Minimum window size for `display`: `min`, or the display minus the margin if smaller.
 pub fn min_window_size(display: &Rect, min: Size) -> Size {
-    let max = max_size_on(display);
-    Size {
-        width: min.width.min(max.width),
-        height: min.height.min(max.height),
+    let (width, height) = if min == MIN_WINDOW_SIZE {
+        min_size(display.width, display.height)
+    } else {
+        let max = max_size_on(display);
+        (min.width.min(max.width), min.height.min(max.height))
+    };
+    Size { width, height }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn min_size_fits_normal_small_and_tiny_displays() {
+        assert_eq!(min_size(1920.0, 1080.0), (360.0, 560.0));
+        let small = min_size(910.0, 512.0);
+        assert!(small.1 < 512.0);
+        let tiny = min_size(0.0, 8.0);
+        assert!(tiny.0 >= 0.0 && tiny.1 >= 0.0);
     }
 }
 

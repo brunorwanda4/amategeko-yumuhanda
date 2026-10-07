@@ -106,6 +106,7 @@ impl ResultsView {
             QuizMode::Bikomeye => t("mode.hard.title", lang),
             QuizMode::WeakPractice => t("home.weak_title", lang),
             QuizMode::RetryWrong => t("results.retry_wrong", lang),
+            QuizMode::Study => t("study.badge", lang),
         };
 
         let mins = result.duration_seconds / 60;
@@ -153,9 +154,10 @@ impl ResultsView {
             .flex_1()
             .min_h_0()
             .w_full()
-            .overflow_y_scroll()
+            .when(is_desktop, |el| el.overflow_hidden())
             .when(!is_desktop, |el| {
-                el.track_scroll(scroll_handle)
+                el.overflow_y_scroll()
+                    .track_scroll(scroll_handle)
                     .drag_scroll(scroll_handle)
             })
             .bg(colors.background)

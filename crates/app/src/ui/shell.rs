@@ -206,6 +206,10 @@ pub struct ShellView {
     pub registry: ShortcutRegistry,
     pub show_help_dialog: bool,
     pub show_finish_confirm_dialog: bool,
+    pub show_study_jump_dialog: bool,
+    pub show_study_restart_dialog: bool,
+    pub show_study_finished_dialog: bool,
+    pub study_jump_input: String,
     pub questions_search_focused: bool,
     pub questions_selected_idx: usize,
     pub questions_scroll_handle: gpui::ScrollHandle,
@@ -352,6 +356,10 @@ impl ShellView {
             registry: ShortcutRegistry::new(),
             show_help_dialog: false,
             show_finish_confirm_dialog: false,
+            show_study_jump_dialog: false,
+            show_study_restart_dialog: false,
+            show_study_finished_dialog: false,
+            study_jump_input: String::new(),
             questions_search_focused: false,
             questions_selected_idx: 0,
             questions_scroll_handle,
@@ -392,6 +400,11 @@ impl ShellView {
             HomeAction::PlayMistakes => self
                 .state
                 .start_quiz_in_set(QuizMode::Byoroshye, QuestionSet::Mistakes),
+            HomeAction::PlayStudy => self.state.start_study(),
+            HomeAction::RestartStudy => self.show_study_restart_dialog = true,
+            HomeAction::OpenQuestions => self.state.navigate(Screen::Questions),
+            HomeAction::OpenResults => self.state.navigate(Screen::Results),
+            HomeAction::OpenStats => self.state.navigate(Screen::Stats),
             HomeAction::Resume => self.state.resume_attempt(),
             HomeAction::Discard => self.state.discard_in_progress(),
         }
@@ -408,6 +421,9 @@ impl ShellView {
     pub fn can_go_back(&self) -> bool {
         self.show_help_dialog
             || self.show_finish_confirm_dialog
+            || self.show_study_jump_dialog
+            || self.show_study_restart_dialog
+            || self.show_study_finished_dialog
             || self.stats_confirm_clear
             || self.settings_confirm_clear
             || self.questions_search_focused
@@ -422,6 +438,15 @@ impl ShellView {
     pub fn perform_go_back(&mut self, window: Option<&mut Window>, cx: &mut Context<Self>) -> bool {
         let handled = if self.show_help_dialog {
             self.show_help_dialog = false;
+            true
+        } else if self.show_study_jump_dialog {
+            self.show_study_jump_dialog = false;
+            true
+        } else if self.show_study_restart_dialog {
+            self.show_study_restart_dialog = false;
+            true
+        } else if self.show_study_finished_dialog {
+            self.show_study_finished_dialog = false;
             true
         } else if self.show_finish_confirm_dialog {
             self.show_finish_confirm_dialog = false;
@@ -445,7 +470,17 @@ impl ShellView {
             true
         } else if self.state.active_screen == Screen::Quiz {
             if self.state.current_attempt.is_some() {
-                self.show_finish_confirm_dialog = true;
+                if self
+                    .state
+                    .current_attempt
+                    .as_ref()
+                    .is_some_and(|attempt| attempt.mode == QuizMode::Study)
+                {
+                    self.state.leave_study(Screen::Home);
+                    self.save_dev_state();
+                } else {
+                    self.show_finish_confirm_dialog = true;
+                }
             } else {
                 if let Some(w) = window {
                     if w.is_fullscreen() {
@@ -471,6 +506,12 @@ impl ShellView {
         }
         self.update_can_go_back();
         handled
+    }
+
+    fn confirm_study_jump(&mut self) {
+        let requested = self.study_jump_input.parse::<usize>().unwrap_or(1);
+        self.state.jump_study_to(requested);
+        self.show_study_jump_dialog = false;
     }
 
     pub fn current_scroll_handle(&self) -> &gpui::ScrollHandle {
@@ -682,19 +723,46 @@ impl Render for ShellView {
                 cx,
                 |this, opt, _, cx| {
                     this.state.record_current_answer(opt);
+                    if this.state.current_attempt.as_ref().is_some_and(|attempt| {
+                        attempt.mode == QuizMode::Study
+                            && attempt.current_index + 1 == attempt.total_questions()
+                            && attempt.is_current_locked()
+                    }) {
+                        this.show_study_finished_dialog = true;
+                    }
                     cx.notify();
                 },
                 |this, _, cx| {
-                    if let Some(att) = &mut this.state.current_attempt {
+                    let is_study = this
+                        .state
+                        .current_attempt
+                        .as_ref()
+                        .is_some_and(|attempt| attempt.mode == QuizMode::Study);
+                    if is_study {
+                        if let Some(att) = &mut this.state.current_attempt {
+                            let _ = QuizEngine::next_question(att);
+                        }
+                        this.state.save_study_position();
+                    } else if let Some(att) = &mut this.state.current_attempt {
                         let _ = QuizEngine::next_question(att);
                         let _ = this.state.storage.save_in_progress(att);
                     }
                     cx.notify();
                 },
                 |this, _, cx| {
+                    let is_study = this
+                        .state
+                        .current_attempt
+                        .as_ref()
+                        .is_some_and(|attempt| attempt.mode == QuizMode::Study);
                     if let Some(att) = &mut this.state.current_attempt {
                         let _ = QuizEngine::previous_question(att);
-                        let _ = this.state.storage.save_in_progress(att);
+                        if !is_study {
+                            let _ = this.state.storage.save_in_progress(att);
+                        }
+                    }
+                    if is_study {
+                        this.state.save_study_position();
                     }
                     cx.notify();
                 },
@@ -760,6 +828,11 @@ impl Render for ShellView {
                 },
                 |this, window, cx| {
                     if let Some(att) = &this.state.current_attempt {
+                        if att.mode == QuizMode::Study {
+                            this.show_study_finished_dialog = true;
+                            cx.notify();
+                            return;
+                        }
                         if att.mode == QuizMode::Hagati {
                             this.show_finish_confirm_dialog = true;
                             cx.notify();
@@ -779,14 +852,42 @@ impl Render for ShellView {
                         window.toggle_fullscreen();
                     }
                     this.focus_mode = false;
-                    this.state.discard_in_progress();
-                    this.state.navigate(Screen::Home);
+                    if this
+                        .state
+                        .current_attempt
+                        .as_ref()
+                        .is_some_and(|attempt| attempt.mode == QuizMode::Study)
+                    {
+                        this.state.leave_study(Screen::Home);
+                    } else {
+                        this.state.discard_in_progress();
+                        this.state.navigate(Screen::Home);
+                    }
                     this.save_dev_state();
                     cx.notify();
                 },
                 |this, mode, _, cx| {
-                    this.state.start_quiz(mode);
+                    if mode == QuizMode::Study {
+                        this.state.start_study();
+                    } else {
+                        this.state.start_quiz(mode);
+                    }
                     this.save_dev_state();
+                    cx.notify();
+                },
+                |this, _, cx| {
+                    let current = this
+                        .state
+                        .current_attempt
+                        .as_ref()
+                        .map(|attempt| attempt.current_index + 1)
+                        .unwrap_or(1);
+                    this.study_jump_input = current.to_string();
+                    this.show_study_jump_dialog = true;
+                    cx.notify();
+                },
+                |this, _, cx| {
+                    this.show_study_restart_dialog = true;
                     cx.notify();
                 },
             )
@@ -1072,7 +1173,16 @@ impl Render for ShellView {
                 .when(show_sidebar, |el| {
                     el.child(self.render_desktop_sidebar(reveal_scrollbar, cx))
                 })
-                .child(div().flex_1().size_full().overflow_hidden().child(content))
+                .child(
+                    div()
+                        .flex()
+                        .flex_col()
+                        .flex_1()
+                        .min_h_0()
+                        .size_full()
+                        .overflow_hidden()
+                        .child(content),
+                )
         } else {
             // Mobile Layout: Top App Bar + Content + Bottom Bar (hidden in quiz)
             div()
@@ -1160,11 +1270,43 @@ impl Render for ShellView {
                 cx.listener(move |this, event: &gpui::KeyDownEvent, window, cx| {
                     let dialog_open = this.show_help_dialog
                         || this.show_finish_confirm_dialog
+                        || this.show_study_jump_dialog
+                        || this.show_study_restart_dialog
+                        || this.show_study_finished_dialog
                         || this.stats_confirm_clear
                         || this.settings_confirm_clear;
                     if dialog_open {
                         if event.keystroke.key.eq_ignore_ascii_case("escape") {
                             this.perform_go_back(Some(window), cx);
+                        } else if this.show_study_jump_dialog
+                            && event.keystroke.key.eq_ignore_ascii_case("enter")
+                        {
+                            this.confirm_study_jump();
+                            cx.notify();
+                        } else if this.show_study_jump_dialog
+                            && event.keystroke.key.eq_ignore_ascii_case("backspace")
+                        {
+                            this.study_jump_input.pop();
+                            cx.notify();
+                        } else if this.show_study_jump_dialog
+                            && !event.keystroke.modifiers.control
+                            && !event.keystroke.modifiers.alt
+                            && !event.keystroke.modifiers.platform
+                        {
+                            let digit = event
+                                .keystroke
+                                .key_char
+                                .as_deref()
+                                .and_then(|value| value.chars().next())
+                                .or_else(|| event.keystroke.key.chars().next())
+                                .filter(char::is_ascii_digit);
+                            if let Some(digit) = digit {
+                                if this.study_jump_input == "0" {
+                                    this.study_jump_input.clear();
+                                }
+                                this.study_jump_input.push(digit);
+                                cx.notify();
+                            }
                         }
                         return;
                     }
@@ -1356,6 +1498,14 @@ impl Render for ShellView {
                                 });
                                 if let Some(key) = key {
                                     this.state.record_current_answer(&key);
+                                    if this.state.current_attempt.as_ref().is_some_and(|attempt| {
+                                        attempt.mode == QuizMode::Study
+                                            && attempt.current_index + 1
+                                                == attempt.total_questions()
+                                            && attempt.is_current_locked()
+                                    }) {
+                                        this.show_study_finished_dialog = true;
+                                    }
                                     cx.notify();
                                 }
                             }
@@ -1381,7 +1531,9 @@ impl Render for ShellView {
                                 } else if ShortcutRegistry::can_advance_easy_next(att) {
                                     let is_last = att.current_index + 1 == att.total_questions();
                                     if is_last {
-                                        if att.mode == QuizMode::Hagati {
+                                        if att.mode == QuizMode::Study {
+                                            this.show_study_finished_dialog = true;
+                                        } else if att.mode == QuizMode::Hagati {
                                             this.show_finish_confirm_dialog = true;
                                         } else {
                                             if window.is_fullscreen() {
@@ -1392,17 +1544,37 @@ impl Render for ShellView {
                                         }
                                     } else {
                                         let _ = QuizEngine::next_question(att);
-                                        let _ = this.state.storage.save_in_progress(att);
+                                        if att.mode != QuizMode::Study {
+                                            let _ = this.state.storage.save_in_progress(att);
+                                        }
                                     }
                                     cx.notify();
                                 }
                             }
+                            if this
+                                .state
+                                .current_attempt
+                                .as_ref()
+                                .is_some_and(|attempt| attempt.mode == QuizMode::Study)
+                            {
+                                this.state.save_study_position();
+                            }
                         }
                         ShortcutAction::PrevQuestion => {
+                            let is_study = this
+                                .state
+                                .current_attempt
+                                .as_ref()
+                                .is_some_and(|attempt| attempt.mode == QuizMode::Study);
                             if let Some(att) = &mut this.state.current_attempt {
                                 let _ = QuizEngine::previous_question(att);
-                                let _ = this.state.storage.save_in_progress(att);
+                                if !is_study {
+                                    let _ = this.state.storage.save_in_progress(att);
+                                }
                                 cx.notify();
+                            }
+                            if is_study {
+                                this.state.save_study_position();
                             }
                         }
                         ShortcutAction::NextQuestion => {
@@ -1410,7 +1582,9 @@ impl Render for ShellView {
                                 if ShortcutRegistry::can_advance_easy_next(att) {
                                     let is_last = att.current_index + 1 == att.total_questions();
                                     if is_last {
-                                        if att.mode == QuizMode::Hagati {
+                                        if att.mode == QuizMode::Study {
+                                            this.show_study_finished_dialog = true;
+                                        } else if att.mode == QuizMode::Hagati {
                                             this.show_finish_confirm_dialog = true;
                                         } else {
                                             if window.is_fullscreen() {
@@ -1421,14 +1595,24 @@ impl Render for ShellView {
                                         }
                                     } else {
                                         let _ = QuizEngine::next_question(att);
-                                        let _ = this.state.storage.save_in_progress(att);
+                                        if att.mode != QuizMode::Study {
+                                            let _ = this.state.storage.save_in_progress(att);
+                                        }
                                     }
                                     cx.notify();
-                                } else {
+                                } else if att.mode != QuizMode::Study {
                                     let _ = QuizEngine::skip_question(att);
                                     let _ = this.state.storage.save_in_progress(att);
                                     cx.notify();
                                 }
+                            }
+                            if this
+                                .state
+                                .current_attempt
+                                .as_ref()
+                                .is_some_and(|attempt| attempt.mode == QuizMode::Study)
+                            {
+                                this.state.save_study_position();
                             }
                         }
                         ShortcutAction::StarQuestion => {
@@ -1714,8 +1898,354 @@ impl Render for ShellView {
             None
         };
 
+        let study_jump_dialog = if self.show_study_jump_dialog {
+            let total = self.state.bank.len();
+            Some(
+                div()
+                    .id("study_jump_dialog_backdrop")
+                    .absolute()
+                    .inset_0()
+                    .flex()
+                    .items_center()
+                    .justify_center()
+                    .px_4()
+                    .bg(gpui::Rgba {
+                        r: 0.0,
+                        g: 0.0,
+                        b: 0.0,
+                        a: 0.65,
+                    })
+                    .on_click(cx.listener(|this, _, _, cx| {
+                        this.show_study_jump_dialog = false;
+                        cx.notify();
+                    }))
+                    .child(
+                        div()
+                            .id("study_jump_dialog_container")
+                            .flex()
+                            .flex_col()
+                            .w_full()
+                            .max_w(px(400.0))
+                            .p_5()
+                            .gap_4()
+                            .rounded_2xl()
+                            .border_1()
+                            .border_color(colors.border)
+                            .bg(colors.background)
+                            .on_mouse_down(gpui::MouseButton::Left, |_, _, _| {})
+                            .child(
+                                div()
+                                    .text_lg()
+                                    .font_bold()
+                                    .text_color(colors.foreground)
+                                    .child(t("study.jump", language)),
+                            )
+                            .child(
+                                div().text_sm().text_color(colors.muted_foreground).child(
+                                    t("study.jump.hint", language)
+                                        .replace("{total}", &total.to_string()),
+                                ),
+                            )
+                            .child(
+                                div()
+                                    .flex()
+                                    .items_center()
+                                    .gap_2()
+                                    .child(
+                                        Button::new("study_jump_decrease")
+                                            .ghost()
+                                            .label("−")
+                                            .on_click(cx.listener(|this, _, _, cx| {
+                                                let value = this
+                                                    .study_jump_input
+                                                    .parse::<usize>()
+                                                    .unwrap_or(1)
+                                                    .saturating_sub(1)
+                                                    .max(1);
+                                                this.study_jump_input = value.to_string();
+                                                cx.notify();
+                                            })),
+                                    )
+                                    .child(
+                                        div()
+                                            .id("study_jump_number_input")
+                                            .flex()
+                                            .flex_1()
+                                            .items_center()
+                                            .justify_center()
+                                            .min_h(px(44.0))
+                                            .rounded_lg()
+                                            .border_1()
+                                            .border_color(colors.border)
+                                            .bg(colors.secondary)
+                                            .text_base()
+                                            .font_semibold()
+                                            .text_color(colors.foreground)
+                                            .child(self.study_jump_input.clone()),
+                                    )
+                                    .child(
+                                        Button::new("study_jump_increase")
+                                            .ghost()
+                                            .label("+")
+                                            .on_click(cx.listener(move |this, _, _, cx| {
+                                                let value = this
+                                                    .study_jump_input
+                                                    .parse::<usize>()
+                                                    .unwrap_or(1)
+                                                    .saturating_add(1)
+                                                    .min(total.max(1));
+                                                this.study_jump_input = value.to_string();
+                                                cx.notify();
+                                            })),
+                                    ),
+                            )
+                            .child(
+                                div()
+                                    .flex()
+                                    .justify_end()
+                                    .gap_2()
+                                    .child(
+                                        Button::new("study_jump_cancel")
+                                            .ghost()
+                                            .label(t("stats.cancel", language))
+                                            .on_click(cx.listener(|this, _, _, cx| {
+                                                this.show_study_jump_dialog = false;
+                                                cx.notify();
+                                            })),
+                                    )
+                                    .child(
+                                        Button::new("study_jump_confirm")
+                                            .primary()
+                                            .label(t("study.jump", language))
+                                            .on_click(cx.listener(|this, _, _, cx| {
+                                                this.confirm_study_jump();
+                                                cx.notify();
+                                            })),
+                                    ),
+                            ),
+                    )
+                    .into_any_element(),
+            )
+        } else {
+            None
+        };
+
+        let study_restart_dialog = if self.show_study_restart_dialog {
+            Some(
+                div()
+                    .id("study_restart_dialog_backdrop")
+                    .absolute()
+                    .inset_0()
+                    .flex()
+                    .items_center()
+                    .justify_center()
+                    .px_4()
+                    .py_6()
+                    .bg(gpui::Rgba {
+                        r: 0.0,
+                        g: 0.0,
+                        b: 0.0,
+                        a: 0.65,
+                    })
+                    .on_click(cx.listener(|this, _, _, cx| {
+                        this.show_study_restart_dialog = false;
+                        cx.notify();
+                    }))
+                    .child(
+                        div()
+                            .id("study_restart_dialog_container")
+                            .flex()
+                            .flex_col()
+                            .w_full()
+                            .max_w(px(440.0))
+                            .min_w_0()
+                            .max_h(relative(0.9))
+                            .overflow_y_scroll()
+                            .overflow_x_hidden()
+                            .when(is_desktop, |el| el.p_5())
+                            .when(!is_desktop, |el| el.p_4())
+                            .gap_4()
+                            .rounded_2xl()
+                            .border_1()
+                            .border_color(colors.border)
+                            .bg(colors.background)
+                            .on_mouse_down(gpui::MouseButton::Left, |_, _, _| {})
+                            .child(
+                                div()
+                                    .min_w_0()
+                                    .whitespace_normal()
+                                    .text_lg()
+                                    .font_bold()
+                                    .text_color(colors.foreground)
+                                    .child(t("study.restart", language)),
+                            )
+                            .child(
+                                div()
+                                    .min_w_0()
+                                    .whitespace_normal()
+                                    .text_sm()
+                                    .text_color(colors.muted_foreground)
+                                    .child(t("study.restart.confirm", language)),
+                            )
+                            .child(
+                                div()
+                                    .flex()
+                                    .w_full()
+                                    .when(is_desktop, |el| el.flex_row().justify_end().gap_2())
+                                    .when(!is_desktop, |el| el.flex_col().gap_2p5())
+                                    .child(
+                                        div()
+                                            .flex()
+                                            .items_center()
+                                            .justify_center()
+                                            .when(!is_desktop, |el| el.w_full().min_h(px(44.0)))
+                                            .child(
+                                                Button::new("study_restart_cancel")
+                                                    .ghost()
+                                                    .label(t("stats.cancel", language))
+                                                    .on_click(cx.listener(|this, _, _, cx| {
+                                                        this.show_study_restart_dialog = false;
+                                                        cx.notify();
+                                                    })),
+                                            ),
+                                    )
+                                    .child(
+                                        div()
+                                            .flex()
+                                            .items_center()
+                                            .justify_center()
+                                            .when(!is_desktop, |el| el.w_full().min_h(px(44.0)))
+                                            .child(
+                                                Button::new("study_restart_confirm")
+                                                    .danger()
+                                                    .label(t("study.restart", language))
+                                                    .on_click(cx.listener(|this, _, _, cx| {
+                                                        this.show_study_restart_dialog = false;
+                                                        this.state.restart_study();
+                                                        cx.notify();
+                                                    })),
+                                            ),
+                                    ),
+                            ),
+                    )
+                    .into_any_element(),
+            )
+        } else {
+            None
+        };
+
+        let study_finished_dialog =
+            if self.show_study_finished_dialog {
+                let total = self.state.bank.len();
+                let (correct, wrong) =
+                    self.state.progress.study.answers.iter().fold(
+                        (0usize, 0usize),
+                        |(correct, wrong), (question_id, answer)| {
+                            if self.state.bank.get(*question_id).is_some_and(|question| {
+                                answer.eq_ignore_ascii_case(&question.correct)
+                            }) {
+                                (correct + 1, wrong)
+                            } else {
+                                (correct, wrong + 1)
+                            }
+                        },
+                    );
+                Some(
+                    div()
+                        .id("study_finished_dialog_backdrop")
+                        .absolute()
+                        .inset_0()
+                        .flex()
+                        .items_center()
+                        .justify_center()
+                        .px_4()
+                        .bg(gpui::Rgba {
+                            r: 0.0,
+                            g: 0.0,
+                            b: 0.0,
+                            a: 0.65,
+                        })
+                        .child(
+                            div()
+                                .flex()
+                                .flex_col()
+                                .w_full()
+                                .max_w(px(460.0))
+                                .p_5()
+                                .gap_4()
+                                .rounded_2xl()
+                                .border_1()
+                                .border_color(colors.border)
+                                .bg(colors.background)
+                                .child(
+                                    div()
+                                        .text_lg()
+                                        .font_bold()
+                                        .text_color(colors.foreground)
+                                        .child(
+                                            t("study.finished", language)
+                                                .replace("{total}", &total.to_string()),
+                                        ),
+                                )
+                                .child(
+                                    div().text_sm().text_color(colors.muted_foreground).child(
+                                        t("study.summary", language)
+                                            .replace("{c}", &correct.to_string())
+                                            .replace("{w}", &wrong.to_string()),
+                                    ),
+                                )
+                                .child(
+                                    div()
+                                        .flex()
+                                        .flex_col()
+                                        .gap_2()
+                                        .child(
+                                            Button::new("study_review_mistakes")
+                                                .primary()
+                                                .label(t("study.review", language))
+                                                .on_click(cx.listener(|this, _, _, cx| {
+                                                    this.show_study_finished_dialog = false;
+                                                    this.state.current_attempt = None;
+                                                    this.state.start_quiz_in_set(
+                                                        QuizMode::Byoroshye,
+                                                        QuestionSet::Mistakes,
+                                                    );
+                                                    cx.notify();
+                                                })),
+                                        )
+                                        .child(
+                                            Button::new("study_finished_restart")
+                                                .ghost()
+                                                .label(t("study.restart", language))
+                                                .on_click(cx.listener(|this, _, _, cx| {
+                                                    this.show_study_finished_dialog = false;
+                                                    this.state.restart_study();
+                                                    cx.notify();
+                                                })),
+                                        )
+                                        .child(
+                                            Button::new("study_finished_home")
+                                                .ghost()
+                                                .label(t("nav.home", language))
+                                                .on_click(cx.listener(|this, _, _, cx| {
+                                                    this.show_study_finished_dialog = false;
+                                                    this.state.leave_study(Screen::Home);
+                                                    cx.notify();
+                                                })),
+                                        ),
+                                ),
+                        )
+                        .into_any_element(),
+                )
+            } else {
+                None
+            };
+
         root.when_some(help_dialog, |el, dlg| el.child(dlg))
             .when_some(finish_dialog, |el, dlg| el.child(dlg))
+            .when_some(study_jump_dialog, |el, dlg| el.child(dlg))
+            .when_some(study_restart_dialog, |el, dlg| el.child(dlg))
+            .when_some(study_finished_dialog, |el, dlg| el.child(dlg))
     }
 }
 

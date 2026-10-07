@@ -323,7 +323,9 @@ impl ShortcutDef {
                     if screen == crate::Screen::Quiz
                         && matches!(
                             mode,
-                            Some(QuizMode::Byoroshye) | Some(QuizMode::WeakPractice)
+                            Some(QuizMode::Byoroshye)
+                                | Some(QuizMode::WeakPractice)
+                                | Some(QuizMode::Study)
                         ) =>
                 {
                     return true;

@@ -1,7 +1,9 @@
 use crate::state::AppState;
 use crate::ui::scroll::{vertical_scrollbar, DragScroll};
 use amategeko_core::platform::KeepAwakeGuard;
-use amategeko_core::{t, Attempt, Language, QuizMode, QuizTimer, TimerLevel, TimerState};
+use amategeko_core::{
+    percent_done, study_index, t, Attempt, Language, QuizMode, QuizTimer, TimerLevel, TimerState,
+};
 use gpui::InteractiveElement as _;
 use gpui_kit::assets::IconName;
 use gpui_kit::base::StyledExt;
@@ -36,6 +38,8 @@ impl QuizView {
         on_finish_request: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
         on_abandon_request: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
         on_start_mode: impl Fn(&mut V, QuizMode, &mut Window, &mut Context<V>) + 'static + Copy,
+        on_study_jump_request: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
+        on_study_restart_request: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
     ) -> impl IntoElement {
         let theme = cx.theme();
         let colors = theme.colors;
@@ -48,12 +52,14 @@ impl QuizView {
             Some(att) => att,
             None => {
                 return Self::render_empty_state(
+                    state,
                     lang,
                     is_desktop,
                     scroll_handle,
                     reveal_scrollbar,
                     cx,
                     on_start_mode,
+                    on_study_restart_request,
                 );
             }
         };
@@ -87,6 +93,7 @@ impl QuizView {
             QuizMode::Bikomeye => t("mode.hard.title", lang),
             QuizMode::WeakPractice => t("home.weak_title", lang),
             QuizMode::RetryWrong => t("results.retry_wrong", lang),
+            QuizMode::Study => t("study.badge", lang),
         };
 
         let mode_text_color = match attempt.mode {
@@ -94,6 +101,7 @@ impl QuizView {
             QuizMode::Hagati => colors.warning,
             QuizMode::Bikomeye => colors.danger,
             QuizMode::WeakPractice | QuizMode::RetryWrong => colors.primary,
+            QuizMode::Study => colors.primary,
         };
 
         let star_icon = if is_starred {
@@ -228,23 +236,34 @@ impl QuizView {
                                     ),
                             )
                             // Question Counter
-                            .child(
+                            .child({
+                                let counter = if attempt.mode == QuizMode::Study {
+                                    format!("{} / {}", current_idx + 1, total_questions)
+                                } else if is_desktop {
+                                    t("quiz.question_progress", lang)
+                                        .replace("{current}", &(current_idx + 1).to_string())
+                                        .replace("{total}", &total_questions.to_string())
+                                } else {
+                                    format!("{}/{}", current_idx + 1, total_questions)
+                                };
                                 div()
+                                    .id("quiz_question_counter")
                                     .flex_none()
                                     .text_base()
                                     .font_bold()
                                     .whitespace_nowrap()
                                     .text_color(colors.foreground)
-                                    .child(
-                                        if is_desktop {
-                                            t("quiz.question_progress", lang)
-                                                .replace("{current}", &(current_idx + 1).to_string())
-                                                .replace("{total}", &total_questions.to_string())
-                                        } else {
-                                            format!("{}/{}", current_idx + 1, total_questions)
-                                        },
-                                    ),
-                            ),
+                                    .child(counter)
+                                    .when(attempt.mode == QuizMode::Study, |el| {
+                                        el.cursor_pointer()
+                                            .tooltip(move |window, cx| {
+                                                Tooltip::new(t("study.jump", lang)).build(window, cx)
+                                            })
+                                            .on_click(cx.listener(move |this, _, window, cx| {
+                                                on_study_jump_request(this, window, cx);
+                                            }))
+                                    })
+                            }),
                     )
                     // Right: Timer + Flag (medium) + Focus Toggle (desktop OS) + Star Button
                     .child(
@@ -365,7 +384,10 @@ impl QuizView {
                             // Star / Bookmark toggle
                             .child({
                                 let star_tooltip = if shortcuts_active
-                                    && matches!(attempt.mode, QuizMode::Byoroshye | QuizMode::Hagati)
+                                    && matches!(
+                                        attempt.mode,
+                                        QuizMode::Byoroshye | QuizMode::Hagati | QuizMode::Study
+                                    )
                                 {
                                     format!("{} (K)", t("quiz.star", lang))
                                 } else {
@@ -440,6 +462,22 @@ impl QuizView {
                     )
                 },
             )
+            // Single progress bar for Study mode.
+            .when(attempt.mode == QuizMode::Study, |parent| {
+                let fraction = if total_questions == 0 {
+                    0.0
+                } else {
+                    (current_idx + 1) as f32 / total_questions as f32
+                };
+                parent.child(
+                    div().w_full().h(px(3.0)).bg(colors.secondary).child(
+                        div()
+                            .h_full()
+                            .w(relative(fraction.clamp(0.0, 1.0)))
+                            .bg(colors.primary),
+                    ),
+                )
+            })
             // Segmented Progress Bar (Easy and Medium modes only)
             .when(
                 matches!(attempt.mode, QuizMode::Byoroshye | QuizMode::Hagati),
@@ -1024,12 +1062,14 @@ impl QuizView {
     }
 
     fn render_empty_state<V: 'static>(
+        state: &AppState,
         lang: Language,
         is_desktop: bool,
         scroll_handle: &ScrollHandle,
         reveal_scrollbar: bool,
         cx: &mut Context<V>,
         on_start_mode: impl Fn(&mut V, QuizMode, &mut Window, &mut Context<V>) + 'static + Copy,
+        on_study_restart_request: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
     ) -> gpui::Div {
         let theme = cx.theme();
         let colors = theme.colors;
@@ -1103,6 +1143,14 @@ impl QuizView {
                                         .child(t("quiz.no_active_desc", lang)),
                                 ),
                         )
+                        .child(Self::render_study_card(
+                            state,
+                            lang,
+                            is_desktop,
+                            cx,
+                            on_start_mode,
+                            on_study_restart_request,
+                        ))
                         // Mode Cards: Easy, Medium, Hard
                         .child(
                             div()
@@ -1156,6 +1204,185 @@ impl QuizView {
                         ),
                 ),
         )
+    }
+
+    pub(crate) fn render_study_card<V: 'static>(
+        state: &AppState,
+        lang: Language,
+        is_desktop: bool,
+        cx: &mut Context<V>,
+        on_start_mode: impl Fn(&mut V, QuizMode, &mut Window, &mut Context<V>) + 'static + Copy,
+        on_study_restart_request: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
+    ) -> impl IntoElement {
+        let colors = cx.theme().colors;
+        let mut ids: Vec<u32> = state
+            .bank
+            .all()
+            .iter()
+            .map(|question| question.id)
+            .collect();
+        ids.sort_unstable();
+        let total = ids.len();
+        let answered = state.progress.study.answers.len().min(total);
+        let pct = percent_done(answered, total);
+        let has_progress = state.progress.study.last_id.is_some() || answered > 0;
+        let resume_number = study_index(&ids, state.progress.study.last_id) + 1;
+        let resume_label = if has_progress {
+            t("study.continue", lang)
+                .replace("{n}", &resume_number.to_string())
+                .replace("{total}", &total.to_string())
+        } else {
+            t("study.start", lang).to_string()
+        };
+
+        let play_button_size: f32 = if is_desktop { 42.0 } else { 48.0 };
+        let min_touch_h: f32 = if is_desktop { 0.0 } else { 44.0 };
+
+        div()
+            .id("study_all_questions_card")
+            .flex()
+            .flex_col()
+            .w_full()
+            .min_w_0()
+            .overflow_hidden()
+            .gap_3()
+            .p_4()
+            .when(is_desktop, |el| el.p_5())
+            .rounded_xl()
+            .border_1()
+            .border_color(colors.primary.opacity(0.22))
+            .bg(colors.background)
+            .child(
+                div()
+                    .id("study_all_questions_open")
+                    .flex()
+                    .flex_row()
+                    .flex_wrap()
+                    .items_center()
+                    .justify_between()
+                    .gap_3()
+                    .w_full()
+                    .min_w_0()
+                    .child(
+                        div()
+                            .id("study_all_questions_text")
+                            .flex()
+                            .flex_col()
+                            .flex_1()
+                            .min_w_0()
+                            .gap_1()
+                            .cursor_pointer()
+                            .on_click(cx.listener(move |this, _, window, cx| {
+                                on_start_mode(this, QuizMode::Study, window, cx);
+                            }))
+                            .child(
+                                div()
+                                    .min_w_0()
+                                    .overflow_hidden()
+                                    .whitespace_normal()
+                                    .text_lg()
+                                    .font_bold()
+                                    .text_color(colors.foreground)
+                                    .child(t("study.title", lang)),
+                            )
+                            .child(
+                                div()
+                                    .min_w_0()
+                                    .overflow_hidden()
+                                    .whitespace_normal()
+                                    .text_sm()
+                                    .text_color(colors.muted_foreground)
+                                    .child(t("study.sub", lang)),
+                            ),
+                    )
+                    .child(
+                        div()
+                            .id("study_all_questions_play")
+                            .flex()
+                            .flex_none()
+                            .items_center()
+                            .justify_center()
+                            .size(px(play_button_size))
+                            .rounded_full()
+                            .bg(colors.primary)
+                            .cursor_pointer()
+                            .hover(|el| el.opacity(0.9))
+                            .on_click(cx.listener(move |this, _, window, cx| {
+                                on_start_mode(this, QuizMode::Study, window, cx);
+                            }))
+                            .child(
+                                Icon::new(IconName::Play)
+                                    .size(px(17.0))
+                                    .text_color(colors.primary_foreground),
+                            ),
+                    ),
+            )
+            .child(
+                div()
+                    .w_full()
+                    .min_w_0()
+                    .h(px(4.0))
+                    .rounded_full()
+                    .bg(colors.muted)
+                    .child(
+                        div()
+                            .h_full()
+                            .rounded_full()
+                            .w(relative(pct as f32 / 100.0))
+                            .bg(colors.primary),
+                    ),
+            )
+            .child(
+                div()
+                    .flex()
+                    .flex_row()
+                    .flex_wrap()
+                    .items_center()
+                    .justify_between()
+                    .gap_3()
+                    .w_full()
+                    .min_w_0()
+                    .child(
+                        div()
+                            .flex_1()
+                            .min_w_0()
+                            .overflow_hidden()
+                            .whitespace_normal()
+                            .text_xs()
+                            .font_medium()
+                            .text_color(colors.foreground)
+                            .child(resume_label),
+                    )
+                    .child(
+                        div()
+                            .flex_none()
+                            .min_w_0()
+                            .text_xs()
+                            .font_semibold()
+                            .whitespace_nowrap()
+                            .text_color(colors.primary)
+                            .child(t("study.done", lang).replace("{pct}", &pct.to_string())),
+                    ),
+            )
+            .when(has_progress, |el| {
+                el.child(
+                    div()
+                        .id("study_restart_btn")
+                        .self_start()
+                        .when(!is_desktop, |el| {
+                            el.min_h(px(min_touch_h)).px_2().flex().items_center()
+                        })
+                        .text_xs()
+                        .font_semibold()
+                        .text_color(colors.primary)
+                        .cursor_pointer()
+                        .on_mouse_down(MouseButton::Left, |_, _, _| {})
+                        .on_click(cx.listener(move |this, _, window, cx| {
+                            on_study_restart_request(this, window, cx);
+                        }))
+                        .child(t("study.restart", lang)),
+                )
+            })
     }
 
     #[allow(clippy::too_many_arguments)]

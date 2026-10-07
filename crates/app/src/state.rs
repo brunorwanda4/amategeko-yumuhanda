@@ -126,6 +126,67 @@ impl AppState {
         }
     }
 
+    pub fn start_study(&mut self) {
+        let mut questions = self.bank.all().to_vec();
+        questions.sort_by_key(|question| question.id);
+        if questions.is_empty() {
+            return;
+        }
+
+        let ids: Vec<u32> = questions.iter().map(|question| question.id).collect();
+        let current_index = study_index(&ids, self.progress.study.last_id);
+        let mut attempt = Attempt::new(
+            "study".to_string(),
+            QuizMode::Study,
+            questions,
+            self.clock.now_seconds(),
+            None,
+        );
+        attempt.current_index = current_index;
+        for (index, question) in attempt.questions.iter().enumerate() {
+            if let Some(answer) = self.progress.study.answers.get(&question.id) {
+                attempt.answers.insert(index, answer.clone());
+                attempt.locked.insert(index, true);
+            }
+        }
+        self.current_attempt = Some(attempt);
+        self.active_screen = Screen::Quiz;
+        self.save_study_position();
+    }
+
+    pub fn restart_study(&mut self) {
+        self.progress.study = StudyProgress::default();
+        let _ = self.storage.save_progress(&self.progress);
+        self.start_study();
+    }
+
+    pub fn save_study_position(&mut self) {
+        let current_id = self.current_attempt.as_ref().and_then(|attempt| {
+            (attempt.mode == QuizMode::Study)
+                .then(|| attempt.current_question().map(|question| question.id))
+                .flatten()
+        });
+        if let Some(question_id) = current_id {
+            self.progress.study.last_id = Some(question_id);
+            let _ = self.storage.save_progress(&self.progress);
+        }
+    }
+
+    pub fn jump_study_to(&mut self, question_number: usize) {
+        if let Some(attempt) = &mut self.current_attempt {
+            if attempt.mode == QuizMode::Study {
+                attempt.current_index = clamp_jump(question_number, attempt.total_questions());
+            }
+        }
+        self.save_study_position();
+    }
+
+    pub fn leave_study(&mut self, target: Screen) {
+        self.save_study_position();
+        self.current_attempt = None;
+        self.active_screen = target;
+    }
+
     /// Starts a quiz from the quiz page. Easy draws up to 20 random questions from
     /// `set`; Medium and Hard always use the whole bank, so `set` is ignored for them.
     pub fn start_quiz_in_set(&mut self, mode: QuizMode, set: QuestionSet) {
@@ -202,9 +263,31 @@ impl AppState {
     }
 
     pub fn record_current_answer(&mut self, option: &str) {
+        let mut study_answer = None;
         if let Some(att) = &mut self.current_attempt {
+            let was_locked = att.is_current_locked();
             let _ = QuizEngine::select_option(att, option);
-            let _ = self.storage.save_in_progress(att);
+            if att.mode == QuizMode::Study {
+                if !was_locked {
+                    if let (Some(question), Some(answer)) =
+                        (att.current_question(), att.current_answer())
+                    {
+                        study_answer = Some((
+                            question.id,
+                            answer.clone(),
+                            answer.eq_ignore_ascii_case(&question.correct),
+                        ));
+                    }
+                }
+            } else {
+                let _ = self.storage.save_in_progress(att);
+            }
+        }
+        if let Some((question_id, answer, is_correct)) = study_answer {
+            self.progress
+                .record_study_answer(question_id, &answer, is_correct);
+            self.progress.study.last_id = Some(question_id);
+            let _ = self.storage.save_progress(&self.progress);
         }
     }
 
