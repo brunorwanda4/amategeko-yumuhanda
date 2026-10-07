@@ -2037,6 +2037,7 @@ impl Render for ShellView {
                     .items_center()
                     .justify_center()
                     .px_4()
+                    .py_6()
                     .bg(gpui::Rgba {
                         r: 0.0,
                         g: 0.0,
@@ -2054,7 +2055,12 @@ impl Render for ShellView {
                             .flex_col()
                             .w_full()
                             .max_w(px(440.0))
-                            .p_5()
+                            .min_w_0()
+                            .max_h(relative(0.9))
+                            .overflow_y_scroll()
+                            .overflow_x_hidden()
+                            .when(is_desktop, |el| el.p_5())
+                            .when(!is_desktop, |el| el.p_4())
                             .gap_4()
                             .rounded_2xl()
                             .border_1()
@@ -2063,6 +2069,8 @@ impl Render for ShellView {
                             .on_mouse_down(gpui::MouseButton::Left, |_, _, _| {})
                             .child(
                                 div()
+                                    .min_w_0()
+                                    .whitespace_normal()
                                     .text_lg()
                                     .font_bold()
                                     .text_color(colors.foreground)
@@ -2070,6 +2078,8 @@ impl Render for ShellView {
                             )
                             .child(
                                 div()
+                                    .min_w_0()
+                                    .whitespace_normal()
                                     .text_sm()
                                     .text_color(colors.muted_foreground)
                                     .child(t("study.restart.confirm", language)),
@@ -2077,26 +2087,41 @@ impl Render for ShellView {
                             .child(
                                 div()
                                     .flex()
-                                    .justify_end()
-                                    .gap_2()
+                                    .w_full()
+                                    .when(is_desktop, |el| el.flex_row().justify_end().gap_2())
+                                    .when(!is_desktop, |el| el.flex_col().gap_2p5())
                                     .child(
-                                        Button::new("study_restart_cancel")
-                                            .ghost()
-                                            .label(t("stats.cancel", language))
-                                            .on_click(cx.listener(|this, _, _, cx| {
-                                                this.show_study_restart_dialog = false;
-                                                cx.notify();
-                                            })),
+                                        div()
+                                            .flex()
+                                            .items_center()
+                                            .justify_center()
+                                            .when(!is_desktop, |el| el.w_full().min_h(px(44.0)))
+                                            .child(
+                                                Button::new("study_restart_cancel")
+                                                    .ghost()
+                                                    .label(t("stats.cancel", language))
+                                                    .on_click(cx.listener(|this, _, _, cx| {
+                                                        this.show_study_restart_dialog = false;
+                                                        cx.notify();
+                                                    })),
+                                            ),
                                     )
                                     .child(
-                                        Button::new("study_restart_confirm")
-                                            .danger()
-                                            .label(t("study.restart", language))
-                                            .on_click(cx.listener(|this, _, _, cx| {
-                                                this.show_study_restart_dialog = false;
-                                                this.state.restart_study();
-                                                cx.notify();
-                                            })),
+                                        div()
+                                            .flex()
+                                            .items_center()
+                                            .justify_center()
+                                            .when(!is_desktop, |el| el.w_full().min_h(px(44.0)))
+                                            .child(
+                                                Button::new("study_restart_confirm")
+                                                    .danger()
+                                                    .label(t("study.restart", language))
+                                                    .on_click(cx.listener(|this, _, _, cx| {
+                                                        this.show_study_restart_dialog = false;
+                                                        this.state.restart_study();
+                                                        cx.notify();
+                                                    })),
+                                            ),
                                     ),
                             ),
                     )

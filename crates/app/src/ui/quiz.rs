@@ -1,4 +1,5 @@
 use crate::state::AppState;
+use crate::ui::liquid_orb_button::LiquidOrbButton;
 use crate::ui::scroll::{vertical_scrollbar, DragScroll};
 use amategeko_core::platform::KeepAwakeGuard;
 use amategeko_core::{
@@ -1207,179 +1208,172 @@ impl QuizView {
     }
 
     pub(crate) fn render_study_card<V: 'static>(
-            state: &AppState,
-            lang: Language,
-            is_desktop: bool,
-            cx: &mut Context<V>,
-            on_start_mode: impl Fn(&mut V, QuizMode, &mut Window, &mut Context<V>) + 'static + Copy,
-            on_study_restart_request: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
-        ) -> impl IntoElement {
-            let colors = cx.theme().colors;
-            let mut ids: Vec<u32> = state
-                .bank
-                .all()
-                .iter()
-                .map(|question| question.id)
-                .collect();
-            ids.sort_unstable();
-            let total = ids.len();
-            let answered = state.progress.study.answers.len().min(total);
-            let pct = percent_done(answered, total);
-            let has_progress = state.progress.study.last_id.is_some() || answered > 0;
-            let resume_number = study_index(&ids, state.progress.study.last_id) + 1;
-            let resume_label = if has_progress {
-                t("study.continue", lang)
-                    .replace("{n}", &resume_number.to_string())
-                    .replace("{total}", &total.to_string())
-            } else {
-                t("study.start", lang).to_string()
-            };
+        state: &AppState,
+        lang: Language,
+        is_desktop: bool,
+        cx: &mut Context<V>,
+        on_start_mode: impl Fn(&mut V, QuizMode, &mut Window, &mut Context<V>) + 'static + Copy,
+        on_study_restart_request: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
+    ) -> impl IntoElement {
+        let colors = cx.theme().colors;
+        let mut ids: Vec<u32> = state
+            .bank
+            .all()
+            .iter()
+            .map(|question| question.id)
+            .collect();
+        ids.sort_unstable();
+        let total = ids.len();
+        let answered = state.progress.study.answers.len().min(total);
+        let pct = percent_done(answered, total);
+        let has_progress = state.progress.study.last_id.is_some() || answered > 0;
+        let resume_number = study_index(&ids, state.progress.study.last_id) + 1;
+        let resume_label = if has_progress {
+            t("study.continue", lang)
+                .replace("{n}", &resume_number.to_string())
+                .replace("{total}", &total.to_string())
+        } else {
+            t("study.start", lang).to_string()
+        };
 
-            let play_button_size: f32 = if is_desktop { 42.0 } else { 48.0 };
-            let min_touch_h: f32 = if is_desktop { 0.0 } else { 44.0 };
+        let play_button_size: f32 = if is_desktop { 42.0 } else { 48.0 };
+        let min_touch_h: f32 = if is_desktop { 0.0 } else { 44.0 };
 
-            div()
-                .id("study_all_questions_card")
-                .flex()
-                .flex_col()
-                .w_full()
-                .min_w_0()
-                .overflow_hidden()
-                .gap_3()
-                .p_4()
-                .when(is_desktop, |el| el.p_5())
-                .rounded_xl()
-                .border_1()
-                .border_color(colors.border)
-                .bg(colors.secondary)
-                .cursor_pointer()
-                .hover(|el| el.bg(colors.muted).border_color(colors.primary))
-                .on_click(cx.listener(move |this, _, window, cx| {
-                    on_start_mode(this, QuizMode::Study, window, cx);
-                }))
-                .child(
-                    div()
-                        .flex()
-                        .flex_row()
-                        .flex_wrap()
-                        .items_center()
-                        .justify_between()
-                        .gap_3()
-                        .w_full()
-                        .min_w_0()
-                        .child(
-                            div()
-                                .flex()
-                                .flex_col()
-                                .flex_1()
-                                .min_w_0()
-                                .gap_1()
-                                .child(
-                                    div()
-                                        .min_w_0()
-                                        .overflow_hidden()
-                                        .whitespace_normal()
-                                        .text_lg()
-                                        .font_bold()
-                                        .text_color(colors.foreground)
-                                        .child(t("study.title", lang)),
-                                )
-                                .child(
-                                    div()
-                                        .min_w_0()
-                                        .overflow_hidden()
-                                        .whitespace_normal()
-                                        .text_sm()
-                                        .text_color(colors.muted_foreground)
-                                        .child(t("study.sub", lang)),
-                                ),
-                        )
-                        .child(
-                            div()
-                                .flex()
-                                .flex_none()
-                                .items_center()
-                                .justify_center()
-                                .size(px(play_button_size))
-                                .rounded_full()
-                                .bg(colors.primary)
-                                .child(
-                                    Icon::new(IconName::Play)
-                                        .size(px(17.0))
-                                        .text_color(colors.primary_foreground),
-                                ),
-                        ),
-                )
-                .child(
-                    div()
-                        .w_full()
-                        .min_w_0()
-                        .h(px(4.0))
-                        .rounded_full()
-                        .bg(colors.border)
-                        .child(
-                            div()
-                                .h_full()
-                                .rounded_full()
-                                .w(relative(pct as f32 / 100.0))
-                                .bg(colors.primary),
-                        ),
-                )
-                .child(
-                    div()
-                        .flex()
-                        .flex_row()
-                        .flex_wrap()
-                        .items_center()
-                        .justify_between()
-                        .gap_3()
-                        .w_full()
-                        .min_w_0()
-                        .child(
-                            div()
-                                .flex_1()
-                                .min_w_0()
-                                .overflow_hidden()
-                                .whitespace_normal()
-                                .text_xs()
-                                .font_medium()
-                                .text_color(colors.foreground)
-                                .child(resume_label),
-                        )
-                        .child(
-                            div()
-                                .flex_none()
-                                .min_w_0()
-                                .text_xs()
-                                .font_semibold()
-                                .whitespace_nowrap()
-                                .text_color(colors.primary)
-                                .child(t("study.done", lang).replace("{pct}", &pct.to_string())),
-                        ),
-                )
-                .when(has_progress, |el| {
-                    el.child(
+        div()
+            .id("study_all_questions_card")
+            .flex()
+            .flex_col()
+            .w_full()
+            .min_w_0()
+            .overflow_hidden()
+            .gap_3()
+            .p_4()
+            .when(is_desktop, |el| el.p_5())
+            .rounded_xl()
+            .border_1()
+            .border_color(colors.primary.opacity(0.22))
+            .bg(colors.background)
+            .child(
+                div()
+                    .id("study_all_questions_open")
+                    .flex()
+                    .flex_row()
+                    .flex_wrap()
+                    .items_center()
+                    .justify_between()
+                    .gap_3()
+                    .w_full()
+                    .min_w_0()
+                    .child(
                         div()
-                            .id("study_restart_btn")
-                            .self_start()
-                            .when(!is_desktop, |el| {
-                                el.min_h(px(min_touch_h))
-                                    .px_2()
-                                    .flex()
-                                    .items_center()
-                            })
+                            .id("study_all_questions_text")
+                            .flex()
+                            .flex_col()
+                            .flex_1()
+                            .min_w_0()
+                            .gap_1()
+                            .cursor_pointer()
+                            .on_click(cx.listener(move |this, _, window, cx| {
+                                on_start_mode(this, QuizMode::Study, window, cx);
+                            }))
+                            .child(
+                                div()
+                                    .min_w_0()
+                                    .overflow_hidden()
+                                    .whitespace_normal()
+                                    .text_lg()
+                                    .font_bold()
+                                    .text_color(colors.foreground)
+                                    .child(t("study.title", lang)),
+                            )
+                            .child(
+                                div()
+                                    .min_w_0()
+                                    .overflow_hidden()
+                                    .whitespace_normal()
+                                    .text_sm()
+                                    .text_color(colors.muted_foreground)
+                                    .child(t("study.sub", lang)),
+                            ),
+                    )
+                    .child(LiquidOrbButton::new(
+                        "study_all_questions_play",
+                        IconName::Play,
+                        play_button_size,
+                        total == 0,
+                        cx,
+                        move |this, window, cx| {
+                            on_start_mode(this, QuizMode::Study, window, cx);
+                        },
+                    )),
+            )
+            .child(
+                div()
+                    .w_full()
+                    .min_w_0()
+                    .h(px(4.0))
+                    .rounded_full()
+                    .bg(colors.muted)
+                    .child(
+                        div()
+                            .h_full()
+                            .rounded_full()
+                            .w(relative(pct as f32 / 100.0))
+                            .bg(colors.primary),
+                    ),
+            )
+            .child(
+                div()
+                    .flex()
+                    .flex_row()
+                    .flex_wrap()
+                    .items_center()
+                    .justify_between()
+                    .gap_3()
+                    .w_full()
+                    .min_w_0()
+                    .child(
+                        div()
+                            .flex_1()
+                            .min_w_0()
+                            .overflow_hidden()
+                            .whitespace_normal()
+                            .text_xs()
+                            .font_medium()
+                            .text_color(colors.foreground)
+                            .child(resume_label),
+                    )
+                    .child(
+                        div()
+                            .flex_none()
+                            .min_w_0()
                             .text_xs()
                             .font_semibold()
+                            .whitespace_nowrap()
                             .text_color(colors.primary)
-                            .cursor_pointer()
-                            .on_mouse_down(MouseButton::Left, |_, _, _| {})
-                            .on_click(cx.listener(move |this, _, window, cx| {
-                                on_study_restart_request(this, window, cx);
-                            }))
-                            .child(t("study.restart", lang)),
-                    )
-                })
-        }
+                            .child(t("study.done", lang).replace("{pct}", &pct.to_string())),
+                    ),
+            )
+            .when(has_progress, |el| {
+                el.child(
+                    div()
+                        .id("study_restart_btn")
+                        .self_start()
+                        .when(!is_desktop, |el| {
+                            el.min_h(px(min_touch_h)).px_2().flex().items_center()
+                        })
+                        .text_xs()
+                        .font_semibold()
+                        .text_color(colors.primary)
+                        .cursor_pointer()
+                        .on_mouse_down(MouseButton::Left, |_, _, _| {})
+                        .on_click(cx.listener(move |this, _, window, cx| {
+                            on_study_restart_request(this, window, cx);
+                        }))
+                        .child(t("study.restart", lang)),
+                )
+            })
+    }
 
     #[allow(clippy::too_many_arguments)]
     fn render_empty_mode_card<V: 'static>(
