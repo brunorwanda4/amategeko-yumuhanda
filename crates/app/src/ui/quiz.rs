@@ -27,7 +27,7 @@ impl QuizView {
         on_select_option: impl Fn(&mut V, &str, &mut Window, &mut Context<V>) + 'static + Copy,
         on_next: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
         on_prev: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
-        on_skip: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
+        _on_skip: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
         on_hard_confirm: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
         on_jump_to: impl Fn(&mut V, usize, &mut Window, &mut Context<V>) + 'static + Copy,
         on_toggle_flag: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
@@ -137,6 +137,7 @@ impl QuizView {
                     .items_center()
                     .justify_between()
                     .px_6()
+                    .when(!is_desktop, |el| el.px_3())
                     .py_3()
                     .border_b_1()
                     .border_color(colors.border)
@@ -148,11 +149,14 @@ impl QuizView {
                             .flex_row()
                             .items_center()
                             .gap_3()
+                            .min_w_0()
+                            .when(!is_desktop, |el| el.gap_2())
                             // Exit / Sohoka button
                             .child(
                                 div()
                                     .id("quiz_back_btn")
                                     .flex()
+                                    .flex_none()
                                     .flex_row()
                                     .items_center()
                                     .gap_1p5()
@@ -205,6 +209,9 @@ impl QuizView {
                             .child(
                                 div()
                                     .px_3()
+                                    .min_w_0()
+                                    .overflow_hidden()
+                                    .when(!is_desktop, |el| el.px_2())
                                     .py_1()
                                     .rounded_full()
                                     .bg(colors.secondary)
@@ -212,6 +219,10 @@ impl QuizView {
                                         div()
                                             .text_xs()
                                             .font_semibold()
+                                            .min_w_0()
+                                            .overflow_hidden()
+                                            .text_ellipsis()
+                                            .whitespace_nowrap()
                                             .text_color(mode_text_color)
                                             .child(mode_label),
                                     ),
@@ -219,8 +230,10 @@ impl QuizView {
                             // Question Counter
                             .child(
                                 div()
+                                    .flex_none()
                                     .text_base()
                                     .font_bold()
+                                    .whitespace_nowrap()
                                     .text_color(colors.foreground)
                                     .child(
                                         if is_desktop {
@@ -237,141 +250,15 @@ impl QuizView {
                     .child(
                         div()
                             .flex()
+                            .flex_none()
                             .flex_row()
                             .items_center()
                             .gap_2p5()
+                            .when(!is_desktop, |el| el.gap_2())
                             // Timer Pill (if active)
-                            .when(
-                                !matches!(timer_state, TimerState::None),
-                                |el| match timer_state {
-                                    TimerState::Countdown {
-                                        remaining_seconds,
-                                        level,
-                                        ..
-                                    } => {
-                                        let mins = remaining_seconds / 60;
-                                        let secs = remaining_seconds % 60;
-                                        let (timer_color, timer_icon) = match level {
-                                            TimerLevel::Normal => {
-                                                (colors.foreground, IconName::Clock)
-                                            }
-                                            TimerLevel::Warning => {
-                                                (colors.warning, IconName::TriangleAlert)
-                                            }
-                                            TimerLevel::Error | TimerLevel::Done => {
-                                                (colors.danger, IconName::CircleAlert)
-                                            }
-                                        };
-                                        let pill = div()
-                                            .flex()
-                                            .flex_row()
-                                            .items_center()
-                                            .gap_1p5()
-                                            .px_3()
-                                            .py_1p5()
-                                            .rounded_lg()
-                                            .border_1()
-                                            .border_color(if level == TimerLevel::Normal {
-                                                colors.border
-                                            } else {
-                                                timer_color
-                                            })
-                                            .bg(colors.secondary)
-                                            .child(
-                                                Icon::new(timer_icon)
-                                                    .size(px(14.0))
-                                                    .text_color(timer_color),
-                                            )
-                                            .child(
-                                                div()
-                                                    .text_xs()
-                                                    .when(level == TimerLevel::Error, |text| {
-                                                        text.font_bold()
-                                                    })
-                                                    .when(level != TimerLevel::Error, |text| {
-                                                        text.font_medium()
-                                                    })
-                                                    .text_color(timer_color)
-                                                    .child(format!("{mins:02}:{secs:02}")),
-                                            );
-
-                                        if level == TimerLevel::Error {
-                                            el.child(
-                                                pill.with_animation(
-                                                    "timer-error-pulse",
-                                                    Animation::new(Duration::from_millis(1200))
-                                                        .repeat(),
-                                                    |pill, progress| {
-                                                        let opacity = 0.9
-                                                            + 0.1
-                                                                * (progress
-                                                                    * std::f32::consts::TAU)
-                                                                    .cos();
-                                                        pill.opacity(opacity)
-                                                    },
-                                                ),
-                                            )
-                                        } else {
-                                            el.child(pill)
-                                        }
-                                    }
-                                    TimerState::Expired => el.child(
-                                        div()
-                                            .flex()
-                                            .flex_row()
-                                            .items_center()
-                                            .gap_1p5()
-                                            .px_3()
-                                            .py_1p5()
-                                            .rounded_lg()
-                                            .border_1()
-                                            .border_color(colors.danger)
-                                            .bg(colors.secondary)
-                                            .child(
-                                                Icon::new(IconName::CircleAlert)
-                                                    .size(px(14.0))
-                                                    .text_color(colors.danger),
-                                            )
-                                            .child(
-                                                div()
-                                                    .text_xs()
-                                                    .font_bold()
-                                                    .text_color(colors.danger)
-                                                    .child("00:00"),
-                                            ),
-                                    ),
-                                    TimerState::Elapsed(elapsed) => {
-                                        let mins = elapsed / 60;
-                                        let secs = elapsed % 60;
-                                        el.child(
-                                            div()
-                                                .flex()
-                                                .flex_row()
-                                                .items_center()
-                                                .gap_1p5()
-                                                .px_3()
-                                                .py_1p5()
-                                                .rounded_lg()
-                                                .border_1()
-                                                .border_color(colors.border)
-                                                .bg(colors.secondary)
-                                                .child(
-                                                    Icon::new(IconName::Clock)
-                                                        .size(px(14.0))
-                                                        .text_color(colors.foreground),
-                                                )
-                                                .child(
-                                                    div()
-                                                        .text_xs()
-                                                        .font_bold()
-                                                        .text_color(colors.foreground)
-                                                        .child(format!("{mins:02}:{secs:02}")),
-                                                ),
-                                        )
-                                    }
-                                    _ => el,
-                                },
-                            )
+                            .when(is_desktop, |el| {
+                                el.children(Self::render_timer(state, cx))
+                            })
                             // Flag toggle (Medium mode)
                             .when(attempt.mode == QuizMode::Hagati, |el| {
                                 let flag_color = if is_flagged {
@@ -388,6 +275,7 @@ impl QuizView {
                                     div()
                                         .id("flag_btn")
                                         .flex()
+                                        .flex_none()
                                         .items_center()
                                         .justify_center()
                                         .w(px(36.0))
@@ -416,7 +304,7 @@ impl QuizView {
                                 )
                             })
                             // Focus / Fullscreen: desktop OS only (not Android/iOS APK)
-                            .when(!crate::is_native_mobile(), |el| {
+                            .when(is_desktop && !crate::is_native_mobile(), |el| {
                                     let focus_tooltip = if shortcuts_active {
                                         if is_focus_mode {
                                             format!("{} (F)", t("quiz.focus_exit", lang))
@@ -432,6 +320,7 @@ impl QuizView {
                                         div()
                                             .id("focus_mode_btn")
                                             .flex()
+                                            .flex_none()
                                             .items_center()
                                             .justify_center()
                                             .w(px(36.0))
@@ -483,6 +372,7 @@ impl QuizView {
                                 div()
                                     .id("star_btn")
                                     .flex()
+                                    .flex_none()
                                     .items_center()
                                     .justify_center()
                                     .w(px(36.0))
@@ -916,51 +806,6 @@ impl QuizView {
                                                     .items_center()
                                                     .gap_3()
                                                     // Skip button
-                                                    .when(!is_hard && !is_last, |row| {
-                                                        let skip_tooltip = if shortcuts_active
-                                                            && attempt.mode == QuizMode::Byoroshye
-                                                        {
-                                                            format!("{} (S)", t("quiz.skip", lang))
-                                                        } else {
-                                                            t("quiz.skip", lang).to_string()
-                                                        };
-                                                        row.child(
-                                                            div()
-                                                                .id("quiz_skip_btn")
-                                                                .flex()
-                                                                .flex_row()
-                                                                .items_center()
-                                                                .gap_2()
-                                                                .px_4()
-                                                                .py_2()
-                                                                .rounded_xl()
-                                                                .border_1()
-                                                                .border_color(colors.border)
-                                                                .bg(colors.secondary)
-                                                                .cursor_pointer()
-                                                                .hover(|h| h.bg(colors.accent))
-                                                                .tooltip(move |window, cx| {
-                                                                    Tooltip::new(skip_tooltip.clone()).build(window, cx)
-                                                                })
-                                                                .on_click(cx.listener(
-                                                                    move |this, _, window, cx| {
-                                                                        on_skip(this, window, cx);
-                                                                    },
-                                                                ))
-                                                                .child(
-                                                                    div()
-                                                                        .text_sm()
-                                                                        .font_medium()
-                                                                        .text_color(
-                                                                            colors.foreground,
-                                                                        )
-                                                                        .child(t(
-                                                                            "quiz.skip",
-                                                                            lang,
-                                                                        )),
-                                                                ),
-                                                        )
-                                                    })
                                                     // Next / Finish / Confirm button
                                                     .child({
                                                         let next_shortcut_hint = if is_last
@@ -1038,6 +883,142 @@ impl QuizView {
                             ),
                     ),
             )
+    }
+
+    pub fn render_timer<V: 'static>(
+        state: &AppState,
+        cx: &mut Context<V>,
+    ) -> Option<impl IntoElement> {
+        let attempt = state.current_attempt.as_ref()?;
+        attempt.current_question()?;
+
+        let timer_state = QuizTimer::state(
+            attempt,
+            state.clock.now_seconds(),
+            state.settings.easy_show_timer,
+        );
+        if matches!(timer_state, TimerState::None) {
+            return None;
+        }
+
+        let colors = cx.theme().colors;
+        Some(div().when(true, |el| {
+            match timer_state {
+                TimerState::Countdown {
+                    remaining_seconds,
+                    level,
+                    ..
+                } => {
+                    let mins = remaining_seconds / 60;
+                    let secs = remaining_seconds % 60;
+                    let (timer_color, timer_icon) = match level {
+                        TimerLevel::Normal => (colors.foreground, IconName::Clock),
+                        TimerLevel::Warning => (colors.warning, IconName::TriangleAlert),
+                        TimerLevel::Error | TimerLevel::Done => {
+                            (colors.danger, IconName::CircleAlert)
+                        }
+                    };
+                    let pill = div()
+                        .flex()
+                        .flex_none()
+                        .flex_row()
+                        .items_center()
+                        .gap_1p5()
+                        .px_3()
+                        .py_1p5()
+                        .rounded_lg()
+                        .border_1()
+                        .border_color(if level == TimerLevel::Normal {
+                            colors.border
+                        } else {
+                            timer_color
+                        })
+                        .bg(colors.secondary)
+                        .child(Icon::new(timer_icon).size(px(14.0)).text_color(timer_color))
+                        .child(
+                            div()
+                                .text_xs()
+                                .whitespace_nowrap()
+                                .when(level == TimerLevel::Error, |text| text.font_bold())
+                                .when(level != TimerLevel::Error, |text| text.font_medium())
+                                .text_color(timer_color)
+                                .child(format!("{mins:02}:{secs:02}")),
+                        );
+
+                    if level == TimerLevel::Error {
+                        el.child(pill.with_animation(
+                            "timer-error-pulse",
+                            Animation::new(Duration::from_millis(1200)).repeat(),
+                            |pill, progress| {
+                                let opacity = 0.9 + 0.1 * (progress * std::f32::consts::TAU).cos();
+                                pill.opacity(opacity)
+                            },
+                        ))
+                    } else {
+                        el.child(pill)
+                    }
+                }
+                TimerState::Expired => el.child(
+                    div()
+                        .flex()
+                        .flex_none()
+                        .flex_row()
+                        .items_center()
+                        .gap_1p5()
+                        .px_3()
+                        .py_1p5()
+                        .rounded_lg()
+                        .border_1()
+                        .border_color(colors.danger)
+                        .bg(colors.secondary)
+                        .child(
+                            Icon::new(IconName::CircleAlert)
+                                .size(px(14.0))
+                                .text_color(colors.danger),
+                        )
+                        .child(
+                            div()
+                                .text_xs()
+                                .font_bold()
+                                .whitespace_nowrap()
+                                .text_color(colors.danger)
+                                .child("00:00"),
+                        ),
+                ),
+                TimerState::Elapsed(elapsed) => {
+                    let mins = elapsed / 60;
+                    let secs = elapsed % 60;
+                    el.child(
+                        div()
+                            .flex()
+                            .flex_none()
+                            .flex_row()
+                            .items_center()
+                            .gap_1p5()
+                            .px_3()
+                            .py_1p5()
+                            .rounded_lg()
+                            .border_1()
+                            .border_color(colors.border)
+                            .bg(colors.secondary)
+                            .child(
+                                Icon::new(IconName::Clock)
+                                    .size(px(14.0))
+                                    .text_color(colors.foreground),
+                            )
+                            .child(
+                                div()
+                                    .text_xs()
+                                    .font_bold()
+                                    .whitespace_nowrap()
+                                    .text_color(colors.foreground)
+                                    .child(format!("{mins:02}:{secs:02}")),
+                            ),
+                    )
+                }
+                TimerState::None => el,
+            }
+        }))
     }
 
     fn render_empty_state<V: 'static>(
