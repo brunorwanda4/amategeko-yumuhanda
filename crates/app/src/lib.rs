@@ -19,6 +19,24 @@ pub use ui::quiz::QuizView;
 pub use ui::shell::{get_safe_area, set_safe_area, SafeArea, ShellView};
 
 use gpui_kit::component::{Theme, ThemeMode as GpuiThemeMode};
+use std::sync::atomic::{AtomicU8, Ordering};
+
+const SYSTEM_THEME_UNSET: u8 = 0;
+const SYSTEM_THEME_LIGHT: u8 = 1;
+const SYSTEM_THEME_DARK: u8 = 2;
+static SYSTEM_THEME_OVERRIDE: AtomicU8 = AtomicU8::new(SYSTEM_THEME_UNSET);
+
+/// Supplies the system appearance on platforms where GPUI cannot query it directly.
+pub fn set_system_theme_dark(is_dark: bool) {
+    SYSTEM_THEME_OVERRIDE.store(
+        if is_dark {
+            SYSTEM_THEME_DARK
+        } else {
+            SYSTEM_THEME_LIGHT
+        },
+        Ordering::Relaxed,
+    );
+}
 
 fn apply_app_palette(cx: &mut gpui::App) {
     let theme = Theme::global_mut(cx);
@@ -125,9 +143,11 @@ pub fn apply_theme(
     cx: &mut gpui::App,
 ) {
     match theme {
-        amategeko_core::ThemeMode::System => {
-            Theme::sync_system_appearance(window, cx);
-        }
+        amategeko_core::ThemeMode::System => match SYSTEM_THEME_OVERRIDE.load(Ordering::Relaxed) {
+            SYSTEM_THEME_LIGHT => Theme::change(GpuiThemeMode::Light, window, cx),
+            SYSTEM_THEME_DARK => Theme::change(GpuiThemeMode::Dark, window, cx),
+            _ => Theme::sync_system_appearance(window, cx),
+        },
         amategeko_core::ThemeMode::Light => {
             Theme::change(GpuiThemeMode::Light, window, cx);
         }

@@ -118,6 +118,7 @@ fn android_main(app: android_activity::AndroidApp) {
     let clock = Arc::new(SystemClock);
 
     let _platform = jni::init_platform(&app);
+    let initial_system_dark = jni::query_night_mode_via_jni();
     let shared = match jni::shared_platform() {
         Some(s) => s,
         None => {
@@ -130,6 +131,7 @@ fn android_main(app: android_activity::AndroidApp) {
         .with_assets(amategeko_app::AppAssets)
         .run(move |cx: &mut App| {
             gpui_kit::init(cx);
+            amategeko_app::set_system_theme_dark(initial_system_dark);
 
             let app_state = AppState::new(storage.clone(), clock.clone());
             let initial_theme = app_state.settings.theme;
@@ -140,7 +142,25 @@ fn android_main(app: android_activity::AndroidApp) {
             cx.open_window(WindowOptions::default(), |window, cx| {
                 amategeko_app::apply_theme(initial_theme, Some(window), cx);
                 window.set_rem_size(gpui::px(amategeko_core::rem_px(initial_font_scale)));
-                let shell = cx.new(|cx| ShellView::new(app_state, cx));
+                let shell = cx.new(|cx| {
+                    cx.observe_window_appearance(window, |this: &mut ShellView, window, cx| {
+                        let is_dark = matches!(
+                            window.appearance(),
+                            gpui::WindowAppearance::Dark | gpui::WindowAppearance::VibrantDark
+                        );
+                        amategeko_app::set_system_theme_dark(is_dark);
+                        if this.state.settings.theme == amategeko_core::ThemeMode::System {
+                            amategeko_app::apply_theme(
+                                amategeko_core::ThemeMode::System,
+                                Some(window),
+                                cx,
+                            );
+                            cx.notify();
+                        }
+                    })
+                    .detach();
+                    ShellView::new(app_state, cx)
+                });
                 cx.new(|cx| gpui_kit::component::Root::new(shell, window, cx))
             })
             .expect("open mobile window");

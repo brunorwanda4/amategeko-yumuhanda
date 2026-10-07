@@ -653,7 +653,7 @@ impl QuizView {
                                                     .overflow_hidden()
                                                     .whitespace_normal()
                                                     .text_xl()
-                                                    .font_family(crate::font::DISPLAY_FONT_FAMILY)
+                                                    .font_family(crate::font::FONT_FAMILY)
                                                     .font_bold()
                                                     .text_color(colors.foreground)
                                                     .child(current_q.text_for(q_lang).to_string()),
