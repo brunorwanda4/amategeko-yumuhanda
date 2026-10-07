@@ -1,0 +1,34 @@
+---
+title: Quiz Modes
+description: How each quiz mode works — questions, time, feedback, and pass mark.
+---
+
+## Modes
+
+| | Easy (Byoroshye) | Medium (Hagati) | Hard (Bikomeye) | My Mistakes |
+|---|---|---|---|---|
+| **Questions** | 20 random | 20 random | 20 weighted (images/complex) | 20 from your mistake history |
+| **Timer** | Optional elapsed (no countdown) | Countdown (default 20 min) | Countdown (default 12 min) | Easy rules — no countdown |
+| **Instant feedback** | ✓ green/red highlight + explanation | ✗ revealed on results | ✗ revealed on results | ✓ Easy rules |
+| **Navigation** | Free back/forward/skip | Back/forward, flag, jump grid | Forward-only, no skip, no back | Free |
+| **Answers locked** | On first choice | Modifiable until finish | Single confirmation, cannot change | On first choice |
+| **Pass mark** | Shown after (configurable) | Shown after (configurable) | Shown after (configurable) | N/A |
+| **Auto-submit** | No | On timer expiry | On timer expiry | No |
+
+**Default pass mark:** 12 / 20 (configurable 10–20 in Settings).
+
+## Timer warnings
+
+Applies to Medium and Hard only:
+
+| Threshold | Indicator | Banner |
+|---|---|---|
+| ≤ 25% time left | Warning colour + triangle icon | "Time is running out. &#123;time&#125; remaining." (auto-hides after 5 s) |
+| ≤ 10% time left | Danger colour + alert icon + pulse | "Time is almost up! &#123;time&#125; remaining." (auto-hides after 5 s) |
+| 0:00 | Danger colour + 00:00 | "Time is up. Exam submitted." (stays until dismissed) |
+
+Timers are deadline-based: the remaining time stays accurate if the app is backgrounded or the phone screen locks.
+
+## Resume an unfinished exam
+
+If you close the app mid-quiz, a **Resume** banner appears on the Home screen. Tapping it continues the attempt from where you left off. Expired timed attempts are auto-submitted on next launch.

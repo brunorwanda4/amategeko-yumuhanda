@@ -19,7 +19,7 @@ pub const DEFAULT_WINDOW_SIZE: Size = Size {
 };
 
 pub const MIN_WINDOW_W: f32 = 360.0;
-pub const MIN_WINDOW_H: f32 = 460.0;
+pub const MIN_WINDOW_H: f32 = 560.0;
 
 /// Preferred minimum window size. Narrow windows use the mobile layout (< 700 px).
 pub const MIN_WINDOW_SIZE: Size = Size {
@@ -154,20 +154,6 @@ pub fn min_window_size(display: &Rect, min: Size) -> Size {
     Size { width, height }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn min_size_fits_normal_small_and_tiny_displays() {
-        assert_eq!(min_size(1920.0, 1080.0), (360.0, 560.0));
-        let small = min_size(910.0, 512.0);
-        assert!(small.1 < 512.0);
-        let tiny = min_size(0.0, 8.0);
-        assert!(tiny.0 >= 0.0 && tiny.1 >= 0.0);
-    }
-}
-
 fn clamp_size(size: Size, display: &Rect, min: Size) -> Size {
     let max = max_size_on(display);
     let min = min_window_size(display, min);
@@ -258,5 +244,19 @@ pub fn fit_window(
             }
         }
         None => centered_on(&primary, clamp_size(wanted, &primary, min), saved.maximized),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn min_size_fits_normal_small_and_tiny_displays() {
+        assert_eq!(min_size(1920.0, 1080.0), (360.0, 560.0));
+        let small = min_size(910.0, 512.0);
+        assert!(small.1 < 512.0);
+        let tiny = min_size(0.0, 8.0);
+        assert!(tiny.0 >= 0.0 && tiny.1 >= 0.0);
     }
 }

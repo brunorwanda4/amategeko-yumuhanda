@@ -1,0 +1,96 @@
+---
+title: Development
+description: Build Amategeko y'Umuhanda from source.
+---
+
+import { REPO_URL } from "../../lib/config";
+
+Source: <a href={REPO_URL}>github.com/brunorwanda4/amategeko-yumuhanda</a>
+
+## Prerequisites
+
+- **Rust** stable (`rustup default stable`)
+- **Visual Studio Build Tools** with *Desktop development with C++* and the Windows SDK (Windows desktop build)
+- **Android SDK** API 34, NDK r25+, Java JDK 17 (Android build)
+
+## Windows desktop
+
+```powershell
+# debug run
+cargo run -p desktop
+
+# release binary → target/release/amategeko.exe
+cargo build -p desktop --release
+
+# installer (requires Inno Setup 6)
+.\scripts\build-installer.ps1
+```
+
+## Android APK
+
+```powershell
+# 1. Add Rust Android target
+rustup target add aarch64-linux-android
+cargo install cargo-ndk
+
+# 2. Compile native library
+$env:ANDROID_NDK_ROOT = 'C:\...\ndk\27.1.12297006'
+$env:NDK_HOME = $env:ANDROID_NDK_ROOT
+cargo ndk -t arm64-v8a --platform 31 -o crates/mobile/android/app/src/main/jniLibs build -p mobile
+
+# 3. Assemble APK
+$env:JAVA_HOME = 'C:\...\jdk-17.0.20+8'
+cd crates/mobile/android
+.\gradlew.bat assembleDebug
+# → crates/mobile/android/app/build/outputs/apk/debug/app-debug.apk
+
+# 4. Install on device (USB debugging enabled)
+adb install -r app-debug.apk
+```
+
+## Fast development loop
+
+Requires `watchexec` (`cargo install watchexec-cli`):
+
+```bash
+just dev    # watch + auto-restart desktop app
+just check  # continuous cargo check
+```
+
+Or on Windows PowerShell:
+
+```powershell
+.\scripts\dev.ps1 dev
+.\scripts\dev.ps1 check
+```
+
+## Project structure
+
+```
+amategeko-yumuhanda/
+├── assets/
+│   ├── questions.json       # 404 questions with answers and image metadata
+│   ├── images/              # 130 road-sign PNG images
+│   └── overrides.json
+├── crates/
+│   ├── core/                # Pure Rust domain logic (no GPUI), 100% testable
+│   ├── app/                 # Shared GPUI UI (desktop + mobile)
+│   ├── desktop/             # Windows entry point
+│   └── mobile/              # Android/iOS entry point + Gradle project
+├── tools/
+│   └── extract_questions.py # PDF extraction (pdfplumber + Pillow)
+├── website/                 # This documentation site
+└── docs/
+    ├── SPEC.md
+    └── PROGRESS.md
+```
+
+## Question extraction tool
+
+```powershell
+cd tools
+pip install -r requirements.txt
+python extract_questions.py
+```
+
+This tool is for the maintainer only. The question bank is **not redistributed** via the website.

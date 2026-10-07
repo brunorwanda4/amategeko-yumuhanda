@@ -403,6 +403,15 @@ impl ShellView {
             HomeAction::PlayStudy => self.state.start_study(),
             HomeAction::RestartStudy => self.show_study_restart_dialog = true,
             HomeAction::OpenQuestions => self.state.navigate(Screen::Questions),
+            HomeAction::OpenQuestion(qid) => {
+                self.questions_filter = QuestionsFilter::All;
+                self.questions_search = qid.to_string();
+                self.questions_selected_idx = 0;
+                self.questions_expanded.insert(qid);
+                self.questions_scroll_handle
+                    .set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
+                self.state.navigate(Screen::Questions);
+            }
             HomeAction::OpenResults => self.state.navigate(Screen::Results),
             HomeAction::OpenStats => self.state.navigate(Screen::Stats),
             HomeAction::Resume => self.state.resume_attempt(),
@@ -1231,7 +1240,7 @@ impl Render for ShellView {
             60.0
         };
         let banner_left = if is_desktop && !(is_in_quiz && self.focus_mode) {
-            176.0
+            228.0
         } else {
             12.0
         };
@@ -1262,6 +1271,7 @@ impl Render for ShellView {
                         .top(px(banner_top))
                         .left(px(banner_left))
                         .right(px(12.0))
+                        .bg(colors.background)
                         .child(alert),
                 )
             })
@@ -1363,33 +1373,6 @@ impl Render for ShellView {
                                 return;
                             }
                         }
-                    }
-
-                    if !is_typing
-                        && (this.state.settings.desktop_shortcuts_enabled && is_desktop)
-                        && this.state.active_screen == Screen::Quiz
-                        && this
-                            .state
-                            .current_attempt
-                            .as_ref()
-                            .map(|attempt| attempt.mode)
-                            != Some(QuizMode::Bikomeye)
-                        && (event.keystroke.key.eq_ignore_ascii_case("f")
-                            || event.keystroke.key == "F")
-                        && !event.keystroke.modifiers.control
-                        && !event.keystroke.modifiers.alt
-                        && !event.keystroke.modifiers.platform
-                    {
-                        this.focus_mode = !this.focus_mode;
-                        if this.focus_mode {
-                            if !window.is_fullscreen() {
-                                window.toggle_fullscreen();
-                            }
-                        } else if window.is_fullscreen() {
-                            window.toggle_fullscreen();
-                        }
-                        cx.notify();
-                        return;
                     }
 
                     let action = this.registry.resolve_event(
@@ -1624,6 +1607,17 @@ impl Render for ShellView {
                                     cx.notify();
                                 }
                             }
+                        }
+                        ShortcutAction::ToggleFocusMode => {
+                            this.focus_mode = !this.focus_mode;
+                            if this.focus_mode {
+                                if !window.is_fullscreen() {
+                                    window.toggle_fullscreen();
+                                }
+                            } else if window.is_fullscreen() {
+                                window.toggle_fullscreen();
+                            }
+                            cx.notify();
                         }
                         ShortcutAction::FlagQuestion => {
                             if let Some(att) = &mut this.state.current_attempt {
@@ -2540,6 +2534,9 @@ impl ShellView {
                     .text_color(colors.foreground)
                     .child(title),
             )
+            .when(self.state.active_screen == Screen::Quiz, |el| {
+                el.children(QuizView::render_timer(&self.state, cx))
+            })
     }
 
     fn render_mobile_bottom_bar(&self, cx: &mut Context<Self>) -> impl IntoElement {
