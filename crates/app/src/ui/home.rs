@@ -661,14 +661,22 @@ impl HomeView {
             lang,
             &[("count", &cta_count.to_string()), ("source", cta_source)],
         );
+        let cta_accent = match selected_mode {
+            QuizMode::Byoroshye => colors.success,
+            QuizMode::Hagati => colors.warning,
+            QuizMode::Bikomeye => colors.danger,
+            _ => colors.primary,
+        };
 
         let start_cta = div()
             .id("quiz_cta_start_btn")
             .cursor_pointer()
             .w_full()
             .rounded(px(18.0))
-            .bg(tokens.fg)
-            .text_color(tokens.bg)
+            .border_1()
+            .border_color(cta_accent.opacity(0.55))
+            .bg(tokens.surface2)
+            .text_color(tokens.fg)
             .p(px(12.0))
             .pl(px(20.0))
             .flex()
@@ -676,7 +684,7 @@ impl HomeView {
             .items_center()
             .justify_between()
             .gap(px(14.0))
-            .hover(|el| el.opacity(0.92))
+            .hover(move |el| el.border_color(cta_accent).bg(cta_accent.opacity(0.08)))
             .on_click(cx.listener(move |this, _, window, cx| {
                 on_action(this, HomeAction::Play(selected_mode), window, cx);
             }))
@@ -690,15 +698,14 @@ impl HomeView {
                             .font_bold()
                             .text_size(px(18.0))
                             .line_height(px(22.0))
-                            .text_color(tokens.bg)
+                            .text_color(tokens.fg)
                             .child(cta_title),
                     )
                     .child(
                         div()
                             .font_family(BODY_FONT)
                             .text_xs()
-                            .opacity(0.65)
-                            .text_color(tokens.bg)
+                            .text_color(tokens.muted)
                             .child(cta_sub),
                     ),
             )
@@ -715,10 +722,11 @@ impl HomeView {
                                 .py_1()
                                 .rounded(px(6.0))
                                 .border_1()
-                                .border_color(tokens.bg.opacity(0.35))
+                                .border_color(tokens.line2)
+                                .bg(tokens.bg)
                                 .text_xs()
                                 .font_medium()
-                                .text_color(tokens.bg)
+                                .text_color(tokens.fg)
                                 .child("Enter"),
                         )
                     })
@@ -726,15 +734,17 @@ impl HomeView {
                         div()
                             .size(px(44.0))
                             .rounded_full()
-                            .bg(tokens.bg)
-                            .text_color(tokens.fg)
+                            .border_1()
+                            .border_color(cta_accent)
+                            .bg(cta_accent.opacity(0.1))
+                            .text_color(cta_accent)
                             .flex()
                             .items_center()
                             .justify_center()
                             .child(
                                 Icon::new(IconName::Play)
                                     .size(px(18.0))
-                                    .text_color(tokens.fg),
+                                    .text_color(cta_accent),
                             ),
                     ),
             );
