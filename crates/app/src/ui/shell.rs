@@ -1072,7 +1072,16 @@ impl Render for ShellView {
                 .when(show_sidebar, |el| {
                     el.child(self.render_desktop_sidebar(reveal_scrollbar, cx))
                 })
-                .child(div().flex_1().size_full().overflow_hidden().child(content))
+                .child(
+                    div()
+                        .flex()
+                        .flex_col()
+                        .flex_1()
+                        .min_h_0()
+                        .size_full()
+                        .overflow_hidden()
+                        .child(content),
+                )
         } else {
             // Mobile Layout: Top App Bar + Content + Bottom Bar (hidden in quiz)
             div()
