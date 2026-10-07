@@ -147,14 +147,30 @@ impl ResultsView {
             .collect();
 
         div()
-            .id("results_view_root")
+            .id("results_page_scroll")
             .flex()
             .flex_col()
-            .size_full()
+            .flex_1()
+            .min_h_0()
+            .w_full()
+            .overflow_y_scroll()
+            .when(!is_desktop, |el| {
+                el.track_scroll(scroll_handle)
+                    .drag_scroll(scroll_handle)
+            })
             .bg(colors.background)
             .p_4()
             .when(is_desktop, |el| el.p_6())
+            .when(!is_desktop, |el| el.pb_20())
             .gap_4()
+            .when(!is_desktop, |el| {
+                el.child(vertical_scrollbar(
+                    "results_page_scrollbar",
+                    scroll_handle,
+                    is_desktop,
+                    reveal_scrollbar,
+                ))
+            })
             // 1. Page Heading
             .child(
                 div()
@@ -536,28 +552,30 @@ impl ResultsView {
                             )
                     }),
             )
-            // 4. Question Review List Container - SCROLLABLE with its own vertical scrollbar
+            // 4. Question Review List Container
             .child(
                 div()
-                    .id("results_scroll_view")
-                    .track_scroll(scroll_handle)
-                    .drag_scroll(scroll_handle)
+                    .id("results_review_list")
                     .relative()
                     .flex()
                     .flex_col()
-                    .flex_1()
-                    .min_h(px(180.0))
-                    .overflow_y_scroll()
                     .rounded_2xl()
                     .border_1()
                     .border_color(colors.border)
                     .bg(colors.secondary)
-                    .child(vertical_scrollbar(
-                        "results_scrollbar",
-                        scroll_handle,
-                        is_desktop,
-                        reveal_scrollbar,
-                    ))
+                    .when(is_desktop, |el| {
+                        el.track_scroll(scroll_handle)
+                            .drag_scroll(scroll_handle)
+                            .flex_1()
+                            .min_h(px(180.0))
+                            .overflow_y_scroll()
+                            .child(vertical_scrollbar(
+                                "results_scrollbar",
+                                scroll_handle,
+                                is_desktop,
+                                reveal_scrollbar,
+                            ))
+                    })
                     .when(filtered_questions.is_empty(), |container| {
                         container.child(
                             div()

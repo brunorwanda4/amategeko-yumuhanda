@@ -291,19 +291,6 @@ impl ShellView {
         #[cfg(not(debug_assertions))]
         let initial_stats_filter = String::new();
 
-        #[cfg(debug_assertions)]
-        let initial_results_filter = dev_state
-            .as_ref()
-            .and_then(|d| d.results_filter.as_deref())
-            .map(|s| match s {
-                "correct" => ResultFilter::Correct,
-                "wrong" | "mistakes" => ResultFilter::Mistakes,
-                "unanswered" => ResultFilter::Unanswered,
-                _ => ResultFilter::All,
-            })
-            .unwrap_or(ResultFilter::All);
-
-        #[cfg(not(debug_assertions))]
         let initial_results_filter = ResultFilter::All;
 
         let questions_scroll_handle = gpui::ScrollHandle::default();
@@ -1092,8 +1079,18 @@ impl Render for ShellView {
                 .flex()
                 .flex_col()
                 .size_full()
+                .min_h_0()
                 .child(self.render_mobile_top_bar(cx))
-                .child(div().flex_1().size_full().overflow_hidden().child(content))
+                .child(
+                    div()
+                        .flex()
+                        .flex_col()
+                        .flex_1()
+                        .min_h_0()
+                        .w_full()
+                        .overflow_hidden()
+                        .child(content),
+                )
                 .when(!is_in_quiz, |el| {
                     el.child(self.render_mobile_bottom_bar(cx))
                 })
