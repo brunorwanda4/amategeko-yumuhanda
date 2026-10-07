@@ -7,6 +7,7 @@ use amategeko_core::{t, tf, Language, QuestionSet, QuizMode, StatsCalculator};
 use gpui::InteractiveElement as _;
 use gpui_kit::assets::IconName;
 use gpui_kit::base::StyledExt;
+use gpui_kit::component::tooltip::Tooltip;
 use gpui_kit::component::{ActiveTheme, Icon};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
@@ -86,6 +87,7 @@ pub enum HomeAction {
     /// Ask the host to confirm clearing the current study round.
     RestartStudy,
     OpenQuestions,
+    OpenQuestion(u32),
     OpenResults,
     OpenStats,
     Resume,
@@ -809,10 +811,22 @@ impl HomeView {
 
         let focus_mis = props.selected_set == QuestionSet::Mistakes;
         let focus_un = props.selected_set == QuestionSet::NotSeen;
+        let map_cell_size = if !is_desktop && window_w < 380.0 {
+            10.0
+        } else {
+            11.0
+        };
+        let map_gap = if !is_desktop && window_w < 380.0 {
+            2.0
+        } else {
+            3.0
+        };
+        let tooltip_width = if is_desktop { 320.0 } else { 260.0 };
 
         let map_cells: Vec<_> = all_questions
             .iter()
             .map(|q| {
+                let q_id = q.id;
                 let stat = state.progress.question_stats.get(&q.id);
                 let seen = stat.map_or(0, |s| s.seen_count);
                 let wrong = stat.map_or(0, |s| s.wrong_count);
@@ -834,10 +848,98 @@ impl HomeView {
 
                 let is_current = q.id == current_study_id;
                 let dimmed = (focus_mis && !is_mis) || (focus_un && !is_un);
+                let question_text = q.text_for(state.settings.question_language).to_string();
+                let correct_label = tf(
+                    "home.correct_count",
+                    lang,
+                    &[("count", &correct.to_string())],
+                );
+                let wrong_label = tf("home.wrong_count", lang, &[("count", &wrong.to_string())]);
 
                 div()
-                    .size(px(11.0))
+                    .id(SharedString::from(format!("question_map_cell_{q_id}")))
+                    .size(px(map_cell_size))
                     .rounded(px(2.5))
+                    .cursor_pointer()
+                    .hover(|el| el.border_1().border_color(tokens.fg))
+                    .tooltip(move |window, cx| {
+                        let question_text = question_text.clone();
+                        let correct_label = correct_label.clone();
+                        let wrong_label = wrong_label.clone();
+                        Tooltip::element(move |_, cx| {
+                            let colors = cx.theme().colors;
+                            div()
+                                .flex()
+                                .flex_col()
+                                .gap_2()
+                                .max_w(px(tooltip_width))
+                                .py_1()
+                                .child(
+                                    div()
+                                        .flex()
+                                        .items_start()
+                                        .gap_2()
+                                        .child(
+                                            div()
+                                                .flex_none()
+                                                .rounded_md()
+                                                .bg(colors.muted)
+                                                .px_1p5()
+                                                .py_0p5()
+                                                .text_xs()
+                                                .font_semibold()
+                                                .child(format!("#{q_id}")),
+                                        )
+                                        .child(
+                                            div()
+                                                .min_w_0()
+                                                .whitespace_normal()
+                                                .font_medium()
+                                                .child(question_text.clone()),
+                                        ),
+                                )
+                                .child(
+                                    div()
+                                        .flex()
+                                        .flex_wrap()
+                                        .items_center()
+                                        .gap_x_3()
+                                        .gap_y_1()
+                                        .text_xs()
+                                        .text_color(colors.muted_foreground)
+                                        .child(
+                                            div()
+                                                .flex()
+                                                .items_center()
+                                                .gap_1()
+                                                .child(
+                                                    div()
+                                                        .size(px(7.0))
+                                                        .rounded_full()
+                                                        .bg(colors.success),
+                                                )
+                                                .child(correct_label.clone()),
+                                        )
+                                        .child(
+                                            div()
+                                                .flex()
+                                                .items_center()
+                                                .gap_1()
+                                                .child(
+                                                    div()
+                                                        .size(px(7.0))
+                                                        .rounded_full()
+                                                        .bg(colors.danger),
+                                                )
+                                                .child(wrong_label.clone()),
+                                        ),
+                                )
+                        })
+                        .build(window, cx)
+                    })
+                    .on_click(cx.listener(move |this, _, window, cx| {
+                        on_action(this, HomeAction::OpenQuestion(q_id), window, cx);
+                    }))
                     .when(dimmed, |el| el.opacity(0.2))
                     .when(cell_state == 0, |el| {
                         el.border_1().border_color(tokens.c_un)
@@ -862,8 +964,10 @@ impl HomeView {
                 div()
                     .flex()
                     .flex_row()
+                    .flex_wrap()
                     .justify_between()
                     .items_baseline()
+                    .gap_2()
                     .mb(px(14.0))
                     .child(
                         div()
@@ -888,7 +992,7 @@ impl HomeView {
                     .flex()
                     .flex_row()
                     .flex_wrap()
-                    .gap(px(3.0))
+                    .gap(px(map_gap))
                     .w_full()
                     .children(map_cells),
             )

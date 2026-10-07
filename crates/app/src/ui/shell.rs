@@ -403,6 +403,15 @@ impl ShellView {
             HomeAction::PlayStudy => self.state.start_study(),
             HomeAction::RestartStudy => self.show_study_restart_dialog = true,
             HomeAction::OpenQuestions => self.state.navigate(Screen::Questions),
+            HomeAction::OpenQuestion(qid) => {
+                self.questions_filter = QuestionsFilter::All;
+                self.questions_search = qid.to_string();
+                self.questions_selected_idx = 0;
+                self.questions_expanded.insert(qid);
+                self.questions_scroll_handle
+                    .set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
+                self.state.navigate(Screen::Questions);
+            }
             HomeAction::OpenResults => self.state.navigate(Screen::Results),
             HomeAction::OpenStats => self.state.navigate(Screen::Stats),
             HomeAction::Resume => self.state.resume_attempt(),
