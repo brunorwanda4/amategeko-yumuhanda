@@ -1,5 +1,4 @@
 use crate::state::AppState;
-use crate::ui::liquid_orb_button::LiquidOrbButton;
 use crate::ui::scroll::{vertical_scrollbar, DragScroll};
 use amategeko_core::platform::KeepAwakeGuard;
 use amategeko_core::{
@@ -1296,16 +1295,27 @@ impl QuizView {
                                     .child(t("study.sub", lang)),
                             ),
                     )
-                    .child(LiquidOrbButton::new(
-                        "study_all_questions_play",
-                        IconName::Play,
-                        play_button_size,
-                        total == 0,
-                        cx,
-                        move |this, window, cx| {
-                            on_start_mode(this, QuizMode::Study, window, cx);
-                        },
-                    )),
+                    .child(
+                        div()
+                            .id("study_all_questions_play")
+                            .flex()
+                            .flex_none()
+                            .items_center()
+                            .justify_center()
+                            .size(px(play_button_size))
+                            .rounded_full()
+                            .bg(colors.primary)
+                            .cursor_pointer()
+                            .hover(|el| el.opacity(0.9))
+                            .on_click(cx.listener(move |this, _, window, cx| {
+                                on_start_mode(this, QuizMode::Study, window, cx);
+                            }))
+                            .child(
+                                Icon::new(IconName::Play)
+                                    .size(px(17.0))
+                                    .text_color(colors.primary_foreground),
+                            ),
+                    ),
             )
             .child(
                 div()

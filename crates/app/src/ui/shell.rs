@@ -402,6 +402,9 @@ impl ShellView {
                 .start_quiz_in_set(QuizMode::Byoroshye, QuestionSet::Mistakes),
             HomeAction::PlayStudy => self.state.start_study(),
             HomeAction::RestartStudy => self.show_study_restart_dialog = true,
+            HomeAction::OpenQuestions => self.state.navigate(Screen::Questions),
+            HomeAction::OpenResults => self.state.navigate(Screen::Results),
+            HomeAction::OpenStats => self.state.navigate(Screen::Stats),
             HomeAction::Resume => self.state.resume_attempt(),
             HomeAction::Discard => self.state.discard_in_progress(),
         }

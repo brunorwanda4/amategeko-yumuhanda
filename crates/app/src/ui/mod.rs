@@ -1,7 +1,6 @@
 pub mod footer;
 pub mod home;
 pub mod layout;
-pub mod liquid_orb_button;
 pub mod questions;
 pub mod quiz;
 pub mod results;

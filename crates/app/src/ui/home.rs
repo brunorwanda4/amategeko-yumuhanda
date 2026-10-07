@@ -31,6 +31,9 @@ pub enum HomeAction {
     PlayStudy,
     /// Ask the host to confirm clearing the current study round.
     RestartStudy,
+    OpenQuestions,
+    OpenResults,
+    OpenStats,
     Resume,
     Discard,
 }
@@ -184,23 +187,42 @@ impl HomeView {
         };
         let stat_tiles = div()
             .flex()
+            .w_full()
             .gap_3()
             .when(is_desktop, |el| el.flex_row())
             .when(!is_desktop, |el| el.flex_col())
             .child(Self::render_stat_tile(
+                "home_all_questions_stat",
                 t("questions.filter_all", lang),
                 &state.bank.len().to_string(),
+                IconName::BookOpen,
+                colors.primary,
+                is_desktop,
                 cx,
+                HomeAction::OpenQuestions,
+                on_action,
             ))
             .child(Self::render_stat_tile(
+                "home_results_stat",
                 t("results.title", lang),
                 &last_score_display,
+                IconName::GraduationCap,
+                colors.warning,
+                is_desktop,
                 cx,
+                HomeAction::OpenResults,
+                on_action,
             ))
             .child(Self::render_stat_tile(
+                "home_pass_rate_stat",
                 t("stats.pass_rate", lang),
                 &pass_rate_display,
+                IconName::ChartPie,
+                colors.success,
+                is_desktop,
                 cx,
+                HomeAction::OpenStats,
+                on_action,
             ));
         let weak_card = Self::render_weak_card(lang, is_desktop, cx, on_action);
         let footer = AppFooter::render(is_desktop, page_max_width(), lang, cx);
@@ -325,17 +347,19 @@ impl HomeView {
                 el.flex_row().items_center().justify_between()
             })
             .gap_4()
-            .p_5()
-            .rounded_xl()
+            .p_4()
+            .when(is_desktop, |el| el.p_5())
+            .rounded_2xl()
             .border_1()
-            .border_color(colors.border)
+            .border_color(colors.primary.opacity(0.24))
             .bg(colors.secondary)
             .child(
                 div()
                     .flex()
                     .flex_row()
                     .items_center()
-                    .gap_4()
+                    .gap_3()
+                    .flex_1()
                     .min_w_0()
                     .child(
                         div()
@@ -343,31 +367,36 @@ impl HomeView {
                             .flex_none()
                             .items_center()
                             .justify_center()
-                            .size(px(42.0))
-                            .rounded_xl()
-                            .bg(colors.muted.opacity(0.4))
+                            .size(px(48.0))
+                            .rounded_2xl()
+                            .border_1()
+                            .border_color(colors.danger.opacity(0.28))
+                            .bg(colors.danger.opacity(0.1))
                             .child(
                                 Icon::new(IconName::Target)
                                     .size(px(22.0))
-                                    .text_color(colors.foreground),
+                                    .text_color(colors.danger),
                             ),
                     )
                     .child(
                         div()
                             .flex()
                             .flex_col()
+                            .flex_1()
                             .min_w_0()
-                            .gap_0p5()
+                            .gap_1()
                             .child(
                                 div()
                                     .text_base()
                                     .font_bold()
+                                    .whitespace_normal()
                                     .text_color(colors.foreground)
                                     .child(t("home.weak_title", lang)),
                             )
                             .child(
                                 div()
                                     .text_xs()
+                                    .whitespace_normal()
                                     .text_color(colors.muted_foreground)
                                     .child(t("home.weak_desc", lang)),
                             ),
@@ -382,13 +411,14 @@ impl HomeView {
                     .justify_center()
                     .gap_2()
                     .px_4()
+                    .when(!is_desktop, |el| el.w_full())
                     .min_h(px(if is_desktop { 40.0 } else { 44.0 }))
-                    .rounded_lg()
+                    .rounded_xl()
                     .border_1()
-                    .border_color(colors.border)
-                    .bg(colors.muted.opacity(0.4))
+                    .border_color(colors.primary.opacity(0.5))
+                    .bg(colors.primary)
                     .cursor_pointer()
-                    .hover(|el| el.bg(colors.muted))
+                    .hover(|el| el.opacity(0.9))
                     .on_click(cx.listener(move |this, _, window, cx| {
                         on_action(this, HomeAction::PlayMistakes, window, cx);
                     }))
@@ -396,46 +426,88 @@ impl HomeView {
                         div()
                             .text_sm()
                             .font_semibold()
-                            .text_color(colors.foreground)
+                            .whitespace_normal()
+                            .text_color(colors.primary_foreground)
                             .child(t("home.weak_btn", lang)),
                     )
                     .child(
                         Icon::new(IconName::ArrowRight)
                             .size(px(16.0))
-                            .text_color(colors.foreground),
+                            .flex_none()
+                            .text_color(colors.primary_foreground),
                     ),
             )
     }
 
     fn render_stat_tile<V: 'static>(
+        id: &'static str,
         label: &'static str,
         value: &str,
+        icon: IconName,
+        accent: gpui::Hsla,
+        is_desktop: bool,
         cx: &mut Context<V>,
+        action: HomeAction,
+        on_action: impl Fn(&mut V, HomeAction, &mut Window, &mut Context<V>) + 'static + Copy,
     ) -> impl IntoElement {
         let theme = cx.theme();
         let colors = theme.colors;
 
         div()
+            .id(id)
             .flex()
             .flex_col()
             .flex_1()
-            .gap_2()
-            .p_5()
-            .rounded_xl()
+            .min_w_0()
+            .gap_3()
+            .p_4()
+            .when(is_desktop, |el| el.p_5())
+            .rounded_2xl()
             .border_1()
-            .border_color(colors.border)
+            .border_color(accent.opacity(0.2))
             .bg(colors.secondary)
+            .cursor_pointer()
+            .hover(move |el| {
+                el.bg(colors.muted.opacity(0.7))
+                    .border_color(accent.opacity(0.55))
+            })
+            .focus_visible(|el| el.border_2().border_color(colors.ring))
+            .on_click(cx.listener(move |this, _, window, cx| {
+                on_action(this, action, window, cx);
+            }))
             .child(
                 div()
-                    .text_xs()
-                    .font_medium()
-                    .text_color(colors.muted_foreground)
-                    .child(label),
+                    .flex()
+                    .items_center()
+                    .gap_2()
+                    .min_w_0()
+                    .child(
+                        div()
+                            .flex()
+                            .flex_none()
+                            .items_center()
+                            .justify_center()
+                            .size(px(30.0))
+                            .rounded_lg()
+                            .bg(accent.opacity(0.1))
+                            .child(Icon::new(icon).size(px(15.0)).text_color(accent)),
+                    )
+                    .child(
+                        div()
+                            .min_w_0()
+                            .whitespace_normal()
+                            .text_xs()
+                            .font_medium()
+                            .text_color(colors.muted_foreground)
+                            .child(label),
+                    ),
             )
             .child(
                 div()
-                    .text_3xl()
+                    .when(is_desktop, |el| el.text_3xl())
+                    .when(!is_desktop, |el| el.text_2xl())
                     .font_bold()
+                    .whitespace_nowrap()
                     .text_color(colors.foreground)
                     .child(value.to_string()),
             )
