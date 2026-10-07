@@ -143,6 +143,8 @@ impl QuizView {
                     .flex_row()
                     .items_center()
                     .justify_between()
+                    .min_w_0()
+                    .gap_2()
                     .px_6()
                     .when(!is_desktop, |el| el.px_3())
                     .py_3()
@@ -157,7 +159,7 @@ impl QuizView {
                             .items_center()
                             .gap_3()
                             .min_w_0()
-                            .when(!is_desktop, |el| el.gap_2())
+                            .when(!is_desktop, |el| el.flex_1().gap_2())
                             // Exit / Sohoka button
                             .child(
                                 div()
@@ -218,7 +220,7 @@ impl QuizView {
                                     .px_3()
                                     .min_w_0()
                                     .overflow_hidden()
-                                    .when(!is_desktop, |el| el.px_2())
+                                    .when(!is_desktop, |el| el.flex_1().px_2())
                                     .py_1()
                                     .rounded_full()
                                     .bg(colors.secondary)
@@ -272,7 +274,7 @@ impl QuizView {
                             .flex_row()
                             .items_center()
                             .gap_2p5()
-                            .when(!is_desktop, |el| el.gap_2())
+                            .when(!is_desktop, |el| el.ml_auto().gap_2())
                             // Timer Pill (if active)
                             .when(is_desktop, |el| {
                                 el.children(Self::render_timer(state, cx))

@@ -2534,6 +2534,9 @@ impl ShellView {
                     .text_color(colors.foreground)
                     .child(title),
             )
+            .when(self.state.active_screen == Screen::Quiz, |el| {
+                el.children(QuizView::render_timer(&self.state, cx))
+            })
     }
 
     fn render_mobile_bottom_bar(&self, cx: &mut Context<Self>) -> impl IntoElement {
