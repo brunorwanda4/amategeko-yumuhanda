@@ -203,6 +203,18 @@ fn main() {
                 amategeko_core::window::DEFAULT_WINDOW_SIZE,
                 amategeko_core::window::MIN_WINDOW_SIZE,
             );
+            let min_display = amategeko_core::window::display_index_for(&fitted, &displays)
+                .and_then(|index| displays.get(index))
+                .or_else(|| displays.iter().find(|display| display.primary))
+                .or_else(|| displays.first());
+            let (min_window_w, min_window_h) = min_display
+                .map(|display| {
+                    amategeko_core::window::min_size(display.bounds.width, display.bounds.height)
+                })
+                .unwrap_or((
+                    amategeko_core::window::MIN_WINDOW_W,
+                    amategeko_core::window::MIN_WINDOW_H,
+                ));
 
             let bounds = Bounds {
                 origin: point(px(fitted.x), px(fitted.y)),
@@ -221,6 +233,7 @@ fn main() {
                     ..Default::default()
                 }),
                 window_bounds,
+                window_min_size: Some(size(px(min_window_w), px(min_window_h))),
                 ..Default::default()
             };
 
