@@ -215,6 +215,7 @@ pub enum ShortcutAction {
     PrevQuestion,
     NextQuestion,
     StarQuestion,
+    ToggleFocusMode,
 
     // Medium
     FlagQuestion,
@@ -552,6 +553,13 @@ impl ShortcutRegistry {
             label_key: "shortcuts.star_question",
             custom_hint: Some("K"),
         });
+        self.shortcuts.push(ShortcutDef {
+            key: KeyCombo::plain("f"),
+            action: ShortcutAction::ToggleFocusMode,
+            scopes: vec![ShortcutScope::QuizEasy, ShortcutScope::QuizMedium],
+            label_key: "quiz.focus_mode",
+            custom_hint: Some("F"),
+        });
 
         // 5. Medium mode navigation & features
         self.shortcuts.push(ShortcutDef {
@@ -767,6 +775,7 @@ impl ShortcutRegistry {
                         def.action,
                         ShortcutAction::ChooseOption(_)
                             | ShortcutAction::StarQuestion
+                            | ShortcutAction::ToggleFocusMode
                             | ShortcutAction::ToggleStarSelected
                     )
                 {
