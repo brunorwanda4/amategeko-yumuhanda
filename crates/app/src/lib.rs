@@ -105,7 +105,7 @@ fn apply_app_palette(cx: &mut gpui::App) {
     colors.tab_active = surface_2;
     colors.tab_active_foreground = foreground;
     colors.switch = border_strong;
-    colors.switch_thumb = foreground;
+    colors.switch_thumb = background;
     colors.slider_bar = border_strong;
     colors.slider_thumb = foreground;
     colors.progress_bar = border_strong;

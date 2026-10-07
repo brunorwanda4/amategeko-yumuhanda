@@ -474,7 +474,7 @@ impl SettingsView {
                                     // Easy timer switch
                                     .child(Self::render_switch_row(
                                         t("settings.easy_timer", lang),
-                                        "Nta mwanya ugenwe, ariko igihe kiragaragara",
+                                        t("settings.easy_timer_desc", lang),
                                         "sw_easy_timer",
                                         s.easy_show_timer,
                                         cx,
@@ -511,7 +511,7 @@ impl SettingsView {
                                     // Hard weight image questions switch
                                     .child(Self::render_switch_row(
                                         t("settings.hard_weight", lang),
-                                        "Ibyapa n'ibimenyetso by'umuhanda",
+                                        t("settings.hard_weight_desc", lang),
                                         "sw_hard_images",
                                         s.hard_weight_images,
                                         cx,
@@ -577,10 +577,14 @@ impl SettingsView {
                                                             .child(t("settings.clear_history", lang)),
                                                     )
                                                     .child(
-                                                        div()
-                                                            .text_xs()
-                                                            .text_color(colors.muted_foreground)
-                                                            .child("Bikuraho amanota n'imibare yose"),
+                                                         div()
+                                                             .text_xs()
+                                                             .text_color(colors.muted_foreground)
+                                                             .child(if confirm_clear {
+                                                                 t("settings.clear_confirm", lang)
+                                                             } else {
+                                                                 t("settings.clear_history_desc", lang)
+                                                             }),
                                                     ),
                                             )
                                             .child(
@@ -592,9 +596,9 @@ impl SettingsView {
                                                     .when(!confirm_clear, |el| {
                                                         el.child(
                                                             Button::new("btn_clear_history")
-                                                                .outline()
-                                                                .icon(IconName::Delete)
-                                                                .label("Siba")
+                                                                 .outline()
+                                                                 .icon(IconName::Delete)
+                                                                 .label(t("settings.clear_action", lang))
                                                                 .on_click(cx.listener(move |this, _, window, cx| {
                                                                     on_action(this, SettingsAction::RequestClearHistory(true), window, cx);
                                                                 })),
@@ -602,17 +606,17 @@ impl SettingsView {
                                                     })
                                                     .when(confirm_clear, |el| {
                                                         el.child(
-                                                            Button::new("btn_confirm_clear_yes")
-                                                                .primary()
-                                                                .label("Yego, Siba")
+                                                                 Button::new("btn_confirm_clear_yes")
+                                                                     .primary()
+                                                                 .label(t("settings.clear_yes", lang))
                                                                 .on_click(cx.listener(move |this, _, window, cx| {
                                                                     on_action(this, SettingsAction::ConfirmClearHistory, window, cx);
                                                                 })),
                                                         )
                                                         .child(
-                                                            Button::new("btn_confirm_clear_no")
-                                                                .outline()
-                                                                .label("Reka")
+                                                                 Button::new("btn_confirm_clear_no")
+                                                                     .outline()
+                                                                 .label(t("settings.cancel", lang))
                                                                 .on_click(cx.listener(move |this, _, window, cx| {
                                                                     on_action(this, SettingsAction::RequestClearHistory(false), window, cx);
                                                                 })),
