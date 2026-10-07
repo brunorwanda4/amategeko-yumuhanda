@@ -67,12 +67,12 @@ fn no_saved_state_gives_default_size_centered_on_primary() {
 }
 
 #[test]
-fn default_size_is_limited_to_80_percent_of_primary() {
+fn default_size_respects_screen_fraction_and_minimum() {
     let laptop = display(0.0, 0.0, 1280.0, 680.0, true);
     let state = fit_window(None, &[laptop], DEFAULT_WINDOW_SIZE, MIN_WINDOW_SIZE);
 
     assert!((state.width - 1024.0).abs() < 0.01);
-    assert!((state.height - 544.0).abs() < 0.01);
+    assert!((state.height - MIN_WINDOW_SIZE.height).abs() < 0.01);
     assert_centered(&state, &laptop);
 }
 

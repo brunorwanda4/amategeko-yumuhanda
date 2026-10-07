@@ -966,13 +966,12 @@ impl HomeView {
 
         // 6. Stat Tiles (Byose, Exam score, Pass rate)
         let stats_summary = StatsCalculator::compute_summary(&state.progress);
-        let last_score_num = if let Some(last) = state.progress.attempts.last() {
-            Some(last.score)
-        } else if let Some(last) = &state.last_result {
-            Some(last.score)
-        } else {
-            None
-        };
+        let last_score_num = state
+            .progress
+            .attempts
+            .last()
+            .map(|last| last.score)
+            .or_else(|| state.last_result.as_ref().map(|last| last.score));
         let last_score_str = last_score_num
             .map(|s| s.to_string())
             .unwrap_or_else(|| "—".to_string());

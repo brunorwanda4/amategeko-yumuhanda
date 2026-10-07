@@ -556,11 +556,11 @@ pub fn study_index(sorted_ids: &[u32], last_id: Option<u32>) -> usize {
 
 /// Returns the completed whole-number percentage, bounded to 0 through 100.
 pub fn percent_done(answered: usize, total: usize) -> u32 {
-    if total == 0 {
-        0
-    } else {
-        ((answered.min(total) * 100) / total) as u32
-    }
+    answered
+        .min(total)
+        .saturating_mul(100)
+        .checked_div(total)
+        .unwrap_or(0) as u32
 }
 
 /// Clamps a one-based question number and returns its zero-based index.

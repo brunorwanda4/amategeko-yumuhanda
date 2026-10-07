@@ -53,7 +53,6 @@ impl QuizView {
             None => {
                 return Self::render_empty_state(
                     state,
-                    lang,
                     is_desktop,
                     scroll_handle,
                     reveal_scrollbar,
@@ -1064,7 +1063,6 @@ impl QuizView {
 
     fn render_empty_state<V: 'static>(
         state: &AppState,
-        lang: Language,
         is_desktop: bool,
         scroll_handle: &ScrollHandle,
         reveal_scrollbar: bool,
@@ -1074,6 +1072,7 @@ impl QuizView {
     ) -> gpui::Div {
         let theme = cx.theme();
         let colors = theme.colors;
+        let lang = state.settings.language;
 
         div().flex().flex_col().size_full().child(
             div()
