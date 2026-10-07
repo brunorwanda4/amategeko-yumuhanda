@@ -1231,7 +1231,7 @@ impl Render for ShellView {
             60.0
         };
         let banner_left = if is_desktop && !(is_in_quiz && self.focus_mode) {
-            176.0
+            228.0
         } else {
             12.0
         };
@@ -1262,6 +1262,7 @@ impl Render for ShellView {
                         .top(px(banner_top))
                         .left(px(banner_left))
                         .right(px(12.0))
+                        .bg(colors.background)
                         .child(alert),
                 )
             })
