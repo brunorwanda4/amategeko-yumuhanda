@@ -9,14 +9,19 @@ use std::borrow::Cow;
 /// The one and only app font family (real family name from the font's name table).
 pub const FONT_FAMILY: &str = "Inter";
 
-/// Static weights 400, 500, 600, 700, 800 so `font_normal`, `font_medium`,
-/// `font_semibold`, `font_bold` and `font_extrabold` each get their own face.
-static FONT_FILES: [&[u8]; 5] = [
+/// Font family used for display titles and large values.
+pub(crate) const DISPLAY_FONT_FAMILY: &str = "Bricolage Grotesque 14pt";
+
+/// Static Inter weights for body text, plus Bricolage Grotesque for display text.
+static FONT_FILES: [&[u8]; 8] = [
     include_bytes!("../../../assets/fonts/Inter-Regular.ttf"),
     include_bytes!("../../../assets/fonts/Inter-Medium.ttf"),
     include_bytes!("../../../assets/fonts/Inter-SemiBold.ttf"),
     include_bytes!("../../../assets/fonts/Inter-Bold.ttf"),
     include_bytes!("../../../assets/fonts/Inter-ExtraBold.ttf"),
+    include_bytes!("../../../assets/fonts/BricolageGrotesque-Regular.ttf"),
+    include_bytes!("../../../assets/fonts/BricolageGrotesque-Bold.ttf"),
+    include_bytes!("../../../assets/fonts/BricolageGrotesque-ExtraBold.ttf"),
 ];
 
 #[derive(Clone, Copy)]

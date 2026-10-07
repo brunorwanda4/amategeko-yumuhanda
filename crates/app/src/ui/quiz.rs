@@ -653,6 +653,7 @@ impl QuizView {
                                                     .overflow_hidden()
                                                     .whitespace_normal()
                                                     .text_xl()
+                                                    .font_family(crate::font::DISPLAY_FONT_FAMILY)
                                                     .font_bold()
                                                     .text_color(colors.foreground)
                                                     .child(current_q.text_for(q_lang).to_string()),
@@ -1131,6 +1132,7 @@ impl QuizView {
                                 .child(
                                     div()
                                         .text_2xl()
+                                        .font_family(crate::font::DISPLAY_FONT_FAMILY)
                                         .font_bold()
                                         .text_color(colors.foreground)
                                         .child(t("quiz.no_active", lang)),
@@ -1281,6 +1283,7 @@ impl QuizView {
                                     .overflow_hidden()
                                     .whitespace_normal()
                                     .text_lg()
+                                    .font_family(crate::font::DISPLAY_FONT_FAMILY)
                                     .font_bold()
                                     .text_color(colors.foreground)
                                     .child(t("study.title", lang)),
@@ -1464,6 +1467,7 @@ impl QuizView {
                                     .child(
                                         div()
                                             .text_base()
+                                            .font_family(crate::font::DISPLAY_FONT_FAMILY)
                                             .font_bold()
                                             .text_color(colors.foreground)
                                             .child(title),

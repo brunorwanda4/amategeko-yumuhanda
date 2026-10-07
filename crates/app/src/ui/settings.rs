@@ -78,6 +78,7 @@ impl SettingsView {
                     .child(
                         div()
                             .text_2xl()
+                            .font_family(crate::font::DISPLAY_FONT_FAMILY)
                             .font_bold()
                             .text_color(colors.foreground)
                             .child(t("settings.title", lang)),

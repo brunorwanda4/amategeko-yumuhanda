@@ -72,6 +72,7 @@ impl StatsView {
                             .child(
                                 div()
                                     .text_xl()
+                                    .font_family(crate::font::DISPLAY_FONT_FAMILY)
                                     .font_bold()
                                     .text_color(colors.foreground)
                                     .child(t("stats.title", lang)),
@@ -258,6 +259,7 @@ impl StatsView {
                                     .child(
                                         div()
                                             .text_xl()
+                                            .font_family(crate::font::DISPLAY_FONT_FAMILY)
                                             .font_bold()
                                             .text_color(colors.foreground)
                                             .child(value),
@@ -288,6 +290,7 @@ impl StatsView {
                                     .child(
                                         div()
                                             .text_sm()
+                                            .font_family(crate::font::DISPLAY_FONT_FAMILY)
                                             .font_bold()
                                             .text_color(colors.foreground)
                                             .child(t("stats.chart_title", lang)),
@@ -457,6 +460,7 @@ impl StatsView {
                                     .child(
                                         div()
                                             .text_sm()
+                                            .font_family(crate::font::DISPLAY_FONT_FAMILY)
                                             .font_bold()
                                             .text_color(colors.foreground)
                                             .child(t("stats.top_missed_title", lang)),
@@ -570,6 +574,7 @@ impl StatsView {
                                     .child(
                                         div()
                                             .text_sm()
+                                            .font_family(crate::font::DISPLAY_FONT_FAMILY)
                                             .font_bold()
                                             .text_color(colors.foreground)
                                             .child(t("stats.by_mode", lang)),

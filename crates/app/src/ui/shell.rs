@@ -1829,6 +1829,7 @@ impl Render for ShellView {
                                     .overflow_hidden()
                                     .whitespace_normal()
                                     .text_lg()
+                                    .font_family(crate::font::DISPLAY_FONT_FAMILY)
                                     .font_bold()
                                     .text_color(colors.foreground)
                                     .child(t("quiz.confirm_finish_title", language)),
@@ -1937,6 +1938,7 @@ impl Render for ShellView {
                             .child(
                                 div()
                                     .text_lg()
+                                    .font_family(crate::font::DISPLAY_FONT_FAMILY)
                                     .font_bold()
                                     .text_color(colors.foreground)
                                     .child(t("study.jump", language)),
@@ -2076,6 +2078,7 @@ impl Render for ShellView {
                                     .min_w_0()
                                     .whitespace_normal()
                                     .text_lg()
+                                    .font_family(crate::font::DISPLAY_FONT_FAMILY)
                                     .font_bold()
                                     .text_color(colors.foreground)
                                     .child(t("study.restart", language)),
@@ -2181,6 +2184,7 @@ impl Render for ShellView {
                                 .child(
                                     div()
                                         .text_lg()
+                                        .font_family(crate::font::DISPLAY_FONT_FAMILY)
                                         .font_bold()
                                         .text_color(colors.foreground)
                                         .child(
@@ -2290,9 +2294,11 @@ impl ShellView {
                     .gap_1()
                     .py_2()
                     .px_1()
+                    .font_family(crate::font::DISPLAY_FONT_FAMILY)
                     .child(
                         div()
                             .text_sm()
+                            .font_family(crate::font::DISPLAY_FONT_FAMILY)
                             .font_bold()
                             .text_color(colors.foreground)
                             .child("Amategeko"),
@@ -2529,6 +2535,7 @@ impl ShellView {
             .child(
                 div()
                     .text_base()
+                    .font_family(crate::font::DISPLAY_FONT_FAMILY)
                     .font_bold()
                     .text_color(colors.foreground)
                     .child(title),

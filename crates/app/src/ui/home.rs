@@ -1,3 +1,4 @@
+use crate::font::DISPLAY_FONT_FAMILY;
 use crate::state::AppState;
 use crate::ui::layout::PagePadding as _;
 use crate::ui::scroll::{vertical_scrollbar, DragScroll, ScrollbarContext};
@@ -13,7 +14,7 @@ use gpui_kit::*;
 /// Number of questions in a full exam.
 const EXAM_QUESTIONS: usize = 20;
 
-const DISPLAY_FONT: &str = "Bricolage Grotesque";
+const DISPLAY_FONT: &str = DISPLAY_FONT_FAMILY;
 const BODY_FONT: &str = "Instrument Sans";
 
 /// Theme tokens strictly matching the redesign spec for dark and light modes.
@@ -141,6 +142,7 @@ impl HomeView {
         on_action: impl Fn(&mut V, HomeAction, &mut Window, &mut Context<V>) + 'static + Copy,
     ) -> impl IntoElement {
         let is_dark = cx.theme().mode == gpui_kit::component::ThemeMode::Dark;
+        let colors = cx.theme().colors;
         let tokens = HomeTokens::new(is_dark);
         let lang = state.settings.language;
         let is_desktop = scroll.is_desktop;
@@ -197,8 +199,10 @@ impl HomeView {
 
         let hero_card = div()
             .id("study_all_questions_card")
-            .bg(tokens.inv_bg)
-            .text_color(tokens.inv_fg)
+            .border_1()
+            .border_color(colors.primary.opacity(0.35))
+            .bg(tokens.surface)
+            .text_color(tokens.fg)
             .rounded(px(24.0))
             .p(px(if is_desktop { 28.0 } else { 22.0 }))
             .w_full()
@@ -217,7 +221,7 @@ impl HomeView {
                             .font_extrabold()
                             .text_size(px(if is_desktop { 112.0 } else { 76.0 }))
                             .line_height(px(if is_desktop { 96.0 } else { 68.0 }))
-                            .text_color(tokens.inv_fg)
+                            .text_color(colors.primary)
                             .child(resume_number.to_string()),
                     )
                     .child(
@@ -225,10 +229,13 @@ impl HomeView {
                             .font_family(BODY_FONT)
                             .font_medium()
                             .text_sm()
-                            .opacity(0.65)
-                            .text_color(tokens.inv_fg)
+                            .text_color(tokens.muted)
                             .when(!is_desktop, |el| el.pb(px(6.0)))
-                            .child(format!("muri {}", total_study)),
+                            .child(tf(
+                                "study.of_total",
+                                lang,
+                                &[("total", &total_study.to_string())],
+                            )),
                     ),
             )
             .child(
@@ -245,24 +252,23 @@ impl HomeView {
                             .text_size(px(if is_desktop { 26.0 } else { 22.0 }))
                             .line_height(px(if is_desktop { 30.0 } else { 26.0 }))
                             .mb(px(6.0))
-                            .text_color(tokens.inv_fg)
+                            .text_color(tokens.fg)
                             .child(t("study.title", lang)),
                     )
                     .child(
                         div()
                             .font_family(BODY_FONT)
                             .text_sm()
-                            .opacity(0.7)
                             .mb(px(18.0))
-                            .text_color(tokens.inv_fg)
-                            .child(t("study.desc", lang)),
+                            .text_color(tokens.muted)
+                            .child(t("study.sub", lang)),
                     )
                     .child(
                         // Thin progress bar
                         div()
                             .h(px(6.0))
                             .rounded_full()
-                            .bg(tokens.inv_fg.opacity(0.18))
+                            .bg(colors.primary.opacity(0.16))
                             .overflow_hidden()
                             .w_full()
                             .child(
@@ -270,7 +276,7 @@ impl HomeView {
                                     .h_full()
                                     .w(relative((study_pct.max(2) as f32) / 100.0))
                                     .rounded_full()
-                                    .bg(tokens.inv_fg),
+                                    .bg(colors.primary),
                             ),
                     )
                     .child(
@@ -280,14 +286,17 @@ impl HomeView {
                             .justify_between()
                             .mt(px(8.0))
                             .text_xs()
-                            .opacity(0.75)
                             .font_family(BODY_FONT)
-                            .text_color(tokens.inv_fg)
-                            .child(format!(
-                                "Komeza ku kibazo {} muri {}",
-                                resume_number, total_study
+                            .text_color(tokens.muted)
+                            .child(tf(
+                                "study.continue",
+                                lang,
+                                &[
+                                    ("n", &resume_number.to_string()),
+                                    ("total", &total_study.to_string()),
+                                ],
                             ))
-                            .child(format!("Wamaze {}%", study_pct)),
+                            .child(tf("study.done", lang, &[("pct", &study_pct.to_string())])),
                     ),
             )
             .child(
@@ -310,8 +319,8 @@ impl HomeView {
                             .py_3()
                             .font_semibold()
                             .text_sm()
-                            .bg(tokens.inv_fg)
-                            .text_color(tokens.inv_bg)
+                            .bg(colors.primary)
+                            .text_color(colors.primary_foreground)
                             .hover(|el| el.opacity(0.9))
                             .when(!is_desktop, |el| el.flex_1())
                             .on_click(cx.listener(move |this, _, window, cx| {
@@ -320,7 +329,7 @@ impl HomeView {
                             .child(
                                 Icon::new(IconName::Play)
                                     .size(px(16.0))
-                                    .text_color(tokens.inv_bg),
+                                    .text_color(colors.primary_foreground),
                             )
                             .child(t("resume.go", lang)),
                     )
@@ -339,10 +348,10 @@ impl HomeView {
                             .font_semibold()
                             .text_sm()
                             .border_1()
-                            .border_color(tokens.inv_fg.opacity(0.3))
+                            .border_color(colors.primary.opacity(0.5))
                             .bg(gpui::transparent_black())
-                            .text_color(tokens.inv_fg)
-                            .hover(|el| el.bg(tokens.inv_fg.opacity(0.08)))
+                            .text_color(colors.primary)
+                            .hover(|el| el.bg(colors.primary.opacity(0.1)))
                             .when(!is_desktop, |el| el.flex_1())
                             .on_click(cx.listener(move |this, _, window, cx| {
                                 on_action(this, HomeAction::RestartStudy, window, cx);
@@ -390,6 +399,12 @@ impl HomeView {
             .map(|info| {
                 let is_sel = info.mode == selected_mode;
                 let mode = info.mode;
+                let mode_accent = match info.mode {
+                    QuizMode::Byoroshye => colors.success,
+                    QuizMode::Hagati => colors.warning,
+                    QuizMode::Bikomeye => colors.danger,
+                    _ => colors.primary,
+                };
                 div()
                     .id(info.id)
                     .debug_selector(move || info.id.to_string())
@@ -397,9 +412,11 @@ impl HomeView {
                     .rounded(px(14.0))
                     .p(px(if is_desktop { 14.0 } else { 12.0 }))
                     .border_1()
-                    .when(is_sel, |el| el.border_color(tokens.fg).bg(tokens.surface2))
+                    .when(is_sel, |el| {
+                        el.border_color(mode_accent).bg(mode_accent.opacity(0.08))
+                    })
                     .when(!is_sel, |el| el.border_color(tokens.line).bg(tokens.bg))
-                    .hover(|el| el.border_color(tokens.line2))
+                    .hover(move |el| el.border_color(mode_accent))
                     .on_click(cx.listener(move |this, _, window, cx| {
                         on_action(this, HomeAction::SelectMode(mode), window, cx);
                     }))
@@ -413,12 +430,12 @@ impl HomeView {
                             .size(px(18.0))
                             .rounded_full()
                             .border_1()
-                            .border_color(if is_sel { tokens.fg } else { tokens.line2 })
+                            .border_color(if is_sel { mode_accent } else { tokens.line2 })
                             .flex()
                             .items_center()
                             .justify_center()
                             .when(is_sel, |el| {
-                                el.child(div().size(px(8.0)).rounded_full().bg(tokens.fg))
+                                el.child(div().size(px(8.0)).rounded_full().bg(mode_accent))
                             }),
                     )
                     .child(
@@ -477,21 +494,21 @@ impl HomeView {
                                     .h(px(16.0))
                                     .child(div().w(px(5.0)).h(px(7.0)).rounded(px(1.5)).bg(
                                         if info.lv >= 1 {
-                                            tokens.fg
+                                            mode_accent
                                         } else {
                                             tokens.line2
                                         },
                                     ))
                                     .child(div().w(px(5.0)).h(px(11.0)).rounded(px(1.5)).bg(
                                         if info.lv >= 2 {
-                                            tokens.fg
+                                            mode_accent
                                         } else {
                                             tokens.line2
                                         },
                                     ))
                                     .child(div().w(px(5.0)).h(px(16.0)).rounded(px(1.5)).bg(
                                         if info.lv >= 3 {
-                                            tokens.fg
+                                            mode_accent
                                         } else {
                                             tokens.line2
                                         },
@@ -524,7 +541,9 @@ impl HomeView {
                                     .items_center()
                                     .justify_center()
                                     .cursor_pointer()
-                                    .hover(|el| el.border_color(tokens.fg).bg(tokens.surface2))
+                                    .hover(move |el| {
+                                        el.border_color(mode_accent).bg(mode_accent.opacity(0.1))
+                                    })
                                     .on_click(cx.listener(move |this, _, window, cx| {
                                         cx.stop_propagation();
                                         on_action(this, HomeAction::Play(mode), window, cx);
@@ -532,7 +551,7 @@ impl HomeView {
                                     .child(
                                         Icon::new(IconName::Play)
                                             .size(px(16.0))
-                                            .text_color(tokens.fg),
+                                            .text_color(mode_accent),
                                     ),
                             ),
                     )
@@ -602,7 +621,7 @@ impl HomeView {
         let (cta_count, cta_source) = if is_easy {
             (set_count, set_label(set, lang))
         } else {
-            (EXAM_QUESTIONS, t("quiz.title", lang))
+            (EXAM_QUESTIONS, t("set.all", lang))
         };
         let cta_title = match selected_mode {
             QuizMode::Byoroshye => t("mode.easy", lang),
@@ -610,7 +629,11 @@ impl HomeView {
             QuizMode::Bikomeye => t("mode.hard", lang),
             _ => t("mode.easy", lang),
         };
-        let cta_sub = format!("Ibibazo {} muri {}", cta_count, cta_source);
+        let cta_sub = tf(
+            "home.questions_from",
+            lang,
+            &[("count", &cta_count.to_string()), ("source", cta_source)],
+        );
 
         let start_cta = div()
             .id("quiz_cta_start_btn")
@@ -721,7 +744,7 @@ impl HomeView {
                         .font_family(BODY_FONT)
                         .text_xs()
                         .text_color(tokens.muted)
-                        .child("Ibibazo bivuye"),
+                        .child(t("quiz.from", lang)),
                 )
                 .child(div().flex().flex_row().flex_wrap().gap_2().children(chips))
             })
@@ -794,9 +817,9 @@ impl HomeView {
                     .when(cell_state == 0, |el| {
                         el.border_1().border_color(tokens.c_un)
                     })
-                    .when(cell_state == 1, |el| el.bg(tokens.c_mis))
-                    .when(cell_state == 2, |el| el.bg(tokens.fg))
-                    .when(cell_state == 3, |el| el.bg(tokens.c_oth))
+                    .when(cell_state == 1, |el| el.bg(colors.danger))
+                    .when(cell_state == 2, |el| el.bg(colors.success))
+                    .when(cell_state == 3, |el| el.bg(colors.primary))
                     .when(is_current, |el| el.border_2().border_color(tokens.fg))
             })
             .collect();
@@ -824,14 +847,14 @@ impl HomeView {
                             .text_size(px(17.0))
                             .line_height(px(22.0))
                             .text_color(tokens.fg)
-                            .child("Aho ugeze"),
+                            .child(t("home.progress_title", lang)),
                     )
                     .child(
                         div()
                             .font_family(BODY_FONT)
                             .text_xs()
                             .text_color(tokens.muted)
-                            .child("Akadomo kamwe ni ikibazo kimwe"),
+                            .child(t("home.progress_hint", lang)),
                     ),
             )
             .child(
@@ -861,8 +884,12 @@ impl HomeView {
                             .flex_row()
                             .items_center()
                             .gap_1p5()
-                            .child(div().size(px(10.0)).rounded(px(2.5)).bg(tokens.fg))
-                            .child(format!("Watsinze {}", ok_c)),
+                            .child(div().size(px(10.0)).rounded(px(2.5)).bg(colors.success))
+                            .child(tf(
+                                "home.correct_count",
+                                lang,
+                                &[("count", &ok_c.to_string())],
+                            )),
                     )
                     .child(
                         div()
@@ -870,8 +897,12 @@ impl HomeView {
                             .flex_row()
                             .items_center()
                             .gap_1p5()
-                            .child(div().size(px(10.0)).rounded(px(2.5)).bg(tokens.c_mis))
-                            .child(format!("Wakosheje {}", mis_c)),
+                            .child(div().size(px(10.0)).rounded(px(2.5)).bg(colors.danger))
+                            .child(tf(
+                                "home.wrong_count",
+                                lang,
+                                &[("count", &mis_c.to_string())],
+                            )),
                     )
                     .child(
                         div()
@@ -884,9 +915,14 @@ impl HomeView {
                                     .size(px(10.0))
                                     .rounded(px(2.5))
                                     .border_1()
-                                    .border_color(tokens.c_un),
+                                    .border_color(colors.warning)
+                                    .bg(colors.warning.opacity(0.12)),
                             )
-                            .child(format!("Utarabona {}", un_c)),
+                            .child(tf(
+                                "home.unseen_count",
+                                lang,
+                                &[("count", &un_c.to_string())],
+                            )),
                     )
                     .child(
                         div()
@@ -894,8 +930,12 @@ impl HomeView {
                             .flex_row()
                             .items_center()
                             .gap_1p5()
-                            .child(div().size(px(10.0)).rounded(px(2.5)).bg(tokens.c_oth))
-                            .child(format!("Ibindi {}", oth_c)),
+                            .child(div().size(px(10.0)).rounded(px(2.5)).bg(colors.primary))
+                            .child(tf(
+                                "home.other_count",
+                                lang,
+                                &[("count", &oth_c.to_string())],
+                            )),
                     ),
             );
 
@@ -929,7 +969,7 @@ impl HomeView {
             .border_color(tokens.line)
             .rounded(px(20.0))
             .p(px(if is_desktop { 20.0 } else { 16.0 }))
-            .hover(|el| el.border_color(tokens.line2))
+            .hover(|el| el.border_color(colors.primary))
             .on_click(cx.listener(move |this, _, window, cx| {
                 on_action(this, HomeAction::OpenQuestions, window, cx);
             }))
@@ -943,15 +983,15 @@ impl HomeView {
                         div()
                             .size(px(30.0))
                             .rounded(px(9.0))
-                            .bg(tokens.surface2)
-                            .text_color(tokens.fg)
+                            .bg(colors.primary.opacity(0.12))
+                            .text_color(colors.primary)
                             .flex()
                             .items_center()
                             .justify_center()
                             .child(
                                 Icon::new(IconName::BookOpen)
                                     .size(px(16.0))
-                                    .text_color(tokens.fg),
+                                    .text_color(colors.primary),
                             ),
                     )
                     .child(
@@ -979,7 +1019,7 @@ impl HomeView {
                     .bg(tokens.line2)
                     .overflow_hidden()
                     .w_full()
-                    .child(div().h_full().w_full().bg(tokens.fg)),
+                    .child(div().h_full().w_full().bg(colors.primary)),
             );
 
         let score_val = last_score_num.unwrap_or(0);
@@ -990,7 +1030,7 @@ impl HomeView {
                     .h(px(6.0))
                     .rounded(px(2.0))
                     .bg(if i < score_val {
-                        tokens.fg
+                        colors.warning
                     } else {
                         tokens.line2
                     })
@@ -1006,7 +1046,7 @@ impl HomeView {
             .border_color(tokens.line)
             .rounded(px(20.0))
             .p(px(if is_desktop { 20.0 } else { 16.0 }))
-            .hover(|el| el.border_color(tokens.line2))
+            .hover(|el| el.border_color(colors.warning))
             .on_click(cx.listener(move |this, _, window, cx| {
                 on_action(this, HomeAction::OpenResults, window, cx);
             }))
@@ -1020,15 +1060,15 @@ impl HomeView {
                         div()
                             .size(px(30.0))
                             .rounded(px(9.0))
-                            .bg(tokens.surface2)
-                            .text_color(tokens.fg)
+                            .bg(colors.warning.opacity(0.12))
+                            .text_color(colors.warning)
                             .flex()
                             .items_center()
                             .justify_center()
                             .child(
                                 Icon::new(IconName::Target)
                                     .size(px(16.0))
-                                    .text_color(tokens.fg),
+                                    .text_color(colors.warning),
                             ),
                     )
                     .child(
@@ -1076,7 +1116,7 @@ impl HomeView {
             .border_color(tokens.line)
             .rounded(px(20.0))
             .p(px(if is_desktop { 20.0 } else { 16.0 }))
-            .hover(|el| el.border_color(tokens.line2))
+            .hover(|el| el.border_color(colors.success))
             .on_click(cx.listener(move |this, _, window, cx| {
                 on_action(this, HomeAction::OpenStats, window, cx);
             }))
@@ -1090,15 +1130,15 @@ impl HomeView {
                         div()
                             .size(px(30.0))
                             .rounded(px(9.0))
-                            .bg(tokens.surface2)
-                            .text_color(tokens.fg)
+                            .bg(colors.success.opacity(0.12))
+                            .text_color(colors.success)
                             .flex()
                             .items_center()
                             .justify_center()
                             .child(
                                 Icon::new(IconName::Check)
                                     .size(px(16.0))
-                                    .text_color(tokens.fg),
+                                    .text_color(colors.success),
                             ),
                     )
                     .child(
@@ -1130,7 +1170,7 @@ impl HomeView {
                         div()
                             .h_full()
                             .w(relative((pr_pct as f32) / 100.0))
-                            .bg(tokens.fg),
+                            .bg(colors.success),
                     ),
             );
 
@@ -1165,7 +1205,7 @@ impl HomeView {
         let weak_banner = div()
             .bg(tokens.bg)
             .border_1()
-            .border_color(tokens.line2)
+            .border_color(colors.danger.opacity(0.35))
             .rounded(px(20.0))
             .p(px(if is_desktop { 20.0 } else { 18.0 }))
             .w_full()
@@ -1180,7 +1220,8 @@ impl HomeView {
                         .size(px(48.0))
                         .rounded(px(14.0))
                         .border_1()
-                        .border_color(tokens.line2)
+                        .border_color(colors.danger.opacity(0.4))
+                        .bg(colors.danger.opacity(0.1))
                         .flex()
                         .items_center()
                         .justify_center()
@@ -1188,7 +1229,7 @@ impl HomeView {
                         .child(
                             Icon::new(IconName::Target)
                                 .size(px(24.0))
-                                .text_color(tokens.fg),
+                                .text_color(colors.danger),
                         ),
                 )
             })
@@ -1222,9 +1263,12 @@ impl HomeView {
                     .cursor_pointer()
                     .rounded_full()
                     .border_1()
-                    .border_color(tokens.line2)
+                    .border_color(colors.danger.opacity(0.5))
                     .bg(tokens.bg)
-                    .hover(|el| el.border_color(tokens.fg))
+                    .hover(|el| {
+                        el.border_color(colors.danger)
+                            .bg(colors.danger.opacity(0.1))
+                    })
                     .px_5()
                     .py_3()
                     .flex()
@@ -1238,7 +1282,7 @@ impl HomeView {
                             .font_family(BODY_FONT)
                             .font_semibold()
                             .text_sm()
-                            .text_color(tokens.fg)
+                            .text_color(colors.danger)
                             .child(t("home.weak_btn", lang)),
                     ),
             );
@@ -1253,7 +1297,7 @@ impl HomeView {
             .text_xs()
             .font_family(BODY_FONT)
             .text_color(tokens.muted)
-            .child("Byakozwe na Rwanda Bruno")
+            .child(format!("{} Rwanda Bruno", t("about.built_by", lang)))
             .child("v1.1.0");
 
         // Layout container
@@ -1364,6 +1408,7 @@ impl HomeView {
                     .child(
                         div()
                             .text_base()
+                            .font_family(DISPLAY_FONT)
                             .font_semibold()
                             .text_color(tokens.fg)
                             .child(t("resume.title", lang)),
