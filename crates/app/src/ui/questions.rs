@@ -692,9 +692,9 @@ impl QuestionsView {
                                                             .hover(|el| el.bg(colors.accent))
                                                             .when(shortcuts_active, |el| {
                                                                 let hint = if is_starred {
-                                                                    "Unstar (B)"
+                                                                    "Unstar (K)"
                                                                 } else {
-                                                                    "Star (B)"
+                                                                    "Star (K)"
                                                                 };
                                                                 el.tooltip(move |window, cx| {
                                                                     Tooltip::new(hint).build(window, cx)

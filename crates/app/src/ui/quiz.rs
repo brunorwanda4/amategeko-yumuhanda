@@ -364,8 +364,10 @@ impl QuizView {
                             )
                             // Star / Bookmark toggle
                             .child({
-                                let star_tooltip = if shortcuts_active && attempt.mode == QuizMode::Byoroshye {
-                                    format!("{} (B)", t("quiz.star", lang))
+                                let star_tooltip = if shortcuts_active
+                                    && matches!(attempt.mode, QuizMode::Byoroshye | QuizMode::Hagati)
+                                {
+                                    format!("{} (K)", t("quiz.star", lang))
                                 } else {
                                     t("quiz.star", lang).to_string()
                                 };

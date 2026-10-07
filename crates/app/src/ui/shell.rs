@@ -1158,6 +1158,17 @@ impl Render for ShellView {
             .key_context("Shell")
             .on_key_down(
                 cx.listener(move |this, event: &gpui::KeyDownEvent, window, cx| {
+                    let dialog_open = this.show_help_dialog
+                        || this.show_finish_confirm_dialog
+                        || this.stats_confirm_clear
+                        || this.settings_confirm_clear;
+                    if dialog_open {
+                        if event.keystroke.key.eq_ignore_ascii_case("escape") {
+                            this.perform_go_back(Some(window), cx);
+                        }
+                        return;
+                    }
+
                     let is_typing = this.questions_search_focused
                         && this.state.active_screen == Screen::Questions;
 
@@ -1214,6 +1225,12 @@ impl Render for ShellView {
                     if !is_typing
                         && (this.state.settings.desktop_shortcuts_enabled && is_desktop)
                         && this.state.active_screen == Screen::Quiz
+                        && this
+                            .state
+                            .current_attempt
+                            .as_ref()
+                            .map(|attempt| attempt.mode)
+                            != Some(QuizMode::Bikomeye)
                         && (event.keystroke.key.eq_ignore_ascii_case("f")
                             || event.keystroke.key == "F")
                         && !event.keystroke.modifiers.control
@@ -1407,14 +1424,11 @@ impl Render for ShellView {
                                         let _ = this.state.storage.save_in_progress(att);
                                     }
                                     cx.notify();
+                                } else {
+                                    let _ = QuizEngine::skip_question(att);
+                                    let _ = this.state.storage.save_in_progress(att);
+                                    cx.notify();
                                 }
-                            }
-                        }
-                        ShortcutAction::SkipQuestion => {
-                            if let Some(att) = &mut this.state.current_attempt {
-                                let _ = QuizEngine::skip_question(att);
-                                let _ = this.state.storage.save_in_progress(att);
-                                cx.notify();
                             }
                         }
                         ShortcutAction::StarQuestion => {

@@ -198,10 +198,10 @@ All shortcuts are defined in ONE registry (`crates/app/src/shortcuts.rs`): key, 
 - Global: Ctrl+1..5 go to Home / Quiz / Questions / Stats / Settings; Esc closes a dialog or goes back; ? or F1 opens the help.
 - Home: 1/2/3 start Easy/Medium/Hard; Enter resumes the unfinished exam.
 - Quiz: A-D or 1-4 choose; Enter = Next (Easy, Medium) or Confirm (Hard).
-- Easy: Left/Right previous/next (Next only after answering); S skip; B star.
-- Medium: Left/Right; F flag; Ctrl+Enter finish (with the confirmation dialog).
+- Easy: Left = previous; Right = next after answering or skip when unanswered; Enter = next only after answering; K star.
+- Medium: Left/Right; M flag; K star; Ctrl+Enter finish (with the confirmation dialog).
 - Hard: only A-D, 1-4, Enter. Navigation shortcuts and Esc-back are disabled while the exam runs.
 - Results: R retry; W retry mistakes; 1/2/3 filters; Esc home.
-- Questions: / or Ctrl+F focus search; Up/Down move; Enter open/close; B star; H hide/show answers.
+- Questions: / or Ctrl+F focus search; Up/Down move; Enter open/close; K star; H hide/show answers.
 - Stats: 1-4 filters. Settings: Ctrl+S save.
 Rules: single-key shortcuts are off while a text input is focused (only Esc and Ctrl+ combos work). Destructive actions (clear history, reset, finish) never have a single-key shortcut. Each shortcut works only where its screen/mode rules allow the action.
