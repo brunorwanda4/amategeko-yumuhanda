@@ -1,5 +1,6 @@
 use crate::state::AppState;
 use crate::ui::scroll::{vertical_scrollbar, DragScroll};
+use amategeko_core::platform::KeepAwakeGuard;
 use amategeko_core::{t, Attempt, Language, QuizMode, QuizTimer, TimerLevel, TimerState};
 use gpui::InteractiveElement as _;
 use gpui_kit::assets::IconName;
@@ -8,6 +9,8 @@ use gpui_kit::component::tooltip::Tooltip;
 use gpui_kit::component::{ActiveTheme, Icon};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
+use std::cell::RefCell;
+use std::rc::Rc;
 use std::time::Duration;
 
 pub struct QuizView;
@@ -64,6 +67,7 @@ impl QuizView {
             Some(q) => q,
             None => return div().child("Question not found"),
         };
+        let keep_awake = Rc::new(RefCell::new(KeepAwakeGuard::acquire()));
         let option_order =
             attempt.option_order(current_idx, q_lang, state.settings.shuffle_options);
         let correct_badge = option_order
@@ -107,6 +111,7 @@ impl QuizView {
         let is_first = current_idx == 0;
         let is_last = current_idx + 1 == total_questions;
         let is_hard = attempt.mode == QuizMode::Bikomeye;
+        let can_finish_hard = is_hard && is_last && user_ans.is_some();
 
         let next_btn_label = if is_hard {
             t("quiz.confirm_answer", lang)
@@ -159,8 +164,12 @@ impl QuizView {
                                     .bg(colors.secondary)
                                     .cursor_pointer()
                                     .hover(|el| el.bg(colors.accent))
-                                    .on_click(cx.listener(move |this, _, window, cx| {
+                                    .on_click(cx.listener({
+                                        let keep_awake = keep_awake.clone();
+                                        move |this, _, window, cx| {
+                                            keep_awake.borrow_mut().take();
                                         on_abandon_request(this, window, cx);
+                                        }
                                     }))
                                     .child(
                                         Icon::new(IconName::ArrowLeft)
@@ -987,21 +996,28 @@ impl QuizView {
                                                             .tooltip(move |window, cx| {
                                                                 Tooltip::new(next_tooltip.clone()).build(window, cx)
                                                             })
-                                                            .on_click(cx.listener(
+                                                            .on_click(cx.listener({
+                                                                let keep_awake = keep_awake.clone();
                                                                 move |this, _, window, cx| {
                                                                     if is_hard {
+                                                                        if can_finish_hard {
+                                                                            keep_awake
+                                                                                .borrow_mut()
+                                                                                .take();
+                                                                        }
                                                                         on_hard_confirm(
                                                                             this, window, cx,
                                                                         );
                                                                     } else if is_last {
+                                                                        keep_awake.borrow_mut().take();
                                                                         on_finish_request(
                                                                             this, window, cx,
                                                                         );
                                                                     } else {
                                                                         on_next(this, window, cx);
                                                                     }
-                                                                },
-                                                            ))
+                                                                }
+                                                            }))
                                                             .child(
                                                                 div()
                                                                     .text_sm()

@@ -5,11 +5,107 @@ use crate::models::{Attempt, Progress, Settings};
 use crate::window::{WindowState, WINDOW_BACKUP_FILE, WINDOW_FILE};
 use std::collections::HashMap;
 use std::path::PathBuf;
-use std::sync::RwLock;
+use std::sync::{Arc, Mutex, OnceLock, RwLock};
 
 pub const SETTINGS_FILE: &str = "settings.json";
 pub const PROGRESS_FILE: &str = "progress.json";
 pub const IN_PROGRESS_FILE: &str = "in_progress.json";
+
+/// Platform service that controls whether the display may sleep.
+pub trait KeepAwake: Send + Sync {
+    /// Enable or disable the platform's display-sleep prevention mechanism.
+    fn set(&self, on: bool);
+}
+
+struct KeepAwakeState {
+    platform: Arc<dyn KeepAwake>,
+    status: Mutex<KeepAwakeStatus>,
+}
+
+struct KeepAwakeStatus {
+    count: usize,
+    window_active: bool,
+}
+
+static KEEP_AWAKE_STATE: OnceLock<Arc<KeepAwakeState>> = OnceLock::new();
+
+/// Register the process-wide keep-awake platform service.
+pub fn register_keep_awake(platform: Arc<dyn KeepAwake>) -> bool {
+    KEEP_AWAKE_STATE
+        .set(Arc::new(KeepAwakeState {
+            platform,
+            status: Mutex::new(KeepAwakeStatus {
+                count: 0,
+                window_active: true,
+            }),
+        }))
+        .is_ok()
+}
+
+/// Suspend or resume an outstanding keep-awake request with window activation.
+pub fn set_keep_awake_window_active(active: bool) {
+    let Some(state) = KEEP_AWAKE_STATE.get() else {
+        return;
+    };
+    if let Ok(mut status) = state.status.lock() {
+        if status.window_active != active {
+            status.window_active = active;
+            if status.count > 0 {
+                state.platform.set(active);
+            }
+        }
+    }
+}
+
+fn update_keep_awake_count(count: usize, acquire: bool) -> (usize, Option<bool>) {
+    if acquire {
+        let next = count.saturating_add(1);
+        (next, (count == 0).then_some(true))
+    } else if count == 0 {
+        (0, None)
+    } else {
+        let next = count - 1;
+        (next, (next == 0).then_some(false))
+    }
+}
+
+/// RAII display-sleep lock shared by all active quiz renders.
+pub struct KeepAwakeGuard {
+    state: Arc<KeepAwakeState>,
+}
+
+impl KeepAwakeGuard {
+    /// Acquire the registered keep-awake service, if the platform installed one.
+    pub fn acquire() -> Option<Self> {
+        let state = KEEP_AWAKE_STATE.get()?.clone();
+        if let Ok(mut status) = state.status.lock() {
+            let (next, transition) = update_keep_awake_count(status.count, true);
+            status.count = next;
+            if status.window_active {
+                if let Some(on) = transition {
+                    state.platform.set(on);
+                }
+            }
+        } else {
+            return None;
+        }
+        Some(Self { state })
+    }
+}
+
+impl Drop for KeepAwakeGuard {
+    fn drop(&mut self) {
+        if let Ok(mut status) = self.state.status.lock() {
+            let (next, transition) = update_keep_awake_count(status.count, false);
+            status.count = next;
+            if status.window_active {
+                if let Some(on) = transition {
+                    self.state.platform.set(on);
+                }
+            }
+        }
+    }
+}
 
 /// Abstraction for persistent file storage across desktop and mobile.
 pub trait Storage: Send + Sync {
@@ -229,5 +325,25 @@ impl MockClock {
 impl Clock for MockClock {
     fn now_seconds(&self) -> u64 {
         self.current.load(std::sync::atomic::Ordering::SeqCst)
+    }
+}
+
+#[cfg(test)]
+mod keep_awake_tests {
+    use super::update_keep_awake_count;
+
+    #[test]
+    fn keep_awake_stays_on_until_last_release() {
+        let (count, first) = update_keep_awake_count(0, true);
+        assert_eq!((count, first), (1, Some(true)));
+
+        let (count, second) = update_keep_awake_count(count, true);
+        assert_eq!((count, second), (2, None));
+
+        let (count, first_release) = update_keep_awake_count(count, false);
+        assert_eq!((count, first_release), (1, None));
+
+        let (count, last_release) = update_keep_awake_count(count, false);
+        assert_eq!((count, last_release), (0, Some(false)));
     }
 }

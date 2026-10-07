@@ -10,6 +10,8 @@ use std::sync::Arc;
 #[cfg(any(target_os = "ios", target_os = "android"))]
 use amategeko_app::{AppState, ShellView};
 #[cfg(any(target_os = "ios", target_os = "android"))]
+use amategeko_core::platform::{register_keep_awake, KeepAwake};
+#[cfg(any(target_os = "ios", target_os = "android"))]
 use amategeko_core::{Storage, SystemClock};
 
 #[cfg(any(target_os = "ios", target_os = "android"))]
@@ -34,6 +36,65 @@ impl Storage for MobileStorage {
 }
 
 #[cfg(target_os = "android")]
+struct AndroidKeepAwake {
+    app: android_activity::AndroidApp,
+}
+
+#[cfg(target_os = "android")]
+impl KeepAwake for AndroidKeepAwake {
+    fn set(&self, on: bool) {
+        use ::jni::objects::{JObject, JValue};
+        use ::jni::JavaVM;
+
+        // SAFETY: AndroidActivity owns the VM for the process and keeps it alive for
+        // the lifetime of this platform service.
+        let vm = match unsafe { JavaVM::from_raw(self.app.vm_as_ptr().cast()) } {
+            Ok(vm) => vm,
+            Err(error) => {
+                log::warn!("unable to access Android VM for keep-awake: {error}");
+                return;
+            }
+        };
+        let mut env = match vm.attach_current_thread() {
+            Ok(env) => env,
+            Err(error) => {
+                log::warn!("unable to attach Android thread for keep-awake: {error}");
+                return;
+            }
+        };
+        // SAFETY: activity_as_ptr is the live Activity reference supplied by
+        // android-activity; it is used only for this JNI method call.
+        let activity = unsafe { JObject::from_raw(self.app.activity_as_ptr().cast()) };
+        if let Err(error) = env.call_method(
+            activity,
+            "setKeepScreenOn",
+            "(Z)V",
+            &[JValue::Bool(if on { 1 } else { 0 })],
+        ) {
+            log::warn!("unable to change Android keep-awake flag: {error}");
+        }
+    }
+}
+
+#[cfg(target_os = "ios")]
+struct IosKeepAwake;
+
+#[cfg(target_os = "ios")]
+impl KeepAwake for IosKeepAwake {
+    fn set(&self, on: bool) {
+        use objc2::runtime::AnyObject;
+        use objc2::{class, msg_send};
+
+        // SAFETY: this runs from GPUI's main thread and sends documented UIApplication
+        // selectors with the expected argument and return types.
+        unsafe {
+            let application: *mut AnyObject = msg_send![class!(UIApplication), sharedApplication];
+            let _: () = msg_send![application, setIdleTimerDisabled: on];
+        }
+    }
+}
+
+#[cfg(target_os = "android")]
 #[no_mangle]
 fn android_main(app: android_activity::AndroidApp) {
     android_logger::init_once(
@@ -44,6 +105,10 @@ fn android_main(app: android_activity::AndroidApp) {
 
     jni::install_panic_hook();
     log::info!("android_main: entered");
+
+    if !register_keep_awake(Arc::new(AndroidKeepAwake { app: app.clone() })) {
+        log::warn!("keep-awake service was already registered");
+    }
 
     let data_dir = app
         .internal_data_path()
@@ -85,6 +150,10 @@ fn android_main(app: android_activity::AndroidApp) {
 #[cfg(target_os = "ios")]
 #[no_mangle]
 pub extern "C" fn gpui_ios_register_app() {
+    if !register_keep_awake(Arc::new(IosKeepAwake)) {
+        log::warn!("keep-awake service was already registered");
+    }
+
     let data_dir =
         PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "/tmp".into())).join("Documents");
     let storage = Arc::new(MobileStorage { data_dir });
