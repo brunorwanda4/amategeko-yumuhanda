@@ -664,7 +664,7 @@ impl Render for ShellView {
         let colors = theme.colors;
 
         let window_width = window.bounds().size.width;
-        let is_desktop = window_width >= px(700.0);
+        let is_desktop = window_width > px(720.0);
 
         if self.questions_search_focused && self.state.active_screen == Screen::Questions {
             let res = crate::mobile_ime::drain_pending_into_search(&mut self.questions_search);
@@ -699,6 +699,7 @@ impl Render for ShellView {
         let home_props = HomeProps {
             selected_mode: self.quiz_selected_mode,
             selected_set: self.quiz_selected_set,
+            window_width: Some(window_width.as_f32()),
         };
 
         let content = match active_screen {
@@ -1828,6 +1829,7 @@ impl Render for ShellView {
                                     .overflow_hidden()
                                     .whitespace_normal()
                                     .text_lg()
+                                    .font_family(crate::font::DISPLAY_FONT_FAMILY)
                                     .font_bold()
                                     .text_color(colors.foreground)
                                     .child(t("quiz.confirm_finish_title", language)),
@@ -1936,6 +1938,7 @@ impl Render for ShellView {
                             .child(
                                 div()
                                     .text_lg()
+                                    .font_family(crate::font::DISPLAY_FONT_FAMILY)
                                     .font_bold()
                                     .text_color(colors.foreground)
                                     .child(t("study.jump", language)),
@@ -2075,6 +2078,7 @@ impl Render for ShellView {
                                     .min_w_0()
                                     .whitespace_normal()
                                     .text_lg()
+                                    .font_family(crate::font::DISPLAY_FONT_FAMILY)
                                     .font_bold()
                                     .text_color(colors.foreground)
                                     .child(t("study.restart", language)),
@@ -2180,6 +2184,7 @@ impl Render for ShellView {
                                 .child(
                                     div()
                                         .text_lg()
+                                        .font_family(crate::font::DISPLAY_FONT_FAMILY)
                                         .font_bold()
                                         .text_color(colors.foreground)
                                         .child(
@@ -2266,7 +2271,7 @@ impl ShellView {
             .track_scroll(&self.sidebar_scroll_handle)
             .flex()
             .flex_col()
-            .w(px(200.0))
+            .w(px(228.0))
             .flex_none()
             .overflow_y_scroll()
             .h_full()
@@ -2289,9 +2294,11 @@ impl ShellView {
                     .gap_1()
                     .py_2()
                     .px_1()
+                    .font_family(crate::font::DISPLAY_FONT_FAMILY)
                     .child(
                         div()
                             .text_sm()
+                            .font_family(crate::font::DISPLAY_FONT_FAMILY)
                             .font_bold()
                             .text_color(colors.foreground)
                             .child("Amategeko"),
@@ -2528,6 +2535,7 @@ impl ShellView {
             .child(
                 div()
                     .text_base()
+                    .font_family(crate::font::DISPLAY_FONT_FAMILY)
                     .font_bold()
                     .text_color(colors.foreground)
                     .child(title),

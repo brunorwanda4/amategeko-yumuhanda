@@ -69,6 +69,7 @@ impl ResultsView {
                     .child(
                         div()
                             .text_lg()
+                            .font_family(crate::font::DISPLAY_FONT_FAMILY)
                             .font_bold()
                             .text_color(colors.foreground)
                             .child(if lang == Language::En {
@@ -178,6 +179,7 @@ impl ResultsView {
                 div()
                     .flex_none()
                     .text_2xl()
+                    .font_family(crate::font::DISPLAY_FONT_FAMILY)
                     .font_bold()
                     .text_color(colors.foreground)
                     .child(if lang == Language::En {
@@ -222,6 +224,7 @@ impl ResultsView {
                             .child(
                                 div()
                                     .text_2xl()
+                                    .font_family(crate::font::DISPLAY_FONT_FAMILY)
                                     .font_extrabold()
                                     .text_color(colors.foreground)
                                     .child(format!("{score}")),
@@ -252,6 +255,7 @@ impl ResultsView {
                                     .child(
                                         div()
                                             .text_3xl()
+                                            .font_family(crate::font::DISPLAY_FONT_FAMILY)
                                             .font_bold()
                                             .text_color(colors.foreground)
                                             .child(format!("{percentage}%")),

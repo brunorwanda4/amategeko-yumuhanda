@@ -1096,6 +1096,7 @@ impl ShortcutRegistry {
                                     .child(
                                         div()
                                             .text_lg()
+                                            .font_family(crate::font::DISPLAY_FONT_FAMILY)
                                             .font_bold()
                                             .text_color(colors.foreground)
                                             .child(t("shortcuts.title", lang).to_string()),
