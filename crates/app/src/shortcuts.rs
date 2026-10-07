@@ -48,7 +48,12 @@ impl KeyCombo {
     }
 
     pub fn question_mark() -> Self {
-        Self::plain("?")
+        Self {
+            key: "?".to_string(),
+            ctrl: false,
+            alt: false,
+            shift: true,
+        }
     }
 
     pub fn slash() -> Self {
@@ -92,10 +97,10 @@ impl KeyCombo {
         let ev_key = event.keystroke.key.to_lowercase();
         let ev_modifiers = event.keystroke.modifiers;
 
-        let ctrl_pressed = if cfg!(target_os = "macos") {
-            ev_modifiers.platform
+        let ctrl_matches = if cfg!(target_os = "macos") {
+            self.ctrl == ev_modifiers.platform && !ev_modifiers.control
         } else {
-            ev_modifiers.control
+            self.ctrl == ev_modifiers.control && !ev_modifiers.platform
         };
 
         let key_matches = match self.key.as_str() {
@@ -110,7 +115,78 @@ impl KeyCombo {
             other => ev_key == other,
         };
 
-        key_matches && self.ctrl == ctrl_pressed && self.alt == ev_modifiers.alt
+        key_matches
+            && ctrl_matches
+            && self.alt == ev_modifiers.alt
+            && self.shift == ev_modifiers.shift
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{KeyCombo, QuizMode, ShortcutAction, ShortcutRegistry};
+    use std::collections::HashMap;
+
+    #[test]
+    fn shortcut_registry_has_no_context_conflicts() {
+        let registry = ShortcutRegistry::new();
+        let contexts = [
+            (crate::Screen::Home, None),
+            (crate::Screen::Results, None),
+            (crate::Screen::Questions, None),
+            (crate::Screen::Stats, None),
+            (crate::Screen::Settings, None),
+            (crate::Screen::Quiz, Some(QuizMode::Byoroshye)),
+            (crate::Screen::Quiz, Some(QuizMode::Hagati)),
+            (crate::Screen::Quiz, Some(QuizMode::Bikomeye)),
+            (crate::Screen::Quiz, Some(QuizMode::WeakPractice)),
+            (crate::Screen::Quiz, Some(QuizMode::RetryWrong)),
+        ];
+
+        for (screen, mode) in contexts {
+            let shortcuts = registry.shortcuts_for_context(screen.clone(), mode);
+            let mut seen = HashMap::new();
+            for def in &shortcuts {
+                if let Some(previous) = seen.insert(def.key.clone(), def.action) {
+                    panic!(
+                        "shortcut conflict on {screen:?}/{mode:?}: {:?} maps to {previous:?} and {:?}",
+                        def.key, def.action
+                    );
+                }
+
+                if screen == crate::Screen::Quiz
+                    && !def.key.ctrl
+                    && !def.key.alt
+                    && !def.key.shift
+                    && matches!(
+                        def.key.key.as_str(),
+                        "a" | "b" | "c" | "d" | "1" | "2" | "3" | "4"
+                    )
+                {
+                    assert!(
+                        matches!(def.action, ShortcutAction::ChooseOption(_)),
+                        "quiz option key {:?} maps to {:?}",
+                        def.key,
+                        def.action
+                    );
+                }
+            }
+        }
+
+        assert!(registry.all().iter().all(|def| {
+            !(def.key == KeyCombo::plain("s") && def.label_key == "shortcuts.skip_question")
+        }));
+
+        let hard = registry.shortcuts_for_context(crate::Screen::Quiz, Some(QuizMode::Bikomeye));
+        assert!(hard.iter().all(|def| {
+            !def.key.ctrl
+                && !def.key.alt
+                && !def.key.shift
+                && matches!(
+                    def.key.key.as_str(),
+                    "a" | "b" | "c" | "d" | "1" | "2" | "3" | "4" | "enter"
+                )
+        }));
     }
 }
 
@@ -138,7 +214,6 @@ pub enum ShortcutAction {
     // Easy
     PrevQuestion,
     NextQuestion,
-    SkipQuestion,
     StarQuestion,
 
     // Medium
@@ -180,7 +255,6 @@ impl ShortcutAction {
                 | ShortcutAction::CloseOrBack
                 | ShortcutAction::PrevQuestion
                 | ShortcutAction::NextQuestion
-                | ShortcutAction::SkipQuestion
         )
     }
 
@@ -188,9 +262,7 @@ impl ShortcutAction {
     pub fn is_allowed_in_hard(&self) -> bool {
         matches!(
             self,
-            ShortcutAction::ChooseOption(_)
-                | ShortcutAction::NextOrConfirm
-                | ShortcutAction::ShowHelp
+            ShortcutAction::ChooseOption(_) | ShortcutAction::NextOrConfirm
         )
     }
 
@@ -417,7 +489,7 @@ impl ShortcutRegistry {
             custom_hint: Some("4"),
         });
 
-        // Letter choices A, C, D in all modes; B in Medium and Hard (in Easy, 'B' is Star)
+        // Letter choices A-D in all quiz modes.
         self.shortcuts.push(ShortcutDef {
             key: KeyCombo::plain("a"),
             action: ShortcutAction::ChooseOption('a'),
@@ -428,7 +500,7 @@ impl ShortcutRegistry {
         self.shortcuts.push(ShortcutDef {
             key: KeyCombo::plain("b"),
             action: ShortcutAction::ChooseOption('b'),
-            scopes: vec![ShortcutScope::QuizMedium, ShortcutScope::QuizHard],
+            scopes: vec![ShortcutScope::QuizAll],
             label_key: "shortcuts.choose_option",
             custom_hint: Some("B"),
         });
@@ -472,18 +544,11 @@ impl ShortcutRegistry {
             custom_hint: Some("→"),
         });
         self.shortcuts.push(ShortcutDef {
-            key: KeyCombo::plain("s"),
-            action: ShortcutAction::SkipQuestion,
-            scopes: vec![ShortcutScope::QuizEasy],
-            label_key: "shortcuts.skip_question",
-            custom_hint: Some("S"),
-        });
-        self.shortcuts.push(ShortcutDef {
-            key: KeyCombo::plain("b"),
+            key: KeyCombo::plain("k"),
             action: ShortcutAction::StarQuestion,
-            scopes: vec![ShortcutScope::QuizEasy],
+            scopes: vec![ShortcutScope::QuizEasy, ShortcutScope::QuizMedium],
             label_key: "shortcuts.star_question",
-            custom_hint: Some("B"),
+            custom_hint: Some("K"),
         });
 
         // 5. Medium mode navigation & features
@@ -594,11 +659,11 @@ impl ShortcutRegistry {
             custom_hint: Some("Enter"),
         });
         self.shortcuts.push(ShortcutDef {
-            key: KeyCombo::plain("b"),
+            key: KeyCombo::plain("k"),
             action: ShortcutAction::ToggleStarSelected,
             scopes: vec![ShortcutScope::Questions],
             label_key: "shortcuts.star_question",
-            custom_hint: Some("B"),
+            custom_hint: Some("K"),
         });
         self.shortcuts.push(ShortcutDef {
             key: KeyCombo::plain("h"),
@@ -695,6 +760,16 @@ impl ShortcutRegistry {
         let active_shortcuts = self.shortcuts_for_context(screen, mode);
         for def in active_shortcuts {
             if def.key.matches(event) {
+                if event.is_held
+                    && matches!(
+                        def.action,
+                        ShortcutAction::ChooseOption(_)
+                            | ShortcutAction::StarQuestion
+                            | ShortcutAction::ToggleStarSelected
+                    )
+                {
+                    return None;
+                }
                 return Some(def.action);
             }
         }
@@ -808,11 +883,7 @@ impl ShortcutRegistry {
                         t("shortcuts.next_question", lang).to_string(),
                     ),
                     (
-                        "S".to_string(),
-                        t("shortcuts.skip_question", lang).to_string(),
-                    ),
-                    (
-                        "B".to_string(),
+                        "K".to_string(),
                         t("shortcuts.star_question", lang).to_string(),
                     ),
                 ],
@@ -827,6 +898,10 @@ impl ShortcutRegistry {
                     (
                         "M".to_string(),
                         t("shortcuts.flag_question", lang).to_string(),
+                    ),
+                    (
+                        "K".to_string(),
+                        t("shortcuts.star_question", lang).to_string(),
                     ),
                     (
                         format!("{mod_name}+Enter"),
@@ -886,7 +961,7 @@ impl ShortcutRegistry {
                         t("shortcuts.toggle_expand", lang).to_string(),
                     ),
                     (
-                        "B".to_string(),
+                        "K".to_string(),
                         t("shortcuts.star_question", lang).to_string(),
                     ),
                     (

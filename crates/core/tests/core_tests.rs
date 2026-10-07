@@ -4,7 +4,7 @@ use std::collections::{HashMap, HashSet};
 #[test]
 fn test_question_bank_load_bundled() {
     let bank = QuestionBank::load_bundled().expect("Failed to load bundled questions");
-    assert_eq!(bank.len(), 403);
+    assert_eq!(bank.len(), 404);
 
     for q in bank.all() {
         assert!(q.id > 0);
@@ -33,7 +33,7 @@ fn test_question_bank_search_and_filter() {
 
     // Filter by image
     let res_img = bank.search("", true, false, false, &starred, &stats);
-    assert_eq!(res_img.len(), 129);
+    assert_eq!(res_img.len(), 130);
     for q in res_img {
         assert!(q.has_image);
     }
@@ -599,7 +599,7 @@ fn test_option_key_at_maps_screen_position_to_key() {
 #[test]
 fn test_bilingual_questions_and_fallback() {
     let bank = QuestionBank::load_bundled().expect("Failed to load bundled questions");
-    assert_eq!(bank.len(), 403);
+    assert_eq!(bank.len(), 404);
 
     for q in bank.all() {
         // Primary text in English should not be empty

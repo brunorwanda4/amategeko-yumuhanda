@@ -291,19 +291,6 @@ impl ShellView {
         #[cfg(not(debug_assertions))]
         let initial_stats_filter = String::new();
 
-        #[cfg(debug_assertions)]
-        let initial_results_filter = dev_state
-            .as_ref()
-            .and_then(|d| d.results_filter.as_deref())
-            .map(|s| match s {
-                "correct" => ResultFilter::Correct,
-                "wrong" | "mistakes" => ResultFilter::Mistakes,
-                "unanswered" => ResultFilter::Unanswered,
-                _ => ResultFilter::All,
-            })
-            .unwrap_or(ResultFilter::All);
-
-        #[cfg(not(debug_assertions))]
         let initial_results_filter = ResultFilter::All;
 
         let questions_scroll_handle = gpui::ScrollHandle::default();
@@ -1092,8 +1079,18 @@ impl Render for ShellView {
                 .flex()
                 .flex_col()
                 .size_full()
+                .min_h_0()
                 .child(self.render_mobile_top_bar(cx))
-                .child(div().flex_1().size_full().overflow_hidden().child(content))
+                .child(
+                    div()
+                        .flex()
+                        .flex_col()
+                        .flex_1()
+                        .min_h_0()
+                        .w_full()
+                        .overflow_hidden()
+                        .child(content),
+                )
                 .when(!is_in_quiz, |el| {
                     el.child(self.render_mobile_bottom_bar(cx))
                 })
@@ -1161,6 +1158,17 @@ impl Render for ShellView {
             .key_context("Shell")
             .on_key_down(
                 cx.listener(move |this, event: &gpui::KeyDownEvent, window, cx| {
+                    let dialog_open = this.show_help_dialog
+                        || this.show_finish_confirm_dialog
+                        || this.stats_confirm_clear
+                        || this.settings_confirm_clear;
+                    if dialog_open {
+                        if event.keystroke.key.eq_ignore_ascii_case("escape") {
+                            this.perform_go_back(Some(window), cx);
+                        }
+                        return;
+                    }
+
                     let is_typing = this.questions_search_focused
                         && this.state.active_screen == Screen::Questions;
 
@@ -1217,6 +1225,12 @@ impl Render for ShellView {
                     if !is_typing
                         && (this.state.settings.desktop_shortcuts_enabled && is_desktop)
                         && this.state.active_screen == Screen::Quiz
+                        && this
+                            .state
+                            .current_attempt
+                            .as_ref()
+                            .map(|attempt| attempt.mode)
+                            != Some(QuizMode::Bikomeye)
                         && (event.keystroke.key.eq_ignore_ascii_case("f")
                             || event.keystroke.key == "F")
                         && !event.keystroke.modifiers.control
@@ -1410,14 +1424,11 @@ impl Render for ShellView {
                                         let _ = this.state.storage.save_in_progress(att);
                                     }
                                     cx.notify();
+                                } else {
+                                    let _ = QuizEngine::skip_question(att);
+                                    let _ = this.state.storage.save_in_progress(att);
+                                    cx.notify();
                                 }
-                            }
-                        }
-                        ShortcutAction::SkipQuestion => {
-                            if let Some(att) = &mut this.state.current_attempt {
-                                let _ = QuizEngine::skip_question(att);
-                                let _ = this.state.storage.save_in_progress(att);
-                                cx.notify();
                             }
                         }
                         ShortcutAction::StarQuestion => {
@@ -1589,6 +1600,8 @@ impl Render for ShellView {
                     .flex()
                     .items_center()
                     .justify_center()
+                    .px_4()
+                    .py_6()
                     .bg(gpui::Rgba {
                         r: 0.0,
                         g: 0.0,
@@ -1605,11 +1618,14 @@ impl Render for ShellView {
                             .track_scroll(&self.finish_dialog_scroll_handle)
                             .flex()
                             .flex_col()
-                            .w(px(440.0))
+                            .w_full()
+                            .max_w(px(440.0))
+                            .min_w_0()
                             .max_h(relative(0.9))
                             .overflow_y_scroll()
-                            .p_6()
-                            .pr_7()
+                            .overflow_x_hidden()
+                            .when(is_desktop, |el| el.p_6().pr_7())
+                            .when(!is_desktop, |el| el.p_4().pr_5())
                             .rounded_2xl()
                             .border_1()
                             .border_color(colors.border)
@@ -1624,6 +1640,9 @@ impl Render for ShellView {
                             .on_mouse_down(gpui::MouseButton::Left, |_, _, _| {})
                             .child(
                                 div()
+                                    .min_w_0()
+                                    .overflow_hidden()
+                                    .whitespace_normal()
                                     .text_lg()
                                     .font_bold()
                                     .text_color(colors.foreground)
@@ -1631,6 +1650,9 @@ impl Render for ShellView {
                             )
                             .child(
                                 div()
+                                    .min_w_0()
+                                    .overflow_hidden()
+                                    .whitespace_normal()
                                     .text_sm()
                                     .text_color(colors.muted_foreground)
                                     .child(t("quiz.confirm_finish_message", language)),
@@ -1638,33 +1660,51 @@ impl Render for ShellView {
                             .child(
                                 div()
                                     .flex()
-                                    .flex_row()
-                                    .justify_end()
-                                    .gap_3()
+                                    .when(is_desktop, |el| el.flex_row().justify_end().gap_3())
+                                    .when(!is_desktop, |el| el.flex_col().gap_2p5())
+                                    .w_full()
+                                    .min_w_0()
                                     .pt_2()
                                     .child(
-                                        Button::new("cancel_finish_btn")
-                                            .ghost()
-                                            .label(t("dialog.finish.cancel", language))
-                                            .on_click(cx.listener(|this, _, _, cx| {
-                                                this.show_finish_confirm_dialog = false;
-                                                cx.notify();
-                                            })),
+                                        div()
+                                            .when(!is_desktop, |el| el.w_full().min_h(px(44.0)))
+                                            .flex()
+                                            .items_center()
+                                            .justify_center()
+                                            .child(
+                                                Button::new("cancel_finish_btn")
+                                                    .ghost()
+                                                    .label(t("dialog.finish.cancel", language))
+                                                    .on_click(cx.listener(|this, _, _, cx| {
+                                                        this.show_finish_confirm_dialog = false;
+                                                        cx.notify();
+                                                    })),
+                                            ),
                                     )
                                     .child(
-                                        Button::new("confirm_finish_btn")
-                                            .danger()
-                                            .label(t("quiz.finish", language))
-                                            .on_click(cx.listener(|this, _, window, cx| {
-                                                this.show_finish_confirm_dialog = false;
-                                                if window.is_fullscreen() {
-                                                    window.toggle_fullscreen();
-                                                }
-                                                this.focus_mode = false;
-                                                this.state.finish_current_quiz();
-                                                this.save_dev_state();
-                                                cx.notify();
-                                            })),
+                                        div()
+                                            .when(!is_desktop, |el| el.w_full())
+                                            .flex()
+                                            .items_center()
+                                            .justify_center()
+                                            .when(!is_desktop, |el| el.min_h(px(44.0)))
+                                            .child(
+                                                Button::new("confirm_finish_btn")
+                                                    .danger()
+                                                    .label(t("quiz.finish", language))
+                                                    .on_click(cx.listener(
+                                                        |this, _, window, cx| {
+                                                            this.show_finish_confirm_dialog = false;
+                                                            if window.is_fullscreen() {
+                                                                window.toggle_fullscreen();
+                                                            }
+                                                            this.focus_mode = false;
+                                                            this.state.finish_current_quiz();
+                                                            this.save_dev_state();
+                                                            cx.notify();
+                                                        },
+                                                    )),
+                                            ),
                                     ),
                             ),
                     )

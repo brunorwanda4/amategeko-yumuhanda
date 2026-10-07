@@ -1,6 +1,6 @@
 # Rwanda Road Rules Trainer (Amategeko y'Umuhanda)
 
-An offline study app for the Rwandan driving-test theory exam. Practice 20 random questions with a timer, review your mistakes, browse 403 questions with sign images, and track your progress. Runs on **Windows (Desktop)** and **Android (Mobile)** from one single Rust codebase.
+An offline study app for the Rwandan driving-test theory exam. Practice 20 random questions with a timer, review your mistakes, browse 404 questions with sign images, and track your progress. Runs on **Windows (Desktop)** and **Android (Mobile)** from one single Rust codebase.
 
 Built with [GPUI](https://gpui.rs), [GPUI Kit](https://gpui-kit.com/) and [gpui-mobile](https://github.com/longbridge/gpui-mobile). The entire interface is in **Kinyarwanda**.
 
@@ -8,12 +8,12 @@ Built with [GPUI](https://gpui.rs), [GPUI Kit](https://gpui-kit.com/) and [gpui-
 
 > **Disclaimer:** This is a study tool designed to aid preparation for the provisional driving license exam. The question bank is extracted from study materials. Always confirm official rules and regulations with the Rwanda National Police (RNP).
 
-## Download version 1.0.0
+## Download version 1.1.0
 
 Download the latest release from [GitHub Releases](https://github.com/brunorwanda4/amategeko-yumuhanda/releases/latest):
 
-- **Windows:** `Amategeko-y-Umuhanda-v1.0.0-Windows-Setup.exe`
-- **Android:** `Amategeko-y-Umuhanda-v1.0.0-Android-arm64.apk` (Android 8.0 or newer, ARM64)
+- **Windows:** `Amategeko-y-Umuhanda-v1.1.0-Windows-Setup.exe`
+- **Android:** `Amategeko-y-Umuhanda-v1.1.0-Android-arm64.apk` (Android 8.0 or newer, ARM64)
 
 ---
 
@@ -35,7 +35,7 @@ Download the latest release from [GitHub Releases](https://github.com/brunorwand
   - 4 key summary metrics: Total attempts, average score, high score, and overall pass rate percentage.
   - 10-attempt vertical score bar chart with green/red bars and a clear pass-threshold reference line.
   - Mode breakdown statistics table (Byoroshye, Hagati, Bikomeye, Weak practice).
-  - Overall question bank coverage progress bar (e.g. 150/403 seen).
+  - Overall question bank coverage progress bar (e.g. 150/404 seen).
   - Most-missed questions ranking with a direct "Gukora Imyitozo" practice launcher.
 - **Igenamiterere (Customizable Settings)**:
   - Pass mark stepper (10 to 20; default 12/20).
@@ -101,8 +101,8 @@ dependency audit, timing results, Windows options, and daily commands.
 ```
 amategeko-yumuhanda/
 ├── assets/
-│   ├── questions.json           # 403 structured questions with options, answer & image metadata
-│   ├── images/                  # 129 referenced PNG road sign and marking images
+│   ├── questions.json           # 404 structured questions with options, answer & image metadata
+│   ├── images/                  # 130 referenced PNG road sign and marking images
 │   └── overrides.json           # Optional manual overrides for question data
 ├── crates/
 │   ├── core/                    # Pure Rust domain logic (zero GPUI dependency, 100% testable)
@@ -206,7 +206,7 @@ The optimized executable will be located at `target/release/amategeko.exe`.
 
 Install Inno Setup 6, then run the installer build from the repository root:
 `.\scripts\build-installer.ps1`
-The installer is written to `dist\Amategeko-Setup.exe`.
+The installer is written to `dist\Amategeko-y-Umuhanda-v1.1.0-Windows-Setup.exe`.
 
 ---
 
@@ -267,7 +267,7 @@ cargo check --target aarch64-linux-android -p mobile
 
 ## Question Data Extraction
 
-The question bank was extracted directly from the supplied PDF (`ibibazo_byamategeko_y_umuhanda.pdf`, 75 landscape pages). Its numbering ends at 433, but this copy contains 403 usable numbered question blocks; see `docs/PROGRESS.md` for the source gaps. To re-run or inspect the extraction pipeline:
+The question bank was extracted directly from the supplied PDF (`ibibazo_byamategeko_y_umuhanda.pdf`, 75 landscape pages). Its numbering ends at 433, but this copy contains 404 recoverable question records; see `docs/PROGRESS.md` for the source gaps. To re-run or inspect the extraction pipeline:
 
 ```powershell
 cd tools

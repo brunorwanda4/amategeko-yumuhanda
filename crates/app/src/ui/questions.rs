@@ -53,6 +53,12 @@ impl QuestionsView {
         let shortcuts_active =
             crate::shortcuts_ui_active(is_desktop, state.settings.desktop_shortcuts_enabled);
 
+        // Touch-target sizing. On desktop the original compact controls are
+        // preserved; on compact/mobile layouts we guarantee a 44px
+        // interactive height for every touch target.
+        let icon_button_size: f32 = if is_desktop { 32.0 } else { 44.0 };
+        let min_touch_h: f32 = if is_desktop { 0.0 } else { 44.0 };
+
         let has_image_only = filter == QuestionsFilter::HasImage;
         let starred_only = filter == QuestionsFilter::Starred;
         let mistakes_only = filter == QuestionsFilter::Mistakes;
@@ -98,31 +104,42 @@ impl QuestionsView {
             .flex()
             .flex_col()
             .size_full()
+            .min_w_0()
+            .overflow_hidden()
             .bg(colors.background)
             .page_padding(is_desktop)
             .child(
                 page_column()
                     .h_full()
+                    .min_w_0()
                     .gap_3p5()
                     // Top Bar: page title and a count computed from the loaded bank.
+                    // Wraps on narrow widths so the counter drops below the title.
                     .child(
                         div()
                             .flex()
                             .flex_row()
+                            .flex_wrap()
                             .items_center()
                             .justify_between()
+                            .gap_2()
                             .w_full()
+                            .min_w_0()
                             .child(
                                 div()
+                                    .min_w_0()
                                     .text_2xl()
                                     .font_bold()
                                     .text_color(colors.foreground)
+                                    .whitespace_normal()
                                     .child(t("nav.questions", lang)),
                             )
                             .child(
                                 div()
+                                    .min_w_0()
                                     .text_sm()
                                     .text_color(colors.muted_foreground)
+                                    .whitespace_normal()
                                     .child(
                                         t("questions.count_info", lang)
                                             .replace("{visible}", &visible_count.to_string())
@@ -145,9 +162,13 @@ impl QuestionsView {
                             .flex()
                             .flex_row()
                             .items_center()
+                            .flex_wrap()
                             .gap_3()
+                            .w_full()
+                            .min_w_0()
                             .px_3p5()
                             .py_2p5()
+                            .when(!is_desktop, |el| el.min_h(px(min_touch_h)))
                             .rounded_lg()
                             .border_1()
                             .border_color(if is_search_focused {
@@ -171,6 +192,7 @@ impl QuestionsView {
                             .child(
                                 div()
                                     .flex_1()
+                                    .min_w_0()
                                     .flex()
                                     .flex_row()
                                     .items_center()
@@ -187,6 +209,9 @@ impl QuestionsView {
                                             )
                                             .child(
                                                 div()
+                                                    .min_w_0()
+                                                    .overflow_hidden()
+                                                    .whitespace_normal()
                                                     .text_sm()
                                                     .text_color(colors.muted_foreground)
                                                     .child(t("questions.search_placeholder", lang)),
@@ -194,6 +219,9 @@ impl QuestionsView {
                                         } else {
                                             el.child(
                                                 div()
+                                                    .min_w_0()
+                                                    .overflow_hidden()
+                                                    .whitespace_normal()
                                                     .text_sm()
                                                     .text_color(colors.muted_foreground)
                                                     .child(t("questions.search_placeholder", lang)),
@@ -203,6 +231,9 @@ impl QuestionsView {
                                     .when(!search_query.is_empty(), |el| {
                                         el.child(
                                             div()
+                                                .min_w_0()
+                                                .overflow_hidden()
+                                                .whitespace_normal()
                                                 .text_sm()
                                                 .text_color(colors.foreground)
                                                 .child(search_query.to_string()),
@@ -223,6 +254,12 @@ impl QuestionsView {
                                     div()
                                         .id("clear_search_btn")
                                         .cursor_pointer()
+                                        .when(!is_desktop, |el| {
+                                            el.min_w(px(min_touch_h)).min_h(px(min_touch_h))
+                                        })
+                                        .flex()
+                                        .items_center()
+                                        .justify_center()
                                         .p_1()
                                         .rounded_md()
                                         .hover(|el| el.bg(colors.background))
@@ -245,6 +282,7 @@ impl QuestionsView {
                                         .flex()
                                         .flex_row()
                                         .items_center()
+                                        .flex_wrap()
                                         .gap_1p5()
                                         .child(
                                             div()
@@ -278,18 +316,26 @@ impl QuestionsView {
                             })
                     )
                     // Filter Buttons Row (Byose, Ibifite ishushyo, Ibyo nakosheje, Inyenyeri)
+                    // Wraps cleanly when there isn't enough horizontal room.
                     .child(
                         div()
                             .flex()
                             .flex_row()
+                            .flex_wrap()
                             .items_center()
                             .gap_2p5()
+                            .w_full()
+                            .min_w_0()
                             .children(filter_buttons.into_iter().map(|(item_filter, id, label)| {
                                 let is_active = filter == item_filter;
                                 div()
                                     .id(id)
                                     .px_4()
                                     .py_2()
+                                    .when(!is_desktop, |el| el.min_h(px(min_touch_h)))
+                                    .flex()
+                                    .items_center()
+                                    .justify_center()
                                     .rounded_lg()
                                     .cursor_pointer()
                                     .border_1()
@@ -305,6 +351,7 @@ impl QuestionsView {
                                     })
                                     .text_sm()
                                     .font_medium()
+                                    .whitespace_normal()
                                     .text_color(if is_active {
                                         colors.foreground
                                     } else {
@@ -330,8 +377,12 @@ impl QuestionsView {
                             .id("hide_answers_toggle_row")
                             .flex()
                             .flex_row()
+                            .flex_wrap()
                             .items_center()
                             .gap_3()
+                            .w_full()
+                            .min_w_0()
+                            .when(!is_desktop, |el| el.min_h(px(min_touch_h)))
                             .when(shortcuts_active, |el| {
                                 let hint = format!("{} (H)", t("questions.hide_answers", lang));
                                 el.tooltip(move |window, cx| {
@@ -340,8 +391,10 @@ impl QuestionsView {
                             })
                             .child(
                                 div()
+                                    .min_w_0()
                                     .text_sm()
                                     .text_color(colors.foreground)
+                                    .whitespace_normal()
                                     .child(t("questions.hide_answers", lang)),
                             )
                             .child(
@@ -358,12 +411,15 @@ impl QuestionsView {
                             .id("questions_scroll_view")
                             .debug_selector(|| "questions_scroll_view".into())
                             .track_scroll(scroll_handle)
-.drag_scroll(scroll_handle)
+                            .drag_scroll(scroll_handle)
                             .relative()
                             .flex()
                             .flex_col()
                             .flex_1()
+                            .min_w_0()
+                            .min_h_0()
                             .overflow_y_scroll()
+                            .overflow_x_hidden()
                             .pr_2()
                             .gap_2p5()
                             .child(vertical_scrollbar(
@@ -381,6 +437,8 @@ impl QuestionsView {
                                         .flex_col()
                                         .items_center()
                                         .justify_center()
+                                        .w_full()
+                                        .min_w_0()
                                         .p_8()
                                         .gap_3()
                                         .child(
@@ -390,9 +448,11 @@ impl QuestionsView {
                                         )
                                         .child(
                                             div()
+                                                .min_w_0()
                                                 .text_base()
                                                 .font_bold()
                                                 .text_color(colors.foreground)
+                                                .whitespace_normal()
                                                 .child(if lang == Language::En {
                                                     "No questions found"
                                                 } else {
@@ -401,8 +461,10 @@ impl QuestionsView {
                                         )
                                         .child(
                                             div()
+                                                .min_w_0()
                                                 .text_sm()
                                                 .text_color(colors.muted_foreground)
+                                                .whitespace_normal()
                                                 .child(if lang == Language::En {
                                                     "Try changing your search terms or select 'All' to view all questions."
                                                 } else {
@@ -457,14 +519,21 @@ impl QuestionsView {
                                     .bg(colors.secondary)
                                     .p_3p5()
                                     .gap_3()
-                                    // Question Card Header / Summary Row
+                                    // Question Card Header / Summary Row.
+                                    // Desktop: single row (number+text left, actions right).
+                                    // Mobile:  two rows  (number+text full width, then actions).
                                     .child(
                                         div()
                                             .id(format!("q_header_{}", q_id))
                                             .flex()
-                                            .flex_row()
-                                            .items_center()
-                                            .justify_between()
+                                            .when(is_desktop, |el| {
+                                                el.flex_row()
+                                                    .items_center()
+                                                    .justify_between()
+                                            })
+                                            .when(!is_desktop, |el| {
+                                                el.flex_col().items_start()
+                                            })
                                             .gap_3()
                                             .w_full()
                                             .min_w_0()
@@ -483,15 +552,17 @@ impl QuestionsView {
                                             .on_click(cx.listener(move |this, _, window, cx| {
                                                 on_toggle_expand(this, q_id, window, cx);
                                             }))
-                                            // Left: Question Number + Text
+                                            // Left (desktop) / Top (mobile): Question Number + Text
                                             .child(
                                                 div()
                                                     .flex()
                                                     .flex_row()
                                                     .items_baseline()
                                                     .gap_3()
-                                                    .flex_1()
-                                                    .min_w_0()
+                                                    .when(is_desktop, |el| {
+                                                        el.flex_1().min_w_0()
+                                                    })
+                                                    .when(!is_desktop, |el| el.w_full().min_w_0())
                                                     .overflow_hidden()
                                                     .child(
                                                         div()
@@ -512,15 +583,21 @@ impl QuestionsView {
                                                             .child(q.text_for(q_lang).to_string()),
                                                     ),
                                             )
-                                            // Right: Badges, Correct Letter (if collapsed & !hide), Star, Chevron
+                                            // Right (desktop) / Bottom (mobile): Badges, Correct Letter,
+                                            // Star, Chevron.
                                             .child(
                                                 div()
                                                     .flex()
                                                     .flex_row()
                                                     .items_center()
+                                                    .flex_wrap()
                                                     .gap_2p5()
-                                                    .flex_shrink_0()
-                                                    .flex_none()
+                                                    .when(is_desktop, |el| {
+                                                        el.flex_shrink_0().flex_none().justify_end()
+                                                    })
+                                                    .when(!is_desktop, |el| {
+                                                        el.w_full().justify_end()
+                                                    })
                                                     // Image badge (blue pill)
                                                     .when(q.has_image, |b| {
                                                         b.child(
@@ -597,11 +674,12 @@ impl QuestionsView {
                                                     .child(
                                                         div()
                                                             .id(format!("star_q_{}", q_id))
-                                                            .w(px(32.0))
-                                                            .h(px(32.0))
+                                                            .w(px(icon_button_size))
+                                                            .h(px(icon_button_size))
                                                             .flex()
                                                             .items_center()
                                                             .justify_center()
+                                                            .flex_none()
                                                             .rounded_md()
                                                             .border_1()
                                                             .border_color(colors.border)
@@ -614,9 +692,9 @@ impl QuestionsView {
                                                             .hover(|el| el.bg(colors.accent))
                                                             .when(shortcuts_active, |el| {
                                                                 let hint = if is_starred {
-                                                                    "Unstar (B)"
+                                                                    "Unstar (K)"
                                                                 } else {
-                                                                    "Star (B)"
+                                                                    "Star (K)"
                                                                 };
                                                                 el.tooltip(move |window, cx| {
                                                                     Tooltip::new(hint).build(window, cx)
@@ -643,8 +721,9 @@ impl QuestionsView {
                                                     .child(
                                                         div()
                                                             .w(px(20.0))
-                                                            .h(px(32.0))
+                                                            .h(px(icon_button_size))
                                                             .flex()
+                                                            .flex_none()
                                                             .items_center()
                                                             .justify_center()
                                                             .child(
@@ -675,6 +754,7 @@ impl QuestionsView {
                                                     img_box.child(
                                                         div()
                                                             .w_full()
+                                                            .min_w_0()
                                                             .flex()
                                                             .flex_col()
                                                             .items_center()
@@ -686,11 +766,13 @@ impl QuestionsView {
                                                             .border_color(colors.border)
                                                             .bg(colors.background)
                                                             .gap_2()
+                                                            .overflow_hidden()
                                                             .child(
                                                                 div()
                                                                     .flex()
                                                                     .flex_row()
                                                                     .items_center()
+                                                                    .flex_wrap()
                                                                     .gap_2()
                                                                     .text_xs()
                                                                     .text_color(colors.muted_foreground)
@@ -711,6 +793,7 @@ impl QuestionsView {
                                                                     "assets/images/q{}.png",
                                                                     q_id
                                                                 ))
+                                                                .max_w_full()
                                                                 .max_h(px(140.0))
                                                                 .rounded_lg(),
                                                             ),
@@ -838,6 +921,9 @@ impl QuestionsView {
                                                                 .w_full()
                                                                 .min_w_0()
                                                                 .overflow_hidden()
+                                                                .when(!is_desktop, |el| {
+                                                                    el.min_h(px(min_touch_h))
+                                                                })
                                                                 .gap_2p5()
                                                                 .p_3()
                                                                 .rounded_lg()

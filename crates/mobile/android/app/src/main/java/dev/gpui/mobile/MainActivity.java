@@ -3,6 +3,7 @@ package dev.gpui.mobile;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
+import android.view.WindowManager;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.OnBackPressedDispatcher;
@@ -14,6 +15,7 @@ import androidx.lifecycle.LifecycleRegistry;
 
 public class MainActivity extends GpuiActivity implements LifecycleOwner, OnBackPressedDispatcherOwner {
 
+    private boolean keepScreenOnRequested;
     private final LifecycleRegistry mLifecycleRegistry = new LifecycleRegistry(this);
     private final OnBackPressedDispatcher mBackPressedDispatcher = new OnBackPressedDispatcher(new Runnable() {
         @Override
@@ -65,12 +67,27 @@ public class MainActivity extends GpuiActivity implements LifecycleOwner, OnBack
     protected void onResume() {
         super.onResume();
         mLifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME);
+        updateKeepScreenOn();
     }
 
     @Override
     protected void onPause() {
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mLifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE);
         super.onPause();
+    }
+
+    public void setKeepScreenOn(boolean on) {
+        keepScreenOnRequested = on;
+        runOnUiThread(this::updateKeepScreenOn);
+    }
+
+    private void updateKeepScreenOn() {
+        if (keepScreenOnRequested) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        } else {
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
     }
 
     @Override

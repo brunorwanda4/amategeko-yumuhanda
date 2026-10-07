@@ -5,6 +5,7 @@ import unittest
 sys.path.insert(0, os.path.dirname(__file__))
 
 from extract_questions import (
+    append_missing_override_questions,
     assign_stable_ids,
     extract_question_heading,
     parse_question_text,
@@ -64,6 +65,22 @@ class ExtractQuestionsTests(unittest.TestCase):
         existing = [{"id": 7, "text": "Old"}]
         assigned = assign_stable_ids(parsed, existing)
         self.assertEqual([question["id"] for question in assigned], [7, 8])
+
+    def test_complete_override_can_recover_missing_source_record(self):
+        questions = [{"id": 1, "text": "Extracted"}]
+        override = {
+            "id": 2,
+            "text": "Recovered",
+            "options": {"a": "Yego", "b": "Oya", "c": "Nta na kimwe"},
+            "correct": "a",
+            "image": None,
+            "has_image": False,
+        }
+        recovered = append_missing_override_questions(
+            questions, {"1": {"text": "Updated"}, "2": override}
+        )
+        self.assertEqual(recovered, [override])
+        self.assertEqual([question["id"] for question in questions], [1, 2])
 
 
 if __name__ == "__main__":

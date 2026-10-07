@@ -22,13 +22,14 @@ Tracking milestones for "Amategeko y'Umuhanda" (Rwanda driving-test theory study
 
 - [x] **Milestone 1: Question Bank & Asset Extraction** (Completed 2026-10-03)
   - [x] Implement `tools/extract_questions.py` and `tools/requirements.txt`
-  - [x] Extract all usable numbered questions into `assets/questions.json` (403 questions; corrected 2026-10-06)
-  - [x] Extract, crop, and optimize sign/marking images into `assets/images/q{id}.png` (129 referenced images)
+  - [x] Extract all recoverable questions into `assets/questions.json` (404 questions; corrected 2026-10-06)
+  - [x] Extract, crop, and optimize sign/marking images into `assets/images/q{id}.png` (130 referenced images)
   - [x] Identify correct options via parenthesized letters `(a)`, `(b)`, `(c)`, `(d)` and PDF red text spans
   - [x] Validate 3-4 options per question, exactly 1 answer (0 errors in validation)
   - [x] Generate `tools/needs_review.json` and support `assets/overrides.json`
   - [x] Preserve existing app IDs while recovering 13 questions hidden by PDF numbering errors; fix answer detection for `(c.)` markers and red spans (2026-10-06)
-  - [ ] Obtain a corrected source for the remaining 30 records needed to reach 433. This PDF jumps from 139 to 171 and has other missing, duplicated, or incorrect labels; one image-only item between 271 and 273 has no question prompt.
+  - [x] Recover the image question between source questions 271 and 273 from its visible choices/answer and the prompt preserved by matching copies (2026-10-06)
+  - [ ] Obtain a corrected source for the remaining 29 records needed to reach 433. This PDF jumps from 139 to 171 and has other missing, duplicated, or incorrect labels.
 - [x] **Milestone 2: Workspace Setup & Mobile Spike** (Completed 2026-10-03)
   - [x] Set up Cargo workspace (`crates/core`, `crates/app`, `crates/desktop`, `crates/mobile`)
   - [x] Pin exact GPUI/GPUI Kit/gpui-mobile dependencies
@@ -70,7 +71,7 @@ Tracking milestones for "Amategeko y'Umuhanda" (Rwanda driving-test theory study
   - [x] Search by text or question number
   - [x] Filter chips (all, has image, mistakes, starred)
   - [x] "Hisha ibisubizo" (hide answers) switch & flashcard interaction
-  - [x] Smooth scrolling list of 403 questions, star persistence
+  - [x] Smooth scrolling list of 404 questions, star persistence
 - [x] **Milestone 10: Imibare Screen (Statistics)** (Completed 2026-10-03)
   - [x] Metric tiles (attempts, average, high score, pass rate)
   - [x] 10-attempt bar chart with pass mark threshold line
@@ -104,3 +105,4 @@ Tracking milestones for "Amategeko y'Umuhanda" (Rwanda driving-test theory study
 ## Releases
 
 - [x] **Version 1.0.0** (2026-10-06): aligned desktop and Android version metadata and prepared downloadable Windows and Android ARM64 release artifacts.
+- [x] **Version 1.1.0** (2026-10-06): recovered all verifiable questions from the supplied PDF, corrected answer extraction, and prepared updated Windows and Android ARM64 builds.
