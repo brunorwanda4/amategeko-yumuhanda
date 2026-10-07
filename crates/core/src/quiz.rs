@@ -29,7 +29,10 @@ impl QuizEngine {
         let allowed_duration_secs = match mode {
             QuizMode::Hagati => Some((settings.medium_duration_mins as u64) * 60),
             QuizMode::Bikomeye => Some((settings.hard_duration_mins as u64) * 60),
-            QuizMode::Byoroshye | QuizMode::WeakPractice | QuizMode::RetryWrong => None,
+            QuizMode::Byoroshye
+            | QuizMode::WeakPractice
+            | QuizMode::RetryWrong
+            | QuizMode::Study => None,
         };
 
         let id = format!("attempt_{}_{}", mode.title_kinyarwanda(), now_secs);
@@ -59,7 +62,10 @@ impl QuizEngine {
         let allowed_duration_secs = match mode {
             QuizMode::Hagati => Some((settings.medium_duration_mins as u64) * 60),
             QuizMode::Bikomeye => Some((settings.hard_duration_mins as u64) * 60),
-            QuizMode::Byoroshye | QuizMode::WeakPractice | QuizMode::RetryWrong => None,
+            QuizMode::Byoroshye
+            | QuizMode::WeakPractice
+            | QuizMode::RetryWrong
+            | QuizMode::Study => None,
         };
 
         let id = format!("attempt_{}_{}", mode.title_kinyarwanda(), now_secs);

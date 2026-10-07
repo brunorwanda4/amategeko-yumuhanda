@@ -200,6 +200,8 @@ pub enum QuizMode {
     WeakPractice,
     /// Practice mode retrying wrong questions from the previous attempt (Easy rules).
     RetryWrong,
+    /// Ordered, resumable study of the full question bank using Easy rules.
+    Study,
 }
 
 impl QuizMode {
@@ -211,6 +213,7 @@ impl QuizMode {
                 QuizMode::Bikomeye => "Hard",
                 QuizMode::WeakPractice => "Review Mistakes",
                 QuizMode::RetryWrong => "Retry Mistakes",
+                QuizMode::Study => "Study",
             },
             Language::Rw => self.title_kinyarwanda(),
         }
@@ -223,6 +226,7 @@ impl QuizMode {
             QuizMode::Bikomeye => "Bikomeye",
             QuizMode::WeakPractice => "Ibibazo nakosheje",
             QuizMode::RetryWrong => "Subiramo ibyo wakosheje",
+            QuizMode::Study => "Kwiga",
         }
     }
 
@@ -242,7 +246,7 @@ impl QuizMode {
     pub fn provides_instant_feedback(&self) -> bool {
         matches!(
             self,
-            QuizMode::Byoroshye | QuizMode::WeakPractice | QuizMode::RetryWrong
+            QuizMode::Byoroshye | QuizMode::WeakPractice | QuizMode::RetryWrong | QuizMode::Study
         )
     }
 }
@@ -479,12 +483,23 @@ impl QuestionStat {
     }
 }
 
+/// Resumable state for one pass through the full ordered question bank.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct StudyProgress {
+    /// ID of the question that should be shown when study resumes.
+    pub last_id: Option<u32>,
+    /// Locked answer keyed by question ID for the current study round.
+    pub answers: HashMap<u32, String>,
+}
+
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct Progress {
     pub attempts: Vec<AttemptResult>,
     pub question_stats: HashMap<u32, QuestionStat>,
     pub starred_questions: HashSet<u32>,
     pub active_attempt: Option<Attempt>,
+    #[serde(default)]
+    pub study: StudyProgress,
 }
 
 impl Progress {
@@ -513,11 +528,65 @@ impl Progress {
     pub fn is_starred(&self, question_id: u32) -> bool {
         self.starred_questions.contains(&question_id)
     }
+
+    pub fn record_study_answer(&mut self, question_id: u32, answer: &str, is_correct: bool) {
+        if self.study.answers.contains_key(&question_id) {
+            return;
+        }
+        self.study
+            .answers
+            .insert(question_id, answer.to_lowercase());
+        self.question_stats
+            .entry(question_id)
+            .or_insert_with(|| QuestionStat::new(question_id))
+            .record_answer(is_correct);
+    }
+}
+
+/// Finds the saved question in sorted IDs, falling forward when the ID disappeared.
+pub fn study_index(sorted_ids: &[u32], last_id: Option<u32>) -> usize {
+    if sorted_ids.is_empty() {
+        return 0;
+    }
+    let Some(last_id) = last_id else {
+        return 0;
+    };
+    sorted_ids.iter().position(|id| *id >= last_id).unwrap_or(0)
+}
+
+/// Returns the completed whole-number percentage, bounded to 0 through 100.
+pub fn percent_done(answered: usize, total: usize) -> u32 {
+    if total == 0 {
+        0
+    } else {
+        ((answered.min(total) * 100) / total) as u32
+    }
+}
+
+/// Clamps a one-based question number and returns its zero-based index.
+pub fn clamp_jump(question_number: usize, total: usize) -> usize {
+    if total == 0 {
+        0
+    } else {
+        question_number.clamp(1, total) - 1
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn study_helpers_cover_resume_percent_and_jump_bounds() {
+        let ids = [1, 3, 5];
+        assert_eq!(study_index(&ids, Some(3)), 1);
+        assert_eq!(study_index(&ids, Some(2)), 1);
+        assert_eq!(study_index(&ids, Some(9)), 0);
+        assert_eq!(study_index(&[], Some(1)), 0);
+        assert_eq!(percent_done(2, 4), 50);
+        assert_eq!(clamp_jump(0, 3), 0);
+        assert_eq!(clamp_jump(4, 3), 2);
+    }
 
     #[test]
     fn test_question_set_filter() {

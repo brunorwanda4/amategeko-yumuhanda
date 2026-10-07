@@ -1,6 +1,7 @@
 use crate::state::AppState;
 use crate::ui::footer::AppFooter;
 use crate::ui::layout::{page_column, page_max_width, PagePadding as _};
+use crate::ui::quiz::QuizView;
 use crate::ui::scroll::{vertical_scrollbar, DragScroll, ScrollbarContext};
 
 use amategeko_core::{t, tf, Language, QuestionSet, QuizMode, StatsCalculator};
@@ -26,6 +27,10 @@ pub enum HomeAction {
     Play(QuizMode),
     /// Start Easy with the Mistakes set (the "My mistakes" card).
     PlayMistakes,
+    /// Start or continue the ordered full-bank study mode.
+    PlayStudy,
+    /// Ask the host to confirm clearing the current study round.
+    RestartStudy,
     Resume,
     Discard,
 }
@@ -245,6 +250,18 @@ impl HomeView {
                                    //         .child(t("quiz.sub", lang)),
                                    // ),
                             )
+                            .child(QuizView::render_study_card(
+                                state,
+                                lang,
+                                is_desktop,
+                                cx,
+                                move |this, _, window, cx| {
+                                    on_action(this, HomeAction::PlayStudy, window, cx);
+                                },
+                                move |this, window, cx| {
+                                    on_action(this, HomeAction::RestartStudy, window, cx);
+                                },
+                            ))
                             // .child(label_el(t("quiz.mode", lang)))
                             .child(
                                 div()

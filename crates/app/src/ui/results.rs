@@ -106,6 +106,7 @@ impl ResultsView {
             QuizMode::Bikomeye => t("mode.hard.title", lang),
             QuizMode::WeakPractice => t("home.weak_title", lang),
             QuizMode::RetryWrong => t("results.retry_wrong", lang),
+            QuizMode::Study => t("study.badge", lang),
         };
 
         let mins = result.duration_seconds / 60;
