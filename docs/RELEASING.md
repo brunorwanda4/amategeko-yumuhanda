@@ -11,9 +11,20 @@ Repository: `https://github.com/brunorwanda4/amategeko-yumuhanda`.
 - Verify manually with `apksigner verify --verbose --print-certs <apk>` and `zipalign -c -P 4 -v 4 <apk>`.
 - For local testing only, add `--allow-debug-signing`; the output ends in `-debugsigned.apk` and must never be published.
 
+### Windows
+
+- Install Inno Setup: `winget install -e --id JRSoftware.InnoSetup`.
+- Build with `installer/build.ps1`; add `-Portable` when a portable ZIP is needed.
+- Sign the setup output manually with `minisign -Sm <file>`.
+- Upload the setup `.exe` and its `.minisig` file to GitHub Releases.
+- Never change the AppId in `installer/amategeko.iss`.
+- Test a fresh install with the desktop shortcut ticked and unticked.
+- Test an upgrade over an old install and a silent update from inside the app.
+- Test uninstall while keeping data, then reinstall and test deleting data.
+
 1. Bump workspace version in `Cargo.toml` and Android `versionCode`/`versionName`.
 2. Update `CHANGELOG.md` with release additions and fixes.
-3. Build the Windows installer (`tools/package-windows.ps1`) and Android APK (`tools/package-android.ps1`).
+3. Build the Windows installer (`installer/build.ps1`) and Android APK (`tools/package-android.ps1`).
 4. Sign the installer and APK with minisign (`minisign -Sm <file> -s "$HOME\Documents\AmategekoSigning\update.key"`).
 5. Tag `v<version>` equal to the Cargo version.
 6. Upload release files and `.minisig` signatures to GitHub Releases.

@@ -44,6 +44,10 @@ if (-not (Test-Path -LiteralPath $apkSigner) -or -not (Test-Path -LiteralPath $z
 }
 
 $jniDir = "crates\mobile\android\app\src\main\jniLibs"
+$jniAbiDir = Join-Path $jniDir "arm64-v8a"
+if (Test-Path -LiteralPath $jniAbiDir) {
+    Get-ChildItem -LiteralPath $jniAbiDir -Filter "*.so" -File | Remove-Item -Force
+}
 $cargoArgs = @("ndk", "-t", "arm64-v8a", "-o", $jniDir, "--platform", "26", "build", "-p", "mobile", "--release")
 if ($Play) {
     $cargoArgs += "--no-default-features"
@@ -52,6 +56,9 @@ if ($Play) {
 if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
+Get-ChildItem -LiteralPath $jniAbiDir -Filter "*.so" -File |
+    Where-Object Name -ne "libgpui_mobile_app.so" |
+    Remove-Item -Force
 
 $flavor = if ($Play) { "play" } else { "sideload" }
 $gradleTask = if ($Play) { "assemblePlayRelease" } else { "assembleSideloadRelease" }

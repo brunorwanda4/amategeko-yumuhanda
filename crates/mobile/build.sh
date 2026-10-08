@@ -454,6 +454,8 @@ build_android() {
     step "Building Rust shared library for ${ndk_abi} (${PROFILE})"
 
     local jni_libs_dir="$ANDROID_GRADLE_DIR/app/src/main/jniLibs"
+    mkdir -p "$jni_libs_dir/$ndk_abi"
+    find "$jni_libs_dir/$ndk_abi" -maxdepth 1 -type f -name '*.so' -delete
 
     cd "$EXAMPLES_DIR"
     cargo ndk \
@@ -463,6 +465,8 @@ build_android() {
         build \
         $cargo_profile_flag \
         2>&1
+    find "$jni_libs_dir/$ndk_abi" -maxdepth 1 -type f -name '*.so' \
+        ! -name 'libgpui_mobile_app.so' -delete
 
     local so_path="$jni_libs_dir/${ndk_abi}/libgpui_mobile_app.so"
     if [[ ! -f "$so_path" ]]; then

@@ -13,6 +13,11 @@ use std::io;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
+#[cfg(target_os = "windows")]
+use std::ffi::c_void;
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
+
 const LEGACY_MIGRATION_MARKER: &str = ".legacy-data-migrated-v1";
 const PERSISTED_FILES: &[&str] = &[
     "settings.json",
@@ -38,6 +43,84 @@ struct DesktopKeepAwake {
 
 struct DesktopUpdateInstaller;
 
+#[cfg(target_os = "windows")]
+const DETACHED_PROCESS: u32 = 0x0000_0008;
+#[cfg(target_os = "windows")]
+const CREATE_NEW_PROCESS_GROUP: u32 = 0x0000_0200;
+#[cfg(target_os = "windows")]
+const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+#[cfg(target_os = "windows")]
+const MB_ICONINFORMATION: u32 = 0x0000_0040;
+#[cfg(target_os = "windows")]
+const MB_SETFOREGROUND: u32 = 0x0001_0000;
+
+#[cfg(target_os = "windows")]
+#[link(name = "user32")]
+unsafe extern "system" {
+    fn MessageBoxW(
+        window: *mut c_void,
+        text: *const u16,
+        caption: *const u16,
+        message_type: u32,
+    ) -> i32;
+}
+
+#[cfg(target_os = "windows")]
+fn show_update_ready_message() -> io::Result<()> {
+    let text: Vec<u16> = "Ready. The app will close and update."
+        .encode_utf16()
+        .chain(std::iter::once(0))
+        .collect();
+    let caption: Vec<u16> = "Amategeko y'Umuhanda"
+        .encode_utf16()
+        .chain(std::iter::once(0))
+        .collect();
+
+    // SAFETY: Both pointers reference live, NUL-terminated UTF-16 buffers for the call.
+    let result = unsafe {
+        MessageBoxW(
+            std::ptr::null_mut(),
+            text.as_ptr(),
+            caption.as_ptr(),
+            MB_ICONINFORMATION | MB_SETFOREGROUND,
+        )
+    };
+    if result == 0 {
+        return Err(io::Error::last_os_error());
+    }
+    Ok(())
+}
+
+#[cfg(target_os = "windows")]
+fn launch_update_installer(package: &Path) -> io::Result<()> {
+    std::process::Command::new(package)
+        .args([
+            "/VERYSILENT",
+            "/SUPPRESSMSGBOXES",
+            "/NORESTART",
+            "/CLOSEAPPLICATIONS",
+        ])
+        .creation_flags(DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP | CREATE_NO_WINDOW)
+        .spawn()?;
+    Ok(())
+}
+
+#[cfg(not(target_os = "windows"))]
+fn show_update_ready_message() -> io::Result<()> {
+    Err(io::Error::new(
+        io::ErrorKind::Unsupported,
+        "automatic update installation is only supported on Windows",
+    ))
+}
+
+#[cfg(not(target_os = "windows"))]
+fn launch_update_installer(_package: &Path) -> io::Result<()> {
+    Err(io::Error::new(
+        io::ErrorKind::Unsupported,
+        "automatic update installation is only supported on Windows",
+    ))
+}
+
 impl UpdateInstaller for DesktopUpdateInstaller {
     fn update_dir(&self) -> io::Result<PathBuf> {
         let dir = std::env::temp_dir().join("amategeko-yumuhanda-updates");
@@ -46,30 +129,33 @@ impl UpdateInstaller for DesktopUpdateInstaller {
     }
 
     fn install(&self, package: &Path) -> io::Result<UpdateInstallOutcome> {
-        let update_dir = self.update_dir()?.canonicalize()?;
-        let package = package.canonicalize()?;
-        if !package.starts_with(&update_dir)
-            || package.extension().and_then(|value| value.to_str()) != Some("exe")
-        {
-            return Err(io::Error::other("invalid update installer path"));
-        }
+        let launch = (|| -> io::Result<()> {
+            let update_dir = self.update_dir()?.canonicalize()?;
+            let package = package.canonicalize()?;
+            if !package.starts_with(&update_dir)
+                || package.extension().and_then(|value| value.to_str()) != Some("exe")
+            {
+                return Err(io::Error::other("invalid update installer path"));
+            }
 
-        let installed = std::env::current_exe()?
-            .parent()
-            .is_some_and(|dir| dir.join("amategeko-installed.marker").is_file());
-        if !installed {
+            let install_dir = std::env::current_exe()?
+                .parent()
+                .map(Path::to_path_buf)
+                .ok_or_else(|| io::Error::other("executable has no parent directory"))?;
+            if !install_dir.join("unins000.exe").is_file() {
+                return Err(io::Error::new(
+                    io::ErrorKind::NotFound,
+                    "Inno Setup uninstaller not found",
+                ));
+            }
+
+            show_update_ready_message()?;
+            launch_update_installer(&package)
+        })();
+
+        if launch.is_err() {
             return Ok(UpdateInstallOutcome::ManualRequired);
         }
-
-        std::process::Command::new(package)
-            .args([
-                "/VERYSILENT",
-                "/SUPPRESSMSGBOXES",
-                "/NORESTART",
-                "/SP-",
-                "/CLOSEAPPLICATIONS",
-            ])
-            .spawn()?;
         std::process::exit(0);
     }
 

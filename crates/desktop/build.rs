@@ -9,6 +9,7 @@ fn main() {
     resource.set_icon(ICON_PATH);
     resource.set("ProductName", "Amategeko y’Umuhanda");
     resource.set("FileDescription", "Amategeko y’Umuhanda");
+    resource.set("CompanyName", "Rwanda Bruno");
     resource.set("FileVersion", version);
     resource.set("ProductVersion", version);
 

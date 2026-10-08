@@ -4,6 +4,7 @@
 /target/
 **/target/
 /dist/
+/installer/output/
 **/*.rs.bk
 *.pdb
 # Cargo.lock is NOT ignored: this is an application, commit it.
