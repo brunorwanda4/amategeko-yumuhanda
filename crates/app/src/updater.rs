@@ -124,10 +124,7 @@ fn approved_url(url: &str) -> bool {
 fn agent() -> ureq::Agent {
     ureq::Agent::config_builder()
         .max_redirects(0)
-        .user_agent(&format!(
-            "amategeko-yumuhanda/{}",
-            env!("CARGO_PKG_VERSION")
-        ))
+        .user_agent(format!("amategeko-yumuhanda/{}", env!("CARGO_PKG_VERSION")))
         .build()
         .into()
 }
