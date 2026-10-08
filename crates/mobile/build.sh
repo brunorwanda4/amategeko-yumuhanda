@@ -4,7 +4,7 @@
 #
 # Usage:
 #   ./build.sh ios   [--device | --simulator] [--release] [--clean]
-#   ./build.sh android [--device | --emulator] [--release] [--clean]
+#   ./build.sh android [--device | --emulator] [--release] [--clean] [--allow-debug-signing]
 #
 # Subcommands:
 #   ios       Build the Rust static library, generate the Xcode project via
@@ -35,12 +35,11 @@ set -euo pipefail
 # ── Resolve paths ────────────────────────────────────────────────────────────
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# SCRIPT_DIR = gpui/example
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 GPUI_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-# GPUI_ROOT  = gpui/
 EXAMPLES_DIR="$SCRIPT_DIR"
 IOS_DIR="$EXAMPLES_DIR/ios"
-ANDROID_GRADLE_DIR="$EXAMPLES_DIR/android/gradle"
+ANDROID_GRADLE_DIR="$EXAMPLES_DIR/android"
 
 # ── Colours (if stdout is a terminal) ────────────────────────────────────────
 
@@ -66,7 +65,7 @@ usage() {
     cat <<'EOF'
 Usage:
   ./build.sh ios     [--device|--simulator] [--release] [--clean] [--no-run]
-  ./build.sh android [--device|--emulator]  [--release] [--clean] [--no-run]
+  ./build.sh android [--device|--emulator]  [--release] [--clean] [--no-run] [--allow-debug-signing]
 
 Subcommands:
   ios       Build & run on iOS (physical device by default)
@@ -79,6 +78,7 @@ Options:
   --release     Release build (default: debug)
   --clean       Clean before building
   --no-run      Build only — skip install & launch
+  --allow-debug-signing  Sign a release APK with the debug key for local testing only
   -h, --help    Show this help
 EOF
 }
@@ -90,6 +90,7 @@ TARGET_KIND="device"   # device | simulator | emulator
 PROFILE="debug"
 CLEAN=false
 NO_RUN=false
+ALLOW_DEBUG_SIGNING=false
 
 if [[ $# -lt 1 ]]; then
     usage
@@ -110,6 +111,7 @@ while [[ $# -gt 0 ]]; do
         --release)   PROFILE="release"       ;;
         --clean)     CLEAN=true              ;;
         --no-run)    NO_RUN=true             ;;
+        --allow-debug-signing) ALLOW_DEBUG_SIGNING=true ;;
         -h|--help)   usage; exit 0           ;;
         *) error "Unknown option: $1"; usage; exit 1 ;;
     esac
@@ -123,6 +125,10 @@ if [[ "$PLATFORM" == "ios" && "$TARGET_KIND" == "emulator" ]]; then
 fi
 if [[ "$PLATFORM" == "android" && "$TARGET_KIND" == "simulator" ]]; then
     error "--simulator is only valid for the ios subcommand. Did you mean --emulator?"
+    exit 1
+fi
+if $ALLOW_DEBUG_SIGNING && [[ "$PLATFORM" != "android" || "$PROFILE" != "release" ]]; then
+    error "--allow-debug-signing requires: ./build.sh android --release"
     exit 1
 fi
 
@@ -398,6 +404,18 @@ build_android() {
     local rust_target="aarch64-linux-android"
     local ndk_abi="arm64-v8a"
 
+    local sdk_root="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+    local apksigner_path
+    local zipalign_path
+    apksigner_path=$(find "$sdk_root/build-tools" -mindepth 2 -maxdepth 2 -type f \
+        \( -name apksigner -o -name apksigner.bat \) 2>/dev/null | sort -V | tail -1)
+    zipalign_path=$(find "$sdk_root/build-tools" -mindepth 2 -maxdepth 2 -type f \
+        \( -name zipalign -o -name zipalign.exe \) 2>/dev/null | sort -V | tail -1)
+    if [[ -z "$apksigner_path" || -z "$zipalign_path" ]]; then
+        error "Android SDK apksigner and zipalign were not found under build-tools."
+        exit 1
+    fi
+
     local cargo_profile_flag=""
     if [[ "$PROFILE" == "release" ]]; then
         cargo_profile_flag="--release"
@@ -446,7 +464,7 @@ build_android() {
         $cargo_profile_flag \
         2>&1
 
-    local so_path="$jni_libs_dir/${ndk_abi}/libgpui_mobile_example.so"
+    local so_path="$jni_libs_dir/${ndk_abi}/libgpui_mobile_app.so"
     if [[ ! -f "$so_path" ]]; then
         error "Shared library not found at: $so_path"
         exit 1
@@ -457,14 +475,59 @@ build_android() {
     step "Assembling APK (${gradle_task})"
 
     cd "$ANDROID_GRADLE_DIR"
-    ./gradlew "$gradle_task" 2>&1
+    local gradle_args=("$gradle_task")
+    if $ALLOW_DEBUG_SIGNING; then
+        gradle_args+=("-PallowDebugSigning=true")
+    fi
+    ./gradlew "${gradle_args[@]}" 2>&1
 
-    local apk_path="$ANDROID_GRADLE_DIR/app/build/outputs/apk/${apk_variant}/app-${apk_variant}.apk"
+    local apk_path="$ANDROID_GRADLE_DIR/app/build/outputs/apk/sideload/${apk_variant}/app-sideload-${apk_variant}.apk"
     if [[ ! -f "$apk_path" ]]; then
         error "APK not found at: $apk_path"
         exit 1
     fi
-    info "APK: $apk_path ($(du -h "$apk_path" | cut -f1))"
+
+    local version
+    version=$(awk '
+        /^\[workspace\.package\]$/ { in_workspace = 1; next }
+        /^\[/ && in_workspace { exit }
+        in_workspace && $1 == "version" {
+            gsub(/"/, "", $3)
+            print $3
+            exit
+        }
+    ' "$PROJECT_ROOT/Cargo.toml")
+    if [[ -z "$version" ]]; then
+        error "Could not read the workspace Cargo version."
+        exit 1
+    fi
+
+    local output_dir="$PROJECT_ROOT/dist"
+    mkdir -p "$output_dir"
+    find "$output_dir" -maxdepth 1 -type f -name '*unsigned*.apk' -delete
+
+    local output_suffix="android-arm64"
+    if $ALLOW_DEBUG_SIGNING; then
+        output_suffix="android-arm64-debugsigned"
+    fi
+    local final_apk="$output_dir/amategeko-yumuhanda-${version}-${output_suffix}.apk"
+    local candidate_apk="$output_dir/.amategeko-yumuhanda-${version}-${output_suffix}.candidate.apk"
+    rm -f "$candidate_apk" "$final_apk"
+    cp "$apk_path" "$candidate_apk"
+
+    step "Verifying signed APK"
+    if ! "$apksigner_path" verify --verbose --print-certs "$candidate_apk"; then
+        rm -f "$candidate_apk"
+        error "APK signature verification failed."
+        exit 1
+    fi
+    if ! "$zipalign_path" -c -P 4 -v 4 "$candidate_apk"; then
+        rm -f "$candidate_apk"
+        error "APK alignment verification failed."
+        exit 1
+    fi
+    mv "$candidate_apk" "$final_apk"
+    info "APK: $final_apk ($(du -h "$final_apk" | cut -f1))"
 
     # ── Install & launch ─────────────────────────────────────────────────
     if $NO_RUN; then
@@ -472,7 +535,7 @@ build_android() {
         return 0
     fi
 
-    _android_install_and_launch "$apk_path"
+    _android_install_and_launch "$final_apk"
 }
 
 _android_install_and_launch() {

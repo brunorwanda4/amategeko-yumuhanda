@@ -2,6 +2,15 @@
 
 Repository: `https://github.com/brunorwanda4/amategeko-yumuhanda`.
 
+### Android APK
+
+- Create the release key once: `keytool -genkeypair -v -storetype PKCS12 -keystore amategeko-release.jks -alias amategeko -keyalg RSA -keysize 4096 -validity 10000`.
+- Put `keystore.properties` in `crates/mobile/android/`; it is git-ignored and contains `storeFile`, `storePassword`, `keyAlias`, and `keyPassword`.
+- Sign every release forever with the same key; Android refuses updates signed with a different key.
+- Build with `crates/mobile/build.sh android --release --no-run`; the script verifies the signed and aligned APK automatically.
+- Verify manually with `apksigner verify --verbose --print-certs <apk>` and `zipalign -c -P 4 -v 4 <apk>`.
+- For local testing only, add `--allow-debug-signing`; the output ends in `-debugsigned.apk` and must never be published.
+
 1. Bump workspace version in `Cargo.toml` and Android `versionCode`/`versionName`.
 2. Update `CHANGELOG.md` with release additions and fixes.
 3. Build the Windows installer (`tools/package-windows.ps1`) and Android APK (`tools/package-android.ps1`).

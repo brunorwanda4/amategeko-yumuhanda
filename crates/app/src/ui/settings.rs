@@ -505,9 +505,9 @@ impl SettingsView {
                                     // Keyboard shortcuts switch (desktop only)
                                     .when(is_desktop && !crate::is_native_mobile(), |el| {
                                         let sub = if cfg!(target_os = "macos") {
-                                            "Cmd+1..5, AÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“D, Enter, ? / F1"
+                                            t("settings.desktop_shortcuts_desc_macos", lang)
                                         } else {
-                                            "Ctrl+1..5, AÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“D, Enter, ? / F1"
+                                            t("settings.desktop_shortcuts_desc", lang)
                                         };
                                         el.child(Self::render_divider(&colors)).child(
                                             Self::render_switch_row(

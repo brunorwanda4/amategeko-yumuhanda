@@ -162,6 +162,8 @@
   "settings.clear_history_desc": "Bikuraho amanota n'imibare yose",
   "settings.clear_yes": "Yego, siba",
   "settings.desktop_shortcuts": "Ibyiciro by'imfunguzo (Keyboard shortcuts)",
+  "settings.desktop_shortcuts_desc": "Ctrl+1..5, A-D, Enter, ? / F1",
+  "settings.desktop_shortcuts_desc_macos": "Cmd+1..5, A-D, Enter, ? / F1",
   "settings.easy_timer": "Kwereka igihe muri Byoroshye",
   "settings.easy_timer_desc": "Nta mwanya ugenwe, ariko igihe kiragaragara",
   "settings.font_preview": "Urugero rw'inyandiko: Amategeko y'Umuhanda mu Rwanda",

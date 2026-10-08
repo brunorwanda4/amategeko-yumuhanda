@@ -1,3 +1,6 @@
+import java.io.File
+import java.util.Properties
+
 // App module build.gradle.kts for Amategeko y'Umuhanda.
 //
 // This module packages the pre-compiled Rust native library into an APK
@@ -8,6 +11,40 @@
 
 plugins {
     id("com.android.application")
+}
+
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties().apply {
+    if (keystorePropertiesFile.isFile) {
+        keystorePropertiesFile.inputStream().use(::load)
+    }
+}
+
+fun signingValue(property: String, environment: String): String? =
+    keystoreProperties.getProperty(property)?.takeIf(String::isNotBlank)
+        ?: System.getenv(environment)?.takeIf(String::isNotBlank)
+
+val configuredStoreFile = signingValue("storeFile", "ANDROID_KEYSTORE_PATH")?.let { path ->
+    File(path).let { file ->
+        if (file.isAbsolute) file else keystorePropertiesFile.parentFile.resolve(file)
+    }
+}
+val configuredStorePassword = signingValue("storePassword", "ANDROID_KEYSTORE_PASSWORD")
+val configuredKeyAlias = signingValue("keyAlias", "ANDROID_KEY_ALIAS")
+val configuredKeyPassword = signingValue("keyPassword", "ANDROID_KEY_PASSWORD")
+val releaseSigningConfigured = configuredStoreFile?.isFile == true &&
+    configuredStorePassword != null && configuredKeyAlias != null && configuredKeyPassword != null
+val allowDebugSigning = providers.gradleProperty("allowDebugSigning").orNull == "true"
+
+gradle.taskGraph.whenReady {
+    val buildsRelease = allTasks.any { task -> task.name.contains("Release", ignoreCase = true) }
+    if (buildsRelease && !releaseSigningConfigured && !allowDebugSigning) {
+        throw GradleException(
+            "Release signing is not configured. Add android/keystore.properties or set the " +
+                "ANDROID_KEYSTORE_* environment variables. For local testing only, run the " +
+                "mobile build script with --allow-debug-signing."
+        )
+    }
 }
 
 android {
@@ -41,8 +78,28 @@ android {
         }
     }
 
+    signingConfigs {
+        getByName("debug") {
+            enableV2Signing = true
+            enableV3Signing = true
+        }
+        create("release") {
+            if (releaseSigningConfigured) {
+                storeFile = configuredStoreFile
+                storePassword = configuredStorePassword
+                keyAlias = configuredKeyAlias
+                keyPassword = configuredKeyPassword
+            }
+            enableV2Signing = true
+            enableV3Signing = true
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName(
+                if (allowDebugSigning) "debug" else "release"
+            )
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
