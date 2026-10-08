@@ -52,3 +52,9 @@ cd crates/mobile/android
 cmd /c "gradlew.bat assembleDebug"
 ```
 Output APK is located at `crates/mobile/android/app/build/outputs/apk/debug/app-debug.apk`.
+
+### Release APK startup fix (2026-10-08)
+
+- R8 removed Java methods invoked by name from Rust/JNI, causing minified release APKs to close during startup.
+- `proguard-rules.pro` now preserves `GpuiActivity` and `MainActivity`, including their JNI bridge methods.
+- Verified by building the ARM64 sideload release and checking the generated R8 mapping. Physical-device launch still requires owner testing.

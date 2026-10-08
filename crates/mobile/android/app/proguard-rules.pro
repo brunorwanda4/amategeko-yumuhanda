@@ -7,5 +7,7 @@
 # build.gradle.kts references this file in the release buildType's
 # proguardFiles configuration.
 
-# Keep NativeActivity since it is referenced by name in AndroidManifest.xml.
--keep class android.app.NativeActivity { *; }
+# These bridge methods are called by name from Rust/JNI. R8 cannot discover
+# those calls and otherwise removes them from release builds.
+-keep class dev.gpui.mobile.GpuiActivity { *; }
+-keep class dev.gpui.mobile.MainActivity { *; }
