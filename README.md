@@ -1,7 +1,7 @@
 # Rwanda Road Rules Trainer (Amategeko y'Umuhanda)
 https://amategeko-yumuhanda-alpha.vercel.app/
 
-An offline study app for the Rwandan driving-test theory exam. Practice 20 random questions with a timer, review your mistakes, browse 404 questions with sign images, and track your progress. Runs on **Windows (Desktop)** and **Android (Mobile)** from one single Rust codebase.
+An offline study app for the Rwandan driving-test theory exam. Choose 5–100 questions in Easy and Medium, practice the fixed 20-question Hard exam, review your mistakes, browse 404 questions with sign images, and track your progress. Runs on **Windows (Desktop)** and **Android (Mobile)** from one single Rust codebase.
 
 Built with [GPUI](https://gpui.rs), [GPUI Kit](https://gpui-kit.com/) and [gpui-mobile](https://github.com/longbridge/gpui-mobile). The entire interface is in **Kinyarwanda**.
 
@@ -20,7 +20,7 @@ Download the latest release from [GitHub Releases](https://github.com/brunorwand
 
 ## Features
 
-- **Three Quiz Modes** (20 randomized questions per attempt):
+- **Three Quiz Modes** (a chosen question count for Easy and Medium; 20 randomized questions for Hard):
   - **Byoroshye (Easy):** Learning mode with instant visual feedback (green/red highlights and explanation), star bookmarking, free back/forward/skip navigation, locked answer upon first choice, and optional elapsed time indicator.
   - **Hagati (Medium):** Exam simulation with a countdown timer (default 20 min, turns red in last 2 mins), 20-cell question jump grid, answer modification, question flagging, and auto-submit upon timer expiration or manual finish dialog.
   - **Bikomeye (Hard):** Strict exam conditions with a 12-minute timer, weighted towards complex questions and sign/marking images, segmented progress, single confirmation button per question, and strict forward-only progression (no skipping, no going back, no grid).

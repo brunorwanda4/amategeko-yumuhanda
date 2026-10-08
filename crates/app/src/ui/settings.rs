@@ -339,7 +339,7 @@ impl SettingsView {
                                             s.pass_mark,
                                             10,
                                             20,
-                                            "/ 20",
+                                            format!("/ 20 = {}%", s.pass_mark * 5),
                                             &colors,
                                             cx,
                                             move |this, window, cx| {
@@ -1044,12 +1044,13 @@ impl SettingsView {
         value: u32,
         min: u32,
         max: u32,
-        unit: &'static str,
+        unit: impl Into<gpui::SharedString>,
         colors: &ThemeColor,
         cx: &mut Context<V>,
         on_dec: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
         on_inc: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
     ) -> impl IntoElement {
+        let unit = unit.into();
         let is_min = value <= min;
         let is_max = value >= max;
 

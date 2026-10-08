@@ -105,13 +105,15 @@ impl QuestionsView {
             .flex_col()
             .size_full()
             .min_w_0()
+            .min_h_0()
             .overflow_hidden()
             .bg(colors.background)
             .page_padding(is_desktop)
             .child(
                 page_column()
-                    .h_full()
+                    .flex_1()
                     .min_w_0()
+                    .min_h_0()
                     .gap_3p5()
                     // Top Bar: page title and a count computed from the loaded bank.
                     // Wraps on narrow widths so the counter drops below the title.
@@ -125,6 +127,7 @@ impl QuestionsView {
                             .gap_2()
                             .w_full()
                             .min_w_0()
+                            .flex_shrink_0()
                             .child(
                                 div()
                                     .min_w_0()
@@ -152,6 +155,7 @@ impl QuestionsView {
                     .child(
                         div()
                             .id("questions_search_input")
+                            .flex_shrink_0()
                             .when(shortcuts_active, |el| {
                                 let mod_name = crate::shortcuts::KeyCombo::primary_modifier_name();
                                 let search_hint = format!("Search (/ or {mod_name}+F)");
@@ -327,6 +331,7 @@ impl QuestionsView {
                             .gap_2p5()
                             .w_full()
                             .min_w_0()
+                            .flex_shrink_0()
                             .children(filter_buttons.into_iter().map(|(item_filter, id, label)| {
                                 let is_active = filter == item_filter;
                                 div()
@@ -383,6 +388,7 @@ impl QuestionsView {
                             .gap_3()
                             .w_full()
                             .min_w_0()
+                            .flex_shrink_0()
                             .when(!is_desktop, |el| el.min_h(px(min_touch_h)))
                             .when(shortcuts_active, |el| {
                                 let hint = format!("{} (H)", t("questions.hide_answers", lang));
@@ -922,7 +928,6 @@ impl QuestionsView {
                                                                 .items_start()
                                                                 .w_full()
                                                                 .min_w_0()
-                                                                .overflow_hidden()
                                                                 .when(!is_desktop, |el| {
                                                                     el.min_h(px(min_touch_h))
                                                                 })

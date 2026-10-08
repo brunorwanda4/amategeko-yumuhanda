@@ -7,6 +7,30 @@ use std::collections::HashMap;
 
 pub struct QuizEngine;
 
+pub fn effective_length(mode: QuizMode, requested: usize, available: usize) -> usize {
+    let requested = if mode == QuizMode::Bikomeye {
+        20
+    } else {
+        requested.clamp(5, 100)
+    };
+    requested.min(available)
+}
+
+pub fn time_for(minutes_for_20: u32, n: usize) -> u64 {
+    let numerator = u64::from(minutes_for_20)
+        .saturating_mul(60)
+        .saturating_mul(n as u64);
+    numerator.div_ceil(20).max(60)
+}
+
+pub fn pass_threshold(pass_mark_of_20: u32, n: usize) -> usize {
+    (usize::try_from(pass_mark_of_20)
+        .unwrap_or(usize::MAX)
+        .saturating_mul(n)
+        .div_ceil(20))
+    .max(1)
+}
+
 impl QuizEngine {
     /// Starts a new quiz attempt for the given mo  de.
     pub fn start_quiz(
@@ -16,7 +40,7 @@ impl QuizEngine {
         stats: &HashMap<u32, QuestionStat>,
         now_secs: u64,
     ) -> Result<Attempt> {
-        let count = 20;
+        let count = effective_length(mode, settings.quiz_length, bank.len());
         let questions =
             bank.generate_quiz_questions(count, mode, settings.hard_weight_images, stats);
 
@@ -27,7 +51,7 @@ impl QuizEngine {
         }
 
         let allowed_duration_secs = match mode {
-            QuizMode::Hagati => Some((settings.medium_duration_mins as u64) * 60),
+            QuizMode::Hagati => Some(time_for(settings.medium_duration_mins, questions.len())),
             QuizMode::Bikomeye => Some((settings.hard_duration_mins as u64) * 60),
             QuizMode::Byoroshye
             | QuizMode::WeakPractice
@@ -49,7 +73,7 @@ impl QuizEngine {
     /// Starts a quiz with an explicit set of pre-filtered questions.
     pub fn start_quiz_with_questions(
         mode: QuizMode,
-        questions: Vec<Question>,
+        mut questions: Vec<Question>,
         settings: &Settings,
         now_secs: u64,
     ) -> Result<Attempt> {
@@ -59,8 +83,19 @@ impl QuizEngine {
             ));
         }
 
+        if matches!(
+            mode,
+            QuizMode::Byoroshye | QuizMode::Hagati | QuizMode::Bikomeye
+        ) {
+            questions.truncate(effective_length(
+                mode,
+                settings.quiz_length,
+                questions.len(),
+            ));
+        }
+
         let allowed_duration_secs = match mode {
-            QuizMode::Hagati => Some((settings.medium_duration_mins as u64) * 60),
+            QuizMode::Hagati => Some(time_for(settings.medium_duration_mins, questions.len())),
             QuizMode::Bikomeye => Some((settings.hard_duration_mins as u64) * 60),
             QuizMode::Byoroshye
             | QuizMode::WeakPractice
@@ -234,19 +269,40 @@ impl QuizEngine {
             });
         }
 
-        let total = attempt.questions.len() as u32;
-        let passed = score >= pass_mark;
+        let total = attempt.total_questions() as u32;
+        let scaled_pass_mark = pass_threshold(pass_mark, attempt.total_questions()) as u32;
+        let passed = score >= scaled_pass_mark;
 
         AttemptResult {
             id: attempt.id.clone(),
             mode: attempt.mode,
             score,
             total,
-            pass_mark,
+            pass_mark: scaled_pass_mark,
             passed,
             timestamp_secs: finish_time_secs,
             duration_seconds,
             question_results,
         }
+    }
+}
+
+#[cfg(test)]
+mod length_tests {
+    use super::{effective_length, pass_threshold, time_for};
+    use crate::models::QuizMode;
+
+    #[test]
+    fn length_time_and_pass_helpers_scale_attempts() {
+        assert_eq!(effective_length(QuizMode::Bikomeye, 50, 100), 20);
+        assert_eq!(effective_length(QuizMode::Bikomeye, 50, 12), 12);
+        assert_eq!(effective_length(QuizMode::Byoroshye, 3, 100), 5);
+        assert_eq!(effective_length(QuizMode::Hagati, 120, 80), 80);
+        assert_eq!(time_for(20, 40), 2_400);
+        assert_eq!(time_for(1, 5), 60);
+        assert_eq!(pass_threshold(12, 20), 12);
+        assert_eq!(pass_threshold(12, 10), 6);
+        assert_eq!(pass_threshold(12, 30), 18);
+        assert_eq!(pass_threshold(12, 50), 30);
     }
 }

@@ -132,6 +132,7 @@ impl QuizView {
             crate::shortcuts_ui_active(is_desktop, state.settings.desktop_shortcuts_enabled);
 
         div()
+            .relative()
             .flex()
             .flex_col()
             .size_full()
@@ -483,7 +484,27 @@ impl QuizView {
             .when(
                 matches!(attempt.mode, QuizMode::Byoroshye | QuizMode::Hagati),
                 |parent| {
-                    parent.child(
+                    if total_questions > 20 {
+                        let fraction = if total_questions == 0 {
+                            0.0
+                        } else {
+                            (current_idx + 1) as f32 / total_questions as f32
+                        };
+                        parent.child(
+                            div()
+                                .id("quiz_continuous_progress")
+                                .w_full()
+                                .h(px(3.0))
+                                .bg(colors.secondary)
+                                .child(
+                                    div()
+                                        .h_full()
+                                        .w(relative(fraction.clamp(0.0, 1.0)))
+                                        .bg(colors.primary),
+                                ),
+                        )
+                    } else {
+                        parent.child(
                         div()
                             .id("quiz_segmented_progress")
                             .flex()
@@ -526,9 +547,71 @@ impl QuizView {
                                         on_jump_to(this, i, window, cx);
                                     }))
                             })),
-                    )
+                        )
+                    }
                 },
             )
+            .when(attempt.mode == QuizMode::Hagati, |parent| {
+                parent.child(
+                    div()
+                        .id("quiz_question_grid")
+                        .flex()
+                        .flex_row()
+                        .flex_wrap()
+                        .gap_1()
+                        .mx_auto()
+                        .p_2()
+                        .when(is_desktop, |el| el.w_full().justify_center())
+                        .when(!is_desktop, |el| {
+                            el.absolute()
+                                .bottom_0()
+                                .left_0()
+                                .right_0()
+                                .w(px(236.0))
+                                .max_h(px(148.0))
+                                .overflow_y_scroll()
+                                .border_t_1()
+                                .border_color(colors.border)
+                                .bg(colors.background)
+                        })
+                        .children((0..total_questions).map(|i| {
+                            let selected = i == current_idx;
+                            let answered = attempt.answers.contains_key(&i);
+                            div()
+                                .id(format!("quiz_grid_cell_{i}"))
+                                .size(px(40.0))
+                                .rounded_md()
+                                .border_1()
+                                .border_color(if selected {
+                                    colors.foreground
+                                } else {
+                                    colors.border
+                                })
+                                .bg(if selected {
+                                    colors.foreground
+                                } else if answered {
+                                    colors.primary.opacity(0.2)
+                                } else {
+                                    colors.secondary
+                                })
+                                .text_color(if selected {
+                                    colors.background
+                                } else {
+                                    colors.foreground
+                                })
+                                .flex()
+                                .items_center()
+                                .justify_center()
+                                .text_xs()
+                                .font_medium()
+                                .cursor_pointer()
+                                .on_click(cx.listener(move |this, _, window, cx| {
+                                    on_jump_to(this, i, window, cx);
+                                }))
+                                .child((i + 1).to_string())
+                        })),
+                )
+            })
             // Main Question Body (Scrollable, Two Columns on Desktop)
             .child(
                 div()
@@ -542,6 +625,9 @@ impl QuizView {
                     .px_6()
                     .pr_7()
                     .py_4()
+                    .when(!is_desktop && attempt.mode == QuizMode::Hagati, |el| {
+                        el.pb(px(156.0))
+                    })
                     .child(vertical_scrollbar(
                         "quiz_scrollbar",
                         scroll_handle,

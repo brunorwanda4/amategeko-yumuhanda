@@ -51,7 +51,7 @@ impl StatsFilter {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RecentAttemptStat {
     pub score: u32,
-    pub pass_mark: u32,
+    pub passed: bool,
     pub date_str: String,
 }
 
@@ -125,21 +125,20 @@ impl StatsCalculator {
         let (average_score, high_score, pass_rate_percentage) = if total_attempts == 0 {
             (0.0, 0, 0.0)
         } else {
-            let mut sum_score: u32 = 0;
+            let mut sum_percentage = 0.0;
             let mut high_score: u32 = 0;
             let mut passed_count: u32 = 0;
 
             for a in &filtered_attempts {
-                sum_score = sum_score.saturating_add(a.score);
-                if a.score > high_score {
-                    high_score = a.score;
-                }
-                if a.passed {
+                let percentage = score_percentage(a);
+                sum_percentage += percentage;
+                high_score = high_score.max(percentage.round() as u32);
+                if a.score >= a.pass_mark {
                     passed_count = passed_count.saturating_add(1);
                 }
             }
 
-            let avg = (sum_score as f32) / (total_attempts as f32);
+            let avg = sum_percentage / (total_attempts as f32);
             let pass_rate = ((passed_count as f32) / (total_attempts as f32)) * 100.0;
             (avg, high_score, pass_rate)
         };
@@ -163,8 +162,8 @@ impl StatsCalculator {
         let last_10_attempts: Vec<RecentAttemptStat> = last_10_filtered
             .iter()
             .map(|a| RecentAttemptStat {
-                score: a.score,
-                pass_mark: a.pass_mark,
+                score: score_percentage(a).round() as u32,
+                passed: a.score >= a.pass_mark,
                 date_str: timestamp_to_day_month_str(a.timestamp_secs),
             })
             .collect();
@@ -211,13 +210,17 @@ impl StatsCalculator {
                         average_score: 0.0,
                     }
                 } else {
-                    let pass = attempts_for_mode.iter().filter(|a| a.passed).count() as u32;
-                    let total_mode_score: u32 = attempts_for_mode.iter().map(|a| a.score).sum();
+                    let pass = attempts_for_mode
+                        .iter()
+                        .filter(|a| a.score >= a.pass_mark)
+                        .count() as u32;
+                    let total_mode_percentage: f32 =
+                        attempts_for_mode.iter().map(|a| score_percentage(a)).sum();
                     ModeStatSummary {
                         mode: m,
                         attempts_count: count,
                         passed_count: pass,
-                        average_score: (total_mode_score as f32) / (count as f32),
+                        average_score: total_mode_percentage / (count as f32),
                     }
                 }
             })
@@ -240,6 +243,15 @@ impl StatsCalculator {
             mode_summaries,
             questions_seen_count,
         }
+    }
+}
+
+fn score_percentage(attempt: &AttemptResult) -> f32 {
+    let total = attempt.total_questions();
+    if total == 0 {
+        0.0
+    } else {
+        (attempt.score as f32 / total as f32) * 100.0
     }
 }
 

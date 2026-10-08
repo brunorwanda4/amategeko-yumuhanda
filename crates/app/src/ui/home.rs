@@ -3,18 +3,18 @@ use crate::state::AppState;
 use crate::ui::layout::PagePadding as _;
 use crate::ui::scroll::{vertical_scrollbar, DragScroll, ScrollbarContext};
 
-use amategeko_core::{t, tf, Language, QuestionSet, QuizMode, StatsCalculator};
+use amategeko_core::{
+    effective_length, t, tf, time_for, Language, QuestionSet, QuizMode, StatsCalculator,
+};
 use gpui::InteractiveElement as _;
 use gpui_kit::assets::IconName;
 use gpui_kit::base::StyledExt;
 use gpui_kit::component::button::{Button, ButtonVariants};
+use gpui_kit::component::input::{InputState, NumberInput};
 use gpui_kit::component::tooltip::Tooltip;
-use gpui_kit::component::{ActiveTheme, Icon};
+use gpui_kit::component::{ActiveTheme, Icon, Sizable};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
-
-/// Number of questions in a full exam.
-const EXAM_QUESTIONS: usize = 20;
 
 const DISPLAY_FONT: &str = DISPLAY_FONT_FAMILY;
 const BODY_FONT: &str = "Instrument Sans";
@@ -79,6 +79,8 @@ pub enum HomeAction {
     SelectMode(QuizMode),
     /// Pick the question set used by Easy.
     SelectSet(QuestionSet),
+    SetQuizLength(usize),
+    ActivateCustomLength,
     /// Start the given mode now.
     Play(QuizMode),
     /// Start Easy with the Mistakes set (the "My mistakes" card).
@@ -100,11 +102,13 @@ pub enum HomeAction {
 }
 
 /// UI state owned by the host view.
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone)]
 pub struct HomeProps {
     pub selected_mode: QuizMode,
     pub selected_set: QuestionSet,
     pub window_width: Option<f32>,
+    pub custom_length_active: bool,
+    pub quiz_length_input: Entity<InputState>,
 }
 
 struct ModeInfo {
@@ -167,8 +171,12 @@ impl HomeView {
 
         let selected_mode = props.selected_mode;
         let is_easy = selected_mode == QuizMode::Byoroshye;
+        let is_medium = selected_mode == QuizMode::Hagati;
         let set = Self::effective_set(state, props.selected_set);
         let set_count = state.question_set_count(set);
+        let requested_length = state.settings.quiz_length.clamp(5, 100);
+        let available = if is_easy { set_count } else { state.bank.len() };
+        let attempt_length = effective_length(selected_mode, requested_length, available);
 
         // Resume banner if an in-progress quiz attempt exists
         let banner = state.current_attempt.as_ref().map(|att| {
@@ -660,11 +668,42 @@ impl HomeView {
             })
             .collect();
 
+        let length_chips: Vec<_> = [10usize, 20, 30, 40, 50]
+            .into_iter()
+            .map(|length| {
+                let selected = !props.custom_length_active && requested_length == length;
+                div()
+                    .id(format!("quiz_length_{length}"))
+                    .cursor_pointer()
+                    .min_h(px(if is_desktop { 32.0 } else { 44.0 }))
+                    .px_3()
+                    .rounded_full()
+                    .border_1()
+                    .border_color(if selected { tokens.fg } else { tokens.line2 })
+                    .bg(if selected {
+                        tokens.fg
+                    } else {
+                        gpui::transparent_black()
+                    })
+                    .text_color(if selected { tokens.bg } else { tokens.fg })
+                    .flex()
+                    .items_center()
+                    .justify_center()
+                    .on_click(cx.listener(move |this, _, window, cx| {
+                        on_action(this, HomeAction::SetQuizLength(length), window, cx);
+                    }))
+                    .child(length.to_string())
+            })
+            .collect();
+
+        let custom_selected = props.custom_length_active;
+        let custom_length_input = props.quiz_length_input.clone();
+
         // 4. Start Button CTA
         let (cta_count, cta_source) = if is_easy {
-            (set_count, set_label(set, lang))
+            (attempt_length, set_label(set, lang))
         } else {
-            (EXAM_QUESTIONS, t("set.all", lang))
+            (attempt_length, t("set.all", lang))
         };
         let cta_title = match selected_mode {
             QuizMode::Byoroshye => t("mode.easy", lang),
@@ -766,7 +805,7 @@ impl HomeView {
             );
 
         // Play panel wrapper
-        let few_note = (is_easy && set_count > 0 && set_count < EXAM_QUESTIONS)
+        let few_note = (is_easy && set_count > 0 && set_count < requested_length)
             .then(|| tf("quiz.few", lang, &[("n", &set_count.to_string())]));
 
         let play_panel = div()
@@ -789,6 +828,135 @@ impl HomeView {
                     .child(t("quiz.title", lang)),
             )
             .child(div().flex().flex_col().gap_2().children(mode_rows))
+            .when(selected_mode != QuizMode::Bikomeye, |el| {
+                el.child(
+                    div()
+                        .mt(px(20.0))
+                        .mb(px(10.0))
+                        .font_family(BODY_FONT)
+                        .text_xs()
+                        .text_color(tokens.muted)
+                        .child(t("quiz.length", lang)),
+                )
+                .child(
+                    div()
+                        .flex()
+                        .flex_row()
+                        .flex_wrap()
+                        .items_center()
+                        .gap_2()
+                        .children(length_chips)
+                        .child(
+                            div()
+                                .id("quiz_length_custom")
+                                .cursor_pointer()
+                                .min_h(px(if is_desktop { 32.0 } else { 44.0 }))
+                                .px_3()
+                                .rounded_full()
+                                .border_1()
+                                .border_color(if custom_selected {
+                                    tokens.fg
+                                } else {
+                                    tokens.line2
+                                })
+                                .bg(if custom_selected {
+                                    tokens.fg
+                                } else {
+                                    gpui::transparent_black()
+                                })
+                                .text_color(if custom_selected {
+                                    tokens.bg
+                                } else {
+                                    tokens.fg
+                                })
+                                .flex()
+                                .items_center()
+                                .justify_center()
+                                .on_click(cx.listener(move |this, _, window, cx| {
+                                    on_action(this, HomeAction::ActivateCustomLength, window, cx);
+                                }))
+                                .child(t("quiz.length.custom", lang)),
+                        ),
+                )
+                .when(custom_selected, |el| {
+                    el.child(
+                        div()
+                            .mt_2()
+                            .flex()
+                            .flex_col()
+                            .gap_1()
+                            .child(NumberInput::new(&custom_length_input).w(px(150.0)).small())
+                            .child(div().text_xs().text_color(tokens.muted).child(tf(
+                                "quiz.length.custom.hint",
+                                lang,
+                                &[("min", "5"), ("max", "100")],
+                            ))),
+                    )
+                })
+                .when(is_medium, |el| {
+                    el.child(
+                        div()
+                            .mt_2()
+                            .text_xs()
+                            .text_color(tokens.muted)
+                            .child(t("quiz.length.time", lang)),
+                    )
+                })
+            })
+            .when(selected_mode == QuizMode::Bikomeye, |el| {
+                el.child(
+                    div()
+                        .mt_4()
+                        .text_sm()
+                        .text_color(tokens.muted)
+                        .child(t("quiz.length.hard", lang)),
+                )
+            })
+            .child(
+                div()
+                    .mt_4()
+                    .flex()
+                    .flex_row()
+                    .flex_wrap()
+                    .gap_2()
+                    .child(
+                        div()
+                            .rounded_lg()
+                            .border_1()
+                            .border_color(tokens.line)
+                            .bg(tokens.bg)
+                            .px_3()
+                            .py_2()
+                            .text_xs()
+                            .child(format!("{}: {}", t("quiz.length", lang), attempt_length)),
+                    )
+                    .when(is_medium || selected_mode == QuizMode::Bikomeye, |el| {
+                        let seconds = if is_medium {
+                            time_for(state.settings.medium_duration_mins, attempt_length)
+                        } else {
+                            u64::from(state.settings.hard_duration_mins) * 60
+                        };
+                        el.child(
+                            div()
+                                .rounded_lg()
+                                .border_1()
+                                .border_color(tokens.line)
+                                .bg(tokens.bg)
+                                .px_3()
+                                .py_2()
+                                .text_xs()
+                                .child(format!(
+                                    "{}: {}",
+                                    if is_medium {
+                                        t("settings.medium_time", lang)
+                                    } else {
+                                        t("settings.hard_time", lang)
+                                    },
+                                    seconds.div_ceil(60)
+                                )),
+                        )
+                    }),
+            )
             .when(is_easy, |el| {
                 el.child(
                     div()
@@ -1096,12 +1264,15 @@ impl HomeView {
 
         // 6. Stat Tiles (Byose, Exam score, Pass rate)
         let stats_summary = StatsCalculator::compute_summary(&state.progress);
-        let last_score_num = state
+        let last_attempt = state
             .progress
             .attempts
             .last()
-            .map(|last| last.score)
-            .or_else(|| state.last_result.as_ref().map(|last| last.score));
+            .or(state.last_result.as_ref());
+        let last_score_num = last_attempt.map(|last| last.score);
+        let last_total_num = last_attempt
+            .map(|last| last.total_questions())
+            .unwrap_or(20);
         let last_score_str = last_score_num
             .map(|s| s.to_string())
             .unwrap_or_else(|| "—".to_string());
@@ -1177,7 +1348,7 @@ impl HomeView {
             );
 
         let score_val = last_score_num.unwrap_or(0);
-        let segs: Vec<_> = (0..20)
+        let segs: Vec<_> = (0..last_total_num)
             .map(|i| {
                 div()
                     .flex_1()
@@ -1255,7 +1426,7 @@ impl HomeView {
                             .font_medium()
                             .text_lg()
                             .text_color(tokens.muted)
-                            .child("/ 20"),
+                            .child(format!("/ {last_total_num}")),
                     ),
             )
             .child(div().flex().flex_row().gap(px(2.0)).w_full().children(segs));

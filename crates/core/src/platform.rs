@@ -179,7 +179,11 @@ pub trait Storage: Send + Sync {
 
     fn load_settings(&self) -> Settings {
         match self.read_file(SETTINGS_FILE) {
-            Ok(content) => serde_json::from_str(&content).unwrap_or_default(),
+            Ok(content) => {
+                let mut settings: Settings = serde_json::from_str(&content).unwrap_or_default();
+                settings.quiz_length = settings.quiz_length.clamp(5, 100);
+                settings
+            }
             Err(_) => Settings::default(),
         }
     }

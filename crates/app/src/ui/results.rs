@@ -97,8 +97,8 @@ impl ResultsView {
         };
 
         let score = result.score;
-        let total = result.total;
-        let is_passed = result.passed;
+        let total = result.total_questions();
+        let is_passed = score >= result.pass_mark;
         let percentage = (score * 100).checked_div(total).unwrap_or(0);
 
         let mode_label = match result.mode {
@@ -382,7 +382,7 @@ impl ResultsView {
                     .justify_center()
                     .gap_2()
                     .when(is_desktop, |el| el.gap_3())
-                    // All 20
+                    // All questions
                     .child({
                         let is_active = filter == ResultFilter::All;
                         let hint = format!(

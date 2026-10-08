@@ -28,7 +28,7 @@ pub use font::rem_px;
 pub use i18n::{t, tf, I18n, Strings};
 pub use models::*;
 pub use platform::{Clock, InMemoryStorage, MockClock, Storage, SystemClock};
-pub use quiz::QuizEngine;
+pub use quiz::{effective_length, pass_threshold, time_for, QuizEngine};
 pub use stats::{
     MostMissedQuestion, RecentAttemptStat, StatsCalculator, StatsFilter, StatsSummary,
 };

@@ -262,6 +262,8 @@ pub enum ThemeMode {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Settings {
     pub easy_show_timer: bool,
+    #[serde(default = "default_quiz_length")]
+    pub quiz_length: usize,
     pub medium_duration_mins: u32,
     pub hard_duration_mins: u32,
     pub pass_mark: u32,
@@ -293,10 +295,15 @@ fn default_auto_check_updates() -> bool {
     true
 }
 
+fn default_quiz_length() -> usize {
+    20
+}
+
 impl Default for Settings {
     fn default() -> Self {
         Self {
             easy_show_timer: false,
+            quiz_length: default_quiz_length(),
             medium_duration_mins: 20,
             hard_duration_mins: 12,
             pass_mark: 12,
@@ -321,6 +328,8 @@ pub struct Attempt {
     pub id: String,
     pub mode: QuizMode,
     pub questions: Vec<Question>,
+    #[serde(default)]
+    pub total: usize,
     pub answers: HashMap<usize, String>,
     pub locked: HashMap<usize, bool>,
     pub flags: HashSet<usize>,
@@ -338,11 +347,13 @@ impl Attempt {
         start_time_secs: u64,
         allowed_duration_secs: Option<u64>,
     ) -> Self {
+        let total = questions.len();
         let deadline_secs = allowed_duration_secs.map(|dur| start_time_secs.saturating_add(dur));
         Self {
             id,
             mode,
             questions,
+            total,
             answers: HashMap::new(),
             locked: HashMap::new(),
             flags: HashSet::new(),
@@ -354,7 +365,11 @@ impl Attempt {
     }
 
     pub fn total_questions(&self) -> usize {
-        self.questions.len()
+        if self.total == 0 {
+            self.questions.len()
+        } else {
+            self.total
+        }
     }
 
     pub fn answered_count(&self) -> usize {
@@ -461,13 +476,27 @@ pub struct AttemptResult {
     pub id: String,
     pub mode: QuizMode,
     pub score: u32,
-    #[serde(default)]
+    #[serde(default = "default_attempt_total")]
     pub total: u32,
     pub pass_mark: u32,
     pub passed: bool,
     pub timestamp_secs: u64,
     pub duration_seconds: u32,
     pub question_results: Vec<QuestionResult>,
+}
+
+impl AttemptResult {
+    pub fn total_questions(&self) -> u32 {
+        if self.total == 0 {
+            default_attempt_total()
+        } else {
+            self.total
+        }
+    }
+}
+
+fn default_attempt_total() -> u32 {
+    20
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]

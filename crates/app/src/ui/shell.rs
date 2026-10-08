@@ -20,6 +20,7 @@ use gpui_kit::assets::IconName;
 use gpui_kit::base::StyledExt;
 use gpui_kit::component::alert::Alert;
 use gpui_kit::component::button::{Button, ButtonVariants};
+use gpui_kit::component::input::{InputEvent, InputState};
 use gpui_kit::component::tooltip::Tooltip;
 use gpui_kit::component::{ActiveTheme, Icon};
 use gpui_kit::prelude::FluentBuilder as _;
@@ -225,6 +226,9 @@ pub struct ShellView {
 
     quiz_selected_mode: QuizMode,
     quiz_selected_set: QuestionSet,
+    quiz_length_input: Option<Entity<InputState>>,
+    quiz_length_custom_active: bool,
+    quiz_length_subscription: Option<Subscription>,
 
     results_scroll_handle: gpui::ScrollHandle,
     settings_scroll_handle: gpui::ScrollHandle,
@@ -372,6 +376,7 @@ impl ShellView {
             }
         }
 
+        let quiz_length_custom_active = ![10, 20, 30, 40, 50].contains(&state.settings.quiz_length);
         let view = Self {
             state,
             results_filter: initial_results_filter,
@@ -404,6 +409,9 @@ impl ShellView {
 
             quiz_selected_mode: QuizMode::Byoroshye,
             quiz_selected_set: QuestionSet::All,
+            quiz_length_input: None,
+            quiz_length_custom_active,
+            quiz_length_subscription: None,
 
             results_scroll_handle,
             settings_scroll_handle: gpui::ScrollHandle::default(),
@@ -431,10 +439,32 @@ impl ShellView {
         view
     }
 
-    fn handle_home_action(&mut self, action: HomeAction, cx: &mut Context<Self>) {
+    fn handle_home_action(
+        &mut self,
+        action: HomeAction,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
         match action {
             HomeAction::SelectMode(mode) => self.quiz_selected_mode = mode,
             HomeAction::SelectSet(set) => self.quiz_selected_set = set,
+            HomeAction::SetQuizLength(length) => {
+                let length = length.clamp(5, 100);
+                self.state.settings.quiz_length = length;
+                self.state.save_settings(self.state.settings.clone());
+                self.quiz_length_custom_active = ![10, 20, 30, 40, 50].contains(&length);
+                if let Some(input) = &self.quiz_length_input {
+                    input.update(cx, |input, cx| {
+                        input.set_value(length.to_string(), window, cx);
+                    });
+                }
+            }
+            HomeAction::ActivateCustomLength => {
+                self.quiz_length_custom_active = true;
+                if let Some(input) = &self.quiz_length_input {
+                    input.read(cx).focus_handle(cx).focus(window, cx);
+                }
+            }
             HomeAction::Play(mode) => self.play_from_home(mode),
             HomeAction::PlayMistakes => self
                 .state
@@ -479,6 +509,36 @@ impl ShellView {
             }
         }
         self.save_dev_state();
+        cx.notify();
+    }
+
+    fn on_quiz_length_input(
+        &mut self,
+        input: &Entity<InputState>,
+        event: &InputEvent,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        let parsed = input.read(cx).value().parse::<usize>().ok();
+        match event {
+            InputEvent::Change => {
+                if let Some(length @ 5..=100) = parsed {
+                    self.state.settings.quiz_length = length;
+                    self.state.save_settings(self.state.settings.clone());
+                }
+            }
+            InputEvent::Blur | InputEvent::PressEnter { .. } => {
+                let length = parsed
+                    .unwrap_or(self.state.settings.quiz_length)
+                    .clamp(5, 100);
+                self.state.settings.quiz_length = length;
+                self.state.save_settings(self.state.settings.clone());
+                input.update(cx, |input, cx| {
+                    input.set_value(length.to_string(), window, cx);
+                });
+            }
+            InputEvent::Focus => {}
+        }
         cx.notify();
     }
 
@@ -863,6 +923,23 @@ impl Render for ShellView {
         let window_width = window.bounds().size.width;
         let is_desktop = window_width > px(720.0);
 
+        let quiz_length_input = if let Some(input) = &self.quiz_length_input {
+            input.clone()
+        } else {
+            let value = self.state.settings.quiz_length.clamp(5, 100);
+            let input = cx.new(|cx| {
+                InputState::new(window, cx)
+                    .default_value(value.to_string())
+                    .step(1.0)
+                    .min(5.0)
+                    .max(100.0)
+            });
+            self.quiz_length_subscription =
+                Some(cx.subscribe_in(&input, window, Self::on_quiz_length_input));
+            self.quiz_length_input = Some(input.clone());
+            input
+        };
+
         if self.questions_search_focused && self.state.active_screen == Screen::Questions {
             let res = crate::mobile_ime::drain_pending_into_search(&mut self.questions_search);
             if res.changed {
@@ -897,6 +974,8 @@ impl Render for ShellView {
             selected_mode: self.quiz_selected_mode,
             selected_set: self.quiz_selected_set,
             window_width: Some(window_width.as_f32()),
+            custom_length_active: self.quiz_length_custom_active,
+            quiz_length_input,
         };
 
         let content = match active_screen {
@@ -909,7 +988,7 @@ impl Render for ShellView {
                     reveal_on_open: reveal_scrollbar,
                 },
                 cx,
-                |this, action, _, cx| this.handle_home_action(action, cx),
+                |this, action, window, cx| this.handle_home_action(action, window, cx),
             )
             .into_any_element(),
             Screen::Quiz => QuizView::render(

@@ -370,7 +370,7 @@ impl QuestionBank {
                 selected
             }
             _ => {
-                // Byoroshye, Hagati, or regular Hard: uniform random 20 questions
+                // Byoroshye, Hagati, or regular Hard: uniform random questions
                 let mut pool = self.questions.clone();
                 pool.shuffle(&mut rng);
                 pool.into_iter().take(count).collect()

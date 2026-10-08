@@ -69,6 +69,9 @@ impl AppState {
         let mut last_result = None;
 
         if let Some(mut att) = current_attempt.take() {
+            if att.total == 0 {
+                att.total = att.questions.len();
+            }
             let now = clock.now_seconds();
             if att.mode.has_countdown() && QuizTimer::is_expired(&att, now) {
                 // Auto-submit expired attempt on startup
@@ -187,7 +190,7 @@ impl AppState {
         self.active_screen = target;
     }
 
-    /// Starts a quiz from the quiz page. Easy draws up to 20 random questions from
+    /// Starts a quiz from the quiz page. Easy draws the configured number of questions from
     /// `set`; Medium and Hard always use the whole bank, so `set` is ignored for them.
     pub fn start_quiz_in_set(&mut self, mode: QuizMode, set: QuestionSet) {
         if mode != QuizMode::Byoroshye || set == QuestionSet::All {
@@ -202,7 +205,7 @@ impl AppState {
             &self.progress.question_stats,
         );
         pool.shuffle(&mut rand::thread_rng());
-        pool.truncate(20);
+        pool.truncate(self.settings.quiz_length.clamp(5, 100));
 
         match QuizEngine::start_quiz_with_questions(mode, pool, &self.settings, now) {
             Ok(attempt) => self.begin_attempt(attempt, now),

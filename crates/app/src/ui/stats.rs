@@ -215,12 +215,12 @@ impl StatsView {
                             "-".to_string()
                         };
                         let avg_val = if has_attempts {
-                            format!("{:.1} / 20", summary.average_score)
+                            format!("{:.1}%", summary.average_score)
                         } else {
                             "-".to_string()
                         };
                         let best_val = if has_attempts {
-                            format!("{} / 20", summary.high_score)
+                            format!("{}%", summary.high_score)
                         } else {
                             "-".to_string()
                         };
@@ -312,7 +312,7 @@ impl StatsView {
                                             .child(div().child(tf(
                                                 "stats.pass_mark_legend",
                                                 lang,
-                                                &[("pass_mark", &pass_mark.to_string())],
+                                                &[("pass_mark", &format!("{}%", pass_mark * 5))],
                                             ))),
                                     ),
                             )
@@ -373,13 +373,13 @@ impl StatsView {
                                                         .justify_around()
                                                         .size_full()
                                                         .children(last_10.iter().map(|att| {
-                                                            let is_pass = att.score >= pass_mark;
-                                                            let bar_color = if is_pass {
+                                                            let bar_color = if att.passed {
                                                                 colors.primary
                                                             } else {
                                                                 colors.danger
                                                             };
-                                                            let bar_h = ((att.score as f32 / 20.0)
+                                                            let bar_h = ((att.score as f32
+                                                                / 100.0)
                                                                 * plot_usable_height)
                                                                 .max(3.0);
 
@@ -398,7 +398,7 @@ impl StatsView {
                                                                             colors.muted_foreground,
                                                                         )
                                                                         .child(format!(
-                                                                            "{}",
+                                                                            "{:.0}%",
                                                                             att.score
                                                                         )),
                                                                 )
@@ -596,13 +596,13 @@ impl StatsView {
                                             };
 
                                             let avg_str = if ms.attempts_count > 0 {
-                                                format!("{:.1} / 20", ms.average_score)
+                                                format!("{:.1}%", ms.average_score)
                                             } else {
                                                 "-".to_string()
                                             };
 
                                             let progress_frac = if ms.attempts_count > 0 {
-                                                (ms.average_score / 20.0).clamp(0.0, 1.0)
+                                                (ms.average_score / 100.0).clamp(0.0, 1.0)
                                             } else {
                                                 0.0
                                             };
