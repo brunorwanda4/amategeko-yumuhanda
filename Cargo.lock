@@ -157,7 +157,7 @@ checksum = "683d7910e743518b0e34f1186f92494becacb047c7b6bf616c96772180fef923"
 
 [[package]]
 name = "amategeko-app"
-version = "1.1.0"
+version = "1.8.0"
 dependencies = [
  "amategeko-core",
  "anyhow",
@@ -175,7 +175,7 @@ dependencies = [
 
 [[package]]
 name = "amategeko-core"
-version = "1.1.0"
+version = "1.8.0"
 dependencies = [
  "minisign-verify",
  "rand 0.8.8",
@@ -1472,7 +1472,7 @@ dependencies = [
 
 [[package]]
 name = "desktop"
-version = "1.1.0"
+version = "1.8.0"
 dependencies = [
  "amategeko-app",
  "amategeko-core",
@@ -4214,7 +4214,7 @@ dependencies = [
 
 [[package]]
 name = "mobile"
-version = "1.1.0"
+version = "1.8.0"
 dependencies = [
  "amategeko-app",
  "amategeko-core",

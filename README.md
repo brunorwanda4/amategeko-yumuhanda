@@ -8,12 +8,12 @@ Built with [GPUI](https://gpui.rs), [GPUI Kit](https://gpui-kit.com/) and [gpui-
 
 > **Disclaimer:** This is a study tool designed to aid preparation for the provisional driving license exam. The question bank is extracted from study materials. Always confirm official rules and regulations with the Rwanda National Police (RNP).
 
-## Download version 1.1.0
+## Download version 1.8.0
 
 Download the latest release from [GitHub Releases](https://github.com/brunorwanda4/amategeko-yumuhanda/releases/latest):
 
-- **Windows:** `Amategeko-y-Umuhanda-v1.1.0-Windows-Setup.exe`
-- **Android:** `Amategeko-y-Umuhanda-v1.1.0-Android-arm64.apk` (Android 8.0 or newer, ARM64)
+- **Windows:** `amategeko-yumuhanda-1.8.0-windows-setup.exe`
+- **Android:** `amategeko-yumuhanda-1.8.0-android-arm64.apk` (Android 8.0 or newer, ARM64)
 
 ---
 
@@ -206,7 +206,7 @@ The optimized executable will be located at `target/release/amategeko.exe`.
 
 Install Inno Setup 6, then run the installer build from the repository root:
 `.\scripts\build-installer.ps1`
-The installer is written to `dist\Amategeko-y-Umuhanda-v1.1.0-Windows-Setup.exe`.
+The installer is written to `dist\amategeko-yumuhanda-1.8.0-windows-setup.exe`.
 
 ---
 

@@ -1452,7 +1452,7 @@ impl HomeView {
             .font_family(BODY_FONT)
             .text_color(tokens.muted)
             .child(format!("{} Rwanda Bruno", t("about.built_by", lang)))
-            .child("v1.1.0");
+            .child(format!("v{}", env!("CARGO_PKG_VERSION")));
 
         // Layout container
         let content_grid = div()
