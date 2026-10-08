@@ -7,6 +7,7 @@ use amategeko_core::{t, tf, Language, QuestionSet, QuizMode, StatsCalculator};
 use gpui::InteractiveElement as _;
 use gpui_kit::assets::IconName;
 use gpui_kit::base::StyledExt;
+use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::tooltip::Tooltip;
 use gpui_kit::component::{ActiveTheme, Icon};
 use gpui_kit::prelude::FluentBuilder as _;
@@ -92,6 +93,10 @@ pub enum HomeAction {
     OpenStats,
     Resume,
     Discard,
+    UpdateWhatsNew,
+    UpdateDownload,
+    UpdateLater,
+    UpdateSkip,
 }
 
 /// UI state owned by the host view.
@@ -175,6 +180,17 @@ impl HomeView {
             );
             Self::resume_banner(detail, lang, is_desktop, tokens, cx, on_action)
         });
+        let update_banner = match crate::updater::status() {
+            crate::updater::UpdateStatus::Available(update) => Some(Self::update_banner(
+                &update.release.tag_name,
+                lang,
+                is_desktop,
+                tokens,
+                cx,
+                on_action,
+            )),
+            _ => None,
+        };
 
         // 1. Hero Card: ordered full-bank study
         let mut study_ids: Vec<u32> = state
@@ -1455,6 +1471,7 @@ impl HomeView {
             // row 4: "Ibibazo nakosheje kenshi" banner
             content_grid
                 .children(banner)
+                .when_some(update_banner, |el, banner| el.child(banner))
                 .child(hero_card)
                 .child(
                     div()
@@ -1478,6 +1495,7 @@ impl HomeView {
             // row 5: mistakes banner
             content_grid
                 .children(banner)
+                .when_some(update_banner, |el, banner| el.child(banner))
                 .child(hero_card)
                 .child(play_panel)
                 .child(map_panel)
@@ -1488,6 +1506,7 @@ impl HomeView {
             // Mobile (<= 720px): single column order: hero, play panel, stats, map, mistakes banner
             content_grid
                 .children(banner)
+                .when_some(update_banner, |el, banner| el.child(banner))
                 .child(hero_card)
                 .child(play_panel)
                 .child(stat_section)
@@ -1609,6 +1628,91 @@ impl HomeView {
                                     .child(t("resume.go", lang)),
                             ),
                     ),
+            )
+    }
+
+    fn update_banner<V: 'static>(
+        version: &str,
+        lang: Language,
+        is_desktop: bool,
+        tokens: HomeTokens,
+        cx: &mut Context<V>,
+        on_action: impl Fn(&mut V, HomeAction, &mut Window, &mut Context<V>) + 'static + Copy,
+    ) -> impl IntoElement {
+        let title = tf(
+            "update.available",
+            lang,
+            &[("v", version.trim_start_matches('v'))],
+        );
+        let button = |id: &'static str,
+                      label: &'static str,
+                      action: HomeAction,
+                      primary: bool,
+                      cx: &mut Context<V>| {
+            Button::new(id)
+                .when(primary, |button| button.primary())
+                .when(!primary, |button| button.outline())
+                .label(label)
+                .on_click(cx.listener(move |this, _, window, cx| {
+                    on_action(this, action, window, cx);
+                }))
+        };
+
+        div()
+            .flex()
+            .when(is_desktop, |el| {
+                el.flex_row().items_center().justify_between()
+            })
+            .when(!is_desktop, |el| el.flex_col().items_start())
+            .gap_3()
+            .p_4()
+            .rounded_xl()
+            .border_1()
+            .border_color(tokens.line)
+            .bg(tokens.surface)
+            .child(
+                div()
+                    .min_w_0()
+                    .font_family(DISPLAY_FONT)
+                    .font_semibold()
+                    .text_color(tokens.fg)
+                    .child(title),
+            )
+            .child(
+                div()
+                    .flex()
+                    .flex_row()
+                    .flex_wrap()
+                    .gap_2()
+                    .when(!is_desktop, |el| el.w_full())
+                    .child(button(
+                        "update_whats_new",
+                        t("update.whatsnew", lang),
+                        HomeAction::UpdateWhatsNew,
+                        false,
+                        cx,
+                    ))
+                    .child(button(
+                        "update_download",
+                        t("update.download", lang),
+                        HomeAction::UpdateDownload,
+                        true,
+                        cx,
+                    ))
+                    .child(button(
+                        "update_later",
+                        t("update.later", lang),
+                        HomeAction::UpdateLater,
+                        false,
+                        cx,
+                    ))
+                    .child(button(
+                        "update_skip",
+                        t("update.skip", lang),
+                        HomeAction::UpdateSkip,
+                        false,
+                        cx,
+                    )),
             )
     }
 }

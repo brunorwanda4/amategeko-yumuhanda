@@ -280,6 +280,16 @@ pub struct Settings {
     /// Stored answers and the correct answer keep their original keys.
     #[serde(default)]
     pub shuffle_options: bool,
+    #[serde(default = "default_auto_check_updates")]
+    pub auto_check_updates: bool,
+    #[serde(default)]
+    pub last_update_check: Option<u64>,
+    #[serde(default)]
+    pub skipped_version: Option<String>,
+}
+
+fn default_auto_check_updates() -> bool {
+    true
 }
 
 impl Default for Settings {
@@ -298,6 +308,9 @@ impl Default for Settings {
             question_language: Language::En,
             show_both_languages: false,
             shuffle_options: false,
+            auto_check_updates: true,
+            last_update_check: None,
+            skipped_version: None,
         }
     }
 }

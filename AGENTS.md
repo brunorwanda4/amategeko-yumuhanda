@@ -83,7 +83,7 @@ bun run build        # must pass before every commit that touches website/
 - Never remove or reorder a translation key without updating both language files and the parity test.
 
 **Privacy and scope**
-- Never add network access, analytics, telemetry, crash reporters, ads or accounts to the app or the website. The app is 100% offline (no `INTERNET` permission on Android). The website has no cookies, trackers, forms or backend.
+- Network is allowed only in the updater for GitHub Releases, signed files, and user-confirmed downloads. Everything else stays offline with no analytics, telemetry, crash reporters, ads, or accounts.
 - Never commit secrets, API keys, keystores, `.jks`, `.p12`, `local.properties`, `.env` files, or signing passwords.
 - Never commit build output (`target/`, `build/`, `.gradle/`, `*.apk`, `*.aab`, `*.ipa`, `node_modules/`, `.next/`, `out/`, `.source/`) or IDE files.
 - Never commit the source PDF or large binary files unless the owner explicitly says so. The PDF is marked "RESTRICTED". Check with the owner before committing `assets/questions.json` and `assets/images/` to any public remote.

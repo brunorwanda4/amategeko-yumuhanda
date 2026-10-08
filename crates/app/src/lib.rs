@@ -6,6 +6,7 @@ pub mod mobile_ime;
 pub mod platform_ui;
 pub mod shortcuts;
 pub mod state;
+pub mod updater;
 
 pub use assets::AppAssets;
 pub use font::{init_fonts, set_font_scale, FONT_FAMILY};

@@ -10,7 +10,10 @@ use std::sync::Arc;
 #[cfg(any(target_os = "ios", target_os = "android"))]
 use amategeko_app::{AppState, ShellView};
 #[cfg(any(target_os = "ios", target_os = "android"))]
-use amategeko_core::platform::{register_keep_awake, KeepAwake};
+use amategeko_core::platform::{
+    register_keep_awake, register_update_installer, KeepAwake, UpdateInstallOutcome,
+    UpdateInstaller,
+};
 #[cfg(any(target_os = "ios", target_os = "android"))]
 use amategeko_core::{Storage, SystemClock};
 
@@ -38,6 +41,85 @@ impl Storage for MobileStorage {
 #[cfg(target_os = "android")]
 struct AndroidKeepAwake {
     app: android_activity::AndroidApp,
+}
+
+#[cfg(target_os = "android")]
+struct AndroidUpdateInstaller {
+    app: android_activity::AndroidApp,
+}
+
+#[cfg(target_os = "android")]
+impl AndroidUpdateInstaller {
+    fn with_env<T>(
+        &self,
+        operation: impl FnOnce(
+            &mut ::jni::JNIEnv<'_>,
+            ::jni::objects::JObject<'_>,
+        ) -> ::jni::errors::Result<T>,
+    ) -> std::io::Result<T> {
+        use ::jni::JavaVM;
+
+        // SAFETY: AndroidActivity owns the VM for the process and keeps it alive
+        // for the lifetime of this registered service.
+        let vm = unsafe { JavaVM::from_raw(self.app.vm_as_ptr().cast()) }
+            .map_err(|error| std::io::Error::other(error.to_string()))?;
+        let mut env = vm
+            .attach_current_thread()
+            .map_err(|error| std::io::Error::other(error.to_string()))?;
+        // SAFETY: AndroidActivity supplies this live Activity reference, used only
+        // for the duration of the JNI call.
+        let activity =
+            unsafe { ::jni::objects::JObject::from_raw(self.app.activity_as_ptr().cast()) };
+        operation(&mut env, activity).map_err(|error| std::io::Error::other(error.to_string()))
+    }
+}
+
+#[cfg(target_os = "android")]
+impl UpdateInstaller for AndroidUpdateInstaller {
+    fn update_dir(&self) -> std::io::Result<PathBuf> {
+        self.with_env(|env, activity| {
+            let value =
+                env.call_method(activity, "updateCachePath", "()Ljava/lang/String;", &[])?;
+            let object = value.l()?;
+            let string = ::jni::objects::JString::from(object);
+            let path = env.get_string(&string)?.to_string_lossy().into_owned();
+            Ok(PathBuf::from(path))
+        })
+    }
+
+    fn install(&self, package: &std::path::Path) -> std::io::Result<UpdateInstallOutcome> {
+        let path = package.to_string_lossy().into_owned();
+        self.with_env(|env, activity| {
+            let path = env.new_string(path)?;
+            let result = env
+                .call_method(
+                    activity,
+                    "requestInstallUpdate",
+                    "(Ljava/lang/String;)I",
+                    &[::jni::objects::JValue::Object(&path)],
+                )?
+                .i()?;
+            Ok(match result {
+                0 => UpdateInstallOutcome::Launched,
+                1 => UpdateInstallOutcome::PermissionRequired,
+                _ => UpdateInstallOutcome::ManualRequired,
+            })
+        })
+    }
+
+    fn open_download_page(&self, url: &str) -> std::io::Result<()> {
+        let url = url.to_owned();
+        self.with_env(|env, activity| {
+            let url = env.new_string(url)?;
+            env.call_method(
+                activity,
+                "openExternalUrl",
+                "(Ljava/lang/String;)V",
+                &[::jni::objects::JValue::Object(&url)],
+            )?;
+            Ok(())
+        })
+    }
 }
 
 #[cfg(target_os = "android")]
@@ -108,6 +190,9 @@ fn android_main(app: android_activity::AndroidApp) {
 
     if !register_keep_awake(Arc::new(AndroidKeepAwake { app: app.clone() })) {
         log::warn!("keep-awake service was already registered");
+    }
+    if !register_update_installer(Arc::new(AndroidUpdateInstaller { app: app.clone() })) {
+        log::warn!("update installer service was already registered");
     }
 
     let data_dir = app

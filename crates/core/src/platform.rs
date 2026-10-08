@@ -4,12 +4,52 @@ use crate::error::Result;
 use crate::models::{Attempt, Progress, Settings};
 use crate::window::{WindowState, WINDOW_BACKUP_FILE, WINDOW_FILE};
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, OnceLock, RwLock};
 
 pub const SETTINGS_FILE: &str = "settings.json";
 pub const PROGRESS_FILE: &str = "progress.json";
 pub const IN_PROGRESS_FILE: &str = "in_progress.json";
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum UpdateInstallOutcome {
+    Launched,
+    PermissionRequired,
+    ManualRequired,
+}
+
+pub trait UpdateInstaller: Send + Sync {
+    fn update_dir(&self) -> std::io::Result<PathBuf>;
+    fn install(&self, package: &Path) -> std::io::Result<UpdateInstallOutcome>;
+    fn open_download_page(&self, url: &str) -> std::io::Result<()>;
+}
+
+static UPDATE_INSTALLER: OnceLock<Arc<dyn UpdateInstaller>> = OnceLock::new();
+
+pub fn register_update_installer(platform: Arc<dyn UpdateInstaller>) -> bool {
+    UPDATE_INSTALLER.set(platform).is_ok()
+}
+
+pub fn update_dir() -> std::io::Result<PathBuf> {
+    UPDATE_INSTALLER
+        .get()
+        .ok_or_else(|| std::io::Error::other("update installer unavailable"))?
+        .update_dir()
+}
+
+pub fn install_update(package: &Path) -> std::io::Result<UpdateInstallOutcome> {
+    UPDATE_INSTALLER
+        .get()
+        .ok_or_else(|| std::io::Error::other("update installer unavailable"))?
+        .install(package)
+}
+
+pub fn open_update_download_page(url: &str) -> std::io::Result<()> {
+    UPDATE_INSTALLER
+        .get()
+        .ok_or_else(|| std::io::Error::other("update installer unavailable"))?
+        .open_download_page(url)
+}
 
 /// Platform service that controls whether the display may sleep.
 pub trait KeepAwake: Send + Sync {

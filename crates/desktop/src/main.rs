@@ -1,7 +1,10 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use amategeko_app::{AppAssets, AppState, ShellView};
-use amategeko_core::platform::{register_keep_awake, set_keep_awake_window_active, KeepAwake};
+use amategeko_core::platform::{
+    register_keep_awake, register_update_installer, set_keep_awake_window_active, KeepAwake,
+    UpdateInstallOutcome, UpdateInstaller,
+};
 use amategeko_core::{Storage, SystemClock};
 use directories::ProjectDirs;
 use gpui_kit::component::Root;
@@ -31,6 +34,81 @@ impl Storage for DesktopStorage {
 
 struct DesktopKeepAwake {
     ui_thread: std::thread::ThreadId,
+}
+
+struct DesktopUpdateInstaller;
+
+impl UpdateInstaller for DesktopUpdateInstaller {
+    fn update_dir(&self) -> io::Result<PathBuf> {
+        let dir = std::env::temp_dir().join("amategeko-yumuhanda-updates");
+        std::fs::create_dir_all(&dir)?;
+        Ok(dir)
+    }
+
+    fn install(&self, package: &Path) -> io::Result<UpdateInstallOutcome> {
+        let update_dir = self.update_dir()?.canonicalize()?;
+        let package = package.canonicalize()?;
+        if !package.starts_with(&update_dir)
+            || package.extension().and_then(|value| value.to_str()) != Some("exe")
+        {
+            return Err(io::Error::other("invalid update installer path"));
+        }
+
+        let installed = std::env::current_exe()?
+            .parent()
+            .is_some_and(|dir| dir.join("amategeko-installed.marker").is_file());
+        if !installed {
+            return Ok(UpdateInstallOutcome::ManualRequired);
+        }
+
+        std::process::Command::new(package)
+            .args([
+                "/VERYSILENT",
+                "/SUPPRESSMSGBOXES",
+                "/NORESTART",
+                "/SP-",
+                "/CLOSEAPPLICATIONS",
+            ])
+            .spawn()?;
+        std::process::exit(0);
+    }
+
+    fn open_download_page(&self, url: &str) -> io::Result<()> {
+        std::process::Command::new("explorer.exe")
+            .arg(url)
+            .spawn()?;
+        Ok(())
+    }
+}
+
+fn cleanup_downloaded_installers() {
+    std::thread::spawn(|| {
+        let dir = std::env::temp_dir().join("amategeko-yumuhanda-updates");
+        for _ in 0..30 {
+            let mut pending = false;
+            if let Ok(entries) = std::fs::read_dir(&dir) {
+                for entry in entries.flatten() {
+                    let path = entry.path();
+                    let matches =
+                        path.file_name()
+                            .and_then(|name| name.to_str())
+                            .is_some_and(|name| {
+                                name.starts_with("amategeko-yumuhanda-")
+                                    && (name.ends_with("-windows-setup.exe")
+                                        || name.ends_with("-windows-setup.exe.minisig"))
+                            });
+                    if matches && std::fs::remove_file(&path).is_err() {
+                        pending = true;
+                    }
+                }
+            }
+            if !pending {
+                let _ = std::fs::remove_dir(&dir);
+                break;
+            }
+            std::thread::sleep(std::time::Duration::from_secs(1));
+        }
+    });
 }
 
 #[cfg(target_os = "windows")]
@@ -129,11 +207,15 @@ fn migrate_legacy_data(storage_dir: &Path) -> io::Result<()> {
 }
 
 fn main() {
+    cleanup_downloaded_installers();
     let keep_awake = Arc::new(DesktopKeepAwake {
         ui_thread: std::thread::current().id(),
     });
     if !register_keep_awake(keep_awake) {
         log::warn!("keep-awake service was already registered");
+    }
+    if !register_update_installer(Arc::new(DesktopUpdateInstaller)) {
+        log::warn!("update installer service was already registered");
     }
 
     let storage_dir = match prepare_storage_dir() {
