@@ -20,7 +20,7 @@ use gpui_kit::assets::IconName;
 use gpui_kit::base::StyledExt;
 use gpui_kit::component::alert::Alert;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::input::{InputEvent, InputState};
+use gpui_kit::component::slider::{SliderEvent, SliderState};
 use gpui_kit::component::tooltip::Tooltip;
 use gpui_kit::component::{ActiveTheme, Icon};
 use gpui_kit::prelude::FluentBuilder as _;
@@ -226,7 +226,7 @@ pub struct ShellView {
 
     quiz_selected_mode: QuizMode,
     quiz_selected_set: QuestionSet,
-    quiz_length_input: Option<Entity<InputState>>,
+    quiz_length_slider: Option<Entity<SliderState>>,
     quiz_length_custom_active: bool,
     quiz_length_subscription: Option<Subscription>,
 
@@ -409,7 +409,7 @@ impl ShellView {
 
             quiz_selected_mode: QuizMode::Byoroshye,
             quiz_selected_set: QuestionSet::All,
-            quiz_length_input: None,
+            quiz_length_slider: None,
             quiz_length_custom_active,
             quiz_length_subscription: None,
 
@@ -453,17 +453,14 @@ impl ShellView {
                 self.state.settings.quiz_length = length;
                 self.state.save_settings(self.state.settings.clone());
                 self.quiz_length_custom_active = ![10, 20, 30, 40, 50].contains(&length);
-                if let Some(input) = &self.quiz_length_input {
-                    input.update(cx, |input, cx| {
-                        input.set_value(length.to_string(), window, cx);
+                if let Some(slider) = &self.quiz_length_slider {
+                    slider.update(cx, |slider, cx| {
+                        slider.set_value(length as f32, window, cx);
                     });
                 }
             }
             HomeAction::ActivateCustomLength => {
                 self.quiz_length_custom_active = true;
-                if let Some(input) = &self.quiz_length_input {
-                    input.read(cx).focus_handle(cx).focus(window, cx);
-                }
             }
             HomeAction::Play(mode) => self.play_from_home(mode),
             HomeAction::PlayMistakes => self
@@ -512,34 +509,23 @@ impl ShellView {
         cx.notify();
     }
 
-    fn on_quiz_length_input(
+    fn on_quiz_length_slider(
         &mut self,
-        input: &Entity<InputState>,
-        event: &InputEvent,
-        window: &mut Window,
+        _slider: &Entity<SliderState>,
+        event: &SliderEvent,
+        _window: &mut Window,
         cx: &mut Context<Self>,
     ) {
-        let parsed = input.read(cx).value().parse::<usize>().ok();
-        match event {
-            InputEvent::Change => {
-                if let Some(length @ 5..=100) = parsed {
-                    self.state.settings.quiz_length = length;
-                    self.state.save_settings(self.state.settings.clone());
-                }
-            }
-            InputEvent::Blur | InputEvent::PressEnter { .. } => {
-                let length = parsed
-                    .unwrap_or(self.state.settings.quiz_length)
-                    .clamp(5, 100);
+        if let SliderEvent::Change(value) = event {
+            let length = value.start().round().clamp(5.0, 100.0) as usize;
+            if length != self.state.settings.quiz_length {
                 self.state.settings.quiz_length = length;
                 self.state.save_settings(self.state.settings.clone());
-                input.update(cx, |input, cx| {
-                    input.set_value(length.to_string(), window, cx);
-                });
+                self.quiz_length_custom_active = true;
+                self.save_dev_state();
+                cx.notify();
             }
-            InputEvent::Focus => {}
         }
-        cx.notify();
     }
 
     #[cfg(feature = "self-update")]
@@ -923,21 +909,21 @@ impl Render for ShellView {
         let window_width = window.bounds().size.width;
         let is_desktop = window_width > px(720.0);
 
-        let quiz_length_input = if let Some(input) = &self.quiz_length_input {
-            input.clone()
+        let quiz_length_slider = if let Some(slider) = &self.quiz_length_slider {
+            slider.clone()
         } else {
             let value = self.state.settings.quiz_length.clamp(5, 100);
-            let input = cx.new(|cx| {
-                InputState::new(window, cx)
-                    .default_value(value.to_string())
+            let slider = cx.new(|_| {
+                SliderState::new()
+                    .default_value(value as f32)
                     .step(1.0)
                     .min(5.0)
                     .max(100.0)
             });
             self.quiz_length_subscription =
-                Some(cx.subscribe_in(&input, window, Self::on_quiz_length_input));
-            self.quiz_length_input = Some(input.clone());
-            input
+                Some(cx.subscribe_in(&slider, window, Self::on_quiz_length_slider));
+            self.quiz_length_slider = Some(slider.clone());
+            slider
         };
 
         if self.questions_search_focused && self.state.active_screen == Screen::Questions {
@@ -975,7 +961,7 @@ impl Render for ShellView {
             selected_set: self.quiz_selected_set,
             window_width: Some(window_width.as_f32()),
             custom_length_active: self.quiz_length_custom_active,
-            quiz_length_input,
+            quiz_length_slider,
         };
 
         let content = match active_screen {
@@ -1307,6 +1293,7 @@ impl Render for ShellView {
                 &self.settings_scroll_handle,
                 reveal_scrollbar,
                 self.settings_confirm_clear,
+                window,
                 cx,
                 |this, action, window, cx| {
                     match action {

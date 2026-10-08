@@ -8,6 +8,7 @@ use gpui_kit::base::Disableable as _;
 use gpui_kit::base::Link;
 use gpui_kit::base::StyledExt;
 use gpui_kit::component::button::{Button, ButtonVariants};
+use gpui_kit::component::slider::{Slider, SliderEvent, SliderState};
 use gpui_kit::component::switch::Switch;
 use gpui_kit::component::theme::ThemeColor;
 use gpui_kit::component::{ActiveTheme, Icon, IconName};
@@ -43,6 +44,12 @@ pub enum SettingsAction {
 
 pub struct SettingsView;
 
+struct SliderControlState {
+    slider: Entity<SliderState>,
+    current_value: std::rc::Rc<std::cell::Cell<u32>>,
+    subscription: Option<Subscription>,
+}
+
 impl SettingsView {
     pub fn render<V: 'static>(
         state: &AppState,
@@ -50,6 +57,7 @@ impl SettingsView {
         scroll_handle: &ScrollHandle,
         reveal_scrollbar: bool,
         confirm_clear: bool,
+        window: &mut Window,
         cx: &mut Context<V>,
         on_action: impl Fn(&mut V, SettingsAction, &mut Window, &mut Context<V>) + 'static + Copy,
     ) -> impl IntoElement {
@@ -297,6 +305,7 @@ impl SettingsView {
                                             30,
                                             "min",
                                             &colors,
+                                            window,
                                             cx,
                                             move |this, window, cx| {
                                                 on_action(this, SettingsAction::DecMediumTime, window, cx);
@@ -319,6 +328,7 @@ impl SettingsView {
                                             20,
                                             "min",
                                             &colors,
+                                            window,
                                             cx,
                                             move |this, window, cx| {
                                                 on_action(this, SettingsAction::DecHardTime, window, cx);
@@ -341,6 +351,7 @@ impl SettingsView {
                                             20,
                                             format!("/ 20 = {}%", s.pass_mark * 5),
                                             &colors,
+                                            window,
                                             cx,
                                             move |this, window, cx| {
                                                 on_action(this, SettingsAction::DecPassMark, window, cx);
@@ -466,6 +477,7 @@ impl SettingsView {
                                                         130,
                                                         "%",
                                                         &colors,
+                                                        window,
                                                         cx,
                                                         move |this, window, cx| {
                                                             on_action(this, SettingsAction::DecFontScale, window, cx);
@@ -1038,7 +1050,6 @@ impl SettingsView {
             .child(label)
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn render_slider<V: 'static>(
         id_prefix: &'static str,
         value: u32,
@@ -1046,13 +1057,61 @@ impl SettingsView {
         max: u32,
         unit: impl Into<gpui::SharedString>,
         colors: &ThemeColor,
+        window: &mut Window,
         cx: &mut Context<V>,
         on_dec: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
         on_inc: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
     ) -> impl IntoElement {
         let unit = unit.into();
-        let is_min = value <= min;
-        let is_max = value >= max;
+        let control_state = window.use_keyed_state(id_prefix, cx, |_, cx| {
+            let slider = cx.new(|_| {
+                SliderState::new()
+                    .min(min as f32)
+                    .max(max as f32)
+                    .step(1.0)
+                    .default_value(value as f32)
+            });
+            SliderControlState {
+                slider,
+                current_value: std::rc::Rc::new(std::cell::Cell::new(value)),
+                subscription: None,
+            }
+        });
+        let slider_state = control_state.read(cx).slider.clone();
+        let current_value = control_state.read(cx).current_value.clone();
+
+        if control_state.read(cx).subscription.is_none() {
+            let observed_value = current_value.clone();
+            let subscription = cx.subscribe_in(
+                &slider_state,
+                window,
+                move |this, _, event: &SliderEvent, window, cx| {
+                    let slider_value = match event {
+                        SliderEvent::Change(value) | SliderEvent::Release(value) => value,
+                    };
+                    let next = slider_value.start().round().clamp(min as f32, max as f32) as u32;
+                    let previous = observed_value.replace(next);
+
+                    if next < previous {
+                        for _ in next..previous {
+                            on_dec(this, window, cx);
+                        }
+                    } else {
+                        for _ in previous..next {
+                            on_inc(this, window, cx);
+                        }
+                    }
+                },
+            );
+            control_state.update(cx, |state, _| state.subscription = Some(subscription));
+        }
+
+        if current_value.get() != value {
+            current_value.set(value);
+            slider_state.update(cx, |state, cx| {
+                state.set_value(value as f32, window, cx);
+            });
+        }
 
         div()
             .flex()
@@ -1068,35 +1127,6 @@ impl SettingsView {
                     .text_color(colors.foreground)
                     .child(format!("{value} {unit}")),
             )
-            .child(
-                div()
-                    .flex()
-                    .flex_row()
-                    .items_center()
-                    .p_0p5()
-                    .gap_1()
-                    .rounded_lg()
-                    .border_1()
-                    .border_color(colors.border)
-                    .bg(colors.background)
-                    .child(
-                        Button::new(format!("{id_prefix}_dec"))
-                            .ghost()
-                            .label("-")
-                            .disabled(is_min)
-                            .on_click(cx.listener(move |this, _, window, cx| {
-                                on_dec(this, window, cx);
-                            })),
-                    )
-                    .child(
-                        Button::new(format!("{id_prefix}_inc"))
-                            .ghost()
-                            .label("+")
-                            .disabled(is_max)
-                            .on_click(cx.listener(move |this, _, window, cx| {
-                                on_inc(this, window, cx);
-                            })),
-                    ),
-            )
+            .child(Slider::new(&slider_state).w(px(160.0)))
     }
 }

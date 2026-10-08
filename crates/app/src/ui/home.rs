@@ -10,9 +10,9 @@ use gpui::InteractiveElement as _;
 use gpui_kit::assets::IconName;
 use gpui_kit::base::StyledExt;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::input::{InputState, NumberInput};
+use gpui_kit::component::slider::{Slider, SliderState};
 use gpui_kit::component::tooltip::Tooltip;
-use gpui_kit::component::{ActiveTheme, Icon, Sizable};
+use gpui_kit::component::{ActiveTheme, Icon};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
 
@@ -108,7 +108,7 @@ pub struct HomeProps {
     pub selected_set: QuestionSet,
     pub window_width: Option<f32>,
     pub custom_length_active: bool,
-    pub quiz_length_input: Entity<InputState>,
+    pub quiz_length_slider: Entity<SliderState>,
 }
 
 struct ModeInfo {
@@ -697,7 +697,7 @@ impl HomeView {
             .collect();
 
         let custom_selected = props.custom_length_active;
-        let custom_length_input = props.quiz_length_input.clone();
+        let custom_length_slider = props.quiz_length_slider.clone();
 
         // 4. Start Button CTA
         let (cta_count, cta_source) = if is_easy {
@@ -880,17 +880,27 @@ impl HomeView {
                 )
                 .when(custom_selected, |el| {
                     el.child(
-                        div()
-                            .mt_2()
-                            .flex()
-                            .flex_col()
-                            .gap_1()
-                            .child(NumberInput::new(&custom_length_input).w(px(150.0)).small())
-                            .child(div().text_xs().text_color(tokens.muted).child(tf(
-                                "quiz.length.custom.hint",
-                                lang,
-                                &[("min", "5"), ("max", "100")],
-                            ))),
+                        div().mt_2().flex().flex_col().gap_2().child(
+                            div()
+                                .flex()
+                                .flex_row()
+                                .items_center()
+                                .gap_3()
+                                .child(Slider::new(&custom_length_slider).w(px(if is_desktop {
+                                    240.0
+                                } else {
+                                    200.0
+                                })))
+                                .child(
+                                    div()
+                                        .w(px(32.0))
+                                        .text_sm()
+                                        .font_bold()
+                                        .text_right()
+                                        .text_color(tokens.fg)
+                                        .child(requested_length.to_string()),
+                                ),
+                        ),
                     )
                 })
                 .when(is_medium, |el| {
@@ -912,14 +922,14 @@ impl HomeView {
                         .child(t("quiz.length.hard", lang)),
                 )
             })
-            .child(
-                div()
-                    .mt_4()
-                    .flex()
-                    .flex_row()
-                    .flex_wrap()
-                    .gap_2()
-                    .child(
+            .when(is_medium || selected_mode == QuizMode::Bikomeye, |el| {
+                let seconds = if is_medium {
+                    time_for(state.settings.medium_duration_mins, attempt_length)
+                } else {
+                    u64::from(state.settings.hard_duration_mins) * 60
+                };
+                el.child(
+                    div().mt_4().child(
                         div()
                             .rounded_lg()
                             .border_1()
@@ -928,35 +938,18 @@ impl HomeView {
                             .px_3()
                             .py_2()
                             .text_xs()
-                            .child(format!("{}: {}", t("quiz.length", lang), attempt_length)),
-                    )
-                    .when(is_medium || selected_mode == QuizMode::Bikomeye, |el| {
-                        let seconds = if is_medium {
-                            time_for(state.settings.medium_duration_mins, attempt_length)
-                        } else {
-                            u64::from(state.settings.hard_duration_mins) * 60
-                        };
-                        el.child(
-                            div()
-                                .rounded_lg()
-                                .border_1()
-                                .border_color(tokens.line)
-                                .bg(tokens.bg)
-                                .px_3()
-                                .py_2()
-                                .text_xs()
-                                .child(format!(
-                                    "{}: {}",
-                                    if is_medium {
-                                        t("settings.medium_time", lang)
-                                    } else {
-                                        t("settings.hard_time", lang)
-                                    },
-                                    seconds.div_ceil(60)
-                                )),
-                        )
-                    }),
-            )
+                            .child(format!(
+                                "{}: {}",
+                                if is_medium {
+                                    t("settings.medium_time", lang)
+                                } else {
+                                    t("settings.hard_time", lang)
+                                },
+                                seconds.div_ceil(60)
+                            )),
+                    ),
+                )
+            })
             .when(is_easy, |el| {
                 el.child(
                     div()
