@@ -1,14 +1,21 @@
 // Single source of truth for all URLs and author info.
 
-export const REPO_URL =
-  "https://github.com/brunorwanda4/amategeko-yumuhanda";
+export const REPO_SLUG = "brunorwanda4/amategeko-yumuhanda";
 
-export const RELEASES_URL =
-  "https://github.com/brunorwanda4/amategeko-yumuhanda/releases/latest";
+export const REPO_URL = `https://github.com/${REPO_SLUG}`;
+
+export const RELEASES_URL = `${REPO_URL}/releases/latest`;
+
+export const ISSUES_URL = `${REPO_URL}/issues`;
+
+export const LATEST_RELEASE_API_URL =
+  `https://api.github.com/repos/${REPO_SLUG}/releases/latest`;
 
 export const AUTHOR_NAME = "Rwanda Bruno";
 
 export const AUTHOR_URL = "https://github.com/brunorwanda4";
+
+export const SITE_URL = "https://amategeko-yumuhanda-alpha.vercel.app";
 
 export const SITE_NAME = "Amategeko y'Umuhanda";
 

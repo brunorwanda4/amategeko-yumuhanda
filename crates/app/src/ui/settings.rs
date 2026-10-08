@@ -5,11 +5,12 @@ use crate::ui::scroll::{vertical_scrollbar, DragScroll};
 use amategeko_core::{t, tf, Language, ThemeMode};
 use gpui::InteractiveElement as _;
 use gpui_kit::base::Disableable as _;
+use gpui_kit::base::Link;
 use gpui_kit::base::StyledExt;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::switch::Switch;
 use gpui_kit::component::theme::ThemeColor;
-use gpui_kit::component::{ActiveTheme, IconName};
+use gpui_kit::component::{ActiveTheme, Icon, IconName};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
 
@@ -504,9 +505,9 @@ impl SettingsView {
                                     // Keyboard shortcuts switch (desktop only)
                                     .when(is_desktop && !crate::is_native_mobile(), |el| {
                                         let sub = if cfg!(target_os = "macos") {
-                                            "Cmd+1..5, A–D, Enter, ? / F1"
+                                            "Cmd+1..5, AÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“D, Enter, ? / F1"
                                         } else {
-                                            "Ctrl+1..5, A–D, Enter, ? / F1"
+                                            "Ctrl+1..5, AÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“D, Enter, ? / F1"
                                         };
                                         el.child(Self::render_divider(&colors)).child(
                                             Self::render_switch_row(
@@ -652,6 +653,127 @@ impl SettingsView {
                                                                 })),
                                                         )
                                                     }),
+                                            ),
+                                    ),
+                            ),
+                    )
+                    // SECTION 5: About
+                    .child(
+                        div()
+                            .flex()
+                            .flex_col()
+                            .gap_1p5()
+                            .child(
+                                div()
+                                    .text_sm()
+                                    .font_semibold()
+                                    .text_color(colors.muted_foreground)
+                                    .child(t("about.title", lang)),
+                            )
+                            .child(
+                                div()
+                                    .flex()
+                                    .flex_col()
+                                    .rounded_2xl()
+                                    .border_1()
+                                    .border_color(colors.border)
+                                    .bg(colors.secondary)
+                                    // Version row (static, no link)
+                                    .child(
+                                        div()
+                                            .flex()
+                                            .flex_row()
+                                            .items_center()
+                                            .px_4()
+                                            .min_h(px(44.0))
+                                            .child(
+                                                div()
+                                                    .text_sm()
+                                                    .font_semibold()
+                                                    .text_color(colors.foreground)
+                                                    .child(tf(
+                                                        "about.version",
+                                                        lang,
+                                                        &[("v", env!("CARGO_PKG_VERSION"))],
+                                                    )),
+                                            ),
+                                    )
+                                    .child(Self::render_divider(&colors))
+                                    // Website row
+                                    .child(
+                                        Link::new("about_website")
+                                            .href(amategeko_core::links::SITE_URL)
+                                            .open_with(|href, _, _, cx| cx.open_url(href))
+                                            .flex()
+                                            .flex_row()
+                                            .items_center()
+                                            .justify_between()
+                                            .px_4()
+                                            .min_h(px(44.0))
+                                            .hover(|el| el.bg(colors.background))
+                                            .child(
+                                                div()
+                                                    .text_sm()
+                                                    .font_semibold()
+                                                    .text_color(colors.foreground)
+                                                    .child(t("about.website", lang)),
+                                            )
+                                            .child(
+                                                Icon::new(IconName::ExternalLink)
+                                                    .size(px(14.0))
+                                                    .text_color(colors.muted_foreground),
+                                            ),
+                                    )
+                                    .child(Self::render_divider(&colors))
+                                    // Guide / Docs row
+                                    .child(
+                                        Link::new("about_docs")
+                                            .href(amategeko_core::links::DOCS_URL)
+                                            .open_with(|href, _, _, cx| cx.open_url(href))
+                                            .flex()
+                                            .flex_row()
+                                            .items_center()
+                                            .justify_between()
+                                            .px_4()
+                                            .min_h(px(44.0))
+                                            .hover(|el| el.bg(colors.background))
+                                            .child(
+                                                div()
+                                                    .text_sm()
+                                                    .font_semibold()
+                                                    .text_color(colors.foreground)
+                                                    .child(t("about.guide", lang)),
+                                            )
+                                            .child(
+                                                Icon::new(IconName::ExternalLink)
+                                                    .size(px(14.0))
+                                                    .text_color(colors.muted_foreground),
+                                            ),
+                                    )
+                                    .child(Self::render_divider(&colors))
+                                    // Source code row
+                                    .child(
+                                        Link::new("about_source")
+                                            .href(amategeko_core::links::REPO_URL)
+                                            .open_with(|href, _, _, cx| cx.open_url(href))
+                                            .flex()
+                                            .flex_row()
+                                            .items_center()
+                                            .justify_between()
+                                            .px_4()
+                                            .min_h(px(44.0))
+                                            .hover(|el| el.bg(colors.background))
+                                            .child(
+                                                div()
+                                                    .text_sm()
+                                                    .font_semibold()
+                                                    .text_color(colors.foreground)
+                                                    .child(t("about.source", lang)),
+                                            )
+                                            .child(
+                                                Icon::new(IconName::ExternalLink)
+                                                    .size(px(14.0))
+                                                    .text_color(colors.muted_foreground),
                                             ),
                                     ),
                             ),

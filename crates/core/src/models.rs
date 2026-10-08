@@ -269,6 +269,7 @@ pub struct Settings {
     pub font_size_scale: f32,
     pub desktop_shortcuts_enabled: bool,
     pub hard_weight_images: bool,
+    #[serde(default)]
     pub study_hide_answers: bool,
     #[serde(default)]
     pub language: Language,
@@ -460,6 +461,7 @@ pub struct AttemptResult {
     pub id: String,
     pub mode: QuizMode,
     pub score: u32,
+    #[serde(default)]
     pub total: u32,
     pub pass_mark: u32,
     pub passed: bool,
@@ -679,5 +681,48 @@ mod tests {
                 .len(),
             1
         );
+    }
+
+    #[test]
+    fn test_legacy_json_backward_compatibility() {
+        let old_settings_json = r#"{
+            "easy_show_timer": false,
+            "medium_duration_mins": 20,
+            "hard_duration_mins": 12,
+            "pass_mark": 12,
+            "theme": "System",
+            "font_size_scale": 1.0,
+            "desktop_shortcuts_enabled": true,
+            "hard_weight_images": true
+        }"#;
+
+        let settings: Settings =
+            serde_json::from_str(old_settings_json).expect("old settings should deserialize");
+        assert_eq!(settings.study_hide_answers, false);
+        assert_eq!(settings.auto_check_updates, true);
+
+        let old_progress_json = r#"{
+            "attempts": [
+                {
+                    "id": "old-attempt-1",
+                    "mode": "Byoroshye",
+                    "score": 15,
+                    "pass_mark": 12,
+                    "passed": true,
+                    "timestamp_secs": 1700000000,
+                    "duration_seconds": 300,
+                    "question_results": []
+                }
+            ],
+            "question_stats": {},
+            "starred_questions": [],
+            "active_attempt": null
+        }"#;
+
+        let progress: Progress =
+            serde_json::from_str(old_progress_json).expect("old progress should deserialize");
+        assert_eq!(progress.study, StudyProgress::default());
+        assert_eq!(progress.attempts.len(), 1);
+        assert_eq!(progress.attempts[0].total, 0);
     }
 }

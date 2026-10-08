@@ -10,6 +10,7 @@ pub mod dev;
 pub mod error;
 pub mod font;
 pub mod i18n;
+pub mod links;
 pub mod models;
 pub mod platform;
 pub mod quiz;

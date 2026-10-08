@@ -1,4 +1,5 @@
 # Rwanda Road Rules Trainer (Amategeko y'Umuhanda)
+https://amategeko-yumuhanda-alpha.vercel.app/
 
 An offline study app for the Rwandan driving-test theory exam. Practice 20 random questions with a timer, review your mistakes, browse 404 questions with sign images, and track your progress. Runs on **Windows (Desktop)** and **Android (Mobile)** from one single Rust codebase.
 
@@ -43,7 +44,7 @@ Download the latest release from [GitHub Releases](https://github.com/brunorwand
   - Hard mode duration stepper (5 to 20 min; default 12 min).
   - Easy mode elapsed timer visibility toggle.
   - Hard mode image weighting toggle.
-  - Desktop keyboard shortcuts toggle (A–D, 1–4, Enter, F).
+  - Desktop keyboard shortcuts toggle (Aâ€“D, 1â€“4, Enter, F).
   - **Theme Switcher:** System, Light, and Dark modes with live GPUI Kit theme synchronization.
   - **Font Size Scaler:** 85% to 125% with live sample preview card.
   - **Akarere ko Kwitonda (Danger Zone):** Clear all attempt history, statistics, and saved state with double-confirmation protection.
@@ -52,7 +53,7 @@ Download the latest release from [GitHub Releases](https://github.com/brunorwand
   - In-progress attempts are continuously persisted to local storage after every answer. If the app is closed mid-quiz, users are greeted on launch with a "Komeza ikizamini" resume option. Expired timed attempts are automatically submitted to Results upon app launch.
 - **Responsive Multi-Platform Shell**:
   - Desktop layout (window width >= 700px): Collapsible left sidebar navigation (`160px`) and wide content area.
-  - Mobile layout (window width < 700px, Android/iOS): Safe-area padded top app bar and bottom navigation bar (hidden during active quizzes for distraction-free focus mode). Touch targets meet or exceed 44×44 px minimums (options >= 48px).
+  - Mobile layout (window width < 700px, Android/iOS): Safe-area padded top app bar and bottom navigation bar (hidden during active quizzes for distraction-free focus mode). Touch targets meet or exceed 44Ã—44 px minimums (options >= 48px).
 - **100% Offline & Private**:
   - No internet connection required (`android.permission.INTERNET` removed).
   - Zero analytics, zero telemetry, zero ads, zero user tracking.
@@ -100,36 +101,36 @@ dependency audit, timing results, Windows options, and daily commands.
 
 ```
 amategeko-yumuhanda/
-├── assets/
-│   ├── questions.json           # 404 structured questions with options, answer & image metadata
-│   ├── images/                  # 130 referenced PNG road sign and marking images
-│   └── overrides.json           # Optional manual overrides for question data
-├── crates/
-│   ├── core/                    # Pure Rust domain logic (zero GPUI dependency, 100% testable)
-│   │   ├── src/
-│   │   │   ├── models.rs        # Question, QuizMode, Attempt, Result, Settings, Progress
-│   │   │   ├── quiz.rs          # QuizEngine logic for Easy, Medium, Hard, WeakPractice, RetryWrong
-│   │   │   ├── timer.rs         # Deadline-based monotonic/wall-clock timer calculation
-│   │   │   ├── stats.rs         # StatsCalculator for summary, bar chart, and missed questions
-│   │   │   ├── data.rs          # QuestionBank loading, filtering, and text/numeric search
-│   │   │   ├── platform.rs      # Storage and Clock abstraction traits
-│   │   │   └── i18n.rs          # 100% Kinyarwanda UI string catalog (Strings struct)
-│   │   └── tests/core_tests.rs  # Full unit test suite (10 tests covering all domain rules)
-│   ├── app/                     # Shared presentation layer (GPUI + GPUI Kit components)
-│   │   └── src/
-│   │       ├── state.rs         # AppState managing persistent progress, settings, and navigation
-│   │       └── ui/              # ShellView, HomeView, QuizView, ResultsView, QuestionsView, StatsView, SettingsView
-│   ├── desktop/                 # Windows Desktop binary entry point
-│   │   └── src/main.rs          # Native desktop window setup, GPUI Kit theme init, disk storage
-│   └── mobile/                  # Android and iOS mobile native library entry point
-│       ├── src/lib.rs           # android_main (android-activity + jni) and gpui_ios_register_app
-│       └── android/             # Gradle wrapper, AndroidManifest, NativeActivity, and APK build setup
-├── tools/
-│   ├── extract_questions.py     # PDF extraction script using pdfplumber and Pillow
-│   └── requirements.txt         # Python dependencies for extraction
-└── docs/
-    ├── PROGRESS.md              # Milestone tracking and completion status
-    └── SPEC.md                  # Comprehensive product specification
+â”œâ”€â”€ assets/
+â”‚   â”œâ”€â”€ questions.json           # 404 structured questions with options, answer & image metadata
+â”‚   â”œâ”€â”€ images/                  # 130 referenced PNG road sign and marking images
+â”‚   â””â”€â”€ overrides.json           # Optional manual overrides for question data
+â”œâ”€â”€ crates/
+â”‚   â”œâ”€â”€ core/                    # Pure Rust domain logic (zero GPUI dependency, 100% testable)
+â”‚   â”‚   â”œâ”€â”€ src/
+â”‚   â”‚   â”‚   â”œâ”€â”€ models.rs        # Question, QuizMode, Attempt, Result, Settings, Progress
+â”‚   â”‚   â”‚   â”œâ”€â”€ quiz.rs          # QuizEngine logic for Easy, Medium, Hard, WeakPractice, RetryWrong
+â”‚   â”‚   â”‚   â”œâ”€â”€ timer.rs         # Deadline-based monotonic/wall-clock timer calculation
+â”‚   â”‚   â”‚   â”œâ”€â”€ stats.rs         # StatsCalculator for summary, bar chart, and missed questions
+â”‚   â”‚   â”‚   â”œâ”€â”€ data.rs          # QuestionBank loading, filtering, and text/numeric search
+â”‚   â”‚   â”‚   â”œâ”€â”€ platform.rs      # Storage and Clock abstraction traits
+â”‚   â”‚   â”‚   â””â”€â”€ i18n.rs          # 100% Kinyarwanda UI string catalog (Strings struct)
+â”‚   â”‚   â””â”€â”€ tests/core_tests.rs  # Full unit test suite (10 tests covering all domain rules)
+â”‚   â”œâ”€â”€ app/                     # Shared presentation layer (GPUI + GPUI Kit components)
+â”‚   â”‚   â””â”€â”€ src/
+â”‚   â”‚       â”œâ”€â”€ state.rs         # AppState managing persistent progress, settings, and navigation
+â”‚   â”‚       â””â”€â”€ ui/              # ShellView, HomeView, QuizView, ResultsView, QuestionsView, StatsView, SettingsView
+â”‚   â”œâ”€â”€ desktop/                 # Windows Desktop binary entry point
+â”‚   â”‚   â””â”€â”€ src/main.rs          # Native desktop window setup, GPUI Kit theme init, disk storage
+â”‚   â””â”€â”€ mobile/                  # Android and iOS mobile native library entry point
+â”‚       â”œâ”€â”€ src/lib.rs           # android_main (android-activity + jni) and gpui_ios_register_app
+â”‚       â””â”€â”€ android/             # Gradle wrapper, AndroidManifest, NativeActivity, and APK build setup
+â”œâ”€â”€ tools/
+â”‚   â”œâ”€â”€ extract_questions.py     # PDF extraction script using pdfplumber and Pillow
+â”‚   â””â”€â”€ requirements.txt         # Python dependencies for extraction
+â””â”€â”€ docs/
+    â”œâ”€â”€ PROGRESS.md              # Milestone tracking and completion status
+    â””â”€â”€ SPEC.md                  # Comprehensive product specification
 ```
 
 ---
@@ -278,7 +279,7 @@ python extract_questions.py
 - Correct answers are automatically detected via bracketed letters (e.g. `(a)`, `(b)`, `(c)`, `(d)`).
 - Two-column layout splitting handles multi-line options and questions spanning page/column breaks.
 - Road sign and marking images are cropped and saved to `assets/images/q{id}.png`.
-- Validation ensures 3–4 options per question and exactly 1 correct answer. Manual overrides can be placed in `assets/overrides.json` without modifying extraction scripts.
+- Validation ensures 3â€“4 options per question and exactly 1 correct answer. Manual overrides can be placed in `assets/overrides.json` without modifying extraction scripts.
 
 ---
 

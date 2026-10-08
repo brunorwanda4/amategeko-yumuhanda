@@ -18,7 +18,7 @@ android {
         applicationId = "dev.gpui.mobile.example"
         minSdk = 26          // Vulkan 1.0 is mandatory from API 26+
         targetSdk = 34
-        versionCode = 8
+        versionCode = 10800
         versionName = "1.8.0"
 
         // Tell NativeActivity which .so to load.

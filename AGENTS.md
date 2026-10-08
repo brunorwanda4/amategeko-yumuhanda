@@ -106,7 +106,7 @@ bun run build        # must pass before every commit that touches website/
 - Do not silence warnings with `#[allow(...)]` or `// eslint-disable` as a shortcut. Fix them, or explain why it is justified.
 - Do not leave `TODO` / `unimplemented!()` / dummy data in finished features. If something is not done, say so in `docs/PROGRESS.md`.
 - - Never remove or change the "Built by Rwanda Bruno" credit or its GitHub link (`https://github.com/brunorwanda4`) without the owner's approval. It lives in one constant and is not shown on quiz, results or timed screens.
-- Opening that link in the system browser is the only allowed external link in the app. It does not change the offline rule: the app makes no network requests itself.
+- External links open only in the system browser when the user taps them, and only to the website, docs, GitHub repo, releases and the author profile (see core::links). The app itself makes no other network requests except the signed update check.
 - Never register a keyboard shortcut outside `shortcuts.rs`, and never add one that breaks a mode rule (for example Previous/Skip/Flag in Hard, or Next before answering in Easy).
 
 **Git and environment**

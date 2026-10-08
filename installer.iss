@@ -1,6 +1,11 @@
-#define MyAppVersion "1.1.0"
 #ifndef MyAppBinary
 #define MyAppBinary "target\release\amategeko.exe"
+#endif
+#ifdef AppVersion
+#define MyAppVersion AppVersion
+#endif
+#ifndef MyAppVersion
+#define MyAppVersion GetFileVersion(MyAppBinary)
 #endif
 
 [Setup]

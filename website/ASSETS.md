@@ -7,6 +7,11 @@ Every image, icon, and font used in the documentation website is listed here.
 | `website/public/logo.png` | Provided by repository owner (brunorwanda4) | Proprietary — all rights reserved | Yes |
 | `website/public/favicon.png` | Same as logo.png | Proprietary — all rights reserved | Yes |
 
+| `website/components/canvasui/Ripple.tsx` | [Canvas UI Ripple](https://canvasui.dev/docs/components/ripple) by David Haz | MIT + Commons Clause | No |
+| Inline interface icons in `website/components/icons.tsx` | Original SVG artwork for this website | Proprietary - all rights reserved | No |
+
+| Bricolage Grotesque | [Google Fonts](https://fonts.google.com/specimen/Bricolage+Grotesque) | SIL Open Font License 1.1 | No; loaded with `next/font` (self-hosted at build time) |
+
 ## Notes
 
 - No third-party stock photos, illustrations, or icon packs are used.
