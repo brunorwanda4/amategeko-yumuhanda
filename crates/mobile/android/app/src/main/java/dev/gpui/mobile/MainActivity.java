@@ -1,7 +1,10 @@
 package dev.gpui.mobile;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.KeyEvent;
 import android.view.WindowManager;
 
@@ -9,9 +12,13 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.activity.OnBackPressedDispatcher;
 import androidx.activity.OnBackPressedDispatcherOwner;
 import androidx.annotation.NonNull;
+import androidx.core.content.FileProvider;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LifecycleRegistry;
+
+import java.io.File;
+import java.io.IOException;
 
 public class MainActivity extends GpuiActivity implements LifecycleOwner, OnBackPressedDispatcherOwner {
 
@@ -88,6 +95,46 @@ public class MainActivity extends GpuiActivity implements LifecycleOwner, OnBack
         } else {
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
+    }
+
+    public int requestInstallUpdate(String apkPath) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                && !getPackageManager().canRequestPackageInstalls()) {
+            runOnUiThread(() -> {
+                Intent intent = new Intent(
+                        Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                        Uri.parse("package:" + getPackageName()));
+                startActivity(intent);
+            });
+            return 1;
+        }
+
+        try {
+            File apk = new File(apkPath).getCanonicalFile();
+            File updateDir = new File(getCacheDir(), "updates").getCanonicalFile();
+            if (!apk.isFile() || !apk.getPath().startsWith(updateDir.getPath() + File.separator)) {
+                return -1;
+            }
+            Uri uri = FileProvider.getUriForFile(
+                    this, getPackageName() + ".fileprovider", apk);
+            runOnUiThread(() -> {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setDataAndType(uri, "application/vnd.android.package-archive");
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                startActivity(intent);
+            });
+            return 0;
+        } catch (IOException | RuntimeException error) {
+            return -1;
+        }
+    }
+
+    public String updateCachePath() {
+        return new File(getCacheDir(), "updates").getAbsolutePath();
+    }
+
+    public void openExternalUrl(String url) {
+        runOnUiThread(() -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))));
     }
 
     @Override

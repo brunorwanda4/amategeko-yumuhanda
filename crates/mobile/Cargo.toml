@@ -11,11 +11,15 @@ path = "src/lib.rs"
 
 [dependencies]
 amategeko-core.workspace = true
-amategeko-app.workspace = true
+amategeko-app = { workspace = true, default-features = false }
 gpui.workspace = true
 gpui-mobile.workspace = true
 gpui-kit.workspace = true
 log.workspace = true
+
+[features]
+default = ["self-update"]
+self-update = ["amategeko-app/self-update"]
 
 [target.'cfg(target_os = "android")'.dependencies]
 android_logger = "0.15"

@@ -15,6 +15,7 @@ pub mod platform;
 pub mod quiz;
 pub mod stats;
 pub mod timer;
+pub mod update;
 pub mod window;
 
 pub use about::{ProjectCredit, APP_VERSION, PROJECT_CREDIT};

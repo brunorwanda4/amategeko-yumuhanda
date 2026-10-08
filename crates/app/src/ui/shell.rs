@@ -8,6 +8,8 @@ use crate::ui::results::{ResultFilter, ResultsView};
 use crate::ui::scroll::{configure_scrollbar_motion, vertical_scrollbar, ScrollbarContext};
 use crate::ui::settings::{SettingsAction, SettingsView};
 use crate::ui::stats::StatsView;
+#[cfg(feature = "self-update")]
+use amategeko_core::tf;
 use amategeko_core::{
     t, QuestionSet, QuizEngine, QuizMode, QuizTimer, StatsFilter, Strings, TimerLevel, TimerState,
     TimerTracker,
@@ -209,6 +211,10 @@ pub struct ShellView {
     pub show_study_jump_dialog: bool,
     pub show_study_restart_dialog: bool,
     pub show_study_finished_dialog: bool,
+    #[cfg(feature = "self-update")]
+    pub show_update_notes: bool,
+    #[cfg(feature = "self-update")]
+    pub show_update_confirm: bool,
     pub study_jump_input: String,
     pub questions_search_focused: bool,
     pub questions_selected_idx: usize,
@@ -237,6 +243,10 @@ pub struct ShellView {
     timer_banner: Option<TimerBanner>,
     timer_banner_hide_at: Option<u64>,
     _timer_task: Task<()>,
+    #[cfg(feature = "self-update")]
+    update_task: Option<Task<()>>,
+    #[cfg(feature = "self-update")]
+    update_cancelled: std::sync::Arc<std::sync::atomic::AtomicBool>,
 }
 
 impl ShellView {
@@ -303,6 +313,27 @@ impl ShellView {
         let initial_screen = state.active_screen.clone();
         let now = Instant::now();
 
+        #[cfg(feature = "self-update")]
+        let update_task = if amategeko_core::update::should_check(
+            state.clock.now_seconds(),
+            state.settings.last_update_check,
+            state.settings.auto_check_updates,
+        ) {
+            Some(cx.spawn(async move |this, cx| {
+                cx.background_executor().timer(Duration::from_secs(5)).await;
+                let result = cx
+                    .background_executor()
+                    .spawn(async { crate::updater::check_latest() })
+                    .await;
+                let _ = this.update(cx, |this, cx| {
+                    this.finish_update_check(result, false);
+                    cx.notify();
+                });
+            }))
+        } else {
+            None
+        };
+
         #[cfg(debug_assertions)]
         let initial_scroll = dev_state
             .as_ref()
@@ -359,6 +390,10 @@ impl ShellView {
             show_study_jump_dialog: false,
             show_study_restart_dialog: false,
             show_study_finished_dialog: false,
+            #[cfg(feature = "self-update")]
+            show_update_notes: false,
+            #[cfg(feature = "self-update")]
+            show_update_confirm: false,
             study_jump_input: String::new(),
             questions_search_focused: false,
             questions_selected_idx: 0,
@@ -387,6 +422,10 @@ impl ShellView {
             timer_banner: None,
             timer_banner_hide_at: None,
             _timer_task: timer_task,
+            #[cfg(feature = "self-update")]
+            update_task,
+            #[cfg(feature = "self-update")]
+            update_cancelled: std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
         };
         view.update_can_go_back();
         view
@@ -416,9 +455,137 @@ impl ShellView {
             HomeAction::OpenStats => self.state.navigate(Screen::Stats),
             HomeAction::Resume => self.state.resume_attempt(),
             HomeAction::Discard => self.state.discard_in_progress(),
+            HomeAction::UpdateWhatsNew => {
+                #[cfg(feature = "self-update")]
+                {
+                    self.show_update_notes = true;
+                }
+            }
+            HomeAction::UpdateDownload => {
+                #[cfg(feature = "self-update")]
+                {
+                    self.show_update_confirm = true;
+                }
+            }
+            HomeAction::UpdateLater => {
+                crate::updater::set_status(crate::updater::UpdateStatus::Idle)
+            }
+            HomeAction::UpdateSkip => {
+                if let crate::updater::UpdateStatus::Available(update) = crate::updater::status() {
+                    self.state.settings.skipped_version = Some(update.release.tag_name);
+                    self.state.save_settings(self.state.settings.clone());
+                    crate::updater::set_status(crate::updater::UpdateStatus::Idle);
+                }
+            }
         }
         self.save_dev_state();
         cx.notify();
+    }
+
+    #[cfg(feature = "self-update")]
+    fn finish_update_check(
+        &mut self,
+        result: Result<amategeko_core::update::Release, crate::updater::UpdateError>,
+        manual: bool,
+    ) {
+        self.state.settings.last_update_check = Some(self.state.clock.now_seconds());
+        self.state.save_settings(self.state.settings.clone());
+        match result {
+            Ok(release)
+                if amategeko_core::update::is_newer(
+                    env!("CARGO_PKG_VERSION"),
+                    &release.tag_name,
+                ) && (manual
+                    || self.state.settings.skipped_version.as_deref()
+                        != Some(release.tag_name.as_str())) =>
+            {
+                crate::updater::set_status(
+                    crate::updater::select_update(release)
+                        .map(crate::updater::UpdateStatus::Available)
+                        .unwrap_or(crate::updater::UpdateStatus::Error(
+                            crate::updater::UpdateError::InvalidResponse,
+                        )),
+                );
+            }
+            Ok(_) => crate::updater::set_status(crate::updater::UpdateStatus::UpToDate),
+            Err(error) if manual => {
+                crate::updater::set_status(crate::updater::UpdateStatus::Error(error));
+            }
+            Err(_) => crate::updater::set_status(crate::updater::UpdateStatus::Idle),
+        }
+    }
+
+    #[cfg(feature = "self-update")]
+    fn start_update_check(&mut self, cx: &mut Context<Self>) {
+        crate::updater::set_status(crate::updater::UpdateStatus::Checking);
+        self.update_task = Some(cx.spawn(async move |this, cx| {
+            let result = cx
+                .background_executor()
+                .spawn(async { crate::updater::check_latest() })
+                .await;
+            let _ = this.update(cx, |this, cx| {
+                this.finish_update_check(result, true);
+                cx.notify();
+            });
+        }));
+    }
+
+    #[cfg(feature = "self-update")]
+    fn start_update_download(&mut self, cx: &mut Context<Self>) {
+        let crate::updater::UpdateStatus::Available(update) = crate::updater::status() else {
+            return;
+        };
+        let Ok(dir) = amategeko_core::platform::update_dir() else {
+            crate::updater::set_status(crate::updater::UpdateStatus::Error(
+                crate::updater::UpdateError::File,
+            ));
+            return;
+        };
+        let destination = dir.join(&update.asset.name);
+        self.update_cancelled = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+        let cancelled = self.update_cancelled.clone();
+        crate::updater::set_status(crate::updater::UpdateStatus::Downloading {
+            update: update.clone(),
+            pct: 0,
+        });
+        self.update_task = Some(cx.spawn(async move |this, cx| {
+            let progress_update = update.clone();
+            let result = cx
+                .background_executor()
+                .spawn(async move {
+                    crate::updater::download_and_verify(
+                        &update.asset,
+                        &update.signature,
+                        &destination,
+                        &cancelled,
+                        |pct| {
+                            crate::updater::set_status(crate::updater::UpdateStatus::Downloading {
+                                update: progress_update.clone(),
+                                pct,
+                            });
+                        },
+                    )
+                    .map(|path| (update, path))
+                })
+                .await;
+            let _ = this.update(cx, |_this, cx| {
+                match result {
+                    Ok((update, path)) => {
+                        crate::updater::set_status(crate::updater::UpdateStatus::Ready {
+                            update,
+                            path,
+                        })
+                    }
+                    Err(crate::updater::UpdateError::Cancelled) => {
+                        crate::updater::set_status(crate::updater::UpdateStatus::Idle)
+                    }
+                    Err(error) => {
+                        crate::updater::set_status(crate::updater::UpdateStatus::Error(error))
+                    }
+                }
+                cx.notify();
+            });
+        }));
     }
 
     fn play_from_home(&mut self, mode: QuizMode) {
@@ -428,7 +595,20 @@ impl ShellView {
     }
 
     pub fn can_go_back(&self) -> bool {
-        self.show_help_dialog
+        #[cfg(feature = "self-update")]
+        let update_dialog = self.show_update_notes
+            || self.show_update_confirm
+            || matches!(
+                crate::updater::status(),
+                crate::updater::UpdateStatus::Downloading { .. }
+                    | crate::updater::UpdateStatus::Ready { .. }
+                    | crate::updater::UpdateStatus::PermissionRequired { .. }
+                    | crate::updater::UpdateStatus::Error(_)
+            );
+        #[cfg(not(feature = "self-update"))]
+        let update_dialog = false;
+        update_dialog
+            || self.show_help_dialog
             || self.show_finish_confirm_dialog
             || self.show_study_jump_dialog
             || self.show_study_restart_dialog
@@ -445,6 +625,14 @@ impl ShellView {
     }
 
     pub fn perform_go_back(&mut self, window: Option<&mut Window>, cx: &mut Context<Self>) -> bool {
+        #[cfg(feature = "self-update")]
+        if self.show_update_notes || self.show_update_confirm {
+            self.show_update_notes = false;
+            self.show_update_confirm = false;
+            cx.notify();
+            self.update_can_go_back();
+            return true;
+        }
         let handled = if self.show_help_dialog {
             self.show_help_dialog = false;
             true
@@ -1157,6 +1345,15 @@ impl Render for ShellView {
                             this.state.settings.shuffle_options =
                                 !this.state.settings.shuffle_options;
                             this.state.save_settings(this.state.settings.clone());
+                        }
+                        SettingsAction::ToggleAutoUpdates => {
+                            this.state.settings.auto_check_updates =
+                                !this.state.settings.auto_check_updates;
+                            this.state.save_settings(this.state.settings.clone());
+                        }
+                        SettingsAction::CheckUpdates => {
+                            #[cfg(feature = "self-update")]
+                            this.start_update_check(cx);
                         }
                     }
                     cx.notify();
@@ -2240,11 +2437,232 @@ impl Render for ShellView {
                 None
             };
 
-        root.when_some(help_dialog, |el, dlg| el.child(dlg))
+        #[cfg(feature = "self-update")]
+        let update_dialog = {
+            let status = crate::updater::status();
+            let available = match &status {
+                crate::updater::UpdateStatus::Available(update)
+                | crate::updater::UpdateStatus::Downloading { update, .. }
+                | crate::updater::UpdateStatus::Ready { update, .. }
+                | crate::updater::UpdateStatus::PermissionRequired { update, .. } => {
+                    Some(update.clone())
+                }
+                _ => None,
+            };
+            let body = if self.show_update_notes {
+                available
+                    .as_ref()
+                    .map(|update| update.release.body.chars().take(2_000).collect::<String>())
+            } else if self.show_update_confirm {
+                available.as_ref().map(|update| {
+                    tf(
+                        "update.confirm",
+                        language,
+                        &[(
+                            "size",
+                            &format!("{:.1}", update.asset.size as f64 / 1_048_576.0),
+                        )],
+                    )
+                })
+            } else {
+                match &status {
+                    crate::updater::UpdateStatus::Downloading { pct, .. } => Some(tf(
+                        "update.downloading",
+                        language,
+                        &[("pct", &pct.to_string())],
+                    )),
+                    crate::updater::UpdateStatus::Ready { .. } => Some(
+                        t(
+                            if cfg!(target_os = "android") {
+                                "update.ready.android"
+                            } else {
+                                "update.ready.windows"
+                            },
+                            language,
+                        )
+                        .to_string(),
+                    ),
+                    crate::updater::UpdateStatus::Error(
+                        crate::updater::UpdateError::BadSignature,
+                    ) => Some(t("update.badsig", language).to_string()),
+                    crate::updater::UpdateStatus::PermissionRequired { .. } => {
+                        Some(t("update.unknownapps", language).to_string())
+                    }
+                    crate::updater::UpdateStatus::Error(_) => {
+                        Some(t("update.failed", language).to_string())
+                    }
+                    _ => None,
+                }
+            };
+
+            body.filter(|_| {
+                matches!(self.state.active_screen, Screen::Home | Screen::Settings)
+            })
+            .map(|body| {
+                let is_downloading = matches!(&status, crate::updater::UpdateStatus::Downloading { .. });
+                let is_ready = matches!(
+                    &status,
+                    crate::updater::UpdateStatus::Ready { .. }
+                        | crate::updater::UpdateStatus::PermissionRequired { .. }
+                );
+                let is_error = matches!(&status, crate::updater::UpdateStatus::Error(_));
+                div()
+                    .id("update_dialog_backdrop")
+                    .absolute()
+                    .inset_0()
+                    .flex()
+                    .items_center()
+                    .justify_center()
+                    .p_4()
+                    .bg(colors.foreground.opacity(0.65))
+                    .child(
+                        div()
+                            .id("update_dialog_container")
+                            .flex()
+                            .flex_col()
+                            .w_full()
+                            .max_w(px(480.0))
+                            .max_h(relative(0.8))
+                            .overflow_y_scroll()
+                            .gap_4()
+                            .p_5()
+                            .rounded_2xl()
+                            .border_1()
+                            .border_color(colors.border)
+                            .bg(colors.background)
+                            .child(
+                                div()
+                                    .text_base()
+                                    .font_semibold()
+                                    .whitespace_normal()
+                                    .child(body),
+                            )
+                            .when(is_downloading, |el| {
+                                let pct = match &status {
+                                    crate::updater::UpdateStatus::Downloading { pct, .. } => *pct,
+                                    _ => 0,
+                                };
+                                el.child(
+                                    div()
+                                        .w_full()
+                                        .h(px(6.0))
+                                        .rounded_full()
+                                        .bg(colors.muted)
+                                        .child(
+                                            div()
+                                                .h_full()
+                                                .w(relative(pct as f32 / 100.0))
+                                                .rounded_full()
+                                                .bg(colors.primary),
+                                        ),
+                                )
+                                .child(
+                                    Button::new("cancel_update_download")
+                                        .outline()
+                                        .label(t("settings.cancel", language))
+                                        .on_click(cx.listener(|this, _, _, cx| {
+                                            this.update_cancelled.store(
+                                                true,
+                                                std::sync::atomic::Ordering::Relaxed,
+                                            );
+                                            cx.notify();
+                                        })),
+                                )
+                            })
+                            .when(self.show_update_confirm, |el| {
+                                el.child(
+                                    div()
+                                        .flex()
+                                        .justify_end()
+                                        .gap_2()
+                                        .child(
+                                            Button::new("cancel_update_confirm")
+                                                .outline()
+                                                .label(t("settings.cancel", language))
+                                                .on_click(cx.listener(|this, _, _, cx| {
+                                                    this.show_update_confirm = false;
+                                                    cx.notify();
+                                                })),
+                                        )
+                                        .child(
+                                            Button::new("confirm_update_download")
+                                                .primary()
+                                                .label(t("update.download", language))
+                                                .on_click(cx.listener(|this, _, _, cx| {
+                                                    this.show_update_confirm = false;
+                                                    this.start_update_download(cx);
+                                                    cx.notify();
+                                                })),
+                                        ),
+                                )
+                            })
+                            .when(self.show_update_notes, |el| {
+                                el.child(
+                                    Button::new("close_update_notes")
+                                        .outline()
+                                        .label(t("settings.cancel", language))
+                                        .on_click(cx.listener(|this, _, _, cx| {
+                                            this.show_update_notes = false;
+                                            cx.notify();
+                                        })),
+                                )
+                            })
+                            .when(is_ready, |el| {
+                                el.child(
+                                    Button::new("install_update")
+                                        .primary()
+                                        .label(t("update.install", language))
+                                        .on_click(cx.listener(|_this, _, _, cx| {
+                                            let ready = match crate::updater::status() {
+                                                crate::updater::UpdateStatus::Ready { update, path }
+                                                | crate::updater::UpdateStatus::PermissionRequired { update, path } => Some((update, path)),
+                                                _ => None,
+                                            };
+                                            if let Some((update, path)) = ready {
+                                                match amategeko_core::platform::install_update(&path)
+                                                {
+                                                    Ok(amategeko_core::platform::UpdateInstallOutcome::Launched) => {
+                                                        crate::updater::set_status(crate::updater::UpdateStatus::Idle);
+                                                    }
+                                                    Ok(amategeko_core::platform::UpdateInstallOutcome::PermissionRequired) => {
+                                                        crate::updater::set_status(crate::updater::UpdateStatus::PermissionRequired { update, path });
+                                                    }
+                                                    _ => {
+                                                        let _ = amategeko_core::platform::open_update_download_page(crate::updater::RELEASES_URL);
+                                                        let _ = std::fs::remove_file(path);
+                                                        crate::updater::set_status(crate::updater::UpdateStatus::Error(crate::updater::UpdateError::ManualRequired));
+                                                    }
+                                                }
+                                            }
+                                            cx.notify();
+                                        })),
+                                )
+                            })
+                            .when(is_error, |el| {
+                                el.child(
+                                    Button::new("open_update_download_page")
+                                        .outline()
+                                        .label(t("update.manual", language))
+                                        .on_click(cx.listener(|_this, _, _, cx| {
+                                            let _ = amategeko_core::platform::open_update_download_page(crate::updater::RELEASES_URL);
+                                            crate::updater::set_status(crate::updater::UpdateStatus::Idle);
+                                            cx.notify();
+                                        })),
+                                )
+                            }),
+                    )
+            })
+        };
+
+        let root = root
+            .when_some(help_dialog, |el, dlg| el.child(dlg))
             .when_some(finish_dialog, |el, dlg| el.child(dlg))
             .when_some(study_jump_dialog, |el, dlg| el.child(dlg))
             .when_some(study_restart_dialog, |el, dlg| el.child(dlg))
-            .when_some(study_finished_dialog, |el, dlg| el.child(dlg))
+            .when_some(study_finished_dialog, |el, dlg| el.child(dlg));
+        #[cfg(feature = "self-update")]
+        let root = root.when_some(update_dialog, |el, dlg| el.child(dlg));
+        root
     }
 }
 

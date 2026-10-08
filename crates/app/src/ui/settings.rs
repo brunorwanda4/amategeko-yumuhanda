@@ -2,7 +2,7 @@ use crate::state::AppState;
 use crate::ui::footer::AppFooter;
 use crate::ui::layout::{page_column, page_max_width, PagePadding as _};
 use crate::ui::scroll::{vertical_scrollbar, DragScroll};
-use amategeko_core::{t, Language, ThemeMode};
+use amategeko_core::{t, tf, Language, ThemeMode};
 use gpui::InteractiveElement as _;
 use gpui_kit::base::Disableable as _;
 use gpui_kit::base::StyledExt;
@@ -36,6 +36,8 @@ pub enum SettingsAction {
     SetQuestionLanguage(Language),
     ToggleShowBothLanguages,
     ToggleShuffleOptions,
+    ToggleAutoUpdates,
+    CheckUpdates,
 }
 
 pub struct SettingsView;
@@ -54,6 +56,23 @@ impl SettingsView {
         let colors = theme.colors;
         let s = &state.settings;
         let lang = s.language;
+        let update_status = crate::updater::status();
+        let update_message = match &update_status {
+            crate::updater::UpdateStatus::UpToDate => Some(t("update.uptodate", lang).to_string()),
+            crate::updater::UpdateStatus::Available(update)
+            | crate::updater::UpdateStatus::Downloading { update, .. }
+            | crate::updater::UpdateStatus::Ready { update, .. }
+            | crate::updater::UpdateStatus::PermissionRequired { update, .. } => Some(tf(
+                "update.available",
+                lang,
+                &[("v", update.release.tag_name.trim_start_matches('v'))],
+            )),
+            crate::updater::UpdateStatus::Error(crate::updater::UpdateError::BadSignature) => {
+                Some(t("update.badsig", lang).to_string())
+            }
+            crate::updater::UpdateStatus::Error(_) => Some(t("update.failed", lang).to_string()),
+            _ => None,
+        };
 
         div()
             .id("settings_scroll_view")
@@ -533,6 +552,17 @@ impl SettingsView {
                                     )),
                             ),
                     )
+                    .when(cfg!(feature = "self-update"), |el| {
+                        el.child(Self::render_updates_group(
+                            s,
+                            lang,
+                            is_desktop,
+                            update_status,
+                            update_message,
+                            cx,
+                            on_action,
+                        ))
+                    })
                     // SECTION 4: Data & Storage (Clear History)
                     .child(
                         div()
@@ -664,6 +694,135 @@ impl SettingsView {
 
     fn render_divider(colors: &ThemeColor) -> impl IntoElement {
         div().h(px(1.0)).bg(colors.border).mx_4()
+    }
+
+    fn render_updates_group<V: 'static>(
+        settings: &amategeko_core::Settings,
+        lang: Language,
+        is_desktop: bool,
+        status: crate::updater::UpdateStatus,
+        message: Option<String>,
+        cx: &mut Context<V>,
+        on_action: impl Fn(&mut V, SettingsAction, &mut Window, &mut Context<V>) + 'static + Copy,
+    ) -> impl IntoElement {
+        let colors = cx.theme().colors;
+        let checked = settings
+            .last_update_check
+            .map(Self::format_update_date)
+            .unwrap_or_else(|| "-".into());
+        div()
+            .flex()
+            .flex_col()
+            .gap_1p5()
+            .child(
+                div()
+                    .text_sm()
+                    .font_semibold()
+                    .text_color(colors.muted_foreground)
+                    .child(t("settings.group_updates", lang)),
+            )
+            .child(
+                div()
+                    .flex()
+                    .flex_col()
+                    .rounded_2xl()
+                    .border_1()
+                    .border_color(colors.border)
+                    .bg(colors.secondary)
+                    .p_4()
+                    .gap_4()
+                    .child(
+                        div()
+                            .flex()
+                            .items_center()
+                            .justify_between()
+                            .gap_3()
+                            .child(
+                                div()
+                                    .min_w_0()
+                                    .text_sm()
+                                    .font_semibold()
+                                    .child(t("update.setting", lang)),
+                            )
+                            .child(
+                                Switch::new("auto_check_updates")
+                                    .checked(settings.auto_check_updates)
+                                    .on_click(cx.listener(move |this, _, window, cx| {
+                                        on_action(
+                                            this,
+                                            SettingsAction::ToggleAutoUpdates,
+                                            window,
+                                            cx,
+                                        );
+                                    })),
+                            ),
+                    )
+                    .child(
+                        div()
+                            .flex()
+                            .when(is_desktop, |el| {
+                                el.flex_row().items_center().justify_between()
+                            })
+                            .when(!is_desktop, |el| el.flex_col().items_start().gap_3())
+                            .child(
+                                div()
+                                    .flex()
+                                    .flex_col()
+                                    .gap_0p5()
+                                    .child(div().text_sm().font_semibold().child(tf(
+                                        "update.version",
+                                        lang,
+                                        &[("v", env!("CARGO_PKG_VERSION"))],
+                                    )))
+                                    .child(
+                                        div().text_xs().text_color(colors.muted_foreground).child(
+                                            tf("update.checked", lang, &[("date", &checked)]),
+                                        ),
+                                    )
+                                    .when_some(message, |el, message| {
+                                        el.child(
+                                            div()
+                                                .text_xs()
+                                                .text_color(colors.muted_foreground)
+                                                .child(message),
+                                        )
+                                    }),
+                            )
+                            .child(
+                                Button::new("check_updates_now")
+                                    .outline()
+                                    .label(t("update.check", lang))
+                                    .disabled(matches!(
+                                        status,
+                                        crate::updater::UpdateStatus::Checking
+                                            | crate::updater::UpdateStatus::Downloading { .. }
+                                    ))
+                                    .on_click(cx.listener(move |this, _, window, cx| {
+                                        on_action(this, SettingsAction::CheckUpdates, window, cx);
+                                    })),
+                            ),
+                    ),
+            )
+    }
+
+    fn format_update_date(timestamp: u64) -> String {
+        let days = (timestamp / 86_400).min(i64::MAX as u64) as i64;
+        let shifted = days + 719_468;
+        let era = if shifted >= 0 {
+            shifted
+        } else {
+            shifted - 146_096
+        } / 146_097;
+        let day_of_era = shifted - era * 146_097;
+        let year_of_era =
+            (day_of_era - day_of_era / 1_460 + day_of_era / 36_524 - day_of_era / 146_096) / 365;
+        let mut year = year_of_era + era * 400;
+        let day_of_year = day_of_era - (365 * year_of_era + year_of_era / 4 - year_of_era / 100);
+        let month_part = (5 * day_of_year + 2) / 153;
+        let day = day_of_year - (153 * month_part + 2) / 5 + 1;
+        let month = month_part + if month_part < 10 { 3 } else { -9 };
+        year += i64::from(month <= 2);
+        format!("{year:04}-{month:02}-{day:02}")
     }
 
     fn render_slider_row(
