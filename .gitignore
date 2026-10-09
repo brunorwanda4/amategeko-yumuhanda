@@ -167,3 +167,7 @@ pnpm-lock.yaml
 # Real questions
 !ibibazo_byamategeko_y_umuhanda.pdf
 update.key
+
+# GPUI Kit Web Spike output
+website/public/app-spike/
+
