@@ -3,28 +3,32 @@ title: Overview
 description: Offline study app for the Rwanda driving theory test.
 ---
 
+import { sampleCount, APP_QUESTION_COUNT } from "@/lib/facts";
+
 **Amategeko y'Umuhanda** is an offline study app for the Rwandan provisional driving-licence theory exam.
+
+Try the free [web demo](/app) with {sampleCount} sample questions, or [download the app](/download) for all {APP_QUESTION_COUNT}.
 
 <Facts
   items={[
     {
       label: "Platforms",
-      platforms: ["Windows", "Android"],
-      value: "Windows (desktop) and Android (mobile, ARM64, Android 8+)"
+      platforms: ["Windows", "Android", "Web (demo)"],
+      value: "Windows, Android, plus \"Web (demo)\""
     },
     {
       label: "Languages",
-      value: "Kinyarwanda (default) and English"
+      value: "English (default) and Kinyarwanda"
     },
     {
       label: "Offline",
-      value: "no internet connection required — no ads, no analytics, no tracking"
+      value: "Windows and Android: no internet required. Web: needs internet."
     }
   ]}
 />
 
 <Stats>
-  <Stat value="404" label="Practice questions" />
+  <Stat value={APP_QUESTION_COUNT} label="Practice questions" />
   <Stat value="3" label="Quiz modes" />
   <Stat value="100%" label="Offline study tool" />
 </Stats>
@@ -37,7 +41,7 @@ description: Offline study app for the Rwanda driving theory test.
     description="Easy (learning), Medium (timed exam simulation), Hard (strict exam conditions)"
   />
   <Card
-    title="404 questions"
+    title={`${APP_QUESTION_COUNT} questions`}
     description="with road-sign images, star bookmarks, and mistake tracking"
   />
   <Card

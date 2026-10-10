@@ -209,3 +209,4 @@ Do not claim something works unless you ran it. If you could not run it (for exa
 - Reply to the owner in simple English. Kinyarwanda is used only for in-app text and the Kinyarwanda parts of the website.
 
 The app font is fixed (FONT_FAMILY). Never add a font family setting and never hard-code another font.
+Docs and website pages must use `website/lib/facts.ts` for question counts; never hard-code them.

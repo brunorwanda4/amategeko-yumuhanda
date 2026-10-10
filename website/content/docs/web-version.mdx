@@ -3,7 +3,32 @@ title: Web Version
 description: Practice directly in your web browser without installing anything.
 ---
 
-Amategeko y'Umuhanda can run directly in your web browser at [/app](/app). It provides the same full quiz experience as the desktop and mobile applications without requiring any installation.
+import { sampleCount, APP_QUESTION_COUNT } from "@/lib/facts";
+
+<Callout type="info">
+  The web version is a demo. It has {sampleCount} sample questions. The Windows and Android apps include all {APP_QUESTION_COUNT} questions. [Download](/download)
+</Callout>
+
+Amategeko y'Umuhanda can run directly in your web browser at [/app](/app).
+
+## Comparison
+
+| Feature | Web demo | Windows and Android |
+|---|---|---|
+| **Questions** | {sampleCount} sample questions | All {APP_QUESTION_COUNT} questions |
+| **Quiz modes** | Easy, Medium, and Hard | Easy, Medium, and Hard |
+| **Languages** | Kinyarwanda | English and Kinyarwanda |
+| **Saves progress** | Saved only in this browser (lost if site data is cleared) | Saved locally on device |
+| **Works offline** | Needs an internet connection | No internet required |
+| **Updates** | Always opens the latest version | Built-in update check |
+| **Keyboard shortcuts** | Ctrl combinations are turned off to avoid clashes with the browser | Full keyboard shortcuts (desktop) |
+| **Install** | None (runs in browser) | Download and install |
+
+## What the demo limits
+
+- Quiz length cannot be more than {sampleCount}
+- "Study all questions" covers only the samples
+- Practice sets such as Signs may have fewer questions
 
 ### Supported Browsers
 
@@ -13,11 +38,3 @@ The web version requires hardware-accelerated graphics support:
 - Firefox (version 115+)
 
 Your browser must support WebGPU or WebGL2.
-
-### Differences from the Downloaded App
-
-- **No automatic updates**: You are always running the latest version published to the site.
-- **Local browser storage**: Progress and quiz history are saved in localStorage in this browser only. Clearing site data deletes it.
-- **First-load internet**: The WebAssembly bundle loads on your first visit; afterwards, assets are cached by your browser.
-
-If you prefer completely offline practice or want cross-device file backups, [download the native app](/download) for Windows or Android.

@@ -3,17 +3,21 @@ title: Quiz Modes
 description: How each quiz mode works — questions, time, feedback, and pass mark.
 ---
 
+import { sampleCount, APP_QUESTION_COUNT } from "@/lib/facts";
+
 ## Modes
 
 | | Easy (Byoroshye) | Medium (Hagati) | Hard (Bikomeye) | My Mistakes |
 |---|---|---|---|---|
-| **Questions** | 5–100 random | 5–100 random | 20 weighted (images/complex) | 5–100 from your mistake history |
+| **Questions** | 5–100 random* | 5–100 random* | 20 weighted (images/complex)* | 5–100 from your mistake history |
 | **Timer** | Optional elapsed (no countdown) | Countdown (default 20 min) | Countdown (default 12 min) | Easy rules — no countdown |
 | **Instant feedback** | ✓ green/red highlight + explanation | ✗ revealed on results | ✗ revealed on results | ✓ Easy rules |
 | **Navigation** | Free back/forward/skip | Back/forward, flag, jump grid | Forward-only, no skip, no back | Free |
 | **Answers locked** | On first choice | Modifiable until finish | Single confirmation, cannot change | On first choice |
 | **Pass mark** | Shown after (configurable) | Shown after (configurable) | Shown after (configurable) | N/A |
 | **Auto-submit** | No | On timer expiry | On timer expiry | No |
+
+*\*In the downloadable apps, all {APP_QUESTION_COUNT} questions are available; on the web demo, {sampleCount} sample questions are available.*
 
 **Default pass mark:** 12 / 20 (configurable 10–20 in Settings).
 
