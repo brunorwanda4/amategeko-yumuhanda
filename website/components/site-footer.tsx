@@ -20,13 +20,16 @@ export function SiteFooter() {
     <footer className="border-t border-border bg-card">
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-12 sm:px-8 md:grid-cols-[1.5fr_1fr_1fr]">
         <div className="flex max-w-sm flex-col gap-3">
-          <Image
-            src="/logo.png"
-            alt="Amategeko y'Umuhanda logo"
-            width={36}
-            height={36}
-            className="rounded-md"
-          />
+          <div className=" flex flex-row gap-2 items-center">
+            <Image
+              src="/logo.png"
+              alt="Amategeko y'Umuhanda logo"
+              width={36}
+              height={36}
+              className="rounded-md"
+            />
+            <h3 className="">Amategeko y'Umuhanda</h3>
+          </div>
           <p className="text-sm max-w-sm leading-relaxed text-muted-foreground">
             Free study app for the Rwanda driving theory test.
           </p>

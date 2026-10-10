@@ -54,7 +54,7 @@
   --fd-sidebar-width: 280px;
   --fd-toc-width: 220px;
   --fd-header-height: 60px;
-  --fd-layout-width: 1320px;
+  --fd-layout-width: 100%;
 }
 
 .dark {
@@ -181,10 +181,27 @@ h3,
   letter-spacing: -0.02em;
 }
 
-/* Three-column layout sizing */
+/* Three-column layout sizing: full width */
 #nd-docs-layout {
   --fd-sidebar-width: 280px !important;
   --fd-toc-width: 220px !important;
+  --fd-layout-width: 100% !important;
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+#nd-docs-layout main {
+  justify-items: stretch !important;
+  width: 100% !important;
+}
+
+#nd-docs-layout #nd-page {
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+#nd-docs-layout #nd-page .prose {
+  max-width: 100% !important;
 }
 
 @media (min-width: 768px) {
@@ -205,6 +222,20 @@ h3,
   background-color: var(--color-fd-accent) !important;
   color: var(--color-fd-foreground) !important;
   font-weight: 500 !important;
+  position: relative;
+}
+
+/* Active indicator bar on nested sidebar links */
+#nd-sidebar div[data-state] a[data-active="true"]::before,
+#nd-sidebar [data-collapsible] a[data-active="true"]::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 18%;
+  bottom: 18%;
+  width: 2.5px;
+  background-color: var(--color-fd-primary);
+  border-radius: 9999px;
 }
 
 /* Active TOC item: solid foreground-color left border */

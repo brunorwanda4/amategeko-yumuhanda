@@ -1,4 +1,4 @@
-// Single source of truth for all URLs and author info.
+﻿// Single source of truth for all URLs and author info.
 
 export const REPO_SLUG = "brunorwanda4/amategeko-yumuhanda";
 
@@ -14,6 +14,15 @@ export const LATEST_RELEASE_API_URL =
 export const AUTHOR_NAME = "Rwanda Bruno";
 
 export const AUTHOR_URL = "https://github.com/brunorwanda4";
+
+export const AUTHOR_INSTAGRAM_URL = "https://instagram.com/bruno_rwanda";
+
+export const AUTHOR_WHATSAPP_URL = "https://wa.me/250781419525";
+
+export const AUTHOR_TWITTER_URL = "https://x.com/rwanda_bruno";
+
+export const AUTHOR_LINKEDIN_URL =
+  "https://www.linkedin.com/in/rwanda-bruno-b5b5542a6/";
 
 export const SITE_URL = "https://amategeko-yumuhanda-alpha.vercel.app";
 
