@@ -150,7 +150,7 @@ export default function AppPage() {
     <div className="relative h-[100dvh] w-screen overflow-hidden bg-background text-foreground select-none">
       <Link
         href="/"
-        className="fixed left-2 top-2 z-50 rounded bg-background/60 px-1.5 py-0.5 text-xs text-muted-foreground backdrop-blur opacity-60 transition-opacity hover:opacity-100 hover:text-foreground"
+        className="fixed right-2 top-2 z-50 rounded bg-background/60 px-1.5 py-0.5 text-xs text-muted-foreground backdrop-blur opacity-60 transition-opacity hover:opacity-100 hover:text-foreground"
       >
         Back to site
       </Link>
