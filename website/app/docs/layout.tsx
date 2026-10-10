@@ -9,15 +9,6 @@ export default function Layout({ children }: { children: ReactNode }) {
     <DocsLayout
       tree={docsTree}
       {...baseOptions}
-      containerProps={{
-        style: {
-          gridTemplate: `"sidebar header toc"
-"sidebar toc-popover toc"
-"sidebar main toc" 1fr / var(--fd-sidebar-col) minmax(0, 1fr) var(--fd-toc-width)`,
-          width: "100%",
-          maxWidth: "100%",
-        },
-      }}
       links={[
         {
           text: "Docs",

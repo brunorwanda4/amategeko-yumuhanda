@@ -44,7 +44,7 @@ export default async function Page({ params }: Props) {
           <ViewOptionsPopover githubUrl={githubUrl} />
         </div>
       </header>
-      <DocsBody className="max-w-none">
+      <DocsBody>
         <MDX components={mdxComponents} />
       </DocsBody>
     </DocsPage>
