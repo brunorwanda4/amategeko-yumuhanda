@@ -9,6 +9,8 @@ Every image, icon, and font used in the documentation website is listed here.
 
 | `website/components/canvasui/Ripple.tsx` | [Canvas UI Ripple](https://canvasui.dev/docs/components/ripple) by David Haz | MIT + Commons Clause | No |
 | Inline interface icons in `website/components/icons.tsx` | Original SVG artwork for this website | Proprietary - all rights reserved | No |
+| Lucide icons in the landing-page components | [Lucide](https://lucide.dev/) | ISC | No |
+| Quiz preview, language previews, and stop-sign illustration | Original interface artwork based on the project owner's supplied design reference | Proprietary - all rights reserved | No |
 
 | Bricolage Grotesque | [Google Fonts](https://fonts.google.com/specimen/Bricolage+Grotesque) | SIL Open Font License 1.1 | No; loaded with `next/font` (self-hosted at build time) |
 

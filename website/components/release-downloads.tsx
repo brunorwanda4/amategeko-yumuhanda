@@ -32,8 +32,8 @@ export function ReleaseDownloads() {
         const response = await fetch(LATEST_RELEASE_API_URL, { headers: { Accept: "application/vnd.github+json" } });
         if (!response.ok) throw new Error("Release request failed");
         const latest = (await response.json()) as LatestRelease;
-        const hasWindows = latest.assets.some((asset) => asset.name.endsWith("-windows-setup.exe"));
-        const hasAndroid = latest.assets.some((asset) => asset.name.endsWith("-android-arm64.apk"));
+        const hasWindows = latest.assets.some((asset) => asset.name.toLowerCase().endsWith(".exe"));
+        const hasAndroid = latest.assets.some((asset) => asset.name.toLowerCase().endsWith(".apk"));
         if (!hasWindows || !hasAndroid) throw new Error("Release assets missing");
         sessionStorage.setItem(CACHE_KEY, JSON.stringify({ savedAt: Date.now(), release: latest } satisfies CachedRelease));
         if (!cancelled) setRelease(latest);
@@ -51,8 +51,8 @@ export function ReleaseDownloads() {
   if (!release) {
     return <div className="grid gap-5 md:grid-cols-2" aria-label="Loading latest release"><ReleaseSkeleton /><ReleaseSkeleton /></div>;
   }
-  const windows = release.assets.find((asset) => asset.name.endsWith("-windows-setup.exe"));
-  const android = release.assets.find((asset) => asset.name.endsWith("-android-arm64.apk"));
+  const windows = release.assets.find((asset) => asset.name.toLowerCase().endsWith(".exe"));
+  const android = release.assets.find((asset) => asset.name.toLowerCase().endsWith(".apk"));
   if (!windows || !android) return null;
   return (
     <div className="grid gap-5 md:grid-cols-2">

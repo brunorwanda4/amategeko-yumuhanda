@@ -83,7 +83,7 @@ bun run build        # must pass before every commit that touches website/
 - Never remove or reorder a translation key without updating both language files and the parity test.
 
 **Privacy and scope**
-- Network is allowed only in the updater for GitHub Releases, signed files, and user-confirmed downloads. Everything else stays offline with no analytics, telemetry, crash reporters, ads, or accounts.
+- The native apps use the network only for the signed update check; the web build uses no network except loading its own files from the same site. No JavaScript app logic: only the loader in website/app/app/page. Never build the web app with QUESTION_SET=full without the owner's written approval.
 - Never commit secrets, API keys, keystores, `.jks`, `.p12`, `local.properties`, `.env` files, or signing passwords.
 - Never commit build output (`target/`, `build/`, `.gradle/`, `*.apk`, `*.aab`, `*.ipa`, `node_modules/`, `.next/`, `out/`, `.source/`) or IDE files.
 - Never commit the source PDF or large binary files unless the owner explicitly says so. The PDF is marked "RESTRICTED". Check with the owner before committing `assets/questions.json` and `assets/images/` to any public remote.

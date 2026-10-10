@@ -1,4 +1,13 @@
 {
   "title": "Docs",
-  "pages": ["index", "install", "quiz-modes", "screens", "settings", "shortcuts", "development"]
+  "pages": [
+    "index",
+    "install",
+    "web-version",
+    "quiz-modes",
+    "screens",
+    "settings",
+    "shortcuts",
+    "development"
+  ]
 }

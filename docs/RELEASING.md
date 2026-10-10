@@ -14,13 +14,21 @@ Repository: `https://github.com/brunorwanda4/amategeko-yumuhanda`.
 ### Windows
 
 - Install Inno Setup: `winget install -e --id JRSoftware.InnoSetup`.
-- Build with `installer/build.ps1`; add `-Portable` when a portable ZIP is needed.
+- Build with `installer/build.ps1`; add `-Portable` when a portable ZIP is needed`.
 - Sign the setup output manually with `minisign -Sm <file>`.
 - Upload the setup `.exe` and its `.minisig` file to GitHub Releases.
 - Never change the AppId in `installer/amategeko.iss`.
 - Test a fresh install with the desktop shortcut ticked and unticked.
 - Test an upgrade over an old install and a silent update from inside the app.
-- Test uninstall while keeping data, then reinstall and test deleting data.
+- Test uninstall while keeping data, then reinstall and test deleting data`.
+
+### Web Build
+
+- Target: `rustup target add wasm32-unknown-unknown`.
+- wasm-bindgen: `cargo install wasm-bindgen-cli --version 0.2.129`.
+- wasm-opt: Binaryen `version_122` via `winget install WebAssembly.binaryen`.
+- Build: run `scripts/build-web.ps1` (or `scripts/build-web.sh`). Use `-Full` only with owner authorization.
+- Outputs are hashed and written to `website/public/app/`, tracked in git for static hosting.
 
 1. Bump workspace version in `Cargo.toml` and Android `versionCode`/`versionName`.
 2. Update `CHANGELOG.md` with release additions and fixes.

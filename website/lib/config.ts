@@ -21,3 +21,9 @@ export const SITE_NAME = "Amategeko y'Umuhanda";
 
 export const SITE_DESCRIPTION =
   "Offline study app for the Rwanda driving theory test. Windows and Android, English and Kinyarwanda.";
+
+export const DEFAULT_WINDOWS_DOWNLOAD_URL =
+  `${REPO_URL}/releases/download/v1.0.0/Amategeko-y-Umuhanda-v1.0.0-Windows-Setup.exe`;
+
+export const DEFAULT_ANDROID_DOWNLOAD_URL =
+  `${REPO_URL}/releases/download/v1.0.0/Amategeko-y-Umuhanda-v1.0.0-Android-arm64.apk`;

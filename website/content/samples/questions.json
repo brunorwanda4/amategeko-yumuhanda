@@ -1,0 +1,327 @@
+[
+  {
+    "text": "Ikinyabiziga cyose cyangwa ibinyabiziga\nbigenda bigomba kugira:",
+    "options": {
+      "a": "Umuyobozi",
+      "b": "Umuherekeza",
+      "c": "A na B ni ibisubizo by'ukuri",
+      "d": "Nta gisubizo cy'ukuri kirimo"
+    },
+    "correct": "a",
+    "image": null,
+    "has_image": false,
+    "id": 1
+  },
+  {
+    "text": "Ijambo “akayira” bivuga inzira\nnyabagendwa ifunganye yagenewe gusa:",
+    "options": {
+      "a": "Abanyamaguru",
+      "b": "Ibinyabiziga bigendera ku biziga bibiri",
+      "c": "A na B ni ibisubizo by'ukuri",
+      "d": "Nta gisubizo cy'ukuri kirimo"
+    },
+    "correct": "c",
+    "image": null,
+    "has_image": false,
+    "id": 2
+  },
+  {
+    "text": "Umurongo uciyemo uduce umenyesha\nahegereye umurongo ushobora kuzuzwa\nn'uturanga gukata tw'ibara ryera utwo\nturanga cyerekezo tumenyesha :",
+    "options": {
+      "a": "Igisate cy'umuhanda abayobozi bagomba gukurikira",
+      "b": "Ahegereye umurongo ukomeje",
+      "c": "Igabanurwa ry'umubare w'ibisate by'umuhanda mu cyerekezo bajyamo",
+      "d": "A na C nibyo"
+    },
+    "correct": "c",
+    "image": null,
+    "has_image": false,
+    "id": 3
+  },
+  {
+    "text": "Ahantu ho kugendera mu muhanda\nherekanwa n'ibimenyetso bimurika\nibinyabiziga ntibishobora kuhagenda :",
+    "options": {
+      "a": "Biteganye",
+      "b": "Ku murongo umwe",
+      "c": "A na B nibyo",
+      "d": "Nta gisubizo cy'ukuri kirimo"
+    },
+    "correct": "d",
+    "image": null,
+    "has_image": false,
+    "id": 4
+  },
+  {
+    "text": "Ibinyabiziga bikurikira bigomba gukorerwa\nisuzumwa buri mwaka:",
+    "options": {
+      "a": "Ibinyabiziga bigenewe gutwara abagenzi muri rusange",
+      "b": "Ibinyabiziga bigenewe gutwara ibintu birengeje toni 3.5",
+      "c": "Ibinyabiziga bigenewe kwigisha gutwara",
+      "d": "Nta gisubizo cy'ukuri kirimo"
+    },
+    "correct": "d",
+    "image": null,
+    "has_image": false,
+    "id": 5
+  },
+  {
+    "text": "Ubugari bwa romoruki ikuruwe\nn'ikinyamitende itatu ntibugomba kurenza\nibipimo bikurikira:",
+    "options": {
+      "a": "cm75",
+      "b": "cm125",
+      "c": "cm265",
+      "d": "Nta gisubizo cy'ukuri"
+    },
+    "correct": "d",
+    "image": null,
+    "has_image": false,
+    "id": 6
+  },
+  {
+    "text": "Uburebure bw'ibinyabiziga bikurikira\nntibugomba kurenga metero 11 :",
+    "options": {
+      "a": "Ibifite umutambiko umwe uhuza imipira",
+      "b": "Ibifite imitambiko ibiri ikurikiranye mu bugari bwayo",
+      "c": "Makuzungu",
+      "d": "Nta gisubizo cy'ukuri"
+    },
+    "correct": "d",
+    "image": null,
+    "has_image": false,
+    "id": 7
+  },
+  {
+    "text": "Ikinyabiziga kibujijwe guhagarara akanya\nkanini aha hakurikira :",
+    "options": {
+      "a": "Ahatarengeje  metero 1 imbere cyangwa inyuma y'ikinyabiziga gihagaze akanya gato cyangwa kanini :",
+      "b": "Ahantu hari ibimenyetso bibuza byabugenewe",
+      "c": "Aho abanyamaguru banyura mu muhanda ngo bakikire inkomyi",
+      "d": "Ibisubizo byose nibyo"
+    },
+    "correct": "d",
+    "image": null,
+    "has_image": false,
+    "id": 8
+  },
+  {
+    "text": "Kunyuranaho bikorerwa:",
+    "options": {
+      "a": "Mu ruhande rw'iburyo gusa",
+      "b": "Igihe cyose ni ibumoso",
+      "c": "Iburyo iyo unyura ku nyamaswa",
+      "d": "Nta gisubizo cy'ukuri kirimo"
+    },
+    "correct": "d",
+    "image": null,
+    "has_image": false,
+    "id": 9
+  },
+  {
+    "text": "Icyapa cyerekana umuvuduko ntarengwa\nikinyabiziga kitagomba kurenza gishyirwa gusa\nku binyabiziga bifite uburemere ntarengwa\nbukurikira:",
+    "options": {
+      "a": "Burenga toni 1",
+      "b": "Burenga toni 2",
+      "c": "Burenga toni 24",
+      "d": "Nta gisubizo cy'ukuri kirimo"
+    },
+    "correct": "d",
+    "image": null,
+    "has_image": false,
+    "id": 10
+  },
+  {
+    "text": "Ahatari mu nsisiro umuvuduko ntarengwa\nmu isaha wa velomoteri ni:",
+    "options": {
+      "a": "Km50",
+      "b": "Km40",
+      "c": "Km30",
+      "d": "Nta gisubizo cy'ukuri"
+    },
+    "correct": "a",
+    "image": null,
+    "has_image": false,
+    "id": 11
+  },
+  {
+    "text": "Umuyobozi ugenda mu muhanda igihe\nubugari bwawo budatuma anyuranaho nta\nnkomyi ashobora kunyura mu kayira\nk'abanyamaguru ariko amaze kureba ibi\nbikurikira:",
+    "options": {
+      "a": "Umuvuduko w'abanyamaguru",
+      "b": "Ubugari bw'umuhanda",
+      "c": "Umubare w'abanyamaguru",
+      "d": "Nta gisubizo cy'ukuri kirimo"
+    },
+    "correct": "d",
+    "image": null,
+    "has_image": false,
+    "id": 12
+  },
+  {
+    "text": "Ku byerekeye kwerekana ibinyabiziga\nn'ukumurika kwabyo ndetse no kwerekana\nihindura ry'ibyerekezo byabyo. Birabujijwe\ngukora andi matara cyangwa utugarurarumuri\nuretse ibitegetswe ariko ntibireba amatara\nakurikira:",
+    "options": {
+      "a": "Amatara ndanga",
+      "b": "Amatara ari imbere mu modoka",
+      "c": "Amatara ndangaburambarare",
+      "d": "Ibisubizo byose nibyo"
+    },
+    "correct": "b",
+    "image": null,
+    "has_image": false,
+    "id": 13
+  },
+  {
+    "text": "Iyo nta mategeko awugabanya\nby'umwihariko umuvuduko ntarengwa\nw'amapikipiki mu isaha ni:",
+    "options": {
+      "a": "Km25",
+      "b": "Km70",
+      "c": "Km40",
+      "d": "Nta gisubizo cy'ukuri kirimo"
+    },
+    "correct": "d",
+    "image": null,
+    "has_image": false,
+    "id": 14
+  },
+  {
+    "text": "Uburyo bukoreshwa kugirango ikinyabiziga\nkigende gahoro igihe feri idakora neza babwita:",
+    "options": {
+      "a": "Feri y'urugendo",
+      "b": "Feri yo guhagarara umwanya munini",
+      "c": "Feri yo gutabara",
+      "d": "Nta gisubizo cy'ukuri kirimo"
+    },
+    "correct": "c",
+    "image": null,
+    "has_image": false,
+    "id": 15
+  },
+  {
+    "text": "Nibura ikinyabiziga gitegetswe kugira\nuduhanagurakirahure tungahe:",
+    "options": {
+      "a": "2",
+      "b": "3",
+      "c": "1",
+      "d": "Nta gisubizo cy'ukuri kirimo"
+    },
+    "correct": "c",
+    "image": null,
+    "has_image": false,
+    "id": 16
+  },
+  {
+    "text": "Amatara maremare y'ikinyabiziga agomba\nkuzimwa mu bihe bikurikira:",
+    "options": {
+      "a": "Iyo umuhanda umurikiye umuyobozi abasha kureba muri metero 20",
+      "b": "Iyo ikinyabiziga kigiye kubisikana n'ibindi",
+      "c": "Iyo ari mu nsisiro",
+      "d": "Ibisubizo byose ni ukuri"
+    },
+    "correct": "b",
+    "image": null,
+    "has_image": false,
+    "id": 17
+  },
+  {
+    "text": "Ikinyabiziga ntigishobora kugira amatara\narenga abiri y'ubwoko bumwe keretse\nkubyerekeye amatara akurikira:",
+    "options": {
+      "a": "Itara ndangamubyimba",
+      "b": "Itara ryerekana icyerekezo",
+      "c": "Itara ndangaburumbarare",
+      "d": "Ibisubizo byose ni ukuri"
+    },
+    "correct": "d",
+    "image": null,
+    "has_image": false,
+    "id": 18
+  },
+  {
+    "text": "Ubugari bwa romoruki ikuruwe n'igare\ncyangwa velomoteri ntiburenza ibipimo\nbikurikira:",
+    "options": {
+      "a": "cm25",
+      "b": "cm125",
+      "c": "cm45",
+      "d": "Nta gisubizo cy'ukuri kirimo"
+    },
+    "correct": "d",
+    "image": null,
+    "has_image": false,
+    "id": 19
+  },
+  {
+    "text": "Ibinyabiziga\nbikoreshwa\nnka\ntagisi,\nbitegerereza abantu mu nzira nyabagendwa,\nbishobora gushyirwaho itara ryerekana ko\nikinyabiziga\nkitakodeshejwe.\nIryo\ntara\nrishyirwaho ku buryo bukurikira:",
+    "options": {
+      "a": "Ni itara ry'icyatsi rishyirwa imbere ku kinyabiziga",
+      "b": "Ni itara ry'icyatsi rishyirwa ibumoso",
+      "c": "Ni itara ry'umuhondo rishyirwa inyuma",
+      "d": "A na C ni ibisubizo by'ukuri"
+    },
+    "correct": "a",
+    "image": null,
+    "has_image": false,
+    "id": 20
+  },
+  {
+    "text": "Za otobisi zagenewe gutwara abanyeshuri\nzishobora gushyirwaho amatara abiri asa\nn'icunga rihishije amyasa kugirango yerekane\nko zihagaze no kwerekana ko bagomba\nkwitonda, ayo matara ashyirwaho ku buryo\nbukurikira :",
+    "options": {
+      "a": "Amatara abiri ashyirwa inyuma",
+      "b": "Amatara abiri ashyirwa imbere",
+      "c": "Rimwe rishyirwa imbere irindi inyuma",
+      "d": "b na c ni ibisubizo by'ukuri"
+    },
+    "correct": "c",
+    "image": null,
+    "has_image": false,
+    "id": 21
+  },
+  {
+    "text": "Itara ryo guhagarara ry'ibara ritukura\nrigomba kugaragara igihe ijuru rikeye nibura\nmu ntera ikurikira:",
+    "options": {
+      "a": "Metero 100 ku manywa na metero 20 mu ijoro",
+      "b": "Metero 150 ku manywa na metero50 mu ijoro",
+      "c": "Metero 200 ku manywa na metero100 mu ijoro",
+      "d": "Nta gisubizo cy'ukuri kirimo"
+    },
+    "correct": "d",
+    "image": null,
+    "has_image": false,
+    "id": 22
+  },
+  {
+    "text": "Iyo umuvuduko w'ibinyabiziga bidapakiye\nushobora kurenga km50 mu isaha ahategamye,\nbigomba kuba bifite ibikoresho by'ihoni\nbyumvikanira mu ntera:",
+    "options": {
+      "a": "Metero 100",
+      "b": "Metero 200",
+      "c": "Metero 50",
+      "d": "Metero 150"
+    },
+    "correct": "c",
+    "image": null,
+    "has_image": false,
+    "id": 23
+  },
+  {
+    "text": "Birabujijwe kugenza ibinyabiziga\nbigendeshwa na moteri naza romoruki\nzikururwa nabyo, iyo ibiziga byambaye inziga\nzidahagwa cyangwa inziga zikururuka zifite\numubyimba uri hasi ya cm 4.  Ariko ibyo\nntibikurikizwa kubinyabiziga bikurikira:",
+    "options": {
+      "a": "Ku binyabiziga by'ingabo bijya ahatarenga km25",
+      "b": "Ibinyabiziga bihinga",
+      "c": "Ibinyabiziga bya police",
+      "d": "Nta gisubizo cy'ukuri kirimo"
+    },
+    "correct": "d",
+    "image": null,
+    "has_image": false,
+    "id": 24
+  },
+  {
+    "text": "Igice cy'inzira nyabagendwa kigarukira ku\nmirongo ibiri yera icagaguye ibangikanye kandi\ngifite ubugari budahagije kugira ngo imodoka\nzitambuke neza, kiba ari:",
+    "options": {
+      "a": "Ahanyurwa n'amagare na velomoteri",
+      "b": "Ahanyurwa n'ingorofani",
+      "c": "Ahanyurwa n'ibinyamitende",
+      "d": "Nta gisubizo cy'ukuri kirimo"
+    },
+    "correct": "c",
+    "image": null,
+    "has_image": false,
+    "id": 25
+  }
+]
