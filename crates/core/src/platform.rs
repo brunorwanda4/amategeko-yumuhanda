@@ -11,6 +11,18 @@ pub const SETTINGS_FILE: &str = "settings.json";
 pub const PROGRESS_FILE: &str = "progress.json";
 pub const IN_PROGRESS_FILE: &str = "in_progress.json";
 
+pub const WEB_STORAGE_PREFIX: &str = "amategeko:";
+
+/// Helper to produce a prefixed web storage key from a filename/key.
+pub fn web_storage_key(filename: &str) -> String {
+    format!("{}{}", WEB_STORAGE_PREFIX, filename)
+}
+
+/// Helper to parse the original filename/key back from a prefixed web storage key.
+pub fn web_storage_key_to_filename(key: &str) -> Option<&str> {
+    key.strip_prefix(WEB_STORAGE_PREFIX)
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum UpdateInstallOutcome {
     Launched,
@@ -49,6 +61,25 @@ pub fn open_update_download_page(url: &str) -> std::io::Result<()> {
         .get()
         .ok_or_else(|| std::io::Error::other("update installer unavailable"))?
         .open_download_page(url)
+}
+
+/// Platform service that controls whether external URLs may be opened.
+pub trait OpenUrl: Send + Sync {
+    fn open_url(&self, url: &str) -> bool;
+}
+
+static OPEN_URL_HANDLER: OnceLock<Arc<dyn OpenUrl>> = OnceLock::new();
+
+pub fn register_open_url(handler: Arc<dyn OpenUrl>) -> bool {
+    OPEN_URL_HANDLER.set(handler).is_ok()
+}
+
+pub fn open_url(url: &str) -> bool {
+    if let Some(handler) = OPEN_URL_HANDLER.get() {
+        handler.open_url(url)
+    } else {
+        false
+    }
 }
 
 /// Platform service that controls whether the display may sleep.
@@ -153,12 +184,16 @@ pub trait Storage: Send + Sync {
     fn storage_dir(&self) -> PathBuf;
 
     /// Read file content as string.
+    #[cfg(not(target_arch = "wasm32"))]
     fn read_file(&self, filename: &str) -> std::io::Result<String> {
         let path = self.storage_dir().join(filename);
         std::fs::read_to_string(path)
     }
+    #[cfg(target_arch = "wasm32")]
+    fn read_file(&self, filename: &str) -> std::io::Result<String>;
 
     /// Write file content atomically.
+    #[cfg(not(target_arch = "wasm32"))]
     fn write_file(&self, filename: &str, content: &str) -> std::io::Result<()> {
         let dir = self.storage_dir();
         std::fs::create_dir_all(&dir)?;
@@ -167,8 +202,11 @@ pub trait Storage: Send + Sync {
         std::fs::write(&tmp_path, content)?;
         std::fs::rename(tmp_path, path)
     }
+    #[cfg(target_arch = "wasm32")]
+    fn write_file(&self, filename: &str, content: &str) -> std::io::Result<()>;
 
     /// Delete file if exists.
+    #[cfg(not(target_arch = "wasm32"))]
     fn delete_file(&self, filename: &str) -> std::io::Result<()> {
         let path = self.storage_dir().join(filename);
         if path.exists() {
@@ -176,6 +214,8 @@ pub trait Storage: Send + Sync {
         }
         Ok(())
     }
+    #[cfg(target_arch = "wasm32")]
+    fn delete_file(&self, filename: &str) -> std::io::Result<()>;
 
     fn load_settings(&self) -> Settings {
         match self.read_file(SETTINGS_FILE) {
@@ -226,7 +266,7 @@ pub trait Storage: Send + Sync {
     }
 
     /// Load the saved desktop window state. Returns `None` when the file is missing or
-    /// corrupt; a corrupt file is first copied to `window.json.bak` so it is not lost.
+    /// corrupt; a corrupt file is first copied to window.json.bak so it is not lost.
     fn load_window_state(&self) -> Option<WindowState> {
         let content = self.read_file(WINDOW_FILE).ok()?;
         match serde_json::from_str(&content) {
@@ -329,17 +369,31 @@ impl Storage for InMemoryStorage {
 pub trait Clock: Send + Sync {
     /// Return the current monotonic / wall clock time in seconds since Unix epoch.
     fn now_seconds(&self) -> u64;
+
+    /// Return the current monotonic / wall clock time in milliseconds since Unix epoch.
+    fn now_millis(&self) -> u64 {
+        self.now_seconds().saturating_mul(1000)
+    }
 }
 
 /// Standard system clock implementation.
+#[cfg(not(target_arch = "wasm32"))]
 pub struct SystemClock;
 
+#[cfg(not(target_arch = "wasm32"))]
 impl Clock for SystemClock {
     fn now_seconds(&self) -> u64 {
         std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap_or_default()
             .as_secs()
+    }
+
+    fn now_millis(&self) -> u64 {
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_millis() as u64
     }
 }
 
@@ -370,6 +424,12 @@ impl Clock for MockClock {
     fn now_seconds(&self) -> u64 {
         self.current.load(std::sync::atomic::Ordering::SeqCst)
     }
+
+    fn now_millis(&self) -> u64 {
+        self.current
+            .load(std::sync::atomic::Ordering::SeqCst)
+            .saturating_mul(1000)
+    }
 }
 
 #[cfg(test)]
@@ -389,5 +449,30 @@ mod keep_awake_tests {
 
         let (count, last_release) = update_keep_awake_count(count, false);
         assert_eq!((count, last_release), (0, Some(false)));
+    }
+}
+
+#[cfg(test)]
+mod web_key_tests {
+    use super::*;
+
+    #[test]
+    fn web_key_helper_naming_prefix_round_trip() {
+        let filename = SETTINGS_FILE;
+        let key = web_storage_key(filename);
+        assert_eq!(key, "amategeko:settings.json");
+        assert!(key.starts_with(WEB_STORAGE_PREFIX));
+        assert_eq!(web_storage_key_to_filename(&key), Some(filename));
+
+        let progress_key = web_storage_key(PROGRESS_FILE);
+        assert_eq!(progress_key, "amategeko:progress.json");
+        assert_eq!(
+            web_storage_key_to_filename(&progress_key),
+            Some(PROGRESS_FILE)
+        );
+
+        assert_eq!(web_storage_key_to_filename("settings.json"), None);
+        assert_eq!(web_storage_key_to_filename("other:file.json"), None);
+        assert_eq!(web_storage_key_to_filename(""), None);
     }
 }

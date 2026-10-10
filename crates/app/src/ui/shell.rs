@@ -150,7 +150,7 @@ pub extern "system" fn Java_dev_gpui_mobile_example_GpuiActivity_nativeOnBack(
 }
 
 use std::collections::{HashMap, HashSet};
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 #[derive(Clone, Copy)]
 struct TimerBanner {
@@ -236,9 +236,9 @@ pub struct ShellView {
     help_dialog_scroll_handle: gpui::ScrollHandle,
     finish_dialog_scroll_handle: gpui::ScrollHandle,
     last_scrollbar_screen: Screen,
-    scrollbar_reveal_until: Instant,
+    scrollbar_reveal_until: u64,
     last_dialog_visibility: (bool, bool),
-    dialog_scrollbar_reveal_until: Instant,
+    dialog_scrollbar_reveal_until: u64,
     pub stats_filter: String,
     #[cfg(debug_assertions)]
     last_saved_scroll: f32,
@@ -315,7 +315,7 @@ impl ShellView {
         let stats_scroll_handle = gpui::ScrollHandle::default();
         let results_scroll_handle = gpui::ScrollHandle::default();
         let initial_screen = state.active_screen.clone();
-        let now = Instant::now();
+        let now_ms = state.clock.now_millis();
 
         #[cfg(feature = "self-update")]
         let update_task = if amategeko_core::update::should_check(
@@ -419,9 +419,9 @@ impl ShellView {
             help_dialog_scroll_handle: gpui::ScrollHandle::default(),
             finish_dialog_scroll_handle: gpui::ScrollHandle::default(),
             last_scrollbar_screen: initial_screen,
-            scrollbar_reveal_until: now + Duration::from_secs(1),
+            scrollbar_reveal_until: now_ms.saturating_add(1000),
             last_dialog_visibility: (false, false),
-            dialog_scrollbar_reveal_until: now,
+            dialog_scrollbar_reveal_until: now_ms,
             stats_filter: initial_stats_filter,
             #[cfg(debug_assertions)]
             last_saved_scroll: initial_scroll,
@@ -941,20 +941,20 @@ impl Render for ShellView {
 
         let active_screen = self.state.active_screen.clone();
         let is_in_quiz = active_screen == Screen::Quiz && self.state.current_attempt.is_some();
-        let now = Instant::now();
+        let now_ms = self.state.clock.now_millis();
         if active_screen != self.last_scrollbar_screen {
             self.last_scrollbar_screen = active_screen.clone();
-            self.scrollbar_reveal_until = now + Duration::from_secs(1);
+            self.scrollbar_reveal_until = now_ms.saturating_add(1000);
         }
-        let reveal_scrollbar = now < self.scrollbar_reveal_until;
+        let reveal_scrollbar = now_ms < self.scrollbar_reveal_until;
         let dialog_visibility = (self.show_help_dialog, self.show_finish_confirm_dialog);
         if dialog_visibility != self.last_dialog_visibility {
             self.last_dialog_visibility = dialog_visibility;
             if dialog_visibility.0 || dialog_visibility.1 {
-                self.dialog_scrollbar_reveal_until = now + Duration::from_secs(1);
+                self.dialog_scrollbar_reveal_until = now_ms.saturating_add(1000);
             }
         }
-        let reveal_dialog_scrollbar = now < self.dialog_scrollbar_reveal_until;
+        let reveal_dialog_scrollbar = now_ms < self.dialog_scrollbar_reveal_until;
 
         let home_props = HomeProps {
             selected_mode: self.quiz_selected_mode,
@@ -1643,7 +1643,7 @@ impl Render for ShellView {
                         this.state.active_screen.clone(),
                         this.state.current_attempt.as_ref().map(|a| a.mode),
                         this.state.settings.desktop_shortcuts_enabled
-                            && is_desktop
+                            && (is_desktop || cfg!(target_arch = "wasm32"))
                             && !crate::is_native_mobile(),
                         is_typing,
                     );
@@ -1651,6 +1651,9 @@ impl Render for ShellView {
                     let Some(action) = action else {
                         return;
                     };
+
+                    #[cfg(target_arch = "wasm32")]
+                    window.prevent_default();
 
                     match action {
                         ShortcutAction::ShowHelp => {

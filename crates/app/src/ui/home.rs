@@ -17,7 +17,7 @@ use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
 
 const DISPLAY_FONT: &str = DISPLAY_FONT_FAMILY;
-const BODY_FONT: &str = "Instrument Sans";
+const BODY_FONT: &str = crate::font::FONT_FAMILY;
 
 /// Theme tokens strictly matching the redesign spec for dark and light modes.
 #[derive(Clone, Copy, Debug)]
@@ -188,6 +188,7 @@ impl HomeView {
             );
             Self::resume_banner(detail, lang, is_desktop, tokens, cx, on_action)
         });
+        #[cfg(not(target_arch = "wasm32"))]
         let update_banner = match crate::updater::status() {
             crate::updater::UpdateStatus::Available(update) => Some(Self::update_banner(
                 &update.release.tag_name,
@@ -199,6 +200,8 @@ impl HomeView {
             )),
             _ => None,
         };
+        #[cfg(target_arch = "wasm32")]
+        let update_banner: Option<gpui::AnyElement> = None;
 
         // 1. Hero Card: ordered full-bank study
         let mut study_ids: Vec<u32> = state
@@ -1795,6 +1798,7 @@ impl HomeView {
             )
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     fn update_banner<V: 'static>(
         version: &str,
         lang: Language,

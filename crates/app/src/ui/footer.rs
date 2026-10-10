@@ -31,7 +31,12 @@ impl AppFooter {
             .child(
                 Link::new("footer_credit_link")
                     .href(PROJECT_CREDIT.url)
-                    .open_with(|href, _, _, cx| cx.open_url(href))
+                    .open_with(|href, _, _, app_cx| {
+                        #[cfg(target_arch = "wasm32")]
+                        amategeko_core::platform::open_url(href);
+                        #[cfg(not(target_arch = "wasm32"))]
+                        app_cx.open_url(href);
+                    })
                     .accessibility_label(accessibility_label)
                     .debug_selector(|| "footer-credit-link".into())
                     .flex()

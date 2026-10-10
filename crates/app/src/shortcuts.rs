@@ -372,7 +372,25 @@ impl ShortcutRegistry {
             shortcuts: Vec::new(),
         };
         reg.register_all();
+        #[cfg(target_arch = "wasm32")]
+        reg.shortcuts
+            .retain(|def| Self::is_allowed_on_web(&def.key));
         reg
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    fn is_allowed_on_web(key: &KeyCombo) -> bool {
+        if key.ctrl || key.alt || key.shift {
+            return false;
+        }
+        match key.key.to_ascii_lowercase().as_str() {
+            "a" | "b" | "c" | "d" => true,
+            "1" | "2" | "3" | "4" => true,
+            "k" => true,
+            "enter" => true,
+            "arrowleft" | "arrowright" | "arrowup" | "arrowdown" => true,
+            _ => false,
+        }
     }
 
     fn register_all(&mut self) {

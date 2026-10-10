@@ -270,7 +270,16 @@ impl SettingsView {
                                         move |this, window, cx| {
                                             on_action(this, SettingsAction::ToggleShowBothLanguages, window, cx);
                                         },
-                                    )),
+                                    ))
+                                    .when(cfg!(target_arch = "wasm32"), |el| {
+                                        el.child(Self::render_divider(&colors)).child(
+                                            div()
+                                                .p_4()
+                                                .text_xs()
+                                                .text_color(colors.muted_foreground)
+                                                .child(t("web.storage_note", lang)),
+                                        )
+                                    }),
                             ),
                     )
                     // SECTION 2: Quiz Rules & Timing
@@ -565,7 +574,7 @@ impl SettingsView {
                                     )),
                             ),
                     )
-                    .when(cfg!(feature = "self-update"), |el| {
+                    .when(!cfg!(target_arch = "wasm32") && cfg!(feature = "self-update"), |el| {
                         el.child(Self::render_updates_group(
                             s,
                             lang,
@@ -715,7 +724,12 @@ impl SettingsView {
                                     .child(
                                         Link::new("about_website")
                                             .href(amategeko_core::links::SITE_URL)
-                                            .open_with(|href, _, _, cx| cx.open_url(href))
+                                            .open_with(|href, _, _, app_cx| {
+                                            #[cfg(target_arch = "wasm32")]
+                                            amategeko_core::platform::open_url(href);
+                                            #[cfg(not(target_arch = "wasm32"))]
+                                            app_cx.open_url(href);
+                                        })
                                             .flex()
                                             .flex_row()
                                             .items_center()
@@ -741,7 +755,12 @@ impl SettingsView {
                                     .child(
                                         Link::new("about_docs")
                                             .href(amategeko_core::links::DOCS_URL)
-                                            .open_with(|href, _, _, cx| cx.open_url(href))
+                                            .open_with(|href, _, _, app_cx| {
+                                            #[cfg(target_arch = "wasm32")]
+                                            amategeko_core::platform::open_url(href);
+                                            #[cfg(not(target_arch = "wasm32"))]
+                                            app_cx.open_url(href);
+                                        })
                                             .flex()
                                             .flex_row()
                                             .items_center()
@@ -767,7 +786,12 @@ impl SettingsView {
                                     .child(
                                         Link::new("about_source")
                                             .href(amategeko_core::links::REPO_URL)
-                                            .open_with(|href, _, _, cx| cx.open_url(href))
+                                            .open_with(|href, _, _, app_cx| {
+                                            #[cfg(target_arch = "wasm32")]
+                                            amategeko_core::platform::open_url(href);
+                                            #[cfg(not(target_arch = "wasm32"))]
+                                            app_cx.open_url(href);
+                                        })
                                             .flex()
                                             .flex_row()
                                             .items_center()

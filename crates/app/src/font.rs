@@ -10,7 +10,7 @@ use std::borrow::Cow;
 pub const FONT_FAMILY: &str = "Inter";
 
 /// Font family used for display titles and large values.
-pub(crate) const DISPLAY_FONT_FAMILY: &str = "Bricolage Grotesque 14pt";
+pub(crate) const DISPLAY_FONT_FAMILY: &str = "Bricolage Grotesque";
 
 /// Static Inter weights for body text, plus Bricolage Grotesque for display text.
 static FONT_FILES: [&[u8]; 8] = [

@@ -12,6 +12,8 @@ members = [
     "crates/desktop",
     "crates/mobile",
     "crates/web-spike",
+    "crates/web",
+    "crates/core-alias",
 ]
 
 [workspace.package]
@@ -44,3 +46,11 @@ anyhow = "1.0"
 opt-level = 1
 debug = "line-tables-only"
 incremental = true
+
+[profile.web]
+inherits = "release"
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

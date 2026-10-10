@@ -107,7 +107,7 @@
   "quiz.shortcut_hint": "A-D cyangwa 1-4 uhitamo; Enter ugakomeza",
   "quiz.skip": "Simbuka",
   "quiz.star": "Bika ikibazo",
-  "quiz.starting": "Gutangira {mode}\u2026",
+  "quiz.starting": "Gutangira {mode}…",
   "quiz.sub": "Kanda kuri play utangire. Kanda ku ikarita urebe amabwiriza yayo.",
   "quiz.title": "Tangira ikizamini",
   "quiz.unflag": "Kura ikimenyetso",
@@ -141,7 +141,7 @@
   "update.later": "Nyuma",
   "update.skip": "Simbuka iyi verisiyo",
   "update.confirm": "Gukurura {size} MB? Bizakoresha interineti yawe.",
-  "update.downloading": "Biri gukururwa\u2026 {pct}%",
+  "update.downloading": "Biri gukururwa… {pct}%",
   "update.ready.windows": "Biteguye. Porogaramu irafunga ikivugurura.",
   "update.ready.android": "Biteguye. Kanda Shyiramo urangize.",
   "update.install": "Shyiramo",
@@ -296,5 +296,6 @@
   "val.instant": "Bihita",
   "val.min": "Iminota {n}",
   "val.no": "Ntibyemewe",
-  "val.nolimit": "Nta mwanya ugenwe"
+  "val.nolimit": "Nta mwanya ugenwe",
+  "web.storage_note": "Imibare yawe ibikwa muri iyi browser. Gusiba amakuru y'urubuga bizayisiba."
 }

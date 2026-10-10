@@ -60,7 +60,14 @@ impl AppState {
             log::error!("Failed to load question bank: {e}");
             panic!("Question bank is required: {e}");
         }));
+        Self::with_bank(bank, storage, clock)
+    }
 
+    pub fn with_bank(
+        bank: Arc<QuestionBank>,
+        storage: Arc<dyn Storage>,
+        clock: Arc<dyn Clock>,
+    ) -> Self {
         let settings = storage.load_settings();
         let mut progress = storage.load_progress();
 
