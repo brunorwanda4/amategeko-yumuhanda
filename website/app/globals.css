@@ -1,4 +1,4 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 @import "fumadocs-ui/css/preset.css";
 @import "fumadocs-ui/css/neutral.css";
 
@@ -262,8 +262,34 @@ header.site-header {
   backdrop-filter: blur(14px) !important;
 }
 
-#nd-nav > div,
-#nd-nav nav,
+#nd-nav {
+  --fd-layout-width: 72rem !important;
+}
+
+#nd-nav > div {
+  height: 60px !important;
+}
+
+#nd-nav > div > div {
+  max-width: 72rem !important;
+  margin-inline: auto !important;
+}
+
+#nd-nav nav {
+  height: 60px !important;
+  max-width: 72rem !important;
+  margin-inline: auto !important;
+  padding-left: 1.5rem !important;
+  padding-right: 1.5rem !important;
+}
+
+@media (min-width: 640px) {
+  #nd-nav nav {
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+  }
+}
+
 #nd-nav ul {
   height: 60px !important;
 }
@@ -346,3 +372,4 @@ header.site-header {
     scroll-behavior: auto !important;
   }
 }
+
