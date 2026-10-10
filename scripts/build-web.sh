@@ -58,8 +58,8 @@ wasm-bindgen "$WASM_PATH" --out-dir "$TEMP_DIR" --target web --no-typescript
 
 WASM_BG="$TEMP_DIR/web_bg.wasm"
 if command -v wasm-opt >/dev/null 2>&1; then
-    echo "Optimizing with wasm-opt -Oz..."
-    wasm-opt -Oz "$WASM_BG" -o "$WASM_BG"
+    echo "Optimizing with wasm-opt -Oz --all-features..."
+    wasm-opt -Oz --all-features "$WASM_BG" -o "$WASM_BG"
 else
     echo "Warning: wasm-opt not found in PATH; skipping wasm-opt optimization." >&2
 fi

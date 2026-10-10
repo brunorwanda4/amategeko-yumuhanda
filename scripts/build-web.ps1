@@ -49,8 +49,8 @@ wasm-bindgen $WasmPath --out-dir $TempDir --target web --no-typescript
 
 $WasmBg = "$TempDir\web_bg.wasm"
 if (Get-Command wasm-opt -ErrorAction SilentlyContinue) {
-    Write-Host "Optimizing with wasm-opt -Oz..."
-    wasm-opt -Oz $WasmBg -o $WasmBg
+    Write-Host "Optimizing with wasm-opt -Oz --all-features..."
+    wasm-opt -Oz --all-features $WasmBg -o $WasmBg
 } else {
     Write-Warning "wasm-opt not found in PATH; skipping wasm-opt optimization."
 }
