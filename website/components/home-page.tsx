@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Link from "next/link";
 import { CirclePlayIcon, Clock3Icon, TriangleAlertIcon } from "lucide-react";
 
@@ -51,7 +51,7 @@ export default function WebsiteHomePage() {
     <main>
       <section className="relative overflow-hidden border-b">
         <div className="hero-grid pointer-events-none absolute inset-0" aria-hidden="true" />
-        <div className="relative mx-auto max-w-6xl px-5 pt-20 sm:px-8 sm:pt-24">
+        <div className="relative mx-auto max-w-6xl px-6 pt-20 sm:px-8 sm:pt-24">
           <div>
             <span className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
               <span className="size-1.5 rounded-full bg-success" aria-hidden="true" />
@@ -84,7 +84,7 @@ export default function WebsiteHomePage() {
       </section>
 
       <section className="border-b">
-        <div className="mx-auto max-w-6xl px-5 py-20 sm:px-8 sm:py-24">
+        <div className="mx-auto max-w-6xl px-6 py-20 sm:px-8 sm:py-24">
           <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Practice your way</h2>
           <p className="mt-3 max-w-2xl text-muted-foreground">
             Three modes, from relaxed learning to exam pressure.
@@ -98,7 +98,7 @@ export default function WebsiteHomePage() {
       </section>
 
       <section className="border-b">
-        <div className="mx-auto max-w-6xl px-5 py-20 sm:px-8 sm:py-24">
+        <div className="mx-auto max-w-6xl px-6 py-20 sm:px-8 sm:py-24">
           <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Why this app</h2>
           <p className="mt-3 max-w-2xl text-muted-foreground">
             Built for learners who study on the bus, at home, or anywhere the signal is weak.
@@ -133,3 +133,4 @@ export default function WebsiteHomePage() {
     </main>
   );
 }
+

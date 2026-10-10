@@ -1,7 +1,7 @@
 use anyhow::anyhow;
 use gpui::{AssetSource, Result, SharedString};
-use gpui_kit::assets::Assets;
 use gpui_kit::assets::icon_assets;
+use gpui_kit::assets::Assets;
 #[cfg(not(target_arch = "wasm32"))]
 use rust_embed::RustEmbed;
 use std::borrow::Cow;
@@ -237,11 +237,17 @@ mod tests {
         let assets = AppAssets;
         let play = assets.load("icons/play.svg");
         assert!(play.is_ok(), "Expected Ok result for icons/play.svg");
-        assert!(play.unwrap().is_some(), "Expected Some data for icons/play.svg");
+        assert!(
+            play.unwrap().is_some(),
+            "Expected Some data for icons/play.svg"
+        );
 
         let book = assets.load("icons/book-open.svg");
         assert!(book.is_ok(), "Expected Ok result for icons/book-open.svg");
-        assert!(book.unwrap().is_some(), "Expected Some data for icons/book-open.svg");
+        assert!(
+            book.unwrap().is_some(),
+            "Expected Some data for icons/book-open.svg"
+        );
     }
 
     #[test]

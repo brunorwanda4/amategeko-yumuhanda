@@ -6,10 +6,10 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ProjectRoot = Resolve-Path "$ScriptDir\.."
 Set-Location $ProjectRoot
 
-$QuestionSet = if ($Full) { "full" } else { "samples" }
+$QuestionSet = if ($Full -or ($env:QUESTION_SET -eq "full")) { "full" } else { "samples" }
 $SamplesPath = "$ProjectRoot\website\content\samples\questions.json"
 
-if (-not $Full) {
+if ($QuestionSet -ne "full") {
     if (-not (Test-Path $SamplesPath)) {
         Write-Error "Error: website/content/samples/questions.json is missing or has fewer than 25 questions. Never invent questions."
         exit 1
@@ -33,7 +33,7 @@ if (-not (Test-Path $WasmPath)) {
     exit 1
 }
 
-$OutDir = "$ProjectRoot\website\public\app"
+$OutDir = "$ProjectRoot\website\public\runtime"
 if (-not (Test-Path $OutDir)) {
     New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
 }
@@ -70,16 +70,27 @@ $jsContent = Get-Content "$TempDir\web.js" -Raw
 $jsContent = $jsContent.Replace("web_bg.wasm", $HashedWasmName)
 Set-Content -Path "$OutDir\$HashedJsName" -Value $jsContent -NoNewline
 
-# Save manifest
-$manifest = @{
+# Build info
+$wasmBytes = (Get-Item "$OutDir\$HashedWasmName").Length
+$version = (Get-Content "$ProjectRoot\Cargo.toml" | Select-String -Pattern '^\s*version\s*=\s*"([^"]+)"' | Select-Object -First 1).Matches[0].Groups[1].Value
+if (-not $version) {
+    $version = "1.8.0"
+}
+$builtAt = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+
+$buildInfo = [ordered]@{
+    version = $version
     js = $HashedJsName
     wasm = $HashedWasmName
-    hash = $hash
+    wasmBytes = $wasmBytes
+    questionSet = $QuestionSet
+    builtAt = $builtAt
 } | ConvertTo-Json
+
 $written = $false
 for ($i = 0; $i -lt 10; $i++) {
     try {
-        [System.IO.File]::WriteAllText("$OutDir\manifest.json", $manifest)
+        [System.IO.File]::WriteAllText("$OutDir\build.json", $buildInfo)
         $written = $true
         break
     } catch {
@@ -87,7 +98,7 @@ for ($i = 0; $i -lt 10; $i++) {
     }
 }
 if (-not $written) {
-    Set-Content -Path "$OutDir\manifest.json" -Value $manifest -Force
+    Set-Content -Path "$OutDir\build.json" -Value $buildInfo -Force
 }
 
 # Print sizes

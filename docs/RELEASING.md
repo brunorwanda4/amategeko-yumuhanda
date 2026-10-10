@@ -6,7 +6,7 @@ Repository: `https://github.com/brunorwanda4/amategeko-yumuhanda`.
 
 - Create the release key once: `keytool -genkeypair -v -storetype PKCS12 -keystore amategeko-release.jks -alias amategeko -keyalg RSA -keysize 4096 -validity 10000`.
 - Put `keystore.properties` in `crates/mobile/android/`; it is git-ignored and contains `storeFile`, `storePassword`, `keyAlias`, and `keyPassword`.
-- Sign every release forever with the same key; Android refuses updates signed with a different key.
+- Sign every release forever with the same key; Android refuses updates signed with a different key`.
 - Build with `crates/mobile/build.sh android --release --no-run`; the script verifies the signed and aligned APK automatically.
 - Verify manually with `apksigner verify --verbose --print-certs <apk>` and `zipalign -c -P 4 -v 4 <apk>`.
 - For local testing only, add `--allow-debug-signing`; the output ends in `-debugsigned.apk` and must never be published.
@@ -28,7 +28,15 @@ Repository: `https://github.com/brunorwanda4/amategeko-yumuhanda`.
 - wasm-bindgen: `cargo install wasm-bindgen-cli --version 0.2.129`.
 - wasm-opt: Binaryen `version_122` via `winget install WebAssembly.binaryen`.
 - Build: run `scripts/build-web.ps1` (or `scripts/build-web.sh`). Use `-Full` only with owner authorization.
-- Outputs are hashed and written to `website/public/app/`, tracked in git for static hosting.
+- Outputs are hashed and written to `website/public/runtime/` with metadata in `build.json` (untracked in git).
+
+### Deploy the website and web app
+
+- Secrets: configure repo secrets `VERCEL_TOKEN` (Vercel Account > Tokens), `VERCEL_ORG_ID` (Team Settings > General), and `VERCEL_PROJECT_ID` (Project Settings > General).
+- Vercel settings: verify Framework Preset is `Next.js` and Root Directory is set to `website`.
+- Manual run: GitHub Actions > Deploy Web > Run workflow.
+- Full bank: `full_bank` input defaults to `false` (samples). Setting `full_bank: true` requires repo variable `ALLOW_FULL_BANK=yes`.
+- Emergency local deploy: run `scripts/build-web.ps1` (or `.sh`), then `cd website && bun install && bunx vercel pull --yes --environment=production && bunx vercel build --prod && bunx vercel deploy --prebuilt --prod`.
 
 1. Bump workspace version in `Cargo.toml` and Android `versionCode`/`versionName`.
 2. Update `CHANGELOG.md` with release additions and fixes.

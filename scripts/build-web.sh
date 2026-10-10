@@ -16,8 +16,9 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT"
 
 QUESTION_SET="samples"
-if [ "$FULL" = true ]; then
+if [ "$FULL" = true ] || [ "${QUESTION_SET:-}" = "full" ]; then
     QUESTION_SET="full"
+    FULL=true
 fi
 
 SAMPLES_PATH="$PROJECT_ROOT/website/content/samples/questions.json"
@@ -45,7 +46,7 @@ if [ ! -f "$WASM_PATH" ]; then
     exit 1
 fi
 
-OUT_DIR="$PROJECT_ROOT/website/public/app"
+OUT_DIR="$PROJECT_ROOT/website/public/runtime"
 mkdir -p "$OUT_DIR"
 
 TEMP_DIR="$PROJECT_ROOT/target/wasm32-unknown-unknown/web/bindgen_temp"
@@ -73,11 +74,21 @@ rm -f "$OUT_DIR"/web_*.js
 cp "$WASM_BG" "$OUT_DIR/$HASHED_WASM"
 sed "s/web_bg\\.wasm/$HASHED_WASM/g" "$TEMP_DIR/web.js" > "$OUT_DIR/$HASHED_JS"
 
-cat <<EOF > "$OUT_DIR/manifest.json"
+VERSION=$(grep -m1 -E '^[[:space:]]*version[[:space:]]*=' "$PROJECT_ROOT/Cargo.toml" | sed -E 's/.*"([^"]+)".*/\1/')
+if [ -z "$VERSION" ]; then
+    VERSION="1.8.0"
+fi
+WASM_BYTES=$(wc -c < "$OUT_DIR/$HASHED_WASM" | tr -d ' ')
+BUILT_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+cat <<EOF > "$OUT_DIR/build.json"
 {
+  "version": "$VERSION",
   "js": "$HASHED_JS",
   "wasm": "$HASHED_WASM",
-  "hash": "$HASH"
+  "wasmBytes": $WASM_BYTES,
+  "questionSet": "$QUESTION_SET",
+  "builtAt": "$BUILT_AT"
 }
 EOF
 

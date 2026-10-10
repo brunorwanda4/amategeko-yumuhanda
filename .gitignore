@@ -172,4 +172,5 @@ update.key
 # Web build output (generated WASM/JS artifacts and icons)
 website/public/app-spike/
 website/public/app/
+website/public/runtime/
 website/public/assets/

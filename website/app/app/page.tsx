@@ -15,11 +15,21 @@ function isGpuSupported(): boolean {
   }
 }
 
+interface BuildInfo {
+  version: string;
+  js: string;
+  wasm: string;
+  wasmBytes?: number;
+  questionSet?: string;
+  builtAt?: string;
+}
+
 let appLoaded = false;
 let appLoadingPromise: Promise<void> | null = null;
 
 export default function AppPage() {
   const [supported, setSupported] = useState<boolean | null>(null);
+  const [notBuilt, setNotBuilt] = useState<boolean>(false);
   const [progress, setProgress] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,27 +50,40 @@ export default function AppPage() {
     let canceled = false;
 
     async function doLoadApp() {
-      let jsFile = "web.js";
-      let wasmFile = "web_bg.wasm";
+      let buildInfo: BuildInfo | null = null;
 
       try {
-        const manifestRes = await fetch("/app/manifest.json");
-        if (manifestRes.ok) {
-          const manifest = await manifestRes.json();
-          if (manifest.js) jsFile = manifest.js;
-          if (manifest.wasm) wasmFile = manifest.wasm;
+        const buildRes = await fetch("/runtime/build.json");
+        if (!buildRes.ok) {
+          if (!canceled) {
+            setNotBuilt(true);
+            setLoading(false);
+          }
+          return;
+        }
+        buildInfo = await buildRes.json();
+        if (!buildInfo?.js || !buildInfo?.wasm) {
+          if (!canceled) {
+            setNotBuilt(true);
+            setLoading(false);
+          }
+          return;
         }
       } catch {
-        // Fallback to unhashed defaults
+        if (!canceled) {
+          setNotBuilt(true);
+          setLoading(false);
+        }
+        return;
       }
 
-      const wasmRes = await fetch(`/app/${wasmFile}`);
+      const wasmRes = await fetch(`/runtime/${buildInfo.wasm}`);
       if (!wasmRes.ok) {
         throw new Error(`Failed to download application (${wasmRes.status})`);
       }
 
       const contentLength = wasmRes.headers.get("content-length");
-      const total = contentLength ? parseInt(contentLength, 10) : null;
+      const total = contentLength ? parseInt(contentLength, 10) : buildInfo.wasmBytes || null;
       let bytes: ArrayBuffer;
 
       if (total && wasmRes.body) {
@@ -94,7 +117,7 @@ export default function AppPage() {
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const wasmModule: any = await import(
-        /* webpackIgnore: true */ /* @vite-ignore */ `/app/${jsFile}`
+        /* webpackIgnore: true */ /* @vite-ignore */ `/runtime/${buildInfo.js}`
       );
       await wasmModule.default({ module_or_path: bytes });
 
@@ -136,6 +159,24 @@ export default function AppPage() {
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Hardware-accelerated WebGPU or WebGL2 is required to run the application in the browser.
+        </p>
+        <div className="mt-6">
+          <Button asChild size="lg" className="rounded-full">
+            <Link href="/download">Download</Link>
+          </Button>
+        </div>
+      </main>
+    );
+  }
+
+  if (notBuilt) {
+    return (
+      <main className="flex min-h-[100dvh] flex-col items-center justify-center p-6 text-center">
+        <h1 className="text-xl font-semibold">
+          The web app is not built here. Run scripts/build-web.
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          WebAssembly artifacts have not been compiled in this environment.
         </p>
         <div className="mt-6">
           <Button asChild size="lg" className="rounded-full">
