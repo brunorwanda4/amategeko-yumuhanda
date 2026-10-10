@@ -39,7 +39,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Validate question bank selection
-        run: |\
+        run: |
           FULL_BANK="${{ inputs.full_bank }}"
           ALLOW_FULL_BANK="${{ vars.ALLOW_FULL_BANK }}"
           if [ "$FULL_BANK" = "true" ]; then
@@ -69,14 +69,14 @@ jobs:
           tool: wasm-bindgen-cli@0.2.129
 
       - name: Install wasm-opt (Binaryen version_122)
-        run: |\
+        run: |
           curl -fsSL https://github.com/WebAssembly/binaryen/releases/download/version_122/binaryen-version_122-x86_64-linux.tar.gz | sudo tar -xz --strip-components=1 -C /usr/local
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
 
       - name: Build WebAssembly runtime
-        run: |\
+        run: |
           chmod +x scripts/build-web.sh
           if [ "$QUESTION_SET" = "full" ]; then
             ./scripts/build-web.sh --full
@@ -103,7 +103,7 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: |\
+        run: |
           bunx vercel@63.1.2 pull --yes --environment=production --token "$VERCEL_TOKEN"
           bunx vercel@63.1.2 build --prod --token "$VERCEL_TOKEN"
 
@@ -126,7 +126,7 @@ jobs:
           echo "DEPLOY_URL=$DEPLOY_URL" >> "$GITHUB_ENV"
 
       - name: Print deployment summary
-        run: |\
+        run: |
           echo "========================================="
           echo "Deployment successful!"
           echo "URL: $DEPLOY_URL"
