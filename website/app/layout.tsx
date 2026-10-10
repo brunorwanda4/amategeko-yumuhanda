@@ -1,17 +1,19 @@
 import type { ReactNode } from "react";
 import { RootProvider } from "fumadocs-ui/provider/next";
-import { SITE_NAME, SITE_DESCRIPTION } from "@/lib/config";
+import { SITE_NAME, SITE_DESCRIPTION, SITE_URL } from "@/lib/config";
 import type { Metadata } from "next";
-import { Bricolage_Grotesque } from "next/font/google";
-import "fumadocs-ui/style.css";
+import { Geist, Geist_Mono } from "next/font/google";
 import StaticSearchDialog from "@/components/search-dialog";
-import { SITE_URL } from "@/lib/config";
 import "./globals.css";
 
-const bricolageGrotesque = Bricolage_Grotesque({
+const geistSans = Geist({
   subsets: ["latin"],
-  display: "swap",
-  variable: "--font-title",
+  variable: "--font-sans",
+});
+
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
 });
 
 export const metadata: Metadata = {
@@ -37,10 +39,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"
-      className={bricolageGrotesque.variable}
+      className={`${geistSans.variable} ${geistMono.variable}`}
       suppressHydrationWarning
     >
-      <body>
+      <body className="font-sans antialiased">
         <RootProvider
           search={{
             SearchDialog: StaticSearchDialog,

@@ -1,91 +1,131 @@
 @import "tailwindcss";
-
-@custom-variant dark (&:is(.dark *));
+@import "fumadocs-ui/css/preset.css";
+@import "fumadocs-ui/css/neutral.css";
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.145 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.46 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --border: oklch(0.9 0 0);
-  --input: oklch(0.9 0 0);
-  --ring: oklch(0.45 0 0);
-  --radius: 0.75rem;
-  --success: oklch(0.56 0.16 145);
-  --success-foreground: oklch(0.28 0.09 145);
-  --success-soft: oklch(0.95 0.05 145);
-  --warning: oklch(0.69 0.15 75);
-  --warning-foreground: oklch(0.32 0.08 65);
-  --warning-soft: oklch(0.96 0.06 85);
-  --error: oklch(0.58 0.2 25);
-  --error-foreground: oklch(0.32 0.12 25);
-  --error-soft: oklch(0.95 0.04 25);
-  --info: oklch(0.56 0.16 255);
-  --info-foreground: oklch(0.3 0.1 255);
-  --info-soft: oklch(0.95 0.04 255);
+  --color-fd-background: #ffffff;
+  --color-fd-foreground: #0a0a0a;
+  --color-fd-muted: #f1f1f1;
+  --color-fd-muted-foreground: #666666;
+  --color-fd-border: #e5e5e5;
+  --color-fd-card: #fafafa;
+  --color-fd-card-foreground: #0a0a0a;
+  --color-fd-accent: #f1f1f1;
+  --color-fd-accent-foreground: #0a0a0a;
+  --color-fd-primary: #0a0a0a;
+  --color-fd-primary-foreground: #ffffff;
+  --color-fd-secondary: #f1f1f1;
+  --color-fd-secondary-foreground: #0a0a0a;
+  --color-fd-popover: #fafafa;
+  --color-fd-popover-foreground: #0a0a0a;
+  --color-fd-ring: #0a0a0a;
+
+  --background: #ffffff;
+  --foreground: #0a0a0a;
+  --muted: #f1f1f1;
+  --muted-foreground: #666666;
+  --border: #e5e5e5;
+  --card: #fafafa;
+  --card-foreground: #0a0a0a;
+  --accent: #f1f1f1;
+  --accent-foreground: #0a0a0a;
+  --primary: #0a0a0a;
+  --primary-foreground: #ffffff;
+  --ring: #0a0a0a;
+
+  --success: #16a34a;
+  --success-foreground: #16a34a;
+  --success-soft: #dcfce7;
+  --warning: #b45309;
+  --warning-foreground: #b45309;
+  --warning-soft: #fef3c7;
+  --error: #dc2626;
+  --error-foreground: #dc2626;
+  --error-soft: #fee2e2;
+  --info: #1d4ed8;
+  --info-foreground: #1d4ed8;
+  --info-soft: #dbeafe;
+
+  --color-fd-success: #16a34a;
+  --color-fd-warning: #b45309;
+  --color-fd-error: #dc2626;
+  --color-fd-info: #1d4ed8;
+
+  --fd-sidebar-width: 280px;
+  --fd-toc-width: 220px;
+  --fd-header-height: 60px;
+  --fd-layout-width: 1320px;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.19 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.19 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.145 0 0);
-  --secondary: oklch(0.25 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.25 0 0);
-  --muted-foreground: oklch(0.72 0 0);
-  --accent: oklch(0.25 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --border: oklch(1 0 0 / 14%);
-  --input: oklch(1 0 0 / 18%);
-  --ring: oklch(0.65 0 0);
-  --success: oklch(0.72 0.16 145);
-  --success-foreground: oklch(0.9 0.08 145);
-  --success-soft: oklch(0.3 0.07 145);
-  --warning: oklch(0.78 0.15 80);
-  --warning-foreground: oklch(0.92 0.08 85);
-  --warning-soft: oklch(0.32 0.07 70);
-  --error: oklch(0.72 0.18 25);
-  --error-foreground: oklch(0.92 0.07 25);
-  --error-soft: oklch(0.31 0.09 25);
-  --info: oklch(0.72 0.14 250);
-  --info-foreground: oklch(0.92 0.06 250);
-  --info-soft: oklch(0.3 0.07 250);
+  --color-fd-background: #0a0a0a;
+  --color-fd-foreground: #fafafa;
+  --color-fd-muted: #1a1a1a;
+  --color-fd-muted-foreground: #a1a1a1;
+  --color-fd-border: #262626;
+  --color-fd-card: #111111;
+  --color-fd-card-foreground: #fafafa;
+  --color-fd-accent: #1a1a1a;
+  --color-fd-accent-foreground: #fafafa;
+  --color-fd-primary: #fafafa;
+  --color-fd-primary-foreground: #0a0a0a;
+  --color-fd-secondary: #1a1a1a;
+  --color-fd-secondary-foreground: #fafafa;
+  --color-fd-popover: #111111;
+  --color-fd-popover-foreground: #fafafa;
+  --color-fd-ring: #fafafa;
+
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+  --muted: #1a1a1a;
+  --muted-foreground: #a1a1a1;
+  --border: #262626;
+  --card: #111111;
+  --card-foreground: #fafafa;
+  --accent: #1a1a1a;
+  --accent-foreground: #fafafa;
+  --primary: #fafafa;
+  --primary-foreground: #0a0a0a;
+  --ring: #fafafa;
+
+  --success: #4ade80;
+  --success-foreground: #4ade80;
+  --success-soft: #052e16;
+  --warning: #fbbf24;
+  --warning-foreground: #fbbf24;
+  --warning-soft: #2a1c03;
+  --error: #f87171;
+  --error-foreground: #f87171;
+  --error-soft: #2d0a0a;
+  --info: #93c5fd;
+  --info-foreground: #93c5fd;
+  --info-soft: #0c2340;
+
+  --color-fd-success: #4ade80;
+  --color-fd-warning: #fbbf24;
+  --color-fd-error: #f87171;
+  --color-fd-info: #93c5fd;
 }
 
 @theme inline {
-  --font-title: var(--font-title);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --color-background: var(--color-fd-background);
+  --color-foreground: var(--color-fd-foreground);
+  --color-card: var(--color-fd-card);
+  --color-card-foreground: var(--color-fd-card-foreground);
+  --color-popover: var(--color-fd-popover);
+  --color-popover-foreground: var(--color-fd-popover-foreground);
+  --color-primary: var(--color-fd-primary);
+  --color-primary-foreground: var(--color-fd-primary-foreground);
+  --color-secondary: var(--color-fd-secondary);
+  --color-secondary-foreground: var(--color-fd-secondary-foreground);
+  --color-muted: var(--color-fd-muted);
+  --color-muted-foreground: var(--color-fd-muted-foreground);
+  --color-accent: var(--color-fd-accent);
+  --color-accent-foreground: var(--color-fd-accent-foreground);
+  --color-border: var(--color-fd-border);
+  --color-ring: var(--color-fd-ring);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
   --color-success-soft: var(--success-soft);
@@ -98,14 +138,10 @@
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
   --color-info-soft: var(--info-soft);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
 }
 
 * {
-  border-color: var(--border);
+  border-color: var(--color-fd-border);
 }
 
 html {
@@ -113,62 +149,182 @@ html {
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background-color: var(--color-fd-background);
+  color: var(--color-fd-foreground);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  overflow-x: clip;
 }
 
+/* Headings */
 h1,
+.prose h1 {
+  font-size: clamp(34px, 4vw, 48px);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1.15;
+}
+
 h2,
+.prose h2 {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+}
+
 h3,
-h4,
-h5,
-h6 {
-  font-family: var(--font-title), var(--font-sans, ui-sans-serif), system-ui,
-    sans-serif;
-  font-optical-sizing: auto;
+.prose h3 {
+  font-size: 20px;
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 
-.site-home-layout header {
-  position: sticky;
-  top: 0;
-  border-bottom: 1px solid var(--border);
-  background: color-mix(in oklab, var(--background) 82%, transparent);
-  backdrop-filter: blur(14px);
+/* Three-column layout sizing */
+#nd-docs-layout {
+  --fd-sidebar-width: 280px !important;
+  --fd-toc-width: 220px !important;
 }
 
 @media (min-width: 768px) {
-  .site-home-layout header a[href="/download"] {
-    min-height: 2.25rem;
-    border-radius: var(--radius-sm);
-    background: var(--primary);
-    color: var(--primary-foreground);
-    padding-inline: 0.875rem;
+  #nd-sidebar {
+    width: 280px !important;
   }
 }
 
+@media (min-width: 1280px) {
+  #nd-toc {
+    width: 220px !important;
+  }
+}
+
+/* Active sidebar item: hover background and medium weight */
+#nd-sidebar a[data-active="true"],
+#nd-sidebar button[data-active="true"] {
+  background-color: var(--color-fd-accent) !important;
+  color: var(--color-fd-foreground) !important;
+  font-weight: 500 !important;
+}
+
+/* Active TOC item: solid foreground-color left border */
+#nd-toc a[data-active="true"] {
+  color: var(--color-fd-foreground) !important;
+  font-weight: 500 !important;
+  border-left: 2px solid var(--color-fd-foreground) !important;
+  padding-left: 0.5rem !important;
+}
+
+/* Steps: small circled number in Geist Mono */
+.fd-step::before {
+  font-family: var(--font-mono), monospace !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  width: 22px !important;
+  height: 22px !important;
+  inset-inline-start: -11px !important;
+  background-color: var(--color-fd-card) !important;
+  color: var(--color-fd-muted-foreground) !important;
+  border: 1px solid var(--color-fd-border) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Prose links get 1px foreground underline */
+.prose a:not([data-card]):not([role="button"]):not(.not-prose a) {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--color-fd-foreground);
+  text-underline-offset: 2px;
+}
+
+/* Navbar styling: sticky 60px, translucent with backdrop blur and bottom hairline */
+#nd-nav,
+header.site-header {
+  height: 60px !important;
+  min-height: 60px !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 50 !important;
+  border-bottom: 1px solid var(--color-fd-border) !important;
+  background: color-mix(in srgb, var(--color-fd-background) 80%, transparent) !important;
+  backdrop-filter: blur(14px) !important;
+}
+
+#nd-nav > div,
+#nd-nav nav,
+#nd-nav ul {
+  height: 60px !important;
+}
+
+/* Nav links: muted, no highlighted pill */
+#nd-nav ul a:not([class*="secondary"]):not([data-button]) {
+  color: var(--color-fd-muted-foreground) !important;
+  font-weight: 400 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+#nd-nav ul a:not([class*="secondary"]):not([data-button]):hover {
+  color: var(--color-fd-foreground) !important;
+}
+
+/* Divider before solid Download pill on the right */
+#nd-nav ul.empty\:hidden > *:last-child,
+#nd-nav ul:last-of-type > *:last-child {
+  display: flex;
+  align-items: center;
+}
+
+#nd-nav ul.empty\:hidden > *:last-child::before,
+#nd-nav ul:last-of-type > *:last-child::before {
+  content: "";
+  display: inline-block;
+  width: 1px;
+  height: 18px;
+  background-color: var(--color-fd-border);
+  margin-right: 0.75rem;
+  margin-left: 0.25rem;
+}
+
+/* Solid Download pill: black pill on light, white pill on dark */
+#nd-nav a[href="/download"][class*="secondary"],
+#nd-nav a[href="/download"][data-button] {
+  background-color: var(--color-fd-primary) !important;
+  color: var(--color-fd-primary-foreground) !important;
+  border-radius: 999px !important;
+  padding: 0 1rem !important;
+  height: 34px !important;
+  line-height: 34px !important;
+  font-weight: 500 !important;
+  font-size: 13px !important;
+  border: none !important;
+  transition: opacity 0.15s ease !important;
+}
+
+#nd-nav a[href="/download"][class*="secondary"]:hover,
+#nd-nav a[href="/download"][data-button]:hover {
+  opacity: 0.9 !important;
+}
+
+/* Mobile navbar styling */
+@media (max-width: 1023px) {
+  #nd-nav .lg\:hidden {
+    display: none !important;
+  }
+}
+
+/* Focus outline */
 :focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 3px;
+  outline: 2px solid var(--color-fd-ring) !important;
+  outline-offset: 2px !important;
 }
 
-.hero-noise {
-  background-color: #090909;
-  background-image:
-    radial-gradient(circle at 20% 0%, rgb(255 255 255 / 16%), transparent 34%),
-    radial-gradient(circle at 82% 46%, rgb(255 255 255 / 9%), transparent 31%),
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E");
-}
-
-.pixel-logo {
-  image-rendering: pixelated;
-  filter: grayscale(1) brightness(0) invert(1) contrast(2);
-  mask-image: repeating-linear-gradient(90deg, #000 0 5px, transparent 5px 7px);
-}
-
+/* prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
   html {
-    scroll-behavior: auto;
+    scroll-behavior: auto !important;
   }
 
   *,
@@ -177,5 +333,6 @@ h6 {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

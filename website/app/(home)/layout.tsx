@@ -1,8 +1,13 @@
 import type { ReactNode } from "react";
-import { HomeShell } from "@/components/home-shell";
+import { HomeLayout } from "fumadocs-ui/layouts/home";
+import { baseOptions } from "@/app/layout.config";
+import { SiteFooter } from "@/components/site-footer";
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <HomeShell>{children}</HomeShell>
+    <HomeLayout {...baseOptions}>
+      {children}
+      <SiteFooter />
+    </HomeLayout>
   );
 }

@@ -1,12 +1,15 @@
 import HomePage, { metadata } from "@/components/home-page";
-import { HomeShell } from "@/components/home-shell";
+import { HomeLayout } from "fumadocs-ui/layouts/home";
+import { baseOptions } from "@/app/layout.config";
+import { SiteFooter } from "@/components/site-footer";
 
 export { metadata };
 
 export default function Page() {
   return (
-    <HomeShell>
+    <HomeLayout {...baseOptions}>
       <HomePage />
-    </HomeShell>
+      <SiteFooter />
+    </HomeLayout>
   );
 }
