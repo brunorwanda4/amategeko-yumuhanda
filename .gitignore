@@ -142,6 +142,7 @@ perf.data*
 .claude/settings.local.json
 .cursor/
 .aider*
+design-qa.md
 
 # ---------------------------------------------------------------
 # Website (Bun + Next.js + Fumadocs + shadcn)
@@ -168,6 +169,7 @@ pnpm-lock.yaml
 !ibibazo_byamategeko_y_umuhanda.pdf
 update.key
 
-# GPUI Kit Web Spike output
+# Web build output (generated WASM/JS artifacts and icons)
 website/public/app-spike/
-
+website/public/app/
+website/public/assets/
