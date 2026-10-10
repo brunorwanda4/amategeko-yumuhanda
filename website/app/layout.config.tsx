@@ -7,14 +7,8 @@ import { REPO_URL, SITE_NAME } from "@/lib/config";
 export const baseOptions: BaseLayoutProps = {
   nav: {
     title: (
-      <span className="flex items-center gap-2.5 font-semibold text-base tracking-tight">
-        <Image
-          src="/logo.png"
-          alt={SITE_NAME}
-          width={24}
-          height={24}
-          className="rounded-sm"
-        />
+      <span className="flex items-center gap-2.5 font-semibold text-sm tracking-tight">
+        <Image src="/logo.png" alt={SITE_NAME} width={24} height={24} className="rounded-sm" />
         <span>{SITE_NAME}</span>
       </span>
     ),
