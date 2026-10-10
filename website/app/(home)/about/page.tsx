@@ -1,13 +1,7 @@
 ﻿import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  FaGithub,
-  FaInstagram,
-  FaLinkedin,
-  FaWhatsapp,
-  FaXTwitter,
-} from "react-icons/fa6";
+import { FaGithub, FaInstagram, FaLinkedin, FaWhatsapp, FaXTwitter } from "react-icons/fa6";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -103,7 +97,7 @@ const authorSocials = [
 
 export default function AboutPage() {
   return (
-    <main className="mx-auto max-w-[720px] px-6 pt-12 pb-24 sm:pt-20 sm:pb-28">
+    <main className="mx-auto max-w-6xl px-6 pt-12 pb-24 sm:px-8 sm:pt-20 sm:pb-28">
       {/* Eyebrow */}
       <div className="mb-4 flex items-center gap-1.5 text-[13px] font-medium text-muted-foreground">
         <span>About</span>
@@ -117,20 +111,19 @@ export default function AboutPage() {
       </h1>
 
       {/* Story Narrative */}
-      <div className="space-y-5 text-base leading-[1.75] text-muted-foreground sm:text-[19px]">
+      <div className="max-w-3xl space-y-5 text-base leading-[1.75] text-muted-foreground sm:text-[19px]">
         <p>
-          I wanted to study Amategeko y&apos;Umuhanda, but reading was boring.
-          Other websites were not good either:{" "}
+          I wanted to study Amategeko y&apos;Umuhanda, but reading was boring. Other websites were
+          not good either:{" "}
           <strong className="font-semibold text-foreground">
             you have to pay, and they only work online.
           </strong>{" "}
           They do not work offline.
         </p>
         <p>
-          So I built my own. It was my first time studying, and I studied for
-          only 6 hours, and I scored 17/20 on the exam. It took me 2 days to
-          build this app. After I passed, I added more features to help other
-          people.
+          So I built my own. It was my first time studying, and I studied for only 6 hours, and I
+          scored 17/20 on the exam. It took me 2 days to build this app. After I passed, I added
+          more features to help other people.
         </p>
         <p>
           <strong className="font-semibold text-foreground">
@@ -140,16 +133,13 @@ export default function AboutPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="my-10 grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="my-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
         {stats.map((stat) => (
-          <div
-            key={stat.label}
-            className="rounded-[14px] border bg-card p-5 transition-colors"
-          >
+          <div key={stat.label} className="rounded-[14px] border bg-card p-5 transition-colors">
             <span
               className={cn(
                 "block text-4xl font-semibold leading-[1.1] tracking-[-0.04em]",
-                stat.isHighlight ? "text-success" : "text-foreground"
+                stat.isHighlight ? "text-success" : "text-foreground",
               )}
             >
               {stat.value}
@@ -162,10 +152,8 @@ export default function AboutPage() {
       </div>
 
       {/* Timeline Section */}
-      <section className="mt-16">
-        <h2 className="mb-6 text-2xl font-semibold tracking-[-0.03em]">
-          How it happened
-        </h2>
+      <section className="mt-16 max-w-3xl">
+        <h2 className="mb-6 text-2xl font-semibold tracking-[-0.03em]">How it happened</h2>
         <ol
           className="relative ml-2 list-none border-l pl-7"
           aria-label="Timeline of how the app was built"
@@ -177,13 +165,11 @@ export default function AboutPage() {
                   "absolute -left-[33.5px] top-[7px] size-[11px] rounded-full border-2",
                   step.ok
                     ? "border-success bg-success"
-                    : "border-muted-foreground/60 bg-background"
+                    : "border-muted-foreground/60 bg-background",
                 )}
                 aria-hidden="true"
               />
-              <small className="font-mono text-xs text-muted-foreground">
-                {step.step}
-              </small>
+              <small className="font-mono text-xs text-muted-foreground">{step.step}</small>
               <h3 className="mt-0.5 text-base font-semibold tracking-[-0.01em] text-foreground">
                 {step.title}
               </h3>
@@ -196,10 +182,7 @@ export default function AboutPage() {
       </section>
 
       {/* Author Card */}
-      <section
-        className="mt-16 rounded-[18px] border bg-card p-6 sm:p-7"
-        aria-label="Author"
-      >
+      <section className="mt-16 rounded-[18px] border bg-card p-6 sm:p-7" aria-label="Author">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
           <Image
             src="https://github.com/brunorwanda4.png"
@@ -281,15 +264,9 @@ export default function AboutPage() {
           <h2 className="text-2xl font-semibold tracking-tight text-foreground">
             Ready to practice?
           </h2>
-          <p className="mt-1 text-[15px] text-muted-foreground">
-            Free, offline, and no ads.
-          </p>
+          <p className="mt-1 text-[15px] text-muted-foreground">Free, offline, and no ads.</p>
         </div>
-        <Button
-          asChild
-          className="w-full rounded-full px-6 font-medium sm:w-auto"
-          size="lg"
-        >
+        <Button asChild className="w-full rounded-full px-6 font-medium sm:w-auto" size="lg">
           <Link href="/download">Download</Link>
         </Button>
       </section>

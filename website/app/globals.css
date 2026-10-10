@@ -373,3 +373,13 @@ header.site-header {
   }
 }
 
+/* Hero background grid */
+.hero-grid {
+  background-image:
+    linear-gradient(to right, var(--color-fd-border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--color-fd-border) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: center top;
+  mask-image: radial-gradient(ellipse at top, #000 50%, transparent 90%);
+  -webkit-mask-image: radial-gradient(ellipse at top, #000 50%, transparent 90%);
+}

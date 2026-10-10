@@ -25,8 +25,108 @@ interface BuildInfo {
   builtAt?: string;
 }
 
+type LoadResult =
+  | { status: "success" }
+  | { status: "not_built" }
+  | { status: "error"; message: string };
+
 let appLoaded = false;
-let appLoadingPromise: Promise<void> | null = null;
+let appLoadingPromise: Promise<LoadResult> | null = null;
+let progressCallback: ((pct: number | null) => void) | null = null;
+
+async function doLoadApp(): Promise<LoadResult> {
+  let jsFile = "";
+  let wasmFile = "";
+  let basePath = "/runtime";
+  let wasmBytes: number | null = null;
+
+  try {
+    const buildRes = await fetch("/runtime/build.json");
+    if (buildRes.ok) {
+      const buildInfo: BuildInfo = await buildRes.json();
+      if (buildInfo?.js && buildInfo?.wasm) {
+        jsFile = buildInfo.js;
+        wasmFile = buildInfo.wasm;
+        basePath = "/runtime";
+        wasmBytes = buildInfo.wasmBytes || null;
+      }
+    } else {
+      // Fallback check for /app/manifest.json (in case older artifacts exist)
+      const manifestRes = await fetch("/app/manifest.json");
+      if (manifestRes.ok) {
+        const manifest = await manifestRes.json();
+        if (manifest?.js && manifest?.wasm) {
+          jsFile = manifest.js;
+          wasmFile = manifest.wasm;
+          basePath = "/app";
+        }
+      }
+    }
+  } catch {
+    // Fallback or network error
+  }
+
+  if (!jsFile || !wasmFile) {
+    return { status: "not_built" };
+  }
+
+  try {
+    const wasmRes = await fetch(`${basePath}/${wasmFile}`);
+    if (!wasmRes.ok) {
+      return {
+        status: "error",
+        message: `Failed to download application (${wasmRes.status})`,
+      };
+    }
+
+    const contentLength = wasmRes.headers.get("content-length");
+    const total = contentLength ? parseInt(contentLength, 10) : wasmBytes;
+    let bytes: ArrayBuffer;
+
+    if (total && wasmRes.body) {
+      const reader = wasmRes.body.getReader();
+      let received = 0;
+      const chunks: Uint8Array[] = [];
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (value) {
+          chunks.push(value);
+          received += value.length;
+          progressCallback?.(Math.min(100, Math.round((received / total) * 100)));
+        }
+      }
+
+      const combined = new Uint8Array(received);
+      let offset = 0;
+      for (const chunk of chunks) {
+        combined.set(chunk, offset);
+        offset += chunk.length;
+      }
+      bytes = combined.buffer;
+    } else {
+      progressCallback?.(null);
+      bytes = await wasmRes.arrayBuffer();
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const wasmModule: any = await import(
+      /* webpackIgnore: true */ /* @vite-ignore */ `${basePath}/${jsFile}`
+    );
+    await wasmModule.default({ module_or_path: bytes });
+
+    const isDark = document.documentElement.classList.contains("dark");
+    await wasmModule.run(isDark);
+    appLoaded = true;
+    return { status: "success" };
+  } catch (err: unknown) {
+    return {
+      status: "error",
+      message: err instanceof Error ? err.message : String(err),
+    };
+  }
+}
 
 export default function AppPage() {
   const [supported, setSupported] = useState<boolean | null>(null);
@@ -48,107 +148,33 @@ export default function AppPage() {
       return;
     }
 
-    let canceled = false;
+    let active = true;
+    progressCallback = (pct) => {
+      if (active) setProgress(pct);
+    };
 
-    async function doLoadApp() {
-      let buildInfo: BuildInfo | null = null;
-
-      try {
-        const buildRes = await fetch("/runtime/build.json");
-        if (!buildRes.ok) {
-          if (!canceled) {
-            setNotBuilt(true);
-            setLoading(false);
-          }
-          return;
-        }
-        buildInfo = await buildRes.json();
-        if (!buildInfo?.js || !buildInfo?.wasm) {
-          if (!canceled) {
-            setNotBuilt(true);
-            setLoading(false);
-          }
-          return;
-        }
-      } catch {
-        if (!canceled) {
-          setNotBuilt(true);
-          setLoading(false);
-        }
-        return;
-      }
-
-      const wasmRes = await fetch(`/runtime/${buildInfo.wasm}`);
-      if (!wasmRes.ok) {
-        throw new Error(`Failed to download application (${wasmRes.status})`);
-      }
-
-      const contentLength = wasmRes.headers.get("content-length");
-      const total = contentLength ? parseInt(contentLength, 10) : buildInfo.wasmBytes || null;
-      let bytes: ArrayBuffer;
-
-      if (total && wasmRes.body) {
-        const reader = wasmRes.body.getReader();
-        let received = 0;
-        const chunks: Uint8Array[] = [];
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          if (value) {
-            chunks.push(value);
-            received += value.length;
-            if (!canceled) {
-              setProgress(Math.min(100, Math.round((received / total) * 100)));
-            }
-          }
-        }
-
-        const combined = new Uint8Array(received);
-        let offset = 0;
-        for (const chunk of chunks) {
-          combined.set(chunk, offset);
-          offset += chunk.length;
-        }
-        bytes = combined.buffer;
-      } else {
-        if (!canceled) setProgress(null);
-        bytes = await wasmRes.arrayBuffer();
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const wasmModule: any = await import(
-        /* webpackIgnore: true */ /* @vite-ignore */ `/runtime/${buildInfo.js}`
-      );
-      await wasmModule.default({ module_or_path: bytes });
-
-      const isDark = document.documentElement.classList.contains("dark");
-      await wasmModule.run(isDark);
-      appLoaded = true;
+    if (!appLoadingPromise) {
+      appLoadingPromise = doLoadApp();
     }
 
-    async function loadApp() {
-      try {
-        if (!appLoadingPromise) {
-          appLoadingPromise = doLoadApp();
-        }
-        await appLoadingPromise;
-        if (!canceled) {
-          setLoading(false);
-        }
-      } catch (err: unknown) {
+    appLoadingPromise.then((res) => {
+      if (!active) return;
+      if (res.status === "not_built") {
         appLoadingPromise = null;
-        if (!canceled) {
-          setError(err instanceof Error ? err.message : String(err));
-          setLoading(false);
-        }
+        setNotBuilt(true);
+        setLoading(false);
+      } else if (res.status === "error") {
+        appLoadingPromise = null;
+        setError(res.message);
+        setLoading(false);
+      } else {
+        setLoading(false);
       }
-    }
-
-    loadApp();
+    });
 
     return () => {
-      canceled = true;
+      active = false;
+      progressCallback = null;
     };
   }, []);
 
