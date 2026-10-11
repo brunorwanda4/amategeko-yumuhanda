@@ -70,6 +70,7 @@
   "questions.missed_count": "Missed {count}",
   "questions.performance_footer": "Showing only visible questions for smooth performance across {total} questions.",
   "questions.search_placeholder": "Search by text or question number, e.g. 14",
+  "questions.search_placeholder_short": "Search...",
   "questions.sign_image": "Sign image",
   "quiz.confirm_answer": "Confirm Answer",
   "quiz.confirm_finish_message": "Are you sure you want to finish this quiz? Your score will be calculated from answered questions.",
@@ -297,5 +298,9 @@
   "val.min": "{n} min",
   "val.no": "Not allowed",
   "val.nolimit": "No limit",
-  "web.storage_note": "Your progress is saved in this browser. Clearing site data deletes it."
+  "web.storage_note": "Your progress is saved in this browser. Clearing site data deletes it.",
+  "questions.clear": "Clear search",
+  "questions.done": "Done",
+  "questions.filters": "Filters",
+  "questions.reset": "Reset"
 }

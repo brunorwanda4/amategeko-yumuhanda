@@ -1,6 +1,5 @@
 package dev.gpui.mobile;
 
-import android.app.NativeActivity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -33,7 +32,7 @@ import androidx.core.view.WindowInsetsCompat;
  * - Volume key routing to the MUSIC audio stream
  * - Media button events
  */
-public class GpuiActivity extends NativeActivity {
+public class GpuiActivity extends GpuiInputActivity {
 
     /** Whether the native .so has been loaded via System.loadLibrary. */
     private static volatile boolean sNativeLibLoaded = false;

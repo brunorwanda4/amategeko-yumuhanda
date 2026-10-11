@@ -244,7 +244,7 @@ fn android_main(app: android_activity::AndroidApp) {
                         }
                     })
                     .detach();
-                    ShellView::new(app_state, cx)
+                    ShellView::new(app_state, window, cx)
                 });
                 cx.new(|cx| gpui_kit::component::Root::new(shell, window, cx))
             })
@@ -276,7 +276,7 @@ pub extern "C" fn gpui_ios_register_app() {
         cx.open_window(WindowOptions::default(), |window, cx| {
             amategeko_app::apply_theme(initial_theme, Some(window), cx);
             window.set_rem_size(gpui::px(amategeko_core::rem_px(initial_font_scale)));
-            let shell = cx.new(|cx| ShellView::new(app_state, cx));
+            let shell = cx.new(|cx| ShellView::new(app_state, window, cx));
             cx.new(|cx| gpui_kit::component::Root::new(shell, window, cx))
         })
         .expect("open mobile window");

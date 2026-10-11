@@ -201,8 +201,8 @@ pub struct ShellView {
     pub results_expanded: HashSet<usize>,
     pub questions_filter: QuestionsFilter,
     pub questions_search: String,
-    questions_search_input: Option<Entity<InputState>>,
-    questions_search_subscription: Option<Subscription>,
+    questions_search_input: Entity<InputState>,
+    _questions_search_subscription: Subscription,
     pub questions_expanded: HashSet<u32>,
     pub questions_revealed: HashMap<u32, String>,
     pub settings_confirm_clear: bool,
@@ -215,6 +215,7 @@ pub struct ShellView {
     pub show_study_jump_dialog: bool,
     pub show_study_restart_dialog: bool,
     pub show_study_finished_dialog: bool,
+    pub show_questions_filters_sheet: bool,
     #[cfg(feature = "self-update")]
     pub show_update_notes: bool,
     #[cfg(feature = "self-update")]
@@ -257,8 +258,17 @@ pub struct ShellView {
 }
 
 impl ShellView {
-    pub fn new(state: AppState, cx: &mut Context<Self>) -> Self {
+    pub fn new(state: AppState, window: &mut Window, cx: &mut Context<Self>) -> Self {
         configure_scrollbar_motion(cx);
+        let search_placeholder =
+            t("questions.search_placeholder", state.settings.language).to_string();
+        let questions_search_input =
+            cx.new(|cx| InputState::new(window, cx).placeholder(search_placeholder));
+        let questions_search_subscription = cx.subscribe_in(
+            &questions_search_input,
+            window,
+            Self::on_questions_search_input,
+        );
         let timer_task = cx.spawn(async move |this, cx| {
             let mut sec_counter = 0;
             loop {
@@ -392,8 +402,8 @@ impl ShellView {
             results_expanded: HashSet::new(),
             questions_filter: initial_questions_filter,
             questions_search: String::new(),
-            questions_search_input: None,
-            questions_search_subscription: None,
+            questions_search_input,
+            _questions_search_subscription: questions_search_subscription,
             questions_expanded: HashSet::new(),
             questions_revealed: HashMap::new(),
             settings_confirm_clear: false,
@@ -406,6 +416,7 @@ impl ShellView {
             show_study_jump_dialog: false,
             show_study_restart_dialog: false,
             show_study_finished_dialog: false,
+            show_questions_filters_sheet: false,
             #[cfg(feature = "self-update")]
             show_update_notes: false,
             #[cfg(feature = "self-update")]
@@ -482,7 +493,11 @@ impl ShellView {
             HomeAction::OpenQuestions => self.state.navigate(Screen::Questions),
             HomeAction::OpenQuestion(qid) => {
                 self.questions_filter = QuestionsFilter::All;
-                self.questions_search = qid.to_string();
+                let search = qid.to_string();
+                self.questions_search = search.clone();
+                self.questions_search_input.update(cx, |input, cx| {
+                    input.set_value(search, window, cx);
+                });
                 self.questions_selected_idx = 0;
                 self.questions_expanded.insert(qid);
                 self.questions_scroll_handle
@@ -710,7 +725,11 @@ impl ShellView {
         CAN_GO_BACK.store(self.can_go_back(), std::sync::atomic::Ordering::SeqCst);
     }
 
-    pub fn perform_go_back(&mut self, window: Option<&mut Window>, cx: &mut Context<Self>) -> bool {
+    pub fn perform_go_back(
+        &mut self,
+        mut window: Option<&mut Window>,
+        cx: &mut Context<Self>,
+    ) -> bool {
         #[cfg(feature = "self-update")]
         if self.show_update_notes || self.show_update_confirm {
             self.show_update_notes = false;
@@ -721,6 +740,9 @@ impl ShellView {
         }
         let handled = if self.show_help_dialog {
             self.show_help_dialog = false;
+            true
+        } else if self.show_questions_filters_sheet {
+            self.show_questions_filters_sheet = false;
             true
         } else if self.show_study_jump_dialog {
             self.show_study_jump_dialog = false;
@@ -741,7 +763,7 @@ impl ShellView {
             self.settings_confirm_clear = false;
             true
         } else if self.questions_search_focused {
-            self.set_questions_search_focused(false, None, cx);
+            self.set_questions_search_focused(false, window.as_deref_mut(), cx);
             true
         } else if self.focus_mode {
             self.focus_mode = false;
@@ -916,9 +938,8 @@ impl ShellView {
         self.questions_search_focused = focused;
         if let Some(window) = window {
             if focused {
-                if let Some(input) = &self.questions_search_input {
-                    input.update(cx, |input, cx| input.focus(window, cx));
-                }
+                self.questions_search_input
+                    .update(cx, |input, cx| input.focus(window, cx));
             } else {
                 window.focus(&self.focus_handle, cx);
             }
@@ -950,25 +971,27 @@ impl Render for ShellView {
         let window_width = window.bounds().size.width;
         let is_desktop = window_width > px(720.0);
 
-        let questions_search_input = if let Some(input) = &self.questions_search_input {
-            input.clone()
+        let search_placeholder_key = if is_desktop {
+            "questions.search_placeholder"
         } else {
-            let placeholder =
-                t("questions.search_placeholder", self.state.settings.language).to_string();
-            let input = cx.new(|cx| InputState::new(window, cx).placeholder(placeholder));
-            self.questions_search_subscription =
-                Some(cx.subscribe_in(&input, window, Self::on_questions_search_input));
-            self.questions_search_input = Some(input.clone());
-            input
+            "questions.search_placeholder_short"
         };
-
-        let input_value = questions_search_input.read(cx).value();
-        if input_value.as_ref() != self.questions_search {
-            let search = self.questions_search.clone();
-            questions_search_input.update(cx, |input, cx| {
-                input.set_value(search, window, cx);
+        let search_placeholder =
+            t(search_placeholder_key, self.state.settings.language).to_string();
+        let search_placeholder_changed = self
+            .questions_search_input
+            .read(cx)
+            .presentation()
+            .placeholder()
+            .as_ref()
+            != search_placeholder;
+        if search_placeholder_changed {
+            self.questions_search_input.update(cx, |input, cx| {
+                input.set_placeholder(search_placeholder, window, cx);
             });
         }
+
+        let questions_search_input = self.questions_search_input.clone();
 
         let quiz_length_slider = if let Some(slider) = &self.quiz_length_slider {
             slider.clone()
@@ -1254,10 +1277,11 @@ impl Render for ShellView {
                 self.state.settings.study_hide_answers,
                 &self.questions_expanded,
                 &self.questions_revealed,
+                self.show_questions_filters_sheet,
                 cx,
-                |this, filter, _, cx| {
+                |this, filter, window, cx| {
                     this.questions_filter = filter;
-                    this.set_questions_search_focused(false, None, cx);
+                    this.set_questions_search_focused(false, Some(window), cx);
                     this.questions_selected_idx = 0;
                     this.questions_scroll_handle
                         .set_offset(::gpui::point(::gpui::px(0.0), ::gpui::px(0.0)));
@@ -1271,26 +1295,30 @@ impl Render for ShellView {
                     this.questions_revealed.clear();
                     cx.notify();
                 },
+                |this, open, _, cx| {
+                    this.show_questions_filters_sheet = open;
+                    cx.notify();
+                },
                 |this, qid, _, cx| {
                     this.state.progress.toggle_starred(qid);
                     let _ = this.state.storage.save_progress(&this.state.progress);
                     cx.notify();
                 },
-                |this, qid, _, cx| {
+                |this, qid, window, cx| {
                     if this.questions_expanded.contains(&qid) {
                         this.questions_expanded.remove(&qid);
                     } else {
                         this.questions_expanded.insert(qid);
                     }
                     if this.questions_search_focused {
-                        this.set_questions_search_focused(false, None, cx);
+                        this.set_questions_search_focused(false, Some(window), cx);
                     }
                     cx.notify();
                 },
-                |this, qid, opt, _, cx| {
+                |this, qid, opt, window, cx| {
                     this.questions_revealed.insert(qid, opt);
                     if this.questions_search_focused {
-                        this.set_questions_search_focused(false, None, cx);
+                        this.set_questions_search_focused(false, Some(window), cx);
                     }
                     cx.notify();
                 },
@@ -1623,7 +1651,12 @@ impl Render for ShellView {
                         return;
                     }
 
-                    let is_typing = this.questions_search_focused
+                    let search_input_focused = this
+                        .questions_search_input
+                        .read(cx)
+                        .focus_handle(cx)
+                        .is_focused(window);
+                    let is_typing = (this.questions_search_focused || search_input_focused)
                         && this.state.active_screen == Screen::Questions;
 
                     let action = this.registry.resolve_event(
@@ -1672,14 +1705,14 @@ impl Render for ShellView {
                         }
                         ShortcutAction::NavHome => {
                             if this.questions_search_focused {
-                                this.set_questions_search_focused(false, None, cx);
+                                this.set_questions_search_focused(false, Some(window), cx);
                             }
                             this.state.navigate(Screen::Home);
                             cx.notify();
                         }
                         ShortcutAction::NavQuiz => {
                             if this.questions_search_focused {
-                                this.set_questions_search_focused(false, None, cx);
+                                this.set_questions_search_focused(false, Some(window), cx);
                             }
                             this.state.navigate(Screen::Quiz);
                             cx.notify();
@@ -1690,14 +1723,14 @@ impl Render for ShellView {
                         }
                         ShortcutAction::NavStats => {
                             if this.questions_search_focused {
-                                this.set_questions_search_focused(false, None, cx);
+                                this.set_questions_search_focused(false, Some(window), cx);
                             }
                             this.state.navigate(Screen::Stats);
                             cx.notify();
                         }
                         ShortcutAction::NavSettings => {
                             if this.questions_search_focused {
-                                this.set_questions_search_focused(false, None, cx);
+                                this.set_questions_search_focused(false, Some(window), cx);
                             }
                             this.state.navigate(Screen::Settings);
                             cx.notify();
@@ -2000,8 +2033,13 @@ impl Render for ShellView {
                 }),
             );
 
+        let search_input_focused = self
+            .questions_search_input
+            .read(cx)
+            .focus_handle(cx)
+            .is_focused(window);
         if is_in_quiz
-            || active_screen == Screen::Questions
+            || (active_screen == Screen::Questions && !search_input_focused)
             || active_screen == Screen::Results
             || active_screen == Screen::Stats
         {
@@ -2941,9 +2979,16 @@ impl ShellView {
             .cursor_pointer()
             .hover(|el| el.bg(colors.sidebar_accent))
             .tooltip(move |window, cx| Tooltip::new(tooltip.clone()).build(window, cx))
-            .on_click(cx.listener(move |this, _, _, cx| {
+            .on_click(cx.listener(move |this, _, window, cx| {
                 if this.questions_search_focused {
-                    this.set_questions_search_focused(false, None, cx);
+                    this.set_questions_search_focused(false, Some(window), cx);
+                }
+                this.show_questions_filters_sheet = false;
+                if target_screen == Screen::Questions
+                    && this.state.active_screen == Screen::Questions
+                {
+                    this.questions_scroll_handle
+                        .set_offset(::gpui::point(::gpui::px(0.0), ::gpui::px(0.0)));
                 }
                 this.state.navigate(target_screen.clone());
                 this.save_dev_state();
@@ -3098,9 +3143,16 @@ impl ShellView {
             .gap_1()
             .p_2()
             .cursor_pointer()
-            .on_click(cx.listener(move |this, _, _, cx| {
+            .on_click(cx.listener(move |this, _, window, cx| {
                 if this.questions_search_focused {
-                    this.set_questions_search_focused(false, None, cx);
+                    this.set_questions_search_focused(false, Some(window), cx);
+                }
+                this.show_questions_filters_sheet = false;
+                if target_screen == Screen::Questions
+                    && this.state.active_screen == Screen::Questions
+                {
+                    this.questions_scroll_handle
+                        .set_offset(::gpui::point(::gpui::px(0.0), ::gpui::px(0.0)));
                 }
                 this.state.navigate(target_screen.clone());
                 this.save_dev_state();

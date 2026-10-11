@@ -271,7 +271,7 @@ pub fn run(dark: Option<bool>) -> Result<(), JsValue> {
         amategeko_app::apply_theme(initial_theme, None, cx);
 
         cx.open_window(gpui::WindowOptions::default(), move |window, cx| {
-            let view = cx.new(|cx| ShellView::new(app_state, cx));
+            let view = cx.new(|cx| ShellView::new(app_state, window, cx));
             cx.new(|cx| Root::new(view, window, cx))
         })
         .expect("Failed to open window");

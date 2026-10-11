@@ -70,6 +70,7 @@
   "questions.missed_count": "Wakosheje {count}",
   "questions.performance_footer": "Urutonde rwerekana gusa ibibazo bigaragara, kugira ngo rukore vuba n'ibibazo {total}.",
   "questions.search_placeholder": "Shakisha mu bibazo cyangwa andika numero...",
+  "questions.search_placeholder_short": "Shakisha...",
   "questions.sign_image": "Ishusho y'icyapa",
   "quiz.confirm_answer": "Emeza igisubizo",
   "quiz.confirm_finish_message": "Uzi neza ko ushaka gusoza iki kizamini? Amanota yawe arabarwa uhereye ku bibazo wasubije.",
@@ -297,5 +298,9 @@
   "val.min": "Iminota {n}",
   "val.no": "Ntibyemewe",
   "val.nolimit": "Nta mwanya ugenwe",
-  "web.storage_note": "Imibare yawe ibikwa muri iyi browser. Gusiba amakuru y'urubuga bizayisiba."
+  "web.storage_note": "Imibare yawe ibikwa muri iyi browser. Gusiba amakuru y'urubuga bizayisiba.",
+  "questions.clear": "Siba ibyashakishijwe",
+  "questions.done": "Byarangiye",
+  "questions.filters": "Muyunguruzi",
+  "questions.reset": "Subiza ibyari byo"
 }

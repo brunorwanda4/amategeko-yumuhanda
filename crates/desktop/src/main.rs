@@ -432,7 +432,7 @@ fn main() {
                         set_keep_awake_window_active(window.is_window_active());
                     })
                     .detach();
-                    ShellView::new(app_state, cx)
+                    ShellView::new(app_state, window, cx)
                 });
                 cx.new(|cx| Root::new(shell, window, cx))
             })
