@@ -157,7 +157,7 @@ checksum = "683d7910e743518b0e34f1186f92494becacb047c7b6bf616c96772180fef923"
 
 [[package]]
 name = "amategeko-app"
-version = "1.8.0"
+version = "1.8.2"
 dependencies = [
  "amategeko-core",
  "anyhow",
@@ -175,7 +175,7 @@ dependencies = [
 
 [[package]]
 name = "amategeko-core"
-version = "1.8.0"
+version = "1.8.2"
 dependencies = [
  "getrandom 0.2.17",
  "minisign-verify",
@@ -188,7 +188,7 @@ dependencies = [
 
 [[package]]
 name = "amategeko-web-spike"
-version = "1.8.0"
+version = "1.8.2"
 dependencies = [
  "console_error_panic_hook",
  "console_log",
@@ -1189,7 +1189,7 @@ dependencies = [
 
 [[package]]
 name = "core"
-version = "1.8.0"
+version = "1.8.2"
 dependencies = [
  "amategeko-core",
 ]
@@ -1492,7 +1492,7 @@ dependencies = [
 
 [[package]]
 name = "desktop"
-version = "1.8.0"
+version = "1.8.2"
 dependencies = [
  "amategeko-app",
  "amategeko-core",
@@ -4230,7 +4230,7 @@ dependencies = [
 
 [[package]]
 name = "mobile"
-version = "1.8.0"
+version = "1.8.2"
 dependencies = [
  "amategeko-app",
  "amategeko-core",
@@ -7961,7 +7961,7 @@ dependencies = [
 
 [[package]]
 name = "web"
-version = "1.8.0"
+version = "1.8.2"
 dependencies = [
  "amategeko-app",
  "amategeko-core",

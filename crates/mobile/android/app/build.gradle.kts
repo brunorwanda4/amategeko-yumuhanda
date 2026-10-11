@@ -55,8 +55,8 @@ android {
         applicationId = "dev.gpui.mobile.example"
         minSdk = 26          // Vulkan 1.0 is mandatory from API 26+
         targetSdk = 34
-        versionCode = 10800
-        versionName = "1.8.0"
+        versionCode = 10802
+        versionName = "1.8.2"
 
         // Tell NativeActivity which .so to load.
         // This must match the cdylib / example output name.
