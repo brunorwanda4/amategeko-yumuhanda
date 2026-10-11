@@ -264,14 +264,6 @@ export default function AppPage() {
 
   return (
     <div className="relative h-[100dvh] w-screen overflow-hidden bg-transparent text-foreground select-none pointer-events-none">
-      <div className="fixed top-3 right-3 z-30 pointer-events-auto">
-        <Link
-          href="/download"
-          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-        >
-          Get the app
-        </Link>
-      </div>
       {showDiag && (
         <div className="fixed bottom-2 left-2 z-50 pointer-events-auto max-w-lg max-h-72 overflow-auto rounded bg-black/90 p-3 font-mono text-[11px] text-green-400 border border-green-800 shadow-xl backdrop-blur">
           <div className="flex justify-between items-center mb-1 text-white border-b border-zinc-700 pb-1">
