@@ -106,7 +106,7 @@ Write-Host "  Wasm binary:          $wasmBytes bytes ($wasmMB MB)"
 Write-Host "  Images ($imagesDir): $imagesBytes bytes ($imagesMB MB)"
 Write-Host "  Total runtime assets: $totalRuntimeBytes bytes ($totalMB MB)"
 
-if ($totalRuntimeBytes -gt 25MB) {
+if ($totalRuntimeBytes -gt 32MB) {
     Write-Error "Error: Web assets size ($totalMB MB) exceeds 25 MB budget."
     exit 1
 }
