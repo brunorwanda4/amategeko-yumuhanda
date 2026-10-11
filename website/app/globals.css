@@ -19,6 +19,7 @@
   --color-fd-popover: #fafafa;
   --color-fd-popover-foreground: #0a0a0a;
   --color-fd-ring: #0a0a0a;
+  --color-fd-overlay: rgba(0, 0, 0, 0.45);
 
   --background: #ffffff;
   --foreground: #0a0a0a;
@@ -72,6 +73,7 @@
   --color-fd-popover: #111111;
   --color-fd-popover-foreground: #fafafa;
   --color-fd-ring: #fafafa;
+  --color-fd-overlay: rgba(0, 0, 0, 0.7);
 
   --background: #0a0a0a;
   --foreground: #fafafa;
@@ -352,7 +354,7 @@ header.site-header {
 }
 
 /* Focus outline */
-:focus-visible {
+:focus-visible:not(input):not(textarea):not([contenteditable='true']) {
   outline: 2px solid var(--color-fd-ring) !important;
   outline-offset: 2px !important;
 }
