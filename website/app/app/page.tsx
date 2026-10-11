@@ -33,6 +33,32 @@ type LoadResult =
 let appLoaded = false;
 let appLoadingPromise: Promise<LoadResult> | null = null;
 let progressCallback: ((pct: number | null) => void) | null = null;
+const globalLogs: string[] = [];
+
+if (typeof window !== "undefined") {
+  const origError = console.error;
+  console.error = (...args: unknown[]) => {
+    origError(...args);
+    const msg = args.map((a) => (typeof a === "object" ? JSON.stringify(a) : String(a))).join(" ");
+    globalLogs.push(`[error] ${msg}`);
+  };
+
+  const origWarn = console.warn;
+  console.warn = (...args: unknown[]) => {
+    origWarn(...args);
+    const msg = args.map((a) => (typeof a === "object" ? JSON.stringify(a) : String(a))).join(" ");
+    globalLogs.push(`[warn] ${msg}`);
+  };
+
+  window.addEventListener("error", (e) => {
+    globalLogs.push(`[uncaught] ${e.message} at ${e.filename}:${e.lineno}:${e.colno}`);
+  });
+
+  window.addEventListener("unhandledrejection", (e) => {
+    const reason = e.reason ? e.reason.stack || e.reason.message || String(e.reason) : "unknown";
+    globalLogs.push(`[unhandledrejection] ${reason}`);
+  });
+}
 
 async function doLoadApp(): Promise<LoadResult> {
   let jsFile = "";
@@ -51,7 +77,6 @@ async function doLoadApp(): Promise<LoadResult> {
         wasmBytes = buildInfo.wasmBytes || null;
       }
     } else {
-      // Fallback check for /app/manifest.json (in case older artifacts exist)
       const manifestRes = await fetch("/app/manifest.json");
       if (manifestRes.ok) {
         const manifest = await manifestRes.json();
@@ -62,8 +87,8 @@ async function doLoadApp(): Promise<LoadResult> {
         }
       }
     }
-  } catch {
-    // Fallback or network error
+  } catch (err) {
+    globalLogs.push(`[build.json fetch failed] ${String(err)}`);
   }
 
   if (!jsFile || !wasmFile) {
@@ -121,9 +146,11 @@ async function doLoadApp(): Promise<LoadResult> {
     appLoaded = true;
     return { status: "success" };
   } catch (err: unknown) {
+    const msg = err instanceof Error ? err.stack || err.message : String(err);
+    globalLogs.push(`[doLoadApp exception] ${msg}`);
     return {
       status: "error",
-      message: err instanceof Error ? err.message : String(err),
+      message: msg,
     };
   }
 }
@@ -134,6 +161,8 @@ export default function AppPage() {
   const [progress, setProgress] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showDiag, setShowDiag] = useState(false);
+  const [diagInfo, setDiagInfo] = useState<string>("");
 
   useEffect(() => {
     const isSupported = isGpuSupported();
@@ -145,7 +174,6 @@ export default function AppPage() {
 
     if (appLoaded) {
       setLoading(false);
-      return;
     }
 
     let active = true;
@@ -172,9 +200,30 @@ export default function AppPage() {
       }
     });
 
+    // Check DOM canvas status periodically
+    const interval = setInterval(() => {
+      if (!active) return;
+      const canvases = document.querySelectorAll("canvas");
+      const canvasDetails = Array.from(canvases).map((c, i) => {
+        const rect = c.getBoundingClientRect();
+        const comp = window.getComputedStyle(c);
+        return `#${i}: ${rect.width}x${rect.height} (pos:${comp.position}, z:${comp.zIndex}, disp:${comp.display}, vis:${comp.visibility})`;
+      });
+
+      const info = [
+        `AppLoaded: ${appLoaded}`,
+        `Canvases found: ${canvases.length}`,
+        ...canvasDetails,
+        `Recent Logs (${globalLogs.length}):`,
+        ...globalLogs.slice(-6),
+      ].join("\n");
+      setDiagInfo(info);
+    }, 1000);
+
     return () => {
       active = false;
       progressCallback = null;
+      clearInterval(interval);
     };
   }, []);
 
@@ -215,25 +264,21 @@ export default function AppPage() {
   }
 
   return (
-    <div className="relative h-[100dvh] w-screen overflow-hidden bg-background text-foreground select-none">
-      <div className="fixed left-2 top-2 z-50 flex items-center gap-2 rounded bg-background/60 px-2 py-0.5 text-xs text-muted-foreground backdrop-blur">
-        <span>Demo: {sampleCount} sample questions</span>
-        <Link
-          href="/download"
-          className="text-foreground underline transition-opacity hover:opacity-80"
-        >
-          Get the full app
-        </Link>
-      </div>
-      <Link
-        href="/"
-        className="fixed right-2 top-2 z-50 rounded bg-background/60 px-1.5 py-0.5 text-xs text-muted-foreground backdrop-blur opacity-60 transition-opacity hover:opacity-100 hover:text-foreground"
-      >
-        Back to site
-      </Link>
+    <div className="relative h-[100dvh] w-screen overflow-hidden bg-transparent text-foreground select-none pointer-events-none">
+      {showDiag && (
+        <div className="fixed bottom-2 left-2 z-50 pointer-events-auto max-w-lg max-h-72 overflow-auto rounded bg-black/90 p-3 font-mono text-[11px] text-green-400 border border-green-800 shadow-xl backdrop-blur">
+          <div className="flex justify-between items-center mb-1 text-white border-b border-zinc-700 pb-1">
+            <span className="font-bold">App Diagnostics</span>
+            <button onClick={() => setShowDiag(false)} className="text-zinc-400 hover:text-white">
+              ✕
+            </button>
+          </div>
+          <pre className="whitespace-pre-wrap">{diagInfo}</pre>
+        </div>
+      )}
 
       {loading && (
-        <div className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-background p-6">
+        <div className="fixed inset-0 z-40 pointer-events-auto flex flex-col items-center justify-center bg-background p-6">
           <div className="w-full max-w-xs space-y-3 text-center">
             <p className="text-sm font-medium text-muted-foreground">
               {progress !== null ? `Loading app… ${progress}%` : "Loading app…"}
@@ -253,9 +298,11 @@ export default function AppPage() {
       )}
 
       {error && (
-        <div className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-background p-6 text-center">
+        <div className="fixed inset-0 z-40 pointer-events-auto flex flex-col items-center justify-center bg-background p-6 text-center">
           <p className="text-base font-semibold text-destructive">Failed to start application</p>
-          <p className="mt-1 font-mono text-xs text-muted-foreground">{error}</p>
+          <p className="mt-1 font-mono text-xs text-muted-foreground max-w-xl break-words whitespace-pre-wrap">
+            {error}
+          </p>
           <div className="mt-6">
             <Button asChild variant="outline" size="sm" className="rounded-full">
               <Link href="/download">Use Download page instead</Link>
@@ -263,36 +310,6 @@ export default function AppPage() {
           </div>
         </div>
       )}
-
-      <style jsx global>{`
-        html,
-        body {
-          margin: 0;
-          padding: 0;
-          width: 100%;
-          height: 100dvh;
-          overflow: hidden !important;
-          overscroll-behavior: none !important;
-          touch-action: none !important;
-        }
-        body > canvas {
-          position: fixed !important;
-          inset: 0 !important;
-          width: 100vw !important;
-          height: 100dvh !important;
-          display: block !important;
-          touch-action: none !important;
-          overscroll-behavior: none !important;
-        }
-        @keyframes indeterminate {
-          0% {
-            transform: translateX(-100%);
-          }
-          100% {
-            transform: translateX(350%);
-          }
-        }
-      `}</style>
     </div>
   );
 }

@@ -4,6 +4,7 @@ use gpui::InteractiveElement as _;
 use gpui::*;
 use gpui_kit::base::StyledExt;
 use gpui_kit::component::button::{Button, ButtonVariants};
+use gpui_kit::component::dialog::DialogFooter;
 use gpui_kit::component::{ActiveTheme, Icon, IconName};
 use gpui_kit::*;
 
@@ -1075,6 +1076,7 @@ impl ShortcutRegistry {
         // Modal backdrop overlay containing centered dialog container
         div()
             .id("shortcuts_dialog_backdrop")
+            .occlude()
             .absolute()
             .inset_0()
             .flex()
@@ -1089,9 +1091,13 @@ impl ShortcutRegistry {
             .on_click(cx.listener(move |this, _, window, cx| {
                 on_close(this, window, cx);
             }))
+            .on_scroll_wheel(|_, _, cx| {
+                cx.stop_propagation();
+            })
             .child(
                 div()
                     .id("shortcuts_dialog_container")
+                    .occlude()
                     .flex()
                     .flex_col()
                     .w(px(580.0))
@@ -1103,6 +1109,9 @@ impl ShortcutRegistry {
                     .bg(colors.background)
                     .gap_4()
                     .on_mouse_down(gpui::MouseButton::Left, |_, _, _| {})
+                    .on_scroll_wheel(|_, _, cx| {
+                        cx.stop_propagation();
+                    })
                     .child(
                         div()
                             .flex()
@@ -1156,6 +1165,9 @@ impl ShortcutRegistry {
                             .max_h(px(400.0))
                             .overflow_y_scroll()
                             .pr_3()
+                            .on_scroll_wheel(|_, _, cx| {
+                                cx.stop_propagation();
+                            })
                             .child(vertical_scrollbar(
                                 "shortcuts_dialog_scrollbar",
                                 scroll_handle,
@@ -1165,7 +1177,10 @@ impl ShortcutRegistry {
                             .children(group_els),
                     )
                     .child(
-                        div().flex().flex_row().justify_end().pt_2().child(
+                        DialogFooter::new()
+                            .justify_end()
+                            .pt_2()
+                            .child(
                             Button::new("close_shortcuts_btn")
                                 .primary()
                                 .label(t("shortcuts.help_close", lang))

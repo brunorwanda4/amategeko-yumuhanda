@@ -776,27 +776,6 @@ impl QuestionsView {
                                                             .gap_2()
                                                             .overflow_hidden()
                                                             .child(
-                                                                div()
-                                                                    .flex()
-                                                                    .flex_row()
-                                                                    .items_center()
-                                                                    .flex_wrap()
-                                                                    .gap_2()
-                                                                    .text_xs()
-                                                                    .text_color(colors.muted_foreground)
-                                                                    .child(
-                                                                        Icon::new(IconName::Frame)
-                                                                            .size(px(14.0))
-                                                                            .text_color(
-                                                                                colors.muted_foreground,
-                                                                            ),
-                                                                    )
-                                                                    .child(t(
-                                                                        "questions.sign_image",
-                                                                        lang,
-                                                                    )),
-                                                            )
-                                                            .child(
                                                                 img(format!(
                                                                     "assets/images/q{}.png",
                                                                     q_id

@@ -1,4 +1,4 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
 @import "fumadocs-ui/css/preset.css";
 @import "fumadocs-ui/css/neutral.css";
 
@@ -382,4 +382,17 @@ header.site-header {
   background-position: center top;
   mask-image: radial-gradient(ellipse at top, #000 50%, transparent 90%);
   -webkit-mask-image: radial-gradient(ellipse at top, #000 50%, transparent 90%);
+}
+
+/* WebAssembly GPUI canvas styling */
+body > canvas,
+canvas[tabindex="-1"] {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  display: block !important;
+  touch-action: none !important;
+  overscroll-behavior: none !important;
+  z-index: 10 !important;
 }

@@ -8,6 +8,7 @@ use amategeko_core::platform::{
 use amategeko_core::{Clock, QuestionBank};
 use gpui_kit::component::Root;
 use gpui_kit::*;
+use std::borrow::Cow;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -250,6 +251,22 @@ pub fn run(dark: Option<bool>) -> Result<(), JsValue> {
 
         let initial_theme = app_state.settings.theme;
         amategeko_app::init_fonts(app_state.settings.font_size_scale, cx);
+
+        // Load the fallback web fonts for cosmic-text and monospaced UI.
+        // The web platform resolves GPUI's `.SystemUIFont` alias to IBM Plex
+        // Sans and ships no system fonts in WASM. Text measured or rendered
+        // before/with the system fallback needs IBM Plex Sans or cosmic-text panics.
+        let system_font =
+            Cow::Borrowed(include_bytes!("../fonts/IBMPlexSans-Regular.ttf").as_slice());
+        let mono_font =
+            Cow::Borrowed(include_bytes!("../fonts/JetBrainsMono-Regular.ttf").as_slice());
+        let emoji_font = Cow::Borrowed(include_bytes!("../fonts/NotoEmoji-Regular.ttf").as_slice());
+        let cjk_font =
+            Cow::Borrowed(include_bytes!("../fonts/NotoSansSC-Regular-subset.ttf").as_slice());
+        let _ = cx
+            .text_system()
+            .add_fonts(vec![system_font, mono_font, emoji_font, cjk_font]);
+
         amategeko_app::apply_theme(initial_theme, None, cx);
 
         cx.open_window(gpui::WindowOptions::default(), move |window, cx| {
