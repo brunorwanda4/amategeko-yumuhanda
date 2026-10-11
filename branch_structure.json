@@ -1,0 +1,33 @@
+{
+  "default_branch": "main",
+  "branches": [
+    "chore/release-1.8.0-update",
+    "feat/website-llms-txt",
+    "fix/android-signing-continuity",
+    "fix/mobile-quiz-swipe",
+    "fix/web-question-images",
+    "fix/website-mobile-navbar",
+    "main",
+    "origin"
+  ],
+  "parent": {
+    "chore/release-1.8.0-update": "main",
+    "feat/website-llms-txt": "main",
+    "fix/android-signing-continuity": "main",
+    "fix/mobile-quiz-swipe": "main",
+    "fix/web-question-images": "main",
+    "fix/website-mobile-navbar": "main",
+    "main": null,
+    "origin": "main"
+  },
+  "order": [
+    "main",
+    "chore/release-1.8.0-update",
+    "feat/website-llms-txt",
+    "fix/android-signing-continuity",
+    "fix/mobile-quiz-swipe",
+    "fix/web-question-images",
+    "fix/website-mobile-navbar",
+    "origin"
+  ]
+}

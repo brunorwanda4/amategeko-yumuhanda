@@ -5,10 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.8.0] - 2026-10-08
+## [1.8.0] - 2026-10-11
 
 ### Added
 - Study all questions mode, with saved position
+- Choose the number of questions (Easy and Medium; Hard stays 20)
 - Question bank corrected to 404 questions, with fixed answers
 - Automatic updates from GitHub Releases, signed
 - Screen stays awake during a quiz
