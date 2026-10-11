@@ -1,7 +1,7 @@
 use std::cell::Cell;
 use std::time::Duration;
 
-use gpui::{InteractiveElement, MouseButton, Pixels, Point};
+use ::gpui::{InteractiveElement, MouseButton, Pixels, Point};
 use gpui_kit::component::scroll::{Scrollbar, ScrollbarMode, ScrollbarMotion, ScrollbarStyles};
 use gpui_kit::{px, App, ElementId, ScrollHandle};
 
@@ -135,12 +135,12 @@ pub fn vertical_scrollbar(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use amategeko_core::Question;
-    use gpui::{
+    use ::gpui::{
         div, point, Context, IntoElement, ParentElement as _, Render, ScrollDelta,
         ScrollWheelEvent, StatefulInteractiveElement as _, Styled as _, TestAppContext,
         VisualTestContext, Window,
     };
+    use amategeko_core::Question;
 
     struct ScrollHarness {
         handle: ScrollHandle,
@@ -182,7 +182,7 @@ mod tests {
         });
     }
 
-    #[gpui::test]
+    #[::gpui::test]
     fn dragging_the_content_scrolls_it(cx: &mut TestAppContext) {
         cx.update(gpui_kit::init);
         let (view, cx) = cx.add_window_view(move |_, _| ScrollHarness {
@@ -193,7 +193,7 @@ mod tests {
         let cx: &mut VisualTestContext = cx;
         draw(cx);
 
-        let none = gpui::Modifiers::default();
+        let none = ::gpui::Modifiers::default();
         cx.simulate_mouse_down(point(px(100.0), px(200.0)), MouseButton::Left, none);
         cx.simulate_mouse_move(point(px(100.0), px(120.0)), MouseButton::Left, none);
         draw(cx);
@@ -205,7 +205,7 @@ mod tests {
         assert!(offset < px(-40.0), "offset was {offset:?}");
     }
 
-    #[gpui::test]
+    #[::gpui::test]
     fn a_small_movement_is_a_tap_not_a_drag(cx: &mut TestAppContext) {
         cx.update(gpui_kit::init);
         let (view, cx) = cx.add_window_view(move |_, _| ScrollHarness {
@@ -216,7 +216,7 @@ mod tests {
         let cx: &mut VisualTestContext = cx;
         draw(cx);
 
-        let none = gpui::Modifiers::default();
+        let none = ::gpui::Modifiers::default();
         cx.simulate_mouse_down(point(px(100.0), px(200.0)), MouseButton::Left, none);
         cx.simulate_mouse_move(point(px(100.0), px(197.0)), MouseButton::Left, none);
         cx.simulate_mouse_up(point(px(100.0), px(197.0)), MouseButton::Left, none);
@@ -226,7 +226,7 @@ mod tests {
         assert_eq!(offset, px(0.0));
     }
 
-    #[gpui::test]
+    #[::gpui::test]
     fn full_question_list_scrolls_and_keeps_offset_across_rerenders(cx: &mut TestAppContext) {
         cx.update(gpui_kit::init);
         let questions: Vec<Question> =

@@ -8,18 +8,19 @@ use crate::ui::results::{ResultFilter, ResultsView};
 use crate::ui::scroll::{configure_scrollbar_motion, vertical_scrollbar, ScrollbarContext};
 use crate::ui::settings::{SettingsAction, SettingsView};
 use crate::ui::stats::StatsView;
+use ::gpui::FocusHandle;
+use ::gpui::InteractiveElement as _;
 #[cfg(feature = "self-update")]
 use amategeko_core::tf;
 use amategeko_core::{
     t, QuestionSet, QuizEngine, QuizMode, QuizTimer, StatsFilter, Strings, TimerLevel, TimerState,
     TimerTracker,
 };
-use gpui::FocusHandle;
-use gpui::InteractiveElement as _;
 use gpui_kit::assets::IconName;
 use gpui_kit::base::StyledExt;
 use gpui_kit::component::alert::Alert;
 use gpui_kit::component::button::{Button, ButtonVariants};
+use gpui_kit::component::input::{InputEvent, InputState};
 use gpui_kit::component::slider::{SliderEvent, SliderState};
 use gpui_kit::component::tooltip::Tooltip;
 use gpui_kit::component::{ActiveTheme, Icon};
@@ -200,6 +201,8 @@ pub struct ShellView {
     pub results_expanded: HashSet<usize>,
     pub questions_filter: QuestionsFilter,
     pub questions_search: String,
+    questions_search_input: Option<Entity<InputState>>,
+    questions_search_subscription: Option<Subscription>,
     pub questions_expanded: HashSet<u32>,
     pub questions_revealed: HashMap<u32, String>,
     pub settings_confirm_clear: bool,
@@ -219,10 +222,10 @@ pub struct ShellView {
     pub study_jump_input: String,
     pub questions_search_focused: bool,
     pub questions_selected_idx: usize,
-    pub questions_scroll_handle: gpui::ScrollHandle,
-    pub stats_scroll_handle: gpui::ScrollHandle,
-    home_scroll_handle: gpui::ScrollHandle,
-    quiz_scroll_handle: gpui::ScrollHandle,
+    pub questions_scroll_handle: ::gpui::ScrollHandle,
+    pub stats_scroll_handle: ::gpui::ScrollHandle,
+    home_scroll_handle: ::gpui::ScrollHandle,
+    quiz_scroll_handle: ::gpui::ScrollHandle,
 
     quiz_selected_mode: QuizMode,
     quiz_selected_set: QuestionSet,
@@ -230,11 +233,11 @@ pub struct ShellView {
     quiz_length_custom_active: bool,
     quiz_length_subscription: Option<Subscription>,
 
-    results_scroll_handle: gpui::ScrollHandle,
-    settings_scroll_handle: gpui::ScrollHandle,
-    sidebar_scroll_handle: gpui::ScrollHandle,
-    help_dialog_scroll_handle: gpui::ScrollHandle,
-    finish_dialog_scroll_handle: gpui::ScrollHandle,
+    results_scroll_handle: ::gpui::ScrollHandle,
+    settings_scroll_handle: ::gpui::ScrollHandle,
+    sidebar_scroll_handle: ::gpui::ScrollHandle,
+    help_dialog_scroll_handle: ::gpui::ScrollHandle,
+    finish_dialog_scroll_handle: ::gpui::ScrollHandle,
     last_scrollbar_screen: Screen,
     scrollbar_reveal_until: u64,
     last_dialog_visibility: (bool, bool),
@@ -311,9 +314,9 @@ impl ShellView {
 
         let initial_results_filter = ResultFilter::All;
 
-        let questions_scroll_handle = gpui::ScrollHandle::default();
-        let stats_scroll_handle = gpui::ScrollHandle::default();
-        let results_scroll_handle = gpui::ScrollHandle::default();
+        let questions_scroll_handle = ::gpui::ScrollHandle::default();
+        let stats_scroll_handle = ::gpui::ScrollHandle::default();
+        let results_scroll_handle = ::gpui::ScrollHandle::default();
         let initial_screen = state.active_screen.clone();
         let now_ms = state.clock.now_millis();
 
@@ -361,16 +364,22 @@ impl ShellView {
         if initial_scroll > 0.0 {
             match state.active_screen {
                 Screen::Questions => {
-                    questions_scroll_handle
-                        .set_offset(gpui::point(gpui::px(0.0), gpui::px(-initial_scroll.abs())));
+                    questions_scroll_handle.set_offset(::gpui::point(
+                        ::gpui::px(0.0),
+                        ::gpui::px(-initial_scroll.abs()),
+                    ));
                 }
                 Screen::Stats => {
-                    stats_scroll_handle
-                        .set_offset(gpui::point(gpui::px(0.0), gpui::px(-initial_scroll.abs())));
+                    stats_scroll_handle.set_offset(::gpui::point(
+                        ::gpui::px(0.0),
+                        ::gpui::px(-initial_scroll.abs()),
+                    ));
                 }
                 Screen::Results => {
-                    results_scroll_handle
-                        .set_offset(gpui::point(gpui::px(0.0), gpui::px(-initial_scroll.abs())));
+                    results_scroll_handle.set_offset(::gpui::point(
+                        ::gpui::px(0.0),
+                        ::gpui::px(-initial_scroll.abs()),
+                    ));
                 }
                 _ => {}
             }
@@ -383,6 +392,8 @@ impl ShellView {
             results_expanded: HashSet::new(),
             questions_filter: initial_questions_filter,
             questions_search: String::new(),
+            questions_search_input: None,
+            questions_search_subscription: None,
             questions_expanded: HashSet::new(),
             questions_revealed: HashMap::new(),
             settings_confirm_clear: false,
@@ -404,8 +415,8 @@ impl ShellView {
             questions_selected_idx: 0,
             questions_scroll_handle,
             stats_scroll_handle,
-            home_scroll_handle: gpui::ScrollHandle::default(),
-            quiz_scroll_handle: gpui::ScrollHandle::default(),
+            home_scroll_handle: ::gpui::ScrollHandle::default(),
+            quiz_scroll_handle: ::gpui::ScrollHandle::default(),
 
             quiz_selected_mode: QuizMode::Byoroshye,
             quiz_selected_set: QuestionSet::All,
@@ -414,10 +425,10 @@ impl ShellView {
             quiz_length_subscription: None,
 
             results_scroll_handle,
-            settings_scroll_handle: gpui::ScrollHandle::default(),
-            sidebar_scroll_handle: gpui::ScrollHandle::default(),
-            help_dialog_scroll_handle: gpui::ScrollHandle::default(),
-            finish_dialog_scroll_handle: gpui::ScrollHandle::default(),
+            settings_scroll_handle: ::gpui::ScrollHandle::default(),
+            sidebar_scroll_handle: ::gpui::ScrollHandle::default(),
+            help_dialog_scroll_handle: ::gpui::ScrollHandle::default(),
+            finish_dialog_scroll_handle: ::gpui::ScrollHandle::default(),
             last_scrollbar_screen: initial_screen,
             scrollbar_reveal_until: now_ms.saturating_add(1000),
             last_dialog_visibility: (false, false),
@@ -475,7 +486,7 @@ impl ShellView {
                 self.questions_selected_idx = 0;
                 self.questions_expanded.insert(qid);
                 self.questions_scroll_handle
-                    .set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
+                    .set_offset(::gpui::point(::gpui::px(0.0), ::gpui::px(0.0)));
                 self.state.navigate(Screen::Questions);
             }
             HomeAction::OpenResults => self.state.navigate(Screen::Results),
@@ -524,6 +535,35 @@ impl ShellView {
                 self.quiz_length_custom_active = true;
                 self.save_dev_state();
                 cx.notify();
+            }
+        }
+    }
+
+    fn on_questions_search_input(
+        &mut self,
+        input: &Entity<InputState>,
+        event: &InputEvent,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        match event {
+            InputEvent::Change => {
+                self.questions_search = input.read(cx).value().to_string();
+                self.questions_selected_idx = 0;
+                self.questions_scroll_handle
+                    .set_offset(::gpui::point(::gpui::px(0.0), ::gpui::px(0.0)));
+                cx.notify();
+            }
+            InputEvent::Focus => {
+                self.questions_search_focused = true;
+                cx.notify();
+            }
+            InputEvent::Blur => {
+                self.questions_search_focused = false;
+                cx.notify();
+            }
+            InputEvent::PressEnter { .. } => {
+                window.focus(&self.focus_handle, cx);
             }
         }
     }
@@ -757,7 +797,7 @@ impl ShellView {
         self.show_study_jump_dialog = false;
     }
 
-    pub fn current_scroll_handle(&self) -> &gpui::ScrollHandle {
+    pub fn current_scroll_handle(&self) -> &::gpui::ScrollHandle {
         match self.state.active_screen {
             Screen::Questions => &self.questions_scroll_handle,
             Screen::Stats => &self.stats_scroll_handle,
@@ -874,13 +914,14 @@ impl ShellView {
     ) {
         let changed = self.questions_search_focused != focused;
         self.questions_search_focused = focused;
-        if focused {
-            if let Some(window) = window {
+        if let Some(window) = window {
+            if focused {
+                if let Some(input) = &self.questions_search_input {
+                    input.update(cx, |input, cx| input.focus(window, cx));
+                }
+            } else {
                 window.focus(&self.focus_handle, cx);
             }
-            crate::mobile_ime::begin_search_ime();
-        } else if changed {
-            crate::mobile_ime::end_search_ime();
         }
         if changed {
             cx.notify();
@@ -909,6 +950,26 @@ impl Render for ShellView {
         let window_width = window.bounds().size.width;
         let is_desktop = window_width > px(720.0);
 
+        let questions_search_input = if let Some(input) = &self.questions_search_input {
+            input.clone()
+        } else {
+            let placeholder =
+                t("questions.search_placeholder", self.state.settings.language).to_string();
+            let input = cx.new(|cx| InputState::new(window, cx).placeholder(placeholder));
+            self.questions_search_subscription =
+                Some(cx.subscribe_in(&input, window, Self::on_questions_search_input));
+            self.questions_search_input = Some(input.clone());
+            input
+        };
+
+        let input_value = questions_search_input.read(cx).value();
+        if input_value.as_ref() != self.questions_search {
+            let search = self.questions_search.clone();
+            questions_search_input.update(cx, |input, cx| {
+                input.set_value(search, window, cx);
+            });
+        }
+
         let quiz_length_slider = if let Some(slider) = &self.quiz_length_slider {
             slider.clone()
         } else {
@@ -925,19 +986,6 @@ impl Render for ShellView {
             self.quiz_length_slider = Some(slider.clone());
             slider
         };
-
-        if self.questions_search_focused && self.state.active_screen == Screen::Questions {
-            let res = crate::mobile_ime::drain_pending_into_search(&mut self.questions_search);
-            if res.changed {
-                self.questions_selected_idx = 0;
-                self.questions_scroll_handle
-                    .set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
-            }
-            if res.submitted {
-                self.questions_search_focused = false;
-                crate::mobile_ime::end_search_ime();
-            }
-        }
 
         let active_screen = self.state.active_screen.clone();
         let is_in_quiz = active_screen == Screen::Quiz && self.state.current_attempt.is_some();
@@ -1166,7 +1214,7 @@ impl Render for ShellView {
                 |this, filter, _, cx| {
                     this.results_filter = filter;
                     this.results_scroll_handle
-                        .set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
+                        .set_offset(::gpui::point(::gpui::px(0.0), ::gpui::px(0.0)));
                     this.save_dev_state();
                     cx.notify();
                 },
@@ -1202,7 +1250,7 @@ impl Render for ShellView {
                 reveal_scrollbar,
                 self.questions_filter,
                 &self.questions_search,
-                self.questions_search_focused,
+                &questions_search_input,
                 self.state.settings.study_hide_answers,
                 &self.questions_expanded,
                 &self.questions_revealed,
@@ -1212,19 +1260,9 @@ impl Render for ShellView {
                     this.set_questions_search_focused(false, None, cx);
                     this.questions_selected_idx = 0;
                     this.questions_scroll_handle
-                        .set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
+                        .set_offset(::gpui::point(::gpui::px(0.0), ::gpui::px(0.0)));
                     this.save_dev_state();
                     cx.notify();
-                },
-                |this, search, _, cx| {
-                    this.questions_search = search;
-                    this.questions_selected_idx = 0;
-                    this.questions_scroll_handle
-                        .set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
-                    cx.notify();
-                },
-                |this, focused, window, cx| {
-                    this.set_questions_search_focused(focused, Some(window), cx);
                 },
                 |this, hide, _, cx| {
                     this.state.settings.study_hide_answers = hide;
@@ -1541,7 +1579,7 @@ impl Render for ShellView {
             .track_focus(&self.focus_handle)
             .key_context("Shell")
             .on_key_down(
-                cx.listener(move |this, event: &gpui::KeyDownEvent, window, cx| {
+                cx.listener(move |this, event: &::gpui::KeyDownEvent, window, cx| {
                     let dialog_open = this.show_help_dialog
                         || this.show_finish_confirm_dialog
                         || this.show_study_jump_dialog
@@ -1587,56 +1625,6 @@ impl Render for ShellView {
 
                     let is_typing = this.questions_search_focused
                         && this.state.active_screen == Screen::Questions;
-
-                    if is_typing {
-                        let key = event.keystroke.key.as_str();
-                        let is_ctrl =
-                            event.keystroke.modifiers.control || event.keystroke.modifiers.platform;
-                        let is_alt = event.keystroke.modifiers.alt;
-
-                        if key.eq_ignore_ascii_case("escape") || key.eq_ignore_ascii_case("enter") {
-                            this.set_questions_search_focused(false, None, cx);
-                            return;
-                        }
-
-                        // On mobile platforms (Android/iOS APK), character typing and backspaces
-                        // are handled exclusively through the soft-keyboard IME bridge
-                        // (drain_pending_into_search). gpui-mobile delivers both IME callbacks
-                        // and KeyDown events; processing characters here on mobile causes double typing.
-                        if crate::is_native_mobile() {
-                            return;
-                        }
-
-                        if key.eq_ignore_ascii_case("backspace") {
-                            if is_ctrl {
-                                this.questions_search.clear();
-                            } else {
-                                this.questions_search.pop();
-                            }
-                            cx.notify();
-                            return;
-                        } else if key.eq_ignore_ascii_case("space") || key == " " {
-                            this.questions_search.push(' ');
-                            cx.notify();
-                            return;
-                        } else if let Some(char_str) = &event.keystroke.key_char {
-                            if !is_ctrl && !is_alt && !char_str.chars().any(|c| c.is_control()) {
-                                this.questions_search.push_str(char_str);
-                                cx.notify();
-                                return;
-                            }
-                        } else if key.chars().count() == 1 {
-                            let mut ch = key.chars().next().unwrap();
-                            if !ch.is_control() && !is_ctrl && !is_alt {
-                                if event.keystroke.modifiers.shift {
-                                    ch = ch.to_ascii_uppercase();
-                                }
-                                this.questions_search.push(ch);
-                                cx.notify();
-                                return;
-                            }
-                        }
-                    }
 
                     let action = this.registry.resolve_event(
                         event,
@@ -1907,19 +1895,19 @@ impl Render for ShellView {
                         ShortcutAction::FilterResultsAll => {
                             this.results_filter = ResultFilter::All;
                             this.results_scroll_handle
-                                .set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
+                                .set_offset(::gpui::point(::gpui::px(0.0), ::gpui::px(0.0)));
                             cx.notify();
                         }
                         ShortcutAction::FilterResultsCorrect => {
                             this.results_filter = ResultFilter::Correct;
                             this.results_scroll_handle
-                                .set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
+                                .set_offset(::gpui::point(::gpui::px(0.0), ::gpui::px(0.0)));
                             cx.notify();
                         }
                         ShortcutAction::FilterResultsWrong => {
                             this.results_filter = ResultFilter::Mistakes;
                             this.results_scroll_handle
-                                .set_offset(gpui::point(gpui::px(0.0), gpui::px(0.0)));
+                                .set_offset(::gpui::point(::gpui::px(0.0), ::gpui::px(0.0)));
                             cx.notify();
                         }
                         ShortcutAction::FocusSearch => {
@@ -2047,7 +2035,7 @@ impl Render for ShellView {
                     .justify_center()
                     .px_4()
                     .py_6()
-                    .bg(gpui::Rgba {
+                    .bg(::gpui::Rgba {
                         r: 0.0,
                         g: 0.0,
                         b: 0.0,
@@ -2082,7 +2070,7 @@ impl Render for ShellView {
                                 is_desktop,
                                 reveal_dialog_scrollbar,
                             ))
-                            .on_mouse_down(gpui::MouseButton::Left, |_, _, _| {})
+                            .on_mouse_down(::gpui::MouseButton::Left, |_, _, _| {})
                             .child(
                                 div()
                                     .min_w_0()
@@ -2171,7 +2159,7 @@ impl Render for ShellView {
                     .items_center()
                     .justify_center()
                     .px_4()
-                    .bg(gpui::Rgba {
+                    .bg(::gpui::Rgba {
                         r: 0.0,
                         g: 0.0,
                         b: 0.0,
@@ -2194,7 +2182,7 @@ impl Render for ShellView {
                             .border_1()
                             .border_color(colors.border)
                             .bg(colors.background)
-                            .on_mouse_down(gpui::MouseButton::Left, |_, _, _| {})
+                            .on_mouse_down(::gpui::MouseButton::Left, |_, _, _| {})
                             .child(
                                 div()
                                     .text_lg()
@@ -2304,7 +2292,7 @@ impl Render for ShellView {
                     .justify_center()
                     .px_4()
                     .py_6()
-                    .bg(gpui::Rgba {
+                    .bg(::gpui::Rgba {
                         r: 0.0,
                         g: 0.0,
                         b: 0.0,
@@ -2332,7 +2320,7 @@ impl Render for ShellView {
                             .border_1()
                             .border_color(colors.border)
                             .bg(colors.background)
-                            .on_mouse_down(gpui::MouseButton::Left, |_, _, _| {})
+                            .on_mouse_down(::gpui::MouseButton::Left, |_, _, _| {})
                             .child(
                                 div()
                                     .min_w_0()
@@ -2423,7 +2411,7 @@ impl Render for ShellView {
                         .items_center()
                         .justify_center()
                         .px_4()
-                        .bg(gpui::Rgba {
+                        .bg(::gpui::Rgba {
                             r: 0.0,
                             g: 0.0,
                             b: 0.0,
@@ -2914,7 +2902,7 @@ impl ShellView {
         let bg_color = if is_active {
             colors.sidebar_accent
         } else {
-            gpui::transparent_black()
+            ::gpui::transparent_black()
         };
         let text_color = if is_active {
             colors.primary

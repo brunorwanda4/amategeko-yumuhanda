@@ -1,10 +1,10 @@
 use crate::state::AppState;
 use crate::ui::scroll::{vertical_scrollbar, DragScroll};
+use ::gpui::InteractiveElement as _;
 use amategeko_core::platform::KeepAwakeGuard;
 use amategeko_core::{
     percent_done, study_index, t, Attempt, Language, QuizMode, QuizTimer, TimerLevel, TimerState,
 };
-use gpui::InteractiveElement as _;
 use gpui_kit::assets::IconName;
 use gpui_kit::base::StyledExt;
 use gpui_kit::component::tooltip::Tooltip;
@@ -1157,7 +1157,7 @@ impl QuizView {
         cx: &mut Context<V>,
         on_start_mode: impl Fn(&mut V, QuizMode, &mut Window, &mut Context<V>) + 'static + Copy,
         on_study_restart_request: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
-    ) -> gpui::Div {
+    ) -> ::gpui::Div {
         let theme = cx.theme();
         let colors = theme.colors;
         let lang = state.settings.language;
@@ -1255,8 +1255,8 @@ impl QuizView {
                                     t("mode.easy.badge", lang),
                                     t("mode.easy.desc", lang),
                                     IconName::GraduationCap,
-                                    gpui::rgb(0x22c55e),
-                                    gpui::rgba(0x22c55e1a),
+                                    ::gpui::rgb(0x22c55e),
+                                    ::gpui::rgba(0x22c55e1a),
                                     is_desktop,
                                     t("home.start", lang),
                                     cx,
@@ -1269,8 +1269,8 @@ impl QuizView {
                                     t("mode.medium.badge", lang),
                                     t("mode.medium.desc", lang),
                                     IconName::Clock,
-                                    gpui::rgb(0xf59e0b),
-                                    gpui::rgba(0xf59e0b1a),
+                                    ::gpui::rgb(0xf59e0b),
+                                    ::gpui::rgba(0xf59e0b1a),
                                     is_desktop,
                                     t("home.start", lang),
                                     cx,
@@ -1283,8 +1283,8 @@ impl QuizView {
                                     t("mode.hard.badge", lang),
                                     t("mode.hard.desc", lang),
                                     IconName::Flame,
-                                    gpui::rgb(0xef4444),
-                                    gpui::rgba(0xef44441a),
+                                    ::gpui::rgb(0xef4444),
+                                    ::gpui::rgba(0xef44441a),
                                     is_desktop,
                                     t("home.start", lang),
                                     cx,
@@ -1483,8 +1483,8 @@ impl QuizView {
         badge: &'static str,
         desc: &'static str,
         icon: IconName,
-        icon_color: impl Into<gpui::Hsla>,
-        badge_bg: impl Into<gpui::Hsla>,
+        icon_color: impl Into<::gpui::Hsla>,
+        badge_bg: impl Into<::gpui::Hsla>,
         is_desktop: bool,
         start_label: &'static str,
         cx: &mut Context<V>,
@@ -1492,8 +1492,8 @@ impl QuizView {
     ) -> impl IntoElement {
         let theme = cx.theme();
         let colors = theme.colors;
-        let icon_color: gpui::Hsla = icon_color.into();
-        let badge_bg: gpui::Hsla = badge_bg.into();
+        let icon_color: ::gpui::Hsla = icon_color.into();
+        let badge_bg: ::gpui::Hsla = badge_bg.into();
 
         div()
             .id(id)

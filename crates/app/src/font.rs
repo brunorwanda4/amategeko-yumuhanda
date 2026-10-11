@@ -2,7 +2,7 @@
 //!
 //! The font family is not user-configurable. Only the size scale is.
 
-use gpui::{px, App, Global, Window};
+use ::gpui::{px, App, Global, Window};
 use gpui_kit::component::Theme;
 use std::borrow::Cow;
 

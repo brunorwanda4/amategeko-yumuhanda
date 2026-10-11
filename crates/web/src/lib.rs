@@ -224,12 +224,13 @@ pub fn run(dark: Option<bool>) -> Result<(), JsValue> {
     let storage = Arc::new(WebStorage::new());
     let clock = Arc::new(WebClock);
 
-    let raw_questions = include_str!(concat!(env!("OUT_DIR"), "/web_questions.json"));
-    let bank = match QuestionBank::from_rw_json_strings(raw_questions, "{}") {
+    let raw_questions_rw = include_str!("../generated/questions.json");
+    let raw_questions_en = include_str!("../generated/questions_en.json");
+    let bank = match QuestionBank::from_json_strings(raw_questions_rw, raw_questions_en, "{}") {
         Ok(b) => Arc::new(b),
         Err(e) => {
             log::error!("Failed to parse bundled questions: {e}");
-            Arc::new(QuestionBank::from_rw_json_strings("[]", "{}").unwrap())
+            Arc::new(QuestionBank::from_json_strings("[]", "[]", "{}").unwrap())
         }
     };
 

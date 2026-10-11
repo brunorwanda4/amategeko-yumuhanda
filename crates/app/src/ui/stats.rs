@@ -1,8 +1,8 @@
 use crate::state::AppState;
 use crate::ui::layout::{page_column, PagePadding as _};
 use crate::ui::scroll::{vertical_scrollbar, DragScroll};
+use ::gpui::InteractiveElement as _;
 use amategeko_core::{t, tf, StatsCalculator, StatsFilter};
-use gpui::InteractiveElement as _;
 use gpui_kit::base::Disableable as _;
 use gpui_kit::base::StyledExt;
 use gpui_kit::component::button::{Button, ButtonVariants};
@@ -17,7 +17,7 @@ impl StatsView {
     pub fn render<V: 'static>(
         state: &AppState,
         is_desktop: bool,
-        scroll_handle: &gpui::ScrollHandle,
+        scroll_handle: &::gpui::ScrollHandle,
         reveal_scrollbar: bool,
         active_filter: StatsFilter,
         confirm_clear: bool,

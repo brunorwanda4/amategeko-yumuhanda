@@ -1,30 +1,18 @@
-param(
-    [switch]$Full = $false
-)
 $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ProjectRoot = Resolve-Path "$ScriptDir\.."
 Set-Location $ProjectRoot
 
-$QuestionSet = if ($Full -or ($env:QUESTION_SET -eq "full")) { "full" } else { "samples" }
-$SamplesPath = "$ProjectRoot\website\content\samples\questions.json"
-
-if ($QuestionSet -ne "full") {
-    if (-not (Test-Path $SamplesPath)) {
-        Write-Error "Error: website/content/samples/questions.json is missing or has fewer than 25 questions. Never invent questions."
-        exit 1
-    }
-    $raw = Get-Content $SamplesPath -Raw | ConvertFrom-Json
-    if ($raw.Count -lt 25) {
-        Write-Error "Error: website/content/samples/questions.json has fewer than 25 questions. Never invent questions."
-        exit 1
-    }
+Write-Host "Preparing questions..."
+bun website/scripts/prepare-questions.ts
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "prepare-questions.ts failed"
+    exit 1
 }
 
-$env:QUESTION_SET = $QuestionSet
 $env:CARGO_WEB_BUILD = "1"
 
-Write-Host "Building web crate (profile: web, QUESTION_SET: $QuestionSet)..."
+Write-Host "Building web crate (profile: web)..."
 cargo rustc --package web --target wasm32-unknown-unknown --profile web -- -C link-arg=-zstack-size=8388608
 
 $WasmPath = "$ProjectRoot\target\wasm32-unknown-unknown\web\web.wasm"
@@ -83,7 +71,6 @@ $buildInfo = [ordered]@{
     js = $HashedJsName
     wasm = $HashedWasmName
     wasmBytes = $wasmBytes
-    questionSet = $QuestionSet
     builtAt = $builtAt
 } | ConvertTo-Json
 
@@ -101,7 +88,29 @@ if (-not $written) {
     Set-Content -Path "$OutDir\build.json" -Value $buildInfo -Force
 }
 
-# Print sizes
+# Print sizes and check budget
+$imagesDir = "$OutDir\images"
+$imagesBytes = 0
+if (Test-Path $imagesDir) {
+    $measure = Get-ChildItem -Path $imagesDir -File | Measure-Object -Property Length -Sum
+    if ($measure.Sum) { $imagesBytes = $measure.Sum }
+}
+$totalRuntimeBytes = (Get-ChildItem -Path $OutDir -Recurse -File | Measure-Object -Property Length -Sum).Sum
+
+$imagesMB = [math]::Round($imagesBytes / 1MB, 2)
+$wasmMB = [math]::Round($wasmBytes / 1MB, 2)
+$totalMB = [math]::Round($totalRuntimeBytes / 1MB, 2)
+
+Write-Host "Runtime Assets Summary:"
+Write-Host "  Wasm binary:          $wasmBytes bytes ($wasmMB MB)"
+Write-Host "  Images ($imagesDir): $imagesBytes bytes ($imagesMB MB)"
+Write-Host "  Total runtime assets: $totalRuntimeBytes bytes ($totalMB MB)"
+
+if ($totalRuntimeBytes -gt 25MB) {
+    Write-Error "Error: Web assets size ($totalMB MB) exceeds 25 MB budget."
+    exit 1
+}
+
 $script = "const fs = require('node:fs'); const zlib = require('node:zlib'); const file = process.argv.slice(1).find(a => !a.startsWith('-') && fs.existsSync(a)); const buf = fs.readFileSync(file); const raw = buf.length; const gz = zlib.gzipSync(buf, { level: 9 }).length; const br = zlib.brotliCompressSync(buf, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 11 } }).length; console.log('.wasm sizes for ' + file + ':'); console.log('  Raw:    ' + raw.toLocaleString() + ' bytes (' + (raw / 1024 / 1024).toFixed(2) + ' MB)'); console.log('  Gzip:   ' + gz.toLocaleString() + ' bytes (' + (gz / 1024 / 1024).toFixed(2) + ' MB)'); console.log('  Brotli: ' + br.toLocaleString() + ' bytes (' + (br / 1024 / 1024).toFixed(2) + ' MB)');"
 bun -e $script "$OutDir\$HashedWasmName"
 

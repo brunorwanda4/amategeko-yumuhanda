@@ -1,7 +1,7 @@
 use crate::state::AppState;
 use crate::ui::scroll::{vertical_scrollbar, DragScroll};
+use ::gpui::InteractiveElement as _;
 use amategeko_core::{t, Language, QuestionResult, QuizMode};
-use gpui::InteractiveElement as _;
 use gpui_kit::assets::IconName;
 use gpui_kit::base::StyledExt;
 use gpui_kit::component::button::{Button, ButtonVariants};

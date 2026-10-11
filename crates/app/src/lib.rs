@@ -39,28 +39,28 @@ pub fn set_system_theme_dark(is_dark: bool) {
     );
 }
 
-fn apply_app_palette(cx: &mut gpui::App) {
+fn apply_app_palette(cx: &mut ::gpui::App) {
     let theme = Theme::global_mut(cx);
     let (background, surface, surface_2, border, border_strong, foreground, muted_foreground) =
         if theme.mode == GpuiThemeMode::Dark {
             (
-                gpui::rgb(0x000000).into(),
-                gpui::rgb(0x0f0f0f).into(),
-                gpui::rgb(0x1a1a1a).into(),
-                gpui::rgb(0x2a2a2a).into(),
-                gpui::rgb(0x3a3a3a).into(),
-                gpui::rgb(0xffffff).into(),
-                gpui::rgb(0x9a9a9a).into(),
+                ::gpui::rgb(0x000000).into(),
+                ::gpui::rgb(0x0f0f0f).into(),
+                ::gpui::rgb(0x1a1a1a).into(),
+                ::gpui::rgb(0x2a2a2a).into(),
+                ::gpui::rgb(0x3a3a3a).into(),
+                ::gpui::rgb(0xffffff).into(),
+                ::gpui::rgb(0x9a9a9a).into(),
             )
         } else {
             (
-                gpui::rgb(0xffffff).into(),
-                gpui::rgb(0xf5f5f5).into(),
-                gpui::rgb(0xebebeb).into(),
-                gpui::rgb(0xdcdcdc).into(),
-                gpui::rgb(0xc4c4c4).into(),
-                gpui::rgb(0x000000).into(),
-                gpui::rgb(0x666666).into(),
+                ::gpui::rgb(0xffffff).into(),
+                ::gpui::rgb(0xf5f5f5).into(),
+                ::gpui::rgb(0xebebeb).into(),
+                ::gpui::rgb(0xdcdcdc).into(),
+                ::gpui::rgb(0xc4c4c4).into(),
+                ::gpui::rgb(0x000000).into(),
+                ::gpui::rgb(0x666666).into(),
             )
         };
 
@@ -140,8 +140,8 @@ fn apply_app_palette(cx: &mut gpui::App) {
 /// Applies the given theme mode to GPUI Kit's theme registry and optionally refreshes the window.
 pub fn apply_theme(
     theme: amategeko_core::ThemeMode,
-    window: Option<&mut gpui::Window>,
-    cx: &mut gpui::App,
+    window: Option<&mut ::gpui::Window>,
+    cx: &mut ::gpui::App,
 ) {
     match theme {
         amategeko_core::ThemeMode::System => match SYSTEM_THEME_OVERRIDE.load(Ordering::Relaxed) {

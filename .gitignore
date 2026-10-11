@@ -174,3 +174,5 @@ website/public/app-spike/
 website/public/app/
 website/public/runtime/
 website/public/assets/
+
+crates/web/generated/

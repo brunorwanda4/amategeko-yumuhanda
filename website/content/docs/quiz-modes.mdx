@@ -3,13 +3,13 @@ title: Quiz Modes
 description: How each quiz mode works — questions, time, feedback, and pass mark.
 ---
 
-import { sampleCount, APP_QUESTION_COUNT } from "@/lib/facts";
+import { questionCount } from "@/lib/facts";
 
 ## Modes
 
 | | Easy (Byoroshye) | Medium (Hagati) | Hard (Bikomeye) | My Mistakes |
 |---|---|---|---|---|
-| **Questions** | 5–100 random* | 5–100 random* | 20 weighted (images/complex)* | 5–100 from your mistake history |
+| **Questions** | 5–100 random | 5–100 random | 20 weighted (images/complex) | 5–100 from your mistake history |
 | **Timer** | Optional elapsed (no countdown) | Countdown (default 20 min) | Countdown (default 12 min) | Easy rules — no countdown |
 | **Instant feedback** | ✓ green/red highlight + explanation | ✗ revealed on results | ✗ revealed on results | ✓ Easy rules |
 | **Navigation** | Free back/forward/skip | Back/forward, flag, jump grid | Forward-only, no skip, no back | Free |
@@ -17,7 +17,7 @@ import { sampleCount, APP_QUESTION_COUNT } from "@/lib/facts";
 | **Pass mark** | Shown after (configurable) | Shown after (configurable) | Shown after (configurable) | N/A |
 | **Auto-submit** | No | On timer expiry | On timer expiry | No |
 
-*\*In the downloadable apps, all {APP_QUESTION_COUNT} questions are available; on the web demo, {sampleCount} sample questions are available.*
+The web version has the same {questionCount} questions as the apps, in English and Kinyarwanda. Quiz modes, number of questions, and "Study all questions" work on the web as in the apps.
 
 **Default pass mark:** 12 / 20 (configurable 10–20 in Settings).
 

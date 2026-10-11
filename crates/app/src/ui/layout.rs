@@ -2,7 +2,7 @@
 //!
 //! The Quiz and Results screens keep their own layout on purpose.
 
-use gpui::{div, px, Div, Pixels, Styled};
+use ::gpui::{div, px, Div, Pixels, Styled};
 
 /// Widest the content column of a page may grow on large windows.
 pub const PAGE_MAX_WIDTH: f32 = 720.0;

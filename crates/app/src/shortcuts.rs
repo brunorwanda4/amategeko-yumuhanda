@@ -1,12 +1,11 @@
 use crate::ui::scroll::vertical_scrollbar;
+use ::gpui::InteractiveElement as _;
+use ::gpui::*;
 use amategeko_core::{t, Attempt, Language, QuizMode};
-use gpui::InteractiveElement as _;
-use gpui::*;
 use gpui_kit::base::StyledExt;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::dialog::DialogFooter;
 use gpui_kit::component::{ActiveTheme, Icon, IconName};
-use gpui_kit::*;
 
 /// Representation of a key combination.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -94,7 +93,7 @@ impl KeyCombo {
     }
 
     /// Checks if a GPUI KeyDownEvent matches this combo.
-    pub fn matches(&self, event: &gpui::KeyDownEvent) -> bool {
+    pub fn matches(&self, event: &::gpui::KeyDownEvent) -> bool {
         let ev_key = event.keystroke.key.to_lowercase();
         let ev_modifiers = event.keystroke.modifiers;
 
@@ -762,7 +761,7 @@ impl ShortcutRegistry {
     /// Resolves an incoming key event to a shortcut action, obeying all mode rules, typing rules, and settings.
     pub fn resolve_event(
         &self,
-        event: &gpui::KeyDownEvent,
+        event: &::gpui::KeyDownEvent,
         screen: crate::Screen,
         mode: Option<QuizMode>,
         shortcuts_enabled: bool,
@@ -1082,7 +1081,7 @@ impl ShortcutRegistry {
             .flex()
             .items_center()
             .justify_center()
-            .bg(gpui::Rgba {
+            .bg(::gpui::Rgba {
                 r: 0.0,
                 g: 0.0,
                 b: 0.0,
@@ -1108,7 +1107,7 @@ impl ShortcutRegistry {
                     .border_color(colors.border)
                     .bg(colors.background)
                     .gap_4()
-                    .on_mouse_down(gpui::MouseButton::Left, |_, _, _| {})
+                    .on_mouse_down(::gpui::MouseButton::Left, |_, _, _| {})
                     .on_scroll_wheel(|_, _, cx| {
                         cx.stop_propagation();
                     })
@@ -1177,10 +1176,7 @@ impl ShortcutRegistry {
                             .children(group_els),
                     )
                     .child(
-                        DialogFooter::new()
-                            .justify_end()
-                            .pt_2()
-                            .child(
+                        DialogFooter::new().justify_end().pt_2().child(
                             Button::new("close_shortcuts_btn")
                                 .primary()
                                 .label(t("shortcuts.help_close", lang))

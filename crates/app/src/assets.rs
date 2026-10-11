@@ -1,5 +1,5 @@
+use ::gpui::{AssetSource, Result, SharedString};
 use anyhow::anyhow;
-use gpui::{AssetSource, Result, SharedString};
 use gpui_kit::assets::icon_assets;
 use gpui_kit::assets::Assets;
 #[cfg(not(target_arch = "wasm32"))]

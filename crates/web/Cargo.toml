@@ -38,5 +38,3 @@ features = [
     "VisibilityState",
 ]
 
-[build-dependencies]
-serde_json = { workspace = true }

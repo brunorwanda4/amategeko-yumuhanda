@@ -1,43 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-FULL=false
-for arg in "$@"; do
-    case $arg in
-        --full|-Full|-full)
-            FULL=true
-            shift
-            ;;
-    esac
-done
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT"
 
-QUESTION_SET="samples"
-if [ "$FULL" = true ] || [ "${QUESTION_SET:-}" = "full" ]; then
-    QUESTION_SET="full"
-    FULL=true
-fi
+echo "Preparing questions..."
+bun website/scripts/prepare-questions.ts
 
-SAMPLES_PATH="$PROJECT_ROOT/website/content/samples/questions.json"
-if [ "$FULL" = false ]; then
-    if [ ! -f "$SAMPLES_PATH" ]; then
-        echo "Error: website/content/samples/questions.json is missing or has fewer than 25 questions. Never invent questions." >&2
-        exit 1
-    fi
-    COUNT=$(bun -e "const q = require('./website/content/samples/questions.json'); console.log(Array.isArray(q) ? q.length : 0);")
-    if [ "$COUNT" -lt 25 ]; then
-        echo "Error: website/content/samples/questions.json has fewer than 25 questions. Never invent questions." >&2
-        exit 1
-    fi
-fi
-
-export QUESTION_SET
 export CARGO_WEB_BUILD=1
 
-echo "Building web crate (profile: web, QUESTION_SET: $QUESTION_SET)..."
+echo "Building web crate (profile: web)..."
 cargo rustc --package web --target wasm32-unknown-unknown --profile web -- -C link-arg=-zstack-size=8388608
 
 WASM_PATH="$PROJECT_ROOT/target/wasm32-unknown-unknown/web/web.wasm"
@@ -87,10 +60,32 @@ cat <<EOF > "$OUT_DIR/build.json"
   "js": "$HASHED_JS",
   "wasm": "$HASHED_WASM",
   "wasmBytes": $WASM_BYTES,
-  "questionSet": "$QUESTION_SET",
   "builtAt": "$BUILT_AT"
 }
 EOF
+
+# Calculate sizes and check budget
+IMAGES_DIR="$OUT_DIR/images"
+IMAGES_BYTES=0
+if [ -d "$IMAGES_DIR" ]; then
+    IMAGES_BYTES=$(du -sb "$IMAGES_DIR" 2>/dev/null | cut -f1 || du -sk "$IMAGES_DIR" | awk '{print $1 * 1024}')
+fi
+TOTAL_RUNTIME_BYTES=$(du -sb "$OUT_DIR" 2>/dev/null | cut -f1 || du -sk "$OUT_DIR" | awk '{print $1 * 1024}')
+
+IMAGES_MB=$(bun -e "console.log(($IMAGES_BYTES / 1024 / 1024).toFixed(2))")
+WASM_MB=$(bun -e "console.log(($WASM_BYTES / 1024 / 1024).toFixed(2))")
+TOTAL_MB=$(bun -e "console.log(($TOTAL_RUNTIME_BYTES / 1024 / 1024).toFixed(2))")
+
+echo "Runtime Assets Summary:"
+echo "  Wasm binary:          $WASM_BYTES bytes (${WASM_MB} MB)"
+echo "  Images ($IMAGES_DIR): $IMAGES_BYTES bytes (${IMAGES_MB} MB)"
+echo "  Total runtime assets: $TOTAL_RUNTIME_BYTES bytes (${TOTAL_MB} MB)"
+
+# 25 MB budget = 26214400 bytes
+if [ "$TOTAL_RUNTIME_BYTES" -gt 26214400 ]; then
+    echo "Error: Web assets size (${TOTAL_MB} MB) exceeds 25 MB budget." >&2
+    exit 1
+fi
 
 bun -e "const fs = require('node:fs'); const zlib = require('node:zlib'); const file = process.argv.slice(1).find(a => !a.startsWith('-') && fs.existsSync(a)); const buf = fs.readFileSync(file); const raw = buf.length; const gz = zlib.gzipSync(buf, { level: 9 }).length; const br = zlib.brotliCompressSync(buf, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 11 } }).length; console.log('.wasm sizes for ' + file + ':'); console.log('  Raw:    ' + raw.toLocaleString() + ' bytes (' + (raw / 1024 / 1024).toFixed(2) + ' MB)'); console.log('  Gzip:   ' + gz.toLocaleString() + ' bytes (' + (gz / 1024 / 1024).toFixed(2) + ' MB)'); console.log('  Brotli: ' + br.toLocaleString() + ' bytes (' + (br / 1024 / 1024).toFixed(2) + ' MB)');" "$OUT_DIR/$HASHED_WASM"
 

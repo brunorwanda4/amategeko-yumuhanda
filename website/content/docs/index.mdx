@@ -3,18 +3,18 @@ title: Overview
 description: Offline study app for the Rwanda driving theory test.
 ---
 
-import { sampleCount, APP_QUESTION_COUNT } from "@/lib/facts";
+import { questionCount } from "@/lib/facts";
 
 **Amategeko y'Umuhanda** is an offline study app for the Rwandan provisional driving-licence theory exam.
 
-Try the free [web demo](/app) with {sampleCount} sample questions, or [download the app](/download) for all {APP_QUESTION_COUNT}.
+Try the [web version](/app) with all {questionCount} questions, or [download the app](/download) for Windows and Android.
 
 <Facts
   items={[
     {
       label: "Platforms",
-      platforms: ["Windows", "Android", "Web (demo)"],
-      value: "Windows, Android, plus \"Web (demo)\""
+      platforms: ["Windows", "Android", "Web"],
+      value: "Windows, Android, and Web"
     },
     {
       label: "Languages",
@@ -22,13 +22,13 @@ Try the free [web demo](/app) with {sampleCount} sample questions, or [download 
     },
     {
       label: "Offline",
-      value: "Windows and Android: no internet required. Web: needs internet."
+      value: "Windows and Android: no internet required. Web: needs internet on first visit."
     }
   ]}
 />
 
 <Stats>
-  <Stat value={APP_QUESTION_COUNT} label="Practice questions" />
+  <Stat value={questionCount} label="Practice questions" />
   <Stat value="3" label="Quiz modes" />
   <Stat value="100%" label="Offline study tool" />
 </Stats>
@@ -41,7 +41,7 @@ Try the free [web demo](/app) with {sampleCount} sample questions, or [download 
     description="Easy (learning), Medium (timed exam simulation), Hard (strict exam conditions)"
   />
   <Card
-    title={`${APP_QUESTION_COUNT} questions`}
+    title={`${questionCount} questions`}
     description="with road-sign images, star bookmarks, and mistake tracking"
   />
   <Card

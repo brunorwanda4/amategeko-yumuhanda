@@ -1,10 +1,14 @@
 use crate::state::AppState;
 use crate::ui::layout::{page_column, PagePadding as _};
 use crate::ui::scroll::{vertical_scrollbar, DragScroll};
+use ::gpui::InteractiveElement as _;
 use amategeko_core::{t, Language, Question};
-use gpui::InteractiveElement as _;
 use gpui_kit::base::StyledExt;
 use gpui_kit::component::button::{Button, ButtonVariants};
+use gpui_kit::component::input::{
+    InputGroup, InputGroupAddon, InputGroupAddonAlignment, InputGroupButton, InputGroupInput,
+    InputState,
+};
 use gpui_kit::component::switch::Switch;
 use gpui_kit::component::tooltip::Tooltip;
 use gpui_kit::component::{ActiveTheme, Icon, IconName};
@@ -27,18 +31,16 @@ impl QuestionsView {
     pub fn render<V: 'static>(
         state: &AppState,
         is_desktop: bool,
-        scroll_handle: &gpui::ScrollHandle,
+        scroll_handle: &::gpui::ScrollHandle,
         reveal_scrollbar: bool,
         filter: QuestionsFilter,
         search_query: &str,
-        is_search_focused: bool,
+        search_input: &Entity<InputState>,
         hide_answers: bool,
         expanded: &HashSet<u32>,
         revealed: &HashMap<u32, String>,
         cx: &mut Context<V>,
         on_set_filter: impl Fn(&mut V, QuestionsFilter, &mut Window, &mut Context<V>) + 'static + Copy,
-        on_set_search: impl Fn(&mut V, String, &mut Window, &mut Context<V>) + 'static + Copy,
-        on_focus_search: impl Fn(&mut V, bool, &mut Window, &mut Context<V>) + 'static + Copy,
         on_toggle_hide_answers: impl Fn(&mut V, bool, &mut Window, &mut Context<V>) + 'static + Copy,
         on_toggle_star: impl Fn(&mut V, u32, &mut Window, &mut Context<V>) + 'static + Copy,
         on_toggle_expand: impl Fn(&mut V, u32, &mut Window, &mut Context<V>) + 'static + Copy,
@@ -152,143 +154,52 @@ impl QuestionsView {
                             ),
                     )
                     // Search Input Row
-                    .child(
-                        div()
-                            .id("questions_search_input")
-                            .flex_shrink_0()
-                            .when(shortcuts_active, |el| {
-                                let mod_name = crate::shortcuts::KeyCombo::primary_modifier_name();
-                                let search_hint = format!("Search (/ or {mod_name}+F)");
-                                el.tooltip(move |window, cx| {
-                                    Tooltip::new(search_hint.clone()).build(window, cx)
-                                })
-                            })
-                            .cursor_text()
-                            .flex()
-                            .flex_row()
-                            .items_center()
-                            .flex_wrap()
-                            .gap_3()
+                    .child({
+                        let clear_input = search_input.clone();
+                        InputGroup::new("questions_search_input")
                             .w_full()
                             .min_w_0()
-                            .px_3p5()
-                            .py_2p5()
+                            .flex_shrink_0()
                             .when(!is_desktop, |el| el.min_h(px(min_touch_h)))
-                            .rounded_lg()
-                            .border_1()
-                            .border_color(if is_search_focused {
-                                colors.primary
-                            } else {
-                                colors.border
-                            })
-                            .bg(colors.secondary)
-                            .on_click(cx.listener(move |this, _, window, cx| {
-                                on_focus_search(this, true, window, cx);
-                            }))
-                            .child(
-                                Icon::new(IconName::Search)
-                                    .size(px(16.0))
-                                    .text_color(if is_search_focused {
-                                        colors.primary
-                                    } else {
-                                        colors.muted_foreground
-                                    }),
+                            .input(
+                                InputGroupInput::new(search_input)
+                                    .aria_label(t("questions.search_placeholder", lang)),
                             )
-                            .child(
-                                div()
-                                    .flex_1()
-                                    .min_w_0()
-                                    .flex()
-                                    .flex_row()
-                                    .items_center()
-                                    .gap_0p5()
-                                    .overflow_hidden()
-                                    .when(search_query.is_empty(), |el| {
-                                        if is_search_focused {
-                                            el.child(
-                                                div()
-                                                    .w(px(1.5))
-                                                    .h(px(16.0))
-                                                    .bg(colors.primary)
-                                                    .rounded_sm(),
-                                            )
-                                            .child(
-                                                div()
-                                                    .min_w_0()
-                                                    .overflow_hidden()
-                                                    .whitespace_normal()
-                                                    .text_sm()
-                                                    .text_color(colors.muted_foreground)
-                                                    .child(t("questions.search_placeholder", lang)),
-                                            )
-                                        } else {
-                                            el.child(
-                                                div()
-                                                    .min_w_0()
-                                                    .overflow_hidden()
-                                                    .whitespace_normal()
-                                                    .text_sm()
-                                                    .text_color(colors.muted_foreground)
-                                                    .child(t("questions.search_placeholder", lang)),
-                                            )
-                                        }
-                                    })
-                                    .when(!search_query.is_empty(), |el| {
-                                        el.child(
-                                            div()
-                                                .min_w_0()
-                                                .overflow_hidden()
-                                                .whitespace_normal()
-                                                .text_sm()
-                                                .text_color(colors.foreground)
-                                                .child(search_query.to_string()),
-                                        )
-                                        .when(is_search_focused, |el| {
-                                            el.child(
-                                                div()
-                                                    .w(px(1.5))
-                                                    .h(px(16.0))
-                                                    .bg(colors.primary)
-                                                    .rounded_sm(),
-                                            )
-                                        })
-                                    }),
+                            .addon(
+                                InputGroupAddon::new("questions_search_icon").child(
+                                    Icon::new(IconName::Search)
+                                        .size(px(16.0))
+                                        .text_color(colors.muted_foreground),
+                                ),
                             )
-                            .when(!search_query.is_empty(), |el| {
-                                el.child(
-                                    div()
-                                        .id("clear_search_btn")
-                                        .cursor_pointer()
-                                        .when(!is_desktop, |el| {
-                                            el.min_w(px(min_touch_h)).min_h(px(min_touch_h))
-                                        })
-                                        .flex()
-                                        .items_center()
-                                        .justify_center()
-                                        .p_1()
-                                        .rounded_md()
-                                        .hover(|el| el.bg(colors.background))
+                            .when(!search_query.is_empty(), |group| {
+                                group.addon(
+                                    InputGroupAddon::new("questions_search_clear")
+                                        .align(InputGroupAddonAlignment::InlineEnd)
                                         .child(
-                                            Icon::new(IconName::CircleX)
-                                                .size(px(16.0))
-                                                .text_color(colors.muted_foreground),
-                                        )
-                                        .on_click(cx.listener(move |this, _, window, cx| {
-                                            on_set_search(this, String::new(), window, cx);
-                                            on_focus_search(this, true, window, cx);
-                                        })),
+                                            InputGroupButton::new("clear_search_btn")
+                                                .icon(IconName::CircleX)
+                                                .accessibility_label(t(
+                                                    "questions.search_placeholder",
+                                                    lang,
+                                                ))
+                                                .on_click(cx.listener(
+                                                    move |_, _, window, cx| {
+                                                        clear_input.update(cx, |input, cx| {
+                                                            input.set_value("", window, cx);
+                                                            input.focus(window, cx);
+                                                        });
+                                                    },
+                                                )),
+                                        ),
                                 )
                             })
-                            .when(search_query.is_empty() && shortcuts_active, |el| {
-                                let mod_name = crate::shortcuts::KeyCombo::primary_modifier_name();
-                                el.child(
-                                    div()
-                                        .id("search_shortcut_hints")
-                                        .flex()
-                                        .flex_row()
-                                        .items_center()
-                                        .flex_wrap()
-                                        .gap_1p5()
+                            .when(search_query.is_empty() && shortcuts_active, |group| {
+                                let mod_name =
+                                    crate::shortcuts::KeyCombo::primary_modifier_name();
+                                group.addon(
+                                    InputGroupAddon::new("search_shortcut_hints")
+                                        .align(InputGroupAddonAlignment::InlineEnd)
                                         .child(
                                             div()
                                                 .id("shortcut_hint_slash")
@@ -319,7 +230,7 @@ impl QuestionsView {
                                         ),
                                 )
                             })
-                    )
+                    })
                     // Filter Buttons Row (Byose, Ibifite ishushyo, Ibyo nakosheje, Inyenyeri)
                     // Wraps cleanly when there isn't enough horizontal room.
                     .child(
@@ -437,6 +348,7 @@ impl QuestionsView {
                             ))
                             // Empty state when search or filter returns no questions
                             .when(filtered_questions.is_empty(), |el| {
+                                let reset_input = search_input.clone();
                                 el.child(
                                     div()
                                         .flex_shrink_0()
@@ -489,7 +401,9 @@ impl QuestionsView {
                                                 })
                                                 .on_click(cx.listener(move |this, _, window, cx| {
                                                     on_set_filter(this, QuestionsFilter::All, window, cx);
-                                                    on_set_search(this, String::new(), window, cx);
+                                                    reset_input.update(cx, |input, cx| {
+                                                        input.set_value("", window, cx);
+                                                    });
                                                 })),
                                         ),
                                 )
@@ -617,7 +531,7 @@ impl QuestionsView {
                                                                 .px_2()
                                                                 .py_0p5()
                                                                 .rounded_md()
-                                                                .bg(gpui::Hsla {
+                                                                .bg(::gpui::Hsla {
                                                                     h: 215.0 / 360.0,
                                                                     s: 0.70,
                                                                     l: 0.16,
@@ -625,7 +539,7 @@ impl QuestionsView {
                                                                 })
                                                                 .text_xs()
                                                                 .font_medium()
-                                                                .text_color(gpui::Hsla {
+                                                                .text_color(::gpui::Hsla {
                                                                     h: 215.0 / 360.0,
                                                                     s: 0.90,
                                                                     l: 0.65,
@@ -645,7 +559,7 @@ impl QuestionsView {
                                                                 .px_2()
                                                                 .py_0p5()
                                                                 .rounded_md()
-                                                                .bg(gpui::Hsla {
+                                                                .bg(::gpui::Hsla {
                                                                     h: 0.0,
                                                                     s: 0.55,
                                                                     l: 0.18,
@@ -653,7 +567,7 @@ impl QuestionsView {
                                                                 })
                                                                 .text_xs()
                                                                 .font_medium()
-                                                                .text_color(gpui::Hsla {
+                                                                .text_color(::gpui::Hsla {
                                                                     h: 0.0,
                                                                     s: 0.85,
                                                                     l: 0.65,
@@ -825,7 +739,7 @@ impl QuestionsView {
                                                                     if is_correct_key {
                                                                         (
                                                                             colors.success,
-                                                                            gpui::Hsla {
+                                                                            ::gpui::Hsla {
                                                                                 h: 130.0 / 360.0,
                                                                                 s: 0.50,
                                                                                 l: 0.10,
@@ -849,7 +763,7 @@ impl QuestionsView {
                                                                         if is_correct_key {
                                                                             (
                                                                                 colors.success,
-                                                                                gpui::Hsla {
+                                                                                ::gpui::Hsla {
                                                                                     h: 130.0 / 360.0,
                                                                                     s: 0.50,
                                                                                     l: 0.10,
@@ -861,7 +775,7 @@ impl QuestionsView {
                                                                         } else {
                                                                             (
                                                                                 colors.danger,
-                                                                                gpui::Hsla {
+                                                                                ::gpui::Hsla {
                                                                                     h: 0.0,
                                                                                     s: 0.50,
                                                                                     l: 0.12,
@@ -874,7 +788,7 @@ impl QuestionsView {
                                                                     } else if is_correct_key {
                                                                         (
                                                                             colors.success,
-                                                                            gpui::Hsla {
+                                                                            ::gpui::Hsla {
                                                                                 h: 130.0 / 360.0,
                                                                                 s: 0.50,
                                                                                 l: 0.10,

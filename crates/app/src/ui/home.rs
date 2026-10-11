@@ -3,10 +3,10 @@ use crate::state::AppState;
 use crate::ui::layout::PagePadding as _;
 use crate::ui::scroll::{vertical_scrollbar, DragScroll, ScrollbarContext};
 
+use ::gpui::InteractiveElement as _;
 use amategeko_core::{
     effective_length, t, tf, time_for, Language, QuestionSet, QuizMode, StatsCalculator,
 };
-use gpui::InteractiveElement as _;
 use gpui_kit::assets::IconName;
 use gpui_kit::base::StyledExt;
 use gpui_kit::component::button::{Button, ButtonVariants};
@@ -22,51 +22,51 @@ const BODY_FONT: &str = crate::font::FONT_FAMILY;
 /// Theme tokens strictly matching the redesign spec for dark and light modes.
 #[derive(Clone, Copy, Debug)]
 pub struct HomeTokens {
-    pub bg: gpui::Hsla,
-    pub surface: gpui::Hsla,
-    pub surface2: gpui::Hsla,
-    pub line: gpui::Hsla,
-    pub line2: gpui::Hsla,
-    pub fg: gpui::Hsla,
-    pub muted: gpui::Hsla,
-    pub inv_bg: gpui::Hsla,
-    pub inv_fg: gpui::Hsla,
-    pub c_mis: gpui::Hsla,
-    pub c_oth: gpui::Hsla,
-    pub c_un: gpui::Hsla,
+    pub bg: ::gpui::Hsla,
+    pub surface: ::gpui::Hsla,
+    pub surface2: ::gpui::Hsla,
+    pub line: ::gpui::Hsla,
+    pub line2: ::gpui::Hsla,
+    pub fg: ::gpui::Hsla,
+    pub muted: ::gpui::Hsla,
+    pub inv_bg: ::gpui::Hsla,
+    pub inv_fg: ::gpui::Hsla,
+    pub c_mis: ::gpui::Hsla,
+    pub c_oth: ::gpui::Hsla,
+    pub c_un: ::gpui::Hsla,
 }
 
 impl HomeTokens {
     pub fn new(is_dark: bool) -> Self {
         if is_dark {
             Self {
-                bg: gpui::rgb(0x000000).into(),
-                surface: gpui::rgb(0x0f0f0f).into(),
-                surface2: gpui::rgb(0x1a1a1a).into(),
-                line: gpui::rgb(0x2a2a2a).into(),
-                line2: gpui::rgb(0x3a3a3a).into(),
-                fg: gpui::rgb(0xffffff).into(),
-                muted: gpui::rgb(0x9a9a9a).into(),
-                inv_bg: gpui::rgb(0xffffff).into(),
-                inv_fg: gpui::rgb(0x000000).into(),
-                c_mis: gpui::rgb(0x6c6c6c).into(),
-                c_oth: gpui::rgb(0x2e2e2e).into(),
-                c_un: gpui::rgb(0x4a4a4a).into(),
+                bg: ::gpui::rgb(0x000000).into(),
+                surface: ::gpui::rgb(0x0f0f0f).into(),
+                surface2: ::gpui::rgb(0x1a1a1a).into(),
+                line: ::gpui::rgb(0x2a2a2a).into(),
+                line2: ::gpui::rgb(0x3a3a3a).into(),
+                fg: ::gpui::rgb(0xffffff).into(),
+                muted: ::gpui::rgb(0x9a9a9a).into(),
+                inv_bg: ::gpui::rgb(0xffffff).into(),
+                inv_fg: ::gpui::rgb(0x000000).into(),
+                c_mis: ::gpui::rgb(0x6c6c6c).into(),
+                c_oth: ::gpui::rgb(0x2e2e2e).into(),
+                c_un: ::gpui::rgb(0x4a4a4a).into(),
             }
         } else {
             Self {
-                bg: gpui::rgb(0xffffff).into(),
-                surface: gpui::rgb(0xf5f5f5).into(),
-                surface2: gpui::rgb(0xebebeb).into(),
-                line: gpui::rgb(0xdcdcdc).into(),
-                line2: gpui::rgb(0xc4c4c4).into(),
-                fg: gpui::rgb(0x000000).into(),
-                muted: gpui::rgb(0x666666).into(),
-                inv_bg: gpui::rgb(0x000000).into(),
-                inv_fg: gpui::rgb(0xffffff).into(),
-                c_mis: gpui::rgb(0x8e8e8e).into(),
-                c_oth: gpui::rgb(0xdedede).into(),
-                c_un: gpui::rgb(0xb8b8b8).into(),
+                bg: ::gpui::rgb(0xffffff).into(),
+                surface: ::gpui::rgb(0xf5f5f5).into(),
+                surface2: ::gpui::rgb(0xebebeb).into(),
+                line: ::gpui::rgb(0xdcdcdc).into(),
+                line2: ::gpui::rgb(0xc4c4c4).into(),
+                fg: ::gpui::rgb(0x000000).into(),
+                muted: ::gpui::rgb(0x666666).into(),
+                inv_bg: ::gpui::rgb(0x000000).into(),
+                inv_fg: ::gpui::rgb(0xffffff).into(),
+                c_mis: ::gpui::rgb(0x8e8e8e).into(),
+                c_oth: ::gpui::rgb(0xdedede).into(),
+                c_un: ::gpui::rgb(0xb8b8b8).into(),
             }
         }
     }
@@ -201,7 +201,7 @@ impl HomeView {
             _ => None,
         };
         #[cfg(target_arch = "wasm32")]
-        let update_banner: Option<gpui::AnyElement> = None;
+        let update_banner: Option<::gpui::AnyElement> = None;
 
         // 1. Hero Card: ordered full-bank study
         let mut study_ids: Vec<u32> = state
@@ -404,7 +404,7 @@ impl HomeView {
                             .text_sm()
                             .border_1()
                             .border_color(colors.primary.opacity(0.5))
-                            .bg(gpui::transparent_black())
+                            .bg(::gpui::transparent_black())
                             .text_color(colors.primary)
                             .hover(|el| el.bg(colors.primary.opacity(0.1)))
                             .on_click(cx.listener(move |this, _, window, cx| {
@@ -639,7 +639,7 @@ impl HomeView {
                     .bg(if selected {
                         tokens.fg
                     } else {
-                        gpui::transparent_black()
+                        ::gpui::transparent_black()
                     })
                     .when(disabled, |el| el.opacity(0.4).cursor_not_allowed())
                     .when(!disabled, |el| {
@@ -686,7 +686,7 @@ impl HomeView {
                     .bg(if selected {
                         tokens.fg
                     } else {
-                        gpui::transparent_black()
+                        ::gpui::transparent_black()
                     })
                     .text_color(if selected { tokens.bg } else { tokens.fg })
                     .flex()
@@ -865,7 +865,7 @@ impl HomeView {
                                 .bg(if custom_selected {
                                     tokens.fg
                                 } else {
-                                    gpui::transparent_black()
+                                    ::gpui::transparent_black()
                                 })
                                 .text_color(if custom_selected {
                                     tokens.bg

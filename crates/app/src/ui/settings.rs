@@ -2,8 +2,8 @@ use crate::state::AppState;
 use crate::ui::footer::AppFooter;
 use crate::ui::layout::{page_column, page_max_width, PagePadding as _};
 use crate::ui::scroll::{vertical_scrollbar, DragScroll};
+use ::gpui::InteractiveElement as _;
 use amategeko_core::{t, tf, Language, ThemeMode};
-use gpui::InteractiveElement as _;
 use gpui_kit::base::Disableable as _;
 use gpui_kit::base::Link;
 use gpui_kit::base::StyledExt;
@@ -1060,7 +1060,7 @@ impl SettingsView {
             .bg(if is_active {
                 colors.secondary
             } else {
-                gpui::transparent_black()
+                ::gpui::transparent_black()
             })
             .text_color(if is_active {
                 colors.foreground
@@ -1079,7 +1079,7 @@ impl SettingsView {
         value: u32,
         min: u32,
         max: u32,
-        unit: impl Into<gpui::SharedString>,
+        unit: impl Into<::gpui::SharedString>,
         colors: &ThemeColor,
         window: &mut Window,
         cx: &mut Context<V>,

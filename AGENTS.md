@@ -83,7 +83,7 @@ bun run build        # must pass before every commit that touches website/
 - Never remove or reorder a translation key without updating both language files and the parity test.
 
 **Privacy and scope**
-- The native apps use the network only for the signed update check; the web build uses no network except loading its own files from the same site. No JavaScript app logic: only the loader in website/app/app/page. Never build the web app with QUESTION_SET=full without the owner's written approval.
+- The owner approved publishing the full question bank on the website and web app on 2026-10-11. The web build reads website/lib/quiz-questions.json through website/scripts/prepare-questions.ts, which must fail on wrong or inconsistent answers. The source PDF and tools/ are never published.
 - Never commit secrets, API keys, keystores, `.jks`, `.p12`, `local.properties`, `.env` files, or signing passwords.
 - Never commit build output (`target/`, `build/`, `.gradle/`, `*.apk`, `*.aab`, `*.ipa`, `node_modules/`, `.next/`, `out/`, `.source/`) or IDE files.
 - Never commit the source PDF or large binary files unless the owner explicitly says so. The PDF is marked "RESTRICTED". Check with the owner before committing `assets/questions.json` and `assets/images/` to any public remote.

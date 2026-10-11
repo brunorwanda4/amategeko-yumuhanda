@@ -3,32 +3,33 @@ title: Web Version
 description: Practice directly in your web browser without installing anything.
 ---
 
-import { sampleCount, APP_QUESTION_COUNT } from "@/lib/facts";
+import { questionCount } from "@/lib/facts";
 
-<Callout type="info">
-  The web version is a demo. It has {sampleCount} sample questions. The Windows and Android apps include all {APP_QUESTION_COUNT} questions. [Download](/download)
-</Callout>
+The web version runs directly in your browser at [/app](/app). It has the same {questionCount} questions as the downloadable apps, available in both English and Kinyarwanda.
 
-Amategeko y'Umuhanda can run directly in your web browser at [/app](/app).
+Quiz modes, number of questions, and "Study all questions" work on the web as in the apps. Progress is saved only in this browser (lost if site data is cleared), and the web needs an internet connection on the first visit.
 
 ## Comparison
 
-| Feature | Web demo | Windows and Android |
+| Feature | Web | Windows and Android |
 |---|---|---|
-| **Questions** | {sampleCount} sample questions | All {APP_QUESTION_COUNT} questions |
+| **Questions** | All {questionCount} questions | All {questionCount} questions |
 | **Quiz modes** | Easy, Medium, and Hard | Easy, Medium, and Hard |
-| **Languages** | Kinyarwanda | English and Kinyarwanda |
+| **Languages** | English and Kinyarwanda | English and Kinyarwanda |
 | **Saves progress** | Saved only in this browser (lost if site data is cleared) | Saved locally on device |
-| **Works offline** | Needs an internet connection | No internet required |
+| **Works offline** | Needs an internet connection on the first visit | No internet required |
 | **Updates** | Always opens the latest version | Built-in update check |
-| **Keyboard shortcuts** | Ctrl combinations are turned off to avoid clashes with the browser | Full keyboard shortcuts (desktop) |
+| **Keyboard shortcuts** | Ctrl shortcuts are off on the web to avoid clashes with the browser | Full keyboard shortcuts (desktop) |
 | **Install** | None (runs in browser) | Download and install |
 
-## What the demo limits
+### Web Details
 
-- Quiz length cannot be more than {sampleCount}
-- "Study all questions" covers only the samples
-- Practice sets such as Signs may have fewer questions
+- **All questions included:** The web version contains all {questionCount} questions in English and Kinyarwanda, with road-sign images and explanations.
+- **Modes & features:** Easy, Medium, and Hard quiz modes, custom number of questions, and "Study all questions" work on the web as in the apps.
+- **Storage:** Progress is saved only in this browser (lost if site data is cleared).
+- **Network:** An internet connection is needed on the first visit to download the application runtime and assets.
+- **Updates:** No built-in update check on the web because it always opens the latest version.
+- **Shortcuts:** Ctrl shortcuts are off on the web to avoid clashes with browser shortcuts.
 
 ### Supported Browsers
 

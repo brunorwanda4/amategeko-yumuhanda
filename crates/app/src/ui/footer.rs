@@ -83,7 +83,7 @@ impl AppFooter {
 
 #[cfg(test)]
 mod tests {
-    use gpui::{Modifiers, Render, TestAppContext};
+    use ::gpui::{Modifiers, Render, TestAppContext};
 
     use super::*;
 

@@ -1,7 +1,7 @@
-﻿// Single source of truth for all URLs and author info.
+// Single source of truth for all URLs and author info.
 
 // update when the question bank changes
-export const APP_QUESTION_COUNT = 404;
+export const APP_QUESTION_COUNT = 399;
 
 export const REPO_SLUG = "brunorwanda4/amategeko-yumuhanda";
 
