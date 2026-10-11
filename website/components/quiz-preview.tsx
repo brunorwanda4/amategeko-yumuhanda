@@ -33,7 +33,8 @@ const uiCopy = {
     wrongTag: "Wrong",
     unansweredTag: "Unanswered",
     ctaTitle: "Ready for your official driving test?",
-    ctaDesc: "Practice all 400+ official questions with realistic timer exams, offline study on Windows and Android, or try the full web version right in your browser.",
+    ctaDesc:
+      "Practice all 400+ official questions with realistic timer exams, offline study on Windows and Android, or try the full web version right in your browser.",
     downloadApp: "Download Application",
     openWebApp: "Open Full Web App",
     tryAgain: "Try again",
@@ -55,7 +56,8 @@ const uiCopy = {
     wrongTag: "Ibyibeshye",
     unansweredTag: "Bidasubijwe",
     ctaTitle: "Witeguye gutsindira perimi yawe?",
-    ctaDesc: "Iga ibibazo byose 404 by'amategeko y'umuhanda nta interineti ikenewe kuri Windows na Android, cyangwa koresha porogaramu yose ako kanya mu mushakisha wawe.",
+    ctaDesc:
+      "Iga ibibazo byose 404 by'amategeko y'umuhanda nta interineti ikenewe kuri Windows na Android, cyangwa koresha porogaramu yose ako kanya mu mushakisha wawe.",
     downloadApp: "Kura porogaramu (Download)",
     openWebApp: "Fungura porogaramu ku rubuga",
     tryAgain: "Ongera usubiremo",
@@ -78,16 +80,16 @@ export function QuizPreview() {
   const t = uiCopy[language];
   const total = questions.length;
   const currentQ = questions[currentIndex] || questions[0];
-  const localized = currentQ ? (currentQ[language] || currentQ.en) : null;
+  const localized = currentQ ? currentQ[language] || currentQ.en : null;
 
   const correctIndex = currentQ
     ? currentQ.correct === "a"
       ? 0
       : currentQ.correct === "b"
-      ? 1
-      : currentQ.correct === "c"
-      ? 2
-      : 3
+        ? 1
+        : currentQ.correct === "c"
+          ? 2
+          : 3
     : 0;
 
   const currentAnswer = answers[currentIndex];
@@ -142,7 +144,7 @@ export function QuizPreview() {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-2xl shadow-foreground/5 transition-all">
+    <div className="overflow-hidden rounded-t-2xl border border-border bg-card text-card-foreground shadow-2xl shadow-foreground/5 transition-all">
       {/* Top Header Bar */}
       <div className="flex h-14 items-center justify-between border-b border-border px-4 sm:px-6 bg-muted/40">
         <div className="flex items-center gap-3">
@@ -189,7 +191,8 @@ export function QuizPreview() {
         <div className="flex gap-1.5 px-4 sm:px-6 pt-3 pb-2 bg-muted/20">
           {questions.map((q, idx) => {
             const ans = answers[idx];
-            const qCorrect = q.correct === "a" ? 0 : q.correct === "b" ? 1 : q.correct === "c" ? 2 : 3;
+            const qCorrect =
+              q.correct === "a" ? 0 : q.correct === "b" ? 1 : q.correct === "c" ? 2 : 3;
             const isCurrent = currentIndex === idx;
             const isCor = ans !== undefined && ans === qCorrect;
             const isWro = ans !== undefined && ans !== qCorrect;
@@ -202,10 +205,10 @@ export function QuizPreview() {
                   isCurrent
                     ? "bg-foreground ring-1 ring-foreground/40"
                     : isCor
-                    ? "bg-success hover:opacity-90"
-                    : isWro
-                    ? "bg-error hover:opacity-90"
-                    : "bg-muted-foreground/20 hover:bg-muted-foreground/40"
+                      ? "bg-success hover:opacity-90"
+                      : isWro
+                        ? "bg-error hover:opacity-90"
+                        : "bg-muted-foreground/20 hover:bg-muted-foreground/40",
                 )}
                 key={q.id}
                 onClick={() => setCurrentIndex(idx)}
@@ -220,10 +223,12 @@ export function QuizPreview() {
       {!showResults ? (
         /* Quiz Question Screen */
         <div className="p-5 sm:p-8 md:p-10">
-          <div className={cn(
-            "mx-auto max-w-4xl",
-            currentQ.image ? "grid gap-8 md:grid-cols-[1.1fr_1.3fr] items-center" : "max-w-3xl"
-          )}>
+          <div
+            className={cn(
+              "mx-auto max-w-4xl",
+              currentQ.image ? "grid gap-8 md:grid-cols-[1.1fr_1.3fr] items-center" : "max-w-3xl",
+            )}
+          >
             {/* If question has an image: Left side illustration card */}
             {currentQ.image && (
               <div className="flex min-h-[260px] sm:min-h-[320px] items-center justify-center rounded-2xl border border-border bg-muted/30 p-6 shadow-xs">
@@ -240,9 +245,7 @@ export function QuizPreview() {
               <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground leading-snug">
                 {localized?.question}
               </h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {t.tapPrompt}
-              </p>
+              <p className="mt-2 text-sm text-muted-foreground">{t.tapPrompt}</p>
 
               {/* Options */}
               <div className="mt-6 grid gap-3">
@@ -256,10 +259,15 @@ export function QuizPreview() {
                       aria-pressed={isChosen}
                       className={cn(
                         "group flex w-full items-center gap-3.5 rounded-xl border p-3.5 text-left transition-all duration-150 shadow-xs",
-                        !isAnswered && "border-border bg-background hover:bg-muted/60 hover:border-foreground/25 text-foreground cursor-pointer",
-                        isOptCorrect && "border-success bg-success-soft text-foreground font-medium",
+                        !isAnswered &&
+                          "border-border bg-background hover:bg-muted/60 hover:border-foreground/25 text-foreground cursor-pointer",
+                        isOptCorrect &&
+                          "border-success bg-success-soft text-foreground font-medium",
                         isOptWrong && "border-error bg-error-soft text-foreground font-medium",
-                        isAnswered && !isChosen && !isOptCorrect && "border-border/50 bg-muted/20 text-muted-foreground opacity-60 cursor-default"
+                        isAnswered &&
+                          !isChosen &&
+                          !isOptCorrect &&
+                          "border-border/50 bg-muted/20 text-muted-foreground opacity-60 cursor-default",
                       )}
                       disabled={isAnswered}
                       key={optIdx}
@@ -272,15 +280,13 @@ export function QuizPreview() {
                           isOptCorrect
                             ? "border-success bg-success text-white"
                             : isOptWrong
-                            ? "border-error bg-error text-white"
-                            : "border-border bg-muted text-muted-foreground group-hover:border-foreground/30 group-hover:text-foreground"
+                              ? "border-error bg-error text-white"
+                              : "border-border bg-muted text-muted-foreground group-hover:border-foreground/30 group-hover:text-foreground",
                         )}
                       >
                         {String.fromCharCode(65 + optIdx)}
                       </span>
-                      <span className="flex-1 text-sm font-medium leading-relaxed">
-                        {option}
-                      </span>
+                      <span className="flex-1 text-sm font-medium leading-relaxed">{option}</span>
                     </button>
                   );
                 })}
@@ -307,8 +313,8 @@ export function QuizPreview() {
                 currentIndex === total - 1
                   ? "bg-success hover:bg-success/90 text-white"
                   : isAnswered
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                  : "border-border bg-background text-foreground hover:bg-muted"
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                    : "border-border bg-background text-foreground hover:bg-muted",
               )}
               onClick={handleNext}
               size="default"
@@ -331,7 +337,7 @@ export function QuizPreview() {
                   "flex size-24 sm:size-28 shrink-0 flex-col items-center justify-center rounded-full border-4 shadow-sm",
                   isPassed
                     ? "border-success bg-success-soft text-foreground"
-                    : "border-error bg-error-soft text-foreground"
+                    : "border-error bg-error-soft text-foreground",
                 )}
               >
                 <span className="text-2xl sm:text-3xl font-extrabold text-foreground leading-none">
@@ -353,16 +359,14 @@ export function QuizPreview() {
                       "rounded-md px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider",
                       isPassed
                         ? "bg-success-soft text-foreground border border-success/30"
-                        : "bg-error-soft text-foreground border border-error/30"
+                        : "bg-error-soft text-foreground border border-error/30",
                     )}
                   >
                     {isPassed ? t.passed : t.failed}
                   </span>
                 </div>
 
-                <p className="text-xs sm:text-sm text-muted-foreground">
-                  {t.modeDesc}
-                </p>
+                <p className="text-xs sm:text-sm text-muted-foreground">{t.modeDesc}</p>
 
                 {/* Status Badges */}
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
@@ -394,13 +398,22 @@ export function QuizPreview() {
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
-                <Button asChild className="w-full sm:w-auto rounded-full bg-primary font-semibold text-primary-foreground shadow-sm hover:bg-primary/90" size="default">
+                <Button
+                  asChild
+                  className="w-full sm:w-auto rounded-full bg-primary font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
+                  size="default"
+                >
                   <Link href="/download">
                     <DownloadIcon className="mr-2 size-4" />
                     <span>{t.downloadApp}</span>
                   </Link>
                 </Button>
-                <Button asChild className="w-full sm:w-auto rounded-full border-border bg-background text-foreground hover:bg-muted shadow-xs" size="default" variant="outline">
+                <Button
+                  asChild
+                  className="w-full sm:w-auto rounded-full border-border bg-background text-foreground hover:bg-muted shadow-xs"
+                  size="default"
+                  variant="outline"
+                >
                   <Link href="/app">
                     <ExternalLinkIcon className="mr-2 size-4" />
                     <span>{t.openWebApp}</span>
