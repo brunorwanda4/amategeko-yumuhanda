@@ -236,7 +236,7 @@ impl QuizMode {
     }
 
     pub fn allows_navigation_back(&self) -> bool {
-        !matches!(self, QuizMode::Bikomeye)
+        true
     }
 
     pub fn has_question_grid(&self) -> bool {

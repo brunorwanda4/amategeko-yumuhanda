@@ -184,7 +184,7 @@ mod tests {
                 && !def.key.shift
                 && matches!(
                     def.key.key.as_str(),
-                    "a" | "b" | "c" | "d" | "1" | "2" | "3" | "4" | "enter"
+                    "a" | "b" | "c" | "d" | "1" | "2" | "3" | "4" | "enter" | "arrowleft"
                 )
         }));
     }
@@ -263,7 +263,9 @@ impl ShortcutAction {
     pub fn is_allowed_in_hard(&self) -> bool {
         matches!(
             self,
-            ShortcutAction::ChooseOption(_) | ShortcutAction::NextOrConfirm
+            ShortcutAction::ChooseOption(_)
+                | ShortcutAction::NextOrConfirm
+                | ShortcutAction::PrevQuestion
         )
     }
 
@@ -304,9 +306,9 @@ impl ShortcutDef {
     }
 
     pub fn applies_to(&self, screen: crate::Screen, mode: Option<QuizMode>) -> bool {
-        // In Hard mode, navigation shortcuts and Esc-back are strictly disabled
+        // In Hard mode, only previous-question navigation is allowed.
         if screen == crate::Screen::Quiz && mode == Some(QuizMode::Bikomeye) {
-            if self.action.is_navigation() {
+            if self.action.is_navigation() && self.action != ShortcutAction::PrevQuestion {
                 return false;
             }
             if !self.action.is_allowed_in_hard() {
@@ -584,6 +586,13 @@ impl ShortcutRegistry {
             key: KeyCombo::plain("arrowleft"),
             action: ShortcutAction::PrevQuestion,
             scopes: vec![ShortcutScope::QuizMedium],
+            label_key: "shortcuts.prev_question",
+            custom_hint: Some("←"),
+        });
+        self.shortcuts.push(ShortcutDef {
+            key: KeyCombo::plain("arrowleft"),
+            action: ShortcutAction::PrevQuestion,
+            scopes: vec![ShortcutScope::QuizHard],
             label_key: "shortcuts.prev_question",
             custom_hint: Some("←"),
         });

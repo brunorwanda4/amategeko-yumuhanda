@@ -150,7 +150,10 @@ fn test_hard_mode_strict_navigation_and_validation() {
     let mut attempt = QuizEngine::start_quiz(&bank, QuizMode::Bikomeye, &settings, &stats, 1000)
         .expect("Quiz start failed");
 
-    // Going back is not allowed
+    // Going back is allowed, but never wraps before the first question.
+    attempt.current_index = 1;
+    assert!(QuizEngine::previous_question(&mut attempt));
+    assert_eq!(attempt.current_index, 0);
     assert!(!QuizEngine::previous_question(&mut attempt));
 
     // Jumping is not allowed

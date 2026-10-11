@@ -1094,7 +1094,7 @@ impl QuizView {
                                             })
                                             // Previous button (Left)
                                             .child({
-                                                let prev_tooltip = if shortcuts_active && !is_hard {
+                                                let prev_tooltip = if shortcuts_active {
                                                     format!("{} (←)", t("quiz.previous", lang))
                                                 } else {
                                                     t("quiz.previous", lang).to_string()

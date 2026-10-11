@@ -265,7 +265,7 @@ impl QuizEngine {
         }
     }
 
-    /// Navigates to the previous question (Easy or Medium).
+    /// Navigates to the previous question.
     pub fn previous_question(attempt: &mut Attempt) -> bool {
         if !attempt.mode.allows_navigation_back() {
             return false;
