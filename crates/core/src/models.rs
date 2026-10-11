@@ -727,6 +727,7 @@ mod tests {
 
         let settings: Settings =
             serde_json::from_str(old_settings_json).expect("old settings should deserialize");
+        assert_eq!(settings.quiz_length, 20);
         assert_eq!(settings.study_hide_answers, false);
         assert_eq!(settings.auto_check_updates, true);
 
@@ -752,6 +753,6 @@ mod tests {
             serde_json::from_str(old_progress_json).expect("old progress should deserialize");
         assert_eq!(progress.study, StudyProgress::default());
         assert_eq!(progress.attempts.len(), 1);
-        assert_eq!(progress.attempts[0].total, 0);
+        assert_eq!(progress.attempts[0].total, 20);
     }
 }
