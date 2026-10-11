@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getRandomQuestions, initialPreviewQuestions, type QuizQuestion } from "@/lib/quiz-data";
+import { APP_QUESTION_COUNT } from "@/lib/config";
 
 const uiCopy = {
   en: {
@@ -34,7 +35,7 @@ const uiCopy = {
     unansweredTag: "Unanswered",
     ctaTitle: "Ready for your official driving test?",
     ctaDesc:
-      "Practice all 400+ official questions with realistic timer exams, offline study on Windows and Android, or try the full web version right in your browser.",
+      "Practice all " + APP_QUESTION_COUNT + " official questions with realistic timer exams, offline study on Windows and Android, or try the full web version right in your browser.",
     downloadApp: "Download Application",
     openWebApp: "Open Full Web App",
     tryAgain: "Try again",
@@ -57,7 +58,7 @@ const uiCopy = {
     unansweredTag: "Bidasubijwe",
     ctaTitle: "Witeguye gutsindira perimi yawe?",
     ctaDesc:
-      "Iga ibibazo byose 404 by'amategeko y'umuhanda nta interineti ikenewe kuri Windows na Android, cyangwa koresha porogaramu yose ako kanya mu mushakisha wawe.",
+      "Iga ibibazo byose " + APP_QUESTION_COUNT + " by'amategeko y'umuhanda nta interineti ikenewe kuri Windows na Android, cyangwa koresha porogaramu yose ako kanya mu mushakisha wawe.",
     downloadApp: "Kura porogaramu (Download)",
     openWebApp: "Fungura porogaramu ku rubuga",
     tryAgain: "Ongera usubiremo",
