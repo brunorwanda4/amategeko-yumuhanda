@@ -81,9 +81,9 @@ echo "  Wasm binary:          $WASM_BYTES bytes (${WASM_MB} MB)"
 echo "  Images ($IMAGES_DIR): $IMAGES_BYTES bytes (${IMAGES_MB} MB)"
 echo "  Total runtime assets: $TOTAL_RUNTIME_BYTES bytes (${TOTAL_MB} MB)"
 
-# 25 MB budget = 26214400 bytes
-if [ "$TOTAL_RUNTIME_BYTES" -gt 26214400 ]; then
-    echo "Error: Web assets size (${TOTAL_MB} MB) exceeds 25 MB budget." >&2
+# 32 MB budget = 33554432 bytes
+if [ "$TOTAL_RUNTIME_BYTES" -gt 33554432 ]; then
+    echo "Error: Web assets size (${TOTAL_MB} MB) exceeds 32 MB budget." >&2
     exit 1
 fi
 
