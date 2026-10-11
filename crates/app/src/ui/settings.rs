@@ -38,6 +38,7 @@ pub enum SettingsAction {
     SetQuestionLanguage(Language),
     ToggleShowBothLanguages,
     ToggleShuffleOptions,
+    ToggleSwipeNav,
     ToggleAutoUpdates,
     CheckUpdates,
 }
@@ -571,7 +572,26 @@ impl SettingsView {
                                         move |this, window, cx| {
                                             on_action(this, SettingsAction::ToggleShuffleOptions, window, cx);
                                         },
-                                    )),
+                                    ))
+                                    .when(!is_desktop && crate::is_native_mobile(), |el| {
+                                        el.child(Self::render_divider(&colors)).child(
+                                            Self::render_switch_row(
+                                                t("settings.swipe", lang),
+                                                t("settings.swipe.hint", lang),
+                                                "sw_swipe_nav",
+                                                s.swipe_nav,
+                                                cx,
+                                                move |this, window, cx| {
+                                                    on_action(
+                                                        this,
+                                                        SettingsAction::ToggleSwipeNav,
+                                                        window,
+                                                        cx,
+                                                    );
+                                                },
+                                            ),
+                                        )
+                                    }),
                             ),
                     )
                     .when(!cfg!(target_arch = "wasm32") && cfg!(feature = "self-update"), |el| {

@@ -3,7 +3,9 @@ use crate::ui::scroll::{vertical_scrollbar, DragScroll};
 use ::gpui::InteractiveElement as _;
 use amategeko_core::platform::KeepAwakeGuard;
 use amategeko_core::{
-    percent_done, study_index, t, Attempt, Language, QuizMode, QuizTimer, TimerLevel, TimerState,
+    percent_done, quiz_swipe_target, study_index, swipe_decision, t, Attempt, Direction, Language,
+    QuizMode, QuizTimer, TimerLevel, TimerState, SWIPE_AXIS_LOCK_DISTANCE, SWIPE_EDGE_GUARD,
+    SWIPE_NEXT_ON_LEFT,
 };
 use gpui_kit::assets::IconName;
 use gpui_kit::base::StyledExt;
@@ -11,11 +13,47 @@ use gpui_kit::component::tooltip::Tooltip;
 use gpui_kit::component::{ActiveTheme, Icon};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 use std::time::Duration;
 
 pub struct QuizView;
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum SwipeAxis {
+    Pending,
+    Horizontal,
+    Cancelled,
+}
+
+#[derive(Clone, Copy)]
+struct SwipeGesture {
+    start: (f32, f32),
+    last: (f32, f32),
+    started_ms: u64,
+    screen_width: f32,
+    axis: SwipeAxis,
+    recognized: bool,
+}
+
+struct SwipeGuard;
+
+thread_local! {
+    static SWIPE_GESTURE: RefCell<Option<SwipeGesture>> = const { RefCell::new(None) };
+    static SWIPE_GUARDED: Cell<bool> = const { Cell::new(false) };
+    static SWIPE_NUDGE: Cell<bool> = const { Cell::new(false) };
+    static SWIPE_TRANSITION: Cell<Option<Direction>> = const { Cell::new(None) };
+}
+
+impl SwipeGuard {
+    fn claim() {
+        SWIPE_GUARDED.set(true);
+    }
+
+    fn take() -> bool {
+        SWIPE_GUARDED.replace(false)
+    }
+}
 
 impl QuizView {
     #[allow(clippy::too_many_arguments)]
@@ -25,6 +63,8 @@ impl QuizView {
         is_focus_mode: bool,
         scroll_handle: &ScrollHandle,
         reveal_scrollbar: bool,
+        show_swipe_tip: bool,
+        swipe_blocked: bool,
         cx: &mut Context<V>,
         on_select_option: impl Fn(&mut V, &str, &mut Window, &mut Context<V>) + 'static + Copy,
         on_next: impl Fn(&mut V, &mut Window, &mut Context<V>) + 'static + Copy,
@@ -119,6 +159,63 @@ impl QuizView {
         let is_last = current_idx + 1 == total_questions;
         let is_hard = attempt.mode == QuizMode::Bikomeye;
         let can_finish_hard = is_hard && is_last && user_ans.is_some();
+        let swipe_enabled = !is_desktop
+            && crate::is_native_mobile()
+            && state.settings.swipe_nav
+            && !is_hard
+            && !swipe_blocked;
+        let swipe_clock = state.clock.clone();
+        let swipe_mode = attempt.mode;
+        let swipe_answered = user_ans.is_some();
+        let swipe_nudge = SWIPE_NUDGE.replace(false);
+        let swipe_transition = SWIPE_TRANSITION.replace(None);
+        let swipe_up_clock = swipe_clock.clone();
+        let on_swipe_up = cx.listener(move |this, event: &MouseUpEvent, window, cx| {
+            let gesture = SWIPE_GESTURE.with_borrow_mut(Option::take);
+            let Some(gesture) = gesture else {
+                return;
+            };
+            if gesture.axis != SwipeAxis::Horizontal {
+                return;
+            }
+            let end = (event.position.x.as_f32(), event.position.y.as_f32());
+            let Some(direction) = swipe_decision(
+                gesture.start,
+                end,
+                swipe_up_clock
+                    .now_millis()
+                    .saturating_sub(gesture.started_ms),
+                gesture.screen_width,
+                SWIPE_EDGE_GUARD,
+            ) else {
+                return;
+            };
+            cx.stop_propagation();
+            match quiz_swipe_target(
+                swipe_mode,
+                current_idx,
+                total_questions,
+                swipe_answered,
+                direction,
+            ) {
+                Some(target) if target > current_idx => {
+                    SWIPE_TRANSITION.set(Some(direction));
+                    on_next(this, window, cx);
+                }
+                Some(_) => {
+                    SWIPE_TRANSITION.set(Some(direction));
+                    on_prev(this, window, cx);
+                }
+                None if (direction == Direction::Left) == SWIPE_NEXT_ON_LEFT
+                    && !swipe_answered
+                    && current_idx + 1 < total_questions =>
+                {
+                    SWIPE_NUDGE.set(true);
+                    cx.notify();
+                }
+                None => {}
+            }
+        });
 
         let next_btn_label = if is_hard {
             t("quiz.confirm_answer", lang)
@@ -617,7 +714,76 @@ impl QuizView {
                 div()
                     .id("quiz_content_scroll")
                     .track_scroll(scroll_handle)
-.drag_scroll(scroll_handle)
+                    .drag_scroll(scroll_handle)
+                    .when(swipe_enabled, |el| {
+                        let down_clock = swipe_clock.clone();
+                        let move_clock = swipe_clock.clone();
+                        el.on_mouse_down(MouseButton::Left, move |event, window, _| {
+                            if SwipeGuard::take() {
+                                SWIPE_GESTURE.with_borrow_mut(|gesture| *gesture = None);
+                                return;
+                            }
+                            let start = (event.position.x.as_f32(), event.position.y.as_f32());
+                            let screen_width = window.bounds().size.width.as_f32();
+                            if start.0 < SWIPE_EDGE_GUARD
+                                || start.0 > screen_width - SWIPE_EDGE_GUARD
+                            {
+                                SWIPE_GESTURE.with_borrow_mut(|gesture| *gesture = None);
+                                return;
+                            }
+                            SWIPE_GESTURE.with_borrow_mut(|gesture| {
+                                *gesture = Some(SwipeGesture {
+                                    start,
+                                    last: start,
+                                    started_ms: down_clock.now_millis(),
+                                    screen_width,
+                                    axis: SwipeAxis::Pending,
+                                    recognized: false,
+                                });
+                            });
+                        })
+                        .on_mouse_move(move |event, _, cx| {
+                            if event.pressed_button != Some(MouseButton::Left) {
+                                SWIPE_GESTURE.with_borrow_mut(|gesture| *gesture = None);
+                                return;
+                            }
+                            SWIPE_GESTURE.with_borrow_mut(|slot| {
+                                let Some(mut gesture) = *slot else {
+                                    return;
+                                };
+                                gesture.last =
+                                    (event.position.x.as_f32(), event.position.y.as_f32());
+                                let dx = (gesture.last.0 - gesture.start.0).abs();
+                                let dy = (gesture.last.1 - gesture.start.1).abs();
+                                if gesture.axis == SwipeAxis::Pending
+                                    && dx.max(dy) >= SWIPE_AXIS_LOCK_DISTANCE
+                                {
+                                    gesture.axis = if dx >= dy {
+                                        SwipeAxis::Horizontal
+                                    } else {
+                                        SwipeAxis::Cancelled
+                                    };
+                                }
+                                if gesture.axis == SwipeAxis::Horizontal
+                                    && swipe_decision(
+                                        gesture.start,
+                                        gesture.last,
+                                        move_clock
+                                            .now_millis()
+                                            .saturating_sub(gesture.started_ms),
+                                        gesture.screen_width,
+                                        SWIPE_EDGE_GUARD,
+                                    )
+                                    .is_some()
+                                {
+                                    gesture.recognized = true;
+                                    cx.stop_propagation();
+                                }
+                                *slot = Some(gesture);
+                            });
+                        })
+                        .capture_any_mouse_up(on_swipe_up)
+                    })
                     .flex()
                     .flex_col()
                     .flex_1()
@@ -732,8 +898,8 @@ impl QuizView {
                                                     )
                                                 },
                                             )
-                                            .child(
-                                                div()
+                                            .child({
+                                                let question_text = div()
                                                     .debug_selector(|| "quiz-question-text".into())
                                                     .w_full()
                                                     .min_w_0()
@@ -743,8 +909,44 @@ impl QuizView {
                                                     .font_family(crate::font::FONT_FAMILY)
                                                     .font_bold()
                                                     .text_color(colors.foreground)
-                                                    .child(current_q.text_for(q_lang).to_string()),
-                                            )
+                                                    .child(current_q.text_for(q_lang).to_string());
+                                                if swipe_nudge {
+                                                    question_text
+                                                        .with_animation(
+                                                            "quiz-swipe-nudge",
+                                                            Animation::new(Duration::from_millis(120)),
+                                                            |text, progress| {
+                                                                let offset = (progress
+                                                                    * std::f32::consts::TAU
+                                                                    * 2.0)
+                                                                    .sin()
+                                                                    * 6.0
+                                                                    * (1.0 - progress);
+                                                                text.relative().left(px(offset))
+                                                            },
+                                                        )
+                                                        .into_any_element()
+                                                } else if let Some(direction) = swipe_transition {
+                                                    let start = if direction == Direction::Left {
+                                                        28.0
+                                                    } else {
+                                                        -28.0
+                                                    };
+                                                    question_text
+                                                        .with_animation(
+                                                            "quiz-swipe-enter",
+                                                            Animation::new(Duration::from_millis(180)),
+                                                            move |text, progress| {
+                                                                text.relative().left(px(
+                                                                    start * (1.0 - progress),
+                                                                ))
+                                                            },
+                                                        )
+                                                        .into_any_element()
+                                                } else {
+                                                    question_text.into_any_element()
+                                                }
+                                            })
                                             .when(show_both, |bilingual| {
                                                 if let Some(sec_text) =
                                                     current_q.secondary_text_for(q_lang)
@@ -870,6 +1072,14 @@ impl QuizView {
                                             )
                                         })
                                     }))
+                                    .when(show_swipe_tip && !is_hard, |el| {
+                                        el.child(
+                                            div()
+                                                .text_xs()
+                                                .text_color(colors.muted_foreground)
+                                                .child(t("quiz.swipe.tip", lang)),
+                                        )
+                                    })
                                     // Bottom Navigation inside Right Column
                                     .child(
                                         div()
@@ -879,6 +1089,9 @@ impl QuizView {
                                             .justify_between()
                                             .mt_4()
                                             .pt_2()
+                                            .on_mouse_down(MouseButton::Left, |_, _, _| {
+                                                SwipeGuard::claim();
+                                            })
                                             // Previous button (Left)
                                             .child({
                                                 let prev_tooltip = if shortcuts_active && !is_hard {

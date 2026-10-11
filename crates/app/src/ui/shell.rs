@@ -216,6 +216,7 @@ pub struct ShellView {
     pub show_study_restart_dialog: bool,
     pub show_study_finished_dialog: bool,
     pub show_questions_filters_sheet: bool,
+    pub show_swipe_tip: bool,
     #[cfg(feature = "self-update")]
     pub show_update_notes: bool,
     #[cfg(feature = "self-update")]
@@ -417,6 +418,7 @@ impl ShellView {
             show_study_restart_dialog: false,
             show_study_finished_dialog: false,
             show_questions_filters_sheet: false,
+            show_swipe_tip: false,
             #[cfg(feature = "self-update")]
             show_update_notes: false,
             #[cfg(feature = "self-update")]
@@ -1054,9 +1056,28 @@ impl Render for ShellView {
                 self.focus_mode,
                 &self.quiz_scroll_handle,
                 reveal_scrollbar,
+                self.show_swipe_tip,
+                self.show_finish_confirm_dialog
+                    || self.show_study_jump_dialog
+                    || self.show_study_restart_dialog
+                    || self.show_study_finished_dialog
+                    || self.show_help_dialog,
                 cx,
                 |this, opt, _, cx| {
+                    let should_show_swipe_tip = crate::is_native_mobile()
+                        && !this.state.settings.swipe_tip_seen
+                        && this.state.current_attempt.as_ref().is_some_and(|attempt| {
+                            matches!(
+                                attempt.mode,
+                                QuizMode::Byoroshye | QuizMode::Hagati | QuizMode::Study
+                            )
+                        });
                     this.state.record_current_answer(opt);
+                    if should_show_swipe_tip {
+                        this.show_swipe_tip = true;
+                        this.state.settings.swipe_tip_seen = true;
+                        this.state.save_settings(this.state.settings.clone());
+                    }
                     if this.state.current_attempt.as_ref().is_some_and(|attempt| {
                         attempt.mode == QuizMode::Study
                             && attempt.current_index + 1 == attempt.total_questions()
@@ -1067,6 +1088,7 @@ impl Render for ShellView {
                     cx.notify();
                 },
                 |this, _, cx| {
+                    this.show_swipe_tip = false;
                     let is_study = this
                         .state
                         .current_attempt
@@ -1084,6 +1106,7 @@ impl Render for ShellView {
                     cx.notify();
                 },
                 |this, _, cx| {
+                    this.show_swipe_tip = false;
                     let is_study = this
                         .state
                         .current_attempt
@@ -1476,6 +1499,10 @@ impl Render for ShellView {
                         SettingsAction::ToggleShuffleOptions => {
                             this.state.settings.shuffle_options =
                                 !this.state.settings.shuffle_options;
+                            this.state.save_settings(this.state.settings.clone());
+                        }
+                        SettingsAction::ToggleSwipeNav => {
+                            this.state.settings.swipe_nav = !this.state.settings.swipe_nav;
                             this.state.save_settings(this.state.settings.clone());
                         }
                         SettingsAction::ToggleAutoUpdates => {

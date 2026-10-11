@@ -7,6 +7,78 @@ use std::collections::HashMap;
 
 pub struct QuizEngine;
 
+pub const SWIPE_NEXT_ON_LEFT: bool = true;
+pub const SWIPE_AXIS_LOCK_DISTANCE: f32 = 12.0;
+pub const SWIPE_MIN_DISTANCE: f32 = 72.0;
+pub const SWIPE_MAX_DURATION_MS: u64 = 600;
+pub const SWIPE_EDGE_GUARD: f32 = 24.0;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Direction {
+    Left,
+    Right,
+}
+
+pub fn swipe_decision(
+    start: (f32, f32),
+    end: (f32, f32),
+    elapsed_ms: u64,
+    screen_w: f32,
+    edge: f32,
+) -> Option<Direction> {
+    if start.0 < edge || start.0 > screen_w - edge || elapsed_ms >= SWIPE_MAX_DURATION_MS {
+        return None;
+    }
+
+    let dx = end.0 - start.0;
+    let dy = end.1 - start.1;
+    if dx.abs() < SWIPE_MIN_DISTANCE || dx.abs() < dy.abs() * 2.0 {
+        return None;
+    }
+
+    Some(if dx < 0.0 {
+        Direction::Left
+    } else {
+        Direction::Right
+    })
+}
+
+pub fn quiz_swipe_target(
+    mode: QuizMode,
+    index: usize,
+    total: usize,
+    answered: bool,
+    direction: Direction,
+) -> Option<usize> {
+    quiz_swipe_target_with_direction(mode, index, total, answered, direction, SWIPE_NEXT_ON_LEFT)
+}
+
+fn quiz_swipe_target_with_direction(
+    mode: QuizMode,
+    index: usize,
+    total: usize,
+    answered: bool,
+    direction: Direction,
+    next_on_left: bool,
+) -> Option<usize> {
+    if mode == QuizMode::Bikomeye || total == 0 || index >= total {
+        return None;
+    }
+
+    let moves_next = (direction == Direction::Left) == next_on_left;
+    if moves_next {
+        if index + 1 >= total {
+            return None;
+        }
+        if mode.provides_instant_feedback() && !answered {
+            return None;
+        }
+        Some(index + 1)
+    } else {
+        index.checked_sub(1)
+    }
+}
+
 pub fn effective_length(mode: QuizMode, requested: usize, available: usize) -> usize {
     let requested = if mode == QuizMode::Bikomeye {
         20
@@ -304,5 +376,59 @@ mod length_tests {
         assert_eq!(pass_threshold(12, 10), 6);
         assert_eq!(pass_threshold(12, 30), 18);
         assert_eq!(pass_threshold(12, 50), 30);
+    }
+}
+
+#[cfg(test)]
+mod swipe_tests {
+    use super::{quiz_swipe_target, quiz_swipe_target_with_direction, Direction};
+    use crate::models::QuizMode;
+
+    #[test]
+    fn swipe_rules_follow_mode_answers_boundaries_and_direction() {
+        assert_eq!(
+            quiz_swipe_target(QuizMode::Bikomeye, 1, 3, true, Direction::Left),
+            None
+        );
+        assert_eq!(
+            quiz_swipe_target(QuizMode::Byoroshye, 1, 3, false, Direction::Right),
+            Some(0)
+        );
+        assert_eq!(
+            quiz_swipe_target(QuizMode::Byoroshye, 1, 3, false, Direction::Left),
+            None
+        );
+        assert_eq!(
+            quiz_swipe_target(QuizMode::Byoroshye, 1, 3, true, Direction::Left),
+            Some(2)
+        );
+        assert_eq!(
+            quiz_swipe_target(QuizMode::Hagati, 1, 3, false, Direction::Right),
+            Some(0)
+        );
+        assert_eq!(
+            quiz_swipe_target(QuizMode::Hagati, 1, 3, false, Direction::Left),
+            Some(2)
+        );
+        assert_eq!(
+            quiz_swipe_target(QuizMode::Study, 1, 3, false, Direction::Right),
+            Some(0)
+        );
+        assert_eq!(
+            quiz_swipe_target(QuizMode::Study, 1, 3, true, Direction::Left),
+            Some(2)
+        );
+        assert_eq!(
+            quiz_swipe_target(QuizMode::Hagati, 0, 3, false, Direction::Right),
+            None
+        );
+        assert_eq!(
+            quiz_swipe_target(QuizMode::Hagati, 2, 3, false, Direction::Left),
+            None
+        );
+        assert_eq!(
+            quiz_swipe_target_with_direction(QuizMode::Hagati, 1, 3, false, Direction::Left, false,),
+            Some(0)
+        );
     }
 }

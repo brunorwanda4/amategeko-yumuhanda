@@ -283,6 +283,10 @@ pub struct Settings {
     /// Stored answers and the correct answer keep their original keys.
     #[serde(default)]
     pub shuffle_options: bool,
+    #[serde(default = "default_swipe_nav")]
+    pub swipe_nav: bool,
+    #[serde(default)]
+    pub swipe_tip_seen: bool,
     #[serde(default = "default_auto_check_updates")]
     pub auto_check_updates: bool,
     #[serde(default)]
@@ -292,6 +296,10 @@ pub struct Settings {
 }
 
 fn default_auto_check_updates() -> bool {
+    true
+}
+
+fn default_swipe_nav() -> bool {
     true
 }
 
@@ -316,6 +324,8 @@ impl Default for Settings {
             question_language: Language::En,
             show_both_languages: false,
             shuffle_options: false,
+            swipe_nav: true,
+            swipe_tip_seen: false,
             auto_check_updates: true,
             last_update_check: None,
             skipped_version: None,
