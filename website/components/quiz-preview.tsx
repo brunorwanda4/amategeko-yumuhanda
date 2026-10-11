@@ -142,16 +142,16 @@ export function QuizPreview() {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-zinc-800/80 bg-[#0c0c0e] text-zinc-100 shadow-2xl transition-all">
+    <div className="overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-2xl shadow-foreground/5 transition-all">
       {/* Top Header Bar */}
-      <div className="flex h-14 items-center justify-between border-b border-zinc-800/80 px-4 sm:px-6 bg-zinc-950/60">
+      <div className="flex h-14 items-center justify-between border-b border-border px-4 sm:px-6 bg-muted/40">
         <div className="flex items-center gap-3">
           {!showResults ? (
-            <span className="text-sm sm:text-base font-semibold text-white tracking-tight">
+            <span className="text-sm sm:text-base font-semibold text-foreground tracking-tight">
               {t.questionLabel} {currentIndex + 1} {t.of} {total}
             </span>
           ) : (
-            <span className="text-base font-bold text-white tracking-tight">
+            <span className="text-base font-bold text-foreground tracking-tight">
               {t.resultsTitle}
             </span>
           )}
@@ -159,25 +159,25 @@ export function QuizPreview() {
 
         {/* Right side controls: Language toggle and shuffle */}
         <div className="flex items-center gap-2">
-          {/* Language Switcher replaces the timer */}
+          {/* Language Switcher */}
           <button
-            className="flex h-8 items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/80 px-2.5 text-xs font-medium text-zinc-300 hover:border-zinc-700 hover:text-white transition-colors cursor-pointer"
+            className="flex h-8 items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 text-xs font-medium text-foreground hover:bg-muted transition-colors cursor-pointer shadow-xs"
             onClick={() => setLanguage(language === "en" ? "rw" : "en")}
             title="Change language"
             type="button"
           >
-            <GlobeIcon className="size-3.5 text-zinc-400" />
+            <GlobeIcon className="size-3.5 text-muted-foreground" />
             <span>{language === "en" ? "English" : "Kinyarwanda"}</span>
           </button>
 
           {!showResults && (
             <button
-              className="flex h-8 items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/80 px-2.5 text-xs font-medium text-zinc-300 hover:border-zinc-700 hover:text-white transition-colors cursor-pointer"
+              className="flex h-8 items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 text-xs font-medium text-foreground hover:bg-muted transition-colors cursor-pointer shadow-xs"
               onClick={handleNewRandomSet}
               title="Get new random 10 questions"
               type="button"
             >
-              <ShuffleIcon className="size-3.5 text-zinc-400" />
+              <ShuffleIcon className="size-3.5 text-muted-foreground" />
               <span className="hidden sm:inline">{t.shuffle}</span>
             </button>
           )}
@@ -186,7 +186,7 @@ export function QuizPreview() {
 
       {/* Segmented Progress Bar (Directly below header) */}
       {!showResults && (
-        <div className="flex gap-1.5 px-4 sm:px-6 pt-3 pb-2 bg-zinc-950/30">
+        <div className="flex gap-1.5 px-4 sm:px-6 pt-3 pb-2 bg-muted/20">
           {questions.map((q, idx) => {
             const ans = answers[idx];
             const qCorrect = q.correct === "a" ? 0 : q.correct === "b" ? 1 : q.correct === "c" ? 2 : 3;
@@ -200,12 +200,12 @@ export function QuizPreview() {
                 className={cn(
                   "h-1 rounded-full flex-1 transition-all cursor-pointer",
                   isCurrent
-                    ? "bg-white ring-1 ring-white/50"
+                    ? "bg-foreground ring-1 ring-foreground/40"
                     : isCor
-                    ? "bg-emerald-500 hover:bg-emerald-400"
+                    ? "bg-success hover:opacity-90"
                     : isWro
-                    ? "bg-rose-500 hover:bg-rose-400"
-                    : "bg-zinc-800 hover:bg-zinc-700"
+                    ? "bg-error hover:opacity-90"
+                    : "bg-muted-foreground/20 hover:bg-muted-foreground/40"
                 )}
                 key={q.id}
                 onClick={() => setCurrentIndex(idx)}
@@ -226,7 +226,7 @@ export function QuizPreview() {
           )}>
             {/* If question has an image: Left side illustration card */}
             {currentQ.image && (
-              <div className="flex min-h-[260px] sm:min-h-[320px] items-center justify-center rounded-2xl border border-zinc-800/80 bg-[#141417] p-6 shadow-inner">
+              <div className="flex min-h-[260px] sm:min-h-[320px] items-center justify-center rounded-2xl border border-border bg-muted/30 p-6 shadow-xs">
                 <img
                   alt={`Road sign for question ${currentQ.id}`}
                   className="max-h-60 sm:max-h-72 w-auto object-contain transition-transform hover:scale-105"
@@ -237,10 +237,10 @@ export function QuizPreview() {
 
             {/* Right side (or full width): Question and Options */}
             <div className="flex flex-col justify-center">
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white leading-snug">
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground leading-snug">
                 {localized?.question}
               </h2>
-              <p className="mt-2 text-sm text-zinc-400">
+              <p className="mt-2 text-sm text-muted-foreground">
                 {t.tapPrompt}
               </p>
 
@@ -255,11 +255,11 @@ export function QuizPreview() {
                     <button
                       aria-pressed={isChosen}
                       className={cn(
-                        "group flex w-full items-center gap-3.5 rounded-xl border p-3.5 text-left transition-all duration-150",
-                        !isAnswered && "border-zinc-800/80 bg-zinc-900/60 hover:bg-zinc-800/80 hover:border-zinc-700 text-zinc-200 cursor-pointer",
-                        isOptCorrect && "border-emerald-500 bg-emerald-950/40 text-emerald-200",
-                        isOptWrong && "border-rose-500 bg-rose-950/40 text-rose-200",
-                        isAnswered && !isChosen && !isOptCorrect && "border-zinc-850 bg-zinc-900/30 text-zinc-500 opacity-60 cursor-default"
+                        "group flex w-full items-center gap-3.5 rounded-xl border p-3.5 text-left transition-all duration-150 shadow-xs",
+                        !isAnswered && "border-border bg-background hover:bg-muted/60 hover:border-foreground/25 text-foreground cursor-pointer",
+                        isOptCorrect && "border-success bg-success-soft text-foreground font-medium",
+                        isOptWrong && "border-error bg-error-soft text-foreground font-medium",
+                        isAnswered && !isChosen && !isOptCorrect && "border-border/50 bg-muted/20 text-muted-foreground opacity-60 cursor-default"
                       )}
                       disabled={isAnswered}
                       key={optIdx}
@@ -270,10 +270,10 @@ export function QuizPreview() {
                         className={cn(
                           "flex size-7 shrink-0 items-center justify-center rounded-lg border font-mono text-xs font-bold transition-colors",
                           isOptCorrect
-                            ? "border-emerald-400 bg-emerald-500 text-white"
+                            ? "border-success bg-success text-white"
                             : isOptWrong
-                            ? "border-rose-400 bg-rose-500 text-white"
-                            : "border-zinc-800 bg-zinc-950 text-zinc-400 group-hover:border-zinc-700 group-hover:text-zinc-200"
+                            ? "border-error bg-error text-white"
+                            : "border-border bg-muted text-muted-foreground group-hover:border-foreground/30 group-hover:text-foreground"
                         )}
                       >
                         {String.fromCharCode(65 + optIdx)}
@@ -289,9 +289,9 @@ export function QuizPreview() {
           </div>
 
           {/* Bottom Navigation */}
-          <div className="mx-auto mt-10 flex max-w-4xl items-center justify-between border-t border-zinc-800/80 pt-5">
+          <div className="mx-auto mt-10 flex max-w-4xl items-center justify-between border-t border-border pt-5">
             <Button
-              className="gap-1.5 rounded-xl border-zinc-800 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white cursor-pointer"
+              className="gap-1.5 rounded-xl border-border bg-background text-foreground hover:bg-muted cursor-pointer"
               disabled={currentIndex === 0}
               onClick={handlePrevious}
               size="default"
@@ -303,12 +303,12 @@ export function QuizPreview() {
 
             <Button
               className={cn(
-                "gap-1.5 rounded-xl font-medium transition-all cursor-pointer",
+                "gap-1.5 rounded-xl font-medium transition-all cursor-pointer shadow-sm",
                 currentIndex === total - 1
-                  ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/30"
+                  ? "bg-success hover:bg-success/90 text-white"
                   : isAnswered
-                  ? "bg-white text-black hover:bg-zinc-200"
-                  : "border-zinc-800 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                  : "border-border bg-background text-foreground hover:bg-muted"
               )}
               onClick={handleNext}
               size="default"
@@ -323,21 +323,21 @@ export function QuizPreview() {
         /* Results Screen - Clean Hero Presentation without question list */
         <div className="p-6 sm:p-10 max-w-3xl mx-auto space-y-6">
           {/* Top Score Summary Card */}
-          <div className="rounded-2xl border border-zinc-800/80 bg-[#121214] p-6 sm:p-8">
+          <div className="rounded-2xl border border-border bg-muted/30 p-6 sm:p-8 shadow-xs">
             <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8">
-              {/* Circular score badge (e.g. 8/10) */}
+              {/* Circular score badge */}
               <div
                 className={cn(
-                  "flex size-24 sm:size-28 shrink-0 flex-col items-center justify-center rounded-full border-4 shadow-lg",
+                  "flex size-24 sm:size-28 shrink-0 flex-col items-center justify-center rounded-full border-4 shadow-sm",
                   isPassed
-                    ? "border-emerald-500 bg-emerald-950/20 text-emerald-400 shadow-emerald-950/30"
-                    : "border-rose-500 bg-rose-950/20 text-rose-400 shadow-rose-950/30"
+                    ? "border-success bg-success-soft text-foreground"
+                    : "border-error bg-error-soft text-foreground"
                 )}
               >
-                <span className="text-2xl sm:text-3xl font-extrabold text-white leading-none">
+                <span className="text-2xl sm:text-3xl font-extrabold text-foreground leading-none">
                   {correctCount}
                 </span>
-                <span className="text-xs font-semibold text-zinc-400 mt-0.5">
+                <span className="text-xs font-semibold text-muted-foreground mt-0.5">
                   / {total}
                 </span>
               </div>
@@ -345,35 +345,35 @@ export function QuizPreview() {
               {/* Status and Stats */}
               <div className="flex-1 text-center sm:text-left space-y-3">
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
-                  <span className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                  <span className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">
                     {scorePercent}%
                   </span>
                   <span
                     className={cn(
                       "rounded-md px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider",
                       isPassed
-                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                        : "bg-rose-500/20 text-rose-400 border border-rose-500/30"
+                        ? "bg-success-soft text-foreground border border-success/30"
+                        : "bg-error-soft text-foreground border border-error/30"
                     )}
                   >
                     {isPassed ? t.passed : t.failed}
                   </span>
                 </div>
 
-                <p className="text-xs sm:text-sm text-zinc-400">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   {t.modeDesc}
                 </p>
 
                 {/* Status Badges */}
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
-                  <span className="rounded-md bg-emerald-950/60 border border-emerald-800/40 px-2.5 py-1 text-xs font-medium text-emerald-400">
+                  <span className="rounded-md bg-success-soft text-foreground border border-success/30 px-2.5 py-1 text-xs font-medium">
                     {t.correctTag} {correctCount}
                   </span>
-                  <span className="rounded-md bg-rose-950/60 border border-rose-800/40 px-2.5 py-1 text-xs font-medium text-rose-400">
+                  <span className="rounded-md bg-error-soft text-foreground border border-error/30 px-2.5 py-1 text-xs font-medium">
                     {t.wrongTag} {wrongCount}
                   </span>
                   {unansweredCount > 0 && (
-                    <span className="rounded-md bg-zinc-800/80 border border-zinc-700/40 px-2.5 py-1 text-xs font-medium text-zinc-400">
+                    <span className="rounded-md bg-muted text-muted-foreground border border-border px-2.5 py-1 text-xs font-medium">
                       {t.unansweredTag} {unansweredCount}
                     </span>
                   )}
@@ -383,24 +383,24 @@ export function QuizPreview() {
           </div>
 
           {/* Action Callout Banner: Download Application or Open Web Demo */}
-          <div className="relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-r from-primary/10 via-zinc-900 to-primary/5 p-6 sm:p-8">
+          <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-r from-muted/40 via-background to-muted/30 p-6 sm:p-8 shadow-xs">
             <div className="space-y-4 text-center sm:text-left">
               <div className="space-y-2">
-                <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+                <h3 className="text-lg sm:text-xl font-bold text-foreground tracking-tight">
                   {t.ctaTitle}
                 </h3>
-                <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed max-w-xl">
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-xl">
                   {t.ctaDesc}
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
-                <Button asChild className="w-full sm:w-auto rounded-full bg-primary font-semibold text-primary-foreground shadow-lg hover:bg-primary/90" size="default">
+                <Button asChild className="w-full sm:w-auto rounded-full bg-primary font-semibold text-primary-foreground shadow-sm hover:bg-primary/90" size="default">
                   <Link href="/download">
                     <DownloadIcon className="mr-2 size-4" />
                     <span>{t.downloadApp}</span>
                   </Link>
                 </Button>
-                <Button asChild className="w-full sm:w-auto rounded-full border-zinc-700 bg-zinc-900 text-zinc-200 hover:bg-zinc-800 hover:text-white" size="default" variant="outline">
+                <Button asChild className="w-full sm:w-auto rounded-full border-border bg-background text-foreground hover:bg-muted shadow-xs" size="default" variant="outline">
                   <Link href="/app">
                     <ExternalLinkIcon className="mr-2 size-4" />
                     <span>{t.openWebApp}</span>
@@ -413,7 +413,7 @@ export function QuizPreview() {
           {/* Retake & Next Set Controls */}
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             <Button
-              className="gap-2 rounded-xl border-zinc-800 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white cursor-pointer"
+              className="gap-2 rounded-xl border-border bg-background text-foreground hover:bg-muted cursor-pointer"
               onClick={handleTryAgain}
               variant="outline"
             >
@@ -422,7 +422,7 @@ export function QuizPreview() {
             </Button>
 
             <Button
-              className="gap-2 rounded-xl bg-white text-black hover:bg-zinc-200 font-medium cursor-pointer"
+              className="gap-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-medium cursor-pointer shadow-sm"
               onClick={handleNewRandomSet}
               variant="default"
             >

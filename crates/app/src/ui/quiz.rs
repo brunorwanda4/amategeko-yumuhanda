@@ -221,7 +221,7 @@ impl QuizView {
                                     .px_3()
                                     .min_w_0()
                                     .overflow_hidden()
-                                    .when(!is_desktop, |el| el.flex_1().px_2())
+                                    .when(!is_desktop, |el| el.px_2())
                                     .py_1()
                                     .rounded_full()
                                     .bg(colors.secondary)
