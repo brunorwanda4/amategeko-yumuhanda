@@ -2,13 +2,11 @@ use ::gpui::{AssetSource, Result, SharedString};
 use anyhow::anyhow;
 use gpui_kit::assets::icon_assets;
 use gpui_kit::assets::Assets;
-#[cfg(not(target_arch = "wasm32"))]
 use rust_embed::RustEmbed;
 use std::borrow::Cow;
 #[cfg(not(target_arch = "wasm32"))]
 use std::path::Path;
 
-#[cfg(not(target_arch = "wasm32"))]
 #[derive(RustEmbed)]
 #[folder = "../../assets"]
 #[exclude = "fonts/*"]
@@ -139,7 +137,6 @@ impl AssetSource for AppAssets {
         let rel_path = path.strip_prefix("assets/").unwrap_or(path);
 
         // 1. Try embedded application assets (e.g. "images/q229.png")
-        #[cfg(not(target_arch = "wasm32"))]
         {
             if let Some(file) = EmbeddedAppAssets::get(rel_path) {
                 return Ok(Some(file.data));
@@ -189,7 +186,6 @@ impl AssetSource for AppAssets {
     fn list(&self, path: &str) -> Result<Vec<SharedString>> {
         let mut list = Vec::new();
 
-        #[cfg(not(target_arch = "wasm32"))]
         {
             let rel_path = path.strip_prefix("assets/").unwrap_or(path);
             for name in EmbeddedAppAssets::iter() {
