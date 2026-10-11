@@ -11,6 +11,8 @@ export const RELEASES_URL = `${REPO_URL}/releases/latest`;
 
 export const ISSUES_URL = `${REPO_URL}/issues`;
 
+export const REPO_API_URL = `https://api.github.com/repos/${REPO_SLUG}`;
+
 export const LATEST_RELEASE_API_URL = `https://api.github.com/repos/${REPO_SLUG}/releases/latest`;
 
 export const AUTHOR_NAME = "Rwanda Bruno";
