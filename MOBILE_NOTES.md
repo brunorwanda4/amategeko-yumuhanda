@@ -58,3 +58,10 @@ Output APK is located at `crates/mobile/android/app/build/outputs/apk/debug/app-
 - R8 removed Java methods invoked by name from Rust/JNI, causing minified release APKs to close during startup.
 - `proguard-rules.pro` now preserves `GpuiActivity` and `MainActivity`, including their JNI bridge methods.
 - Verified by building the ARM64 sideload release and checking the generated R8 mapping. Physical-device launch still requires owner testing.
+
+### Release signing continuity (2026-10-12)
+
+- Android rejects an in-place update when the new APK uses a different signing key, even when the package ID and version code are correct.
+- Publishable sideload builds now require a previously published production APK as `-SigningBaselineApk` / `--signing-baseline-apk` and fail when the signer changes.
+- `-AllowDebugSigning` remains for local test artifacts and those `debugsigned` files must never be uploaded as releases.
+- The public v1.8.0 main APK was byte-for-byte identical to its debug-signed asset. Use the explicit existing-user update mode and the v1.8.0 APK baseline so later versions remain installable over it.

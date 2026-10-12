@@ -4,7 +4,7 @@
 #
 # Usage:
 #   ./build.sh ios   [--device | --simulator] [--release] [--clean]
-#   ./build.sh android [--device | --emulator] [--release] [--clean] [--allow-debug-signing]
+#   ./build.sh android [--device | --emulator] [--release] [--clean] [--allow-debug-signing] [--existing-user-update] [--signing-baseline-apk PATH]
 #
 # Subcommands:
 #   ios       Build the Rust static library, generate the Xcode project via
@@ -65,7 +65,7 @@ usage() {
     cat <<'EOF'
 Usage:
   ./build.sh ios     [--device|--simulator] [--release] [--clean] [--no-run]
-  ./build.sh android [--device|--emulator]  [--release] [--clean] [--no-run] [--allow-debug-signing]
+  ./build.sh android [--device|--emulator]  [--release] [--clean] [--no-run] [--allow-debug-signing] [--existing-user-update] [--signing-baseline-apk PATH]
 
 Subcommands:
   ios       Build & run on iOS (physical device by default)
@@ -79,6 +79,8 @@ Options:
   --clean       Clean before building
   --no-run      Build only — skip install & launch
   --allow-debug-signing  Sign a release APK with the debug key for local testing only
+  --existing-user-update  Match the signer accidentally published with v1.8.0
+  --signing-baseline-apk PATH  Require the release signer to match this installed production APK
   -h, --help    Show this help
 EOF
 }
@@ -91,6 +93,8 @@ PROFILE="debug"
 CLEAN=false
 NO_RUN=false
 ALLOW_DEBUG_SIGNING=false
+EXISTING_USER_UPDATE=false
+SIGNING_BASELINE_APK=""
 
 if [[ $# -lt 1 ]]; then
     usage
@@ -112,6 +116,15 @@ while [[ $# -gt 0 ]]; do
         --clean)     CLEAN=true              ;;
         --no-run)    NO_RUN=true             ;;
         --allow-debug-signing) ALLOW_DEBUG_SIGNING=true ;;
+        --existing-user-update) EXISTING_USER_UPDATE=true ;;
+        --signing-baseline-apk)
+            shift
+            if [[ $# -eq 0 ]]; then
+                error "--signing-baseline-apk requires a path"
+                exit 1
+            fi
+            SIGNING_BASELINE_APK="$1"
+            ;;
         -h|--help)   usage; exit 0           ;;
         *) error "Unknown option: $1"; usage; exit 1 ;;
     esac
@@ -130,6 +143,29 @@ fi
 if $ALLOW_DEBUG_SIGNING && [[ "$PLATFORM" != "android" || "$PROFILE" != "release" ]]; then
     error "--allow-debug-signing requires: ./build.sh android --release"
     exit 1
+fi
+if $EXISTING_USER_UPDATE && [[ "$PLATFORM" != "android" || "$PROFILE" != "release" ]]; then
+    error "--existing-user-update requires: ./build.sh android --release"
+    exit 1
+fi
+if $ALLOW_DEBUG_SIGNING && $EXISTING_USER_UPDATE; then
+    error "Choose either --allow-debug-signing or --existing-user-update, not both."
+    exit 1
+fi
+if [[ -n "$SIGNING_BASELINE_APK" && ( "$PLATFORM" != "android" || "$PROFILE" != "release" ) ]]; then
+    error "--signing-baseline-apk requires: ./build.sh android --release"
+    exit 1
+fi
+if [[ "$PLATFORM" == "android" && "$PROFILE" == "release" ]] && ! $ALLOW_DEBUG_SIGNING; then
+    if [[ -z "$SIGNING_BASELINE_APK" ]]; then
+        error "A publishable Android release requires --signing-baseline-apk PATH."
+        exit 1
+    fi
+    if [[ ! -f "$SIGNING_BASELINE_APK" ]]; then
+        error "Signing baseline APK not found: $SIGNING_BASELINE_APK"
+        exit 1
+    fi
+    SIGNING_BASELINE_APK="$(cd "$(dirname "$SIGNING_BASELINE_APK")" && pwd)/$(basename "$SIGNING_BASELINE_APK")"
 fi
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -381,6 +417,27 @@ _ios_run_device() {
 # Android
 # ═════════════════════════════════════════════════════════════════════════════
 
+apk_signer_sha256() {
+    local apksigner_path="$1"
+    local apk_path="$2"
+    local verification
+    local digest
+
+    if ! verification=$("$apksigner_path" verify --print-certs "$apk_path" 2>&1); then
+        error "APK signature verification failed: $apk_path"
+        return 1
+    fi
+    digest=$(printf '%s\n' "$verification" |
+        sed -n 's/^Signer #1 certificate SHA-256 digest:[[:space:]]*\([0-9A-Fa-f]*\)[[:space:]]*$/\1/p' |
+        head -1 |
+        tr '[:upper:]' '[:lower:]')
+    if [[ -z "$digest" ]]; then
+        error "Could not read the APK signer digest: $apk_path"
+        return 1
+    fi
+    printf '%s' "$digest"
+}
+
 build_android() {
     step "Android — ${PROFILE} — ${TARGET_KIND}"
 
@@ -480,8 +537,8 @@ build_android() {
 
     cd "$ANDROID_GRADLE_DIR"
     local gradle_args=("$gradle_task")
-    if $ALLOW_DEBUG_SIGNING; then
-        gradle_args+=("-PallowDebugSigning=true")
+        if $ALLOW_DEBUG_SIGNING || $EXISTING_USER_UPDATE; then
+            gradle_args+=("-PallowDebugSigning=true")
     fi
     ./gradlew "${gradle_args[@]}" 2>&1
 
@@ -520,10 +577,22 @@ build_android() {
     cp "$apk_path" "$candidate_apk"
 
     step "Verifying signed APK"
-    if ! "$apksigner_path" verify --verbose --print-certs "$candidate_apk"; then
+    if ! "$apksigner_path" verify --verbose "$candidate_apk"; then
         rm -f "$candidate_apk"
         error "APK signature verification failed."
         exit 1
+    fi
+    if [[ "$PROFILE" == "release" ]] && ! $ALLOW_DEBUG_SIGNING; then
+        local baseline_signer
+        local candidate_signer
+        baseline_signer=$(apk_signer_sha256 "$apksigner_path" "$SIGNING_BASELINE_APK") || exit 1
+        candidate_signer=$(apk_signer_sha256 "$apksigner_path" "$candidate_apk") || exit 1
+        if [[ "$baseline_signer" != "$candidate_signer" ]]; then
+            rm -f "$candidate_apk"
+            error "APK signing key does not match the baseline APK."
+            error "Configure the exact key used for the installed release; Android will reject this APK as an update."
+            exit 1
+        fi
     fi
     if ! "$zipalign_path" -c -P 4 -v 4 "$candidate_apk"; then
         rm -f "$candidate_apk"
