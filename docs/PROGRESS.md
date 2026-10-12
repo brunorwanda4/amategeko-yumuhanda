@@ -104,6 +104,7 @@ Tracking milestones for "Amategeko y'Umuhanda" (Rwanda driving-test theory study
 
 ## Releases
 
+- [x] **Website mobile navigation** (2026-10-12): add an accessible small-screen menu for all primary pages and keep header actions within narrow viewports.
 - [x] **Version 1.0.0** (2026-10-06): aligned desktop and Android version metadata and prepared downloadable Windows and Android ARM64 release artifacts.
 - [x] **Version 1.1.0** (2026-10-06): recovered all verifiable questions from the supplied PDF, corrected answer extraction, and prepared updated Windows and Android ARM64 builds.
 - [x] **Version 1.8.0** (2026-10-08): added signed, user-confirmed self-updates from GitHub Releases for Windows and Android, including automatic checks, release notes, download verification, and native installer handoff. Fixed the Android release startup crash by preserving the Java/JNI activity bridge during R8 minification.

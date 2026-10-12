@@ -269,7 +269,13 @@ header.site-header {
 }
 
 #nd-nav > div {
-  height: 60px !important;
+  min-height: 60px !important;
+}
+
+@media (max-width: 1023px) {
+  #nd-nav > div:has(button[data-state="open"]) {
+    background: var(--color-fd-background) !important;
+  }
 }
 
 #nd-nav > div > div {
@@ -344,13 +350,6 @@ header.site-header {
 #nd-nav a[href="/download"][class*="secondary"]:hover,
 #nd-nav a[href="/download"][data-button]:hover {
   opacity: 0.9 !important;
-}
-
-/* Mobile navbar styling */
-@media (max-width: 1023px) {
-  #nd-nav .lg\:hidden {
-    display: none !important;
-  }
 }
 
 /* Focus outline */
