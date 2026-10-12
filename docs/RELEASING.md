@@ -6,8 +6,12 @@ Repository: `https://github.com/brunorwanda4/amategeko-yumuhanda`.
 
 - Create the release key once: `keytool -genkeypair -v -storetype PKCS12 -keystore amategeko-release.jks -alias amategeko -keyalg RSA -keysize 4096 -validity 10000`.
 - Put `keystore.properties` in `crates/mobile/android/`; it is git-ignored and contains `storeFile`, `storePassword`, `keyAlias`, and `keyPassword`.
-- Sign every release forever with the same key; Android refuses updates signed with a different key`.
-- Build with `crates/mobile/build.sh android --release --no-run`; the script verifies the signed and aligned APK automatically.
+- Sign every release forever with the same key; Android refuses updates signed with a different key.
+- Keep one previously published APK as the signing baseline. It must be the exact APK users installed.
+- v1.8.0 accidentally published the local debug-signed APK as the main download. Existing-user updates must retain that signer.
+- Windows: `tools/package-android.ps1 -ExistingUserUpdate -SigningBaselineApk <v1.8.0-production.apk>`.
+- macOS/Linux: `crates/mobile/build.sh android --release --no-run --existing-user-update --signing-baseline-apk <v1.8.0-production.apk>`.
+- The build fails if the new APK signer differs from the baseline, then verifies APK signing and alignment.
 - Verify manually with `apksigner verify --verbose --print-certs <apk>` and `zipalign -c -P 4 -v 4 <apk>`.
 - For local testing only, add `--allow-debug-signing`; the output ends in `-debugsigned.apk` and must never be published.
 
@@ -40,13 +44,13 @@ Repository: `https://github.com/brunorwanda4/amategeko-yumuhanda`.
 
 1. Bump workspace version in `Cargo.toml` and Android `versionCode`/`versionName`.
 2. Update `CHANGELOG.md` with release additions and fixes.
-3. Build the Windows installer (`installer/build.ps1`) and Android APK (`tools/package-android.ps1`).
+3. Build the Windows installer (`installer/build.ps1`) and Android APK (`tools/package-android.ps1 -ExistingUserUpdate -SigningBaselineApk <v1.8.0-production.apk>`).
 4. Sign the installer and APK with minisign (`minisign -Sm <file> -s "$HOME\Documents\AmategekoSigning\update.key"`).
 5. Tag `v<version>` equal to the Cargo version.
 6. Upload release files and `.minisig` signatures to GitHub Releases.
 7. Paste the release notes as the release body.
 8. Publish the release (not draft, not prerelease).
-9. Test the update from an older build.
+9. Test the update from an older build before publishing. Never upload a `debugsigned` APK.
 
 The updater calls `GET /repos/brunorwanda4/amategeko-yumuhanda/releases/latest`,
 which excludes drafts and prereleases, and reads `tag_name`, `body`, and assets.
