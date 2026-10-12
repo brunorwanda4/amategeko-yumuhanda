@@ -104,6 +104,7 @@ Tracking milestones for "Amategeko y'Umuhanda" (Rwanda driving-test theory study
 
 ## Releases
 
+- [x] **Android quiz swipe navigation fix** (2026-10-12): consume gpui-mobile's phased touch-pan scroll events so Easy, Medium, and Study question swipes work without breaking option taps or vertical scrolling; verified on a Samsung SM-A055F running Android 15.
 - [x] **Website mobile navigation** (2026-10-12): add an accessible small-screen menu for all primary pages and keep header actions within narrow viewports.
 - [x] **Version 1.0.0** (2026-10-06): aligned desktop and Android version metadata and prepared downloadable Windows and Android ARM64 release artifacts.
 - [x] **Version 1.1.0** (2026-10-06): recovered all verifiable questions from the supplied PDF, corrected answer extraction, and prepared updated Windows and Android ARM64 builds.

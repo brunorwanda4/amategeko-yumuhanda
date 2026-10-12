@@ -205,6 +205,111 @@ impl QuizView {
                 None => {}
             }
         });
+        let swipe_scroll_clock = swipe_clock.clone();
+        let on_swipe_scroll = cx.listener(move |this, event: &ScrollWheelEvent, window, cx| {
+            let delta = event.delta.pixel_delta(px(16.0));
+            match event.touch_phase {
+                TouchPhase::Started => {
+                    let start = (event.position.x.as_f32(), event.position.y.as_f32());
+                    let screen_width = window.bounds().size.width.as_f32();
+                    if start.0 < SWIPE_EDGE_GUARD || start.0 > screen_width - SWIPE_EDGE_GUARD {
+                        SWIPE_GESTURE.with_borrow_mut(|gesture| *gesture = None);
+                        return;
+                    }
+                    let last = (start.0 + delta.x.as_f32(), start.1 + delta.y.as_f32());
+                    let dx = (last.0 - start.0).abs();
+                    let dy = (last.1 - start.1).abs();
+                    let axis = if dx.max(dy) < SWIPE_AXIS_LOCK_DISTANCE {
+                        SwipeAxis::Pending
+                    } else if dx >= dy {
+                        SwipeAxis::Horizontal
+                    } else {
+                        SwipeAxis::Cancelled
+                    };
+                    SWIPE_GESTURE.with_borrow_mut(|gesture| {
+                        *gesture = Some(SwipeGesture {
+                            start,
+                            last,
+                            started_ms: swipe_scroll_clock.now_millis(),
+                            screen_width,
+                            axis,
+                            recognized: false,
+                        });
+                    });
+                }
+                TouchPhase::Moved => {
+                    SWIPE_GESTURE.with_borrow_mut(|slot| {
+                        let Some(mut gesture) = *slot else {
+                            return;
+                        };
+                        gesture.last.0 += delta.x.as_f32();
+                        gesture.last.1 += delta.y.as_f32();
+                        let dx = (gesture.last.0 - gesture.start.0).abs();
+                        let dy = (gesture.last.1 - gesture.start.1).abs();
+                        if gesture.axis == SwipeAxis::Pending
+                            && dx.max(dy) >= SWIPE_AXIS_LOCK_DISTANCE
+                        {
+                            gesture.axis = if dx >= dy {
+                                SwipeAxis::Horizontal
+                            } else {
+                                SwipeAxis::Cancelled
+                            };
+                        }
+                        *slot = Some(gesture);
+                    });
+                }
+                TouchPhase::Ended => {
+                    let gesture = SWIPE_GESTURE.with_borrow_mut(Option::take);
+                    let Some(mut gesture) = gesture else {
+                        return;
+                    };
+                    gesture.last.0 += delta.x.as_f32();
+                    gesture.last.1 += delta.y.as_f32();
+                    if gesture.axis != SwipeAxis::Horizontal {
+                        return;
+                    }
+                    let Some(direction) = swipe_decision(
+                        gesture.start,
+                        gesture.last,
+                        swipe_scroll_clock
+                            .now_millis()
+                            .saturating_sub(gesture.started_ms),
+                        gesture.screen_width,
+                        SWIPE_EDGE_GUARD,
+                    ) else {
+                        return;
+                    };
+                    cx.stop_propagation();
+                    match quiz_swipe_target(
+                        swipe_mode,
+                        current_idx,
+                        total_questions,
+                        swipe_answered,
+                        direction,
+                    ) {
+                        Some(target) if target > current_idx => {
+                            SWIPE_TRANSITION.set(Some(direction));
+                            on_next(this, window, cx);
+                        }
+                        Some(_) => {
+                            SWIPE_TRANSITION.set(Some(direction));
+                            on_prev(this, window, cx);
+                        }
+                        None if (direction == Direction::Left) == SWIPE_NEXT_ON_LEFT
+                            && !swipe_answered
+                            && current_idx + 1 < total_questions =>
+                        {
+                            SWIPE_NUDGE.set(true);
+                            cx.notify();
+                        }
+                        None => {}
+                    }
+                }
+                TouchPhase::Cancelled => {
+                    SWIPE_GESTURE.with_borrow_mut(|gesture| *gesture = None);
+                }
+            }
+        });
 
         let next_btn_label = if is_hard {
             t("quiz.confirm_answer", lang)
@@ -771,6 +876,7 @@ impl QuizView {
                                 *slot = Some(gesture);
                             });
                         })
+                        .on_scroll_wheel(on_swipe_scroll)
                         .capture_any_mouse_up(on_swipe_up)
                     })
                     .flex()
@@ -1080,6 +1186,9 @@ impl QuizView {
                                             .pt_2()
                                             .on_mouse_down(MouseButton::Left, |_, _, _| {
                                                 SwipeGuard::claim();
+                                            })
+                                            .on_scroll_wheel(|_, _, cx| {
+                                                cx.stop_propagation();
                                             })
                                             // Previous button (Left)
                                             .child({

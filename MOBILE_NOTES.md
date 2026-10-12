@@ -23,6 +23,7 @@ Findings, constraints, and architecture notes for running "Amategeko y'Umuhanda"
   - **Fallback**: The "Ibibazo" screen supports numeric question lookup with large on-screen button filters so users are never blocked by virtual keyboard or IME quirks.
 - **Touch Scrolling vs Taps**:
   - `gpui-mobile` translates touch events into mouse/pointer events with momentum scrolling.
+  - On the current Android bridge, finger pans arrive at GPUI elements as phased `ScrollWheelEvent`s. Quiz swipe navigation must accumulate the horizontal pixel deltas through `Started`, `Moved`, and `Ended`; mouse drag listeners only receive synthesized taps and do not observe the pan.
   - Option cards have explicit padding and minimum touch targets >= 44x44 px (buttons >= 48px high) to avoid accidental triggers during scrolls.
 - **Safe Area Insets**:
   - Top app bar accounts for camera cutouts / status bar.
