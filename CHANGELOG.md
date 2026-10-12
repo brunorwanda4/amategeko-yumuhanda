@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.3] - 2026-10-12
+
+### Added
+- Swipe gesture navigation for quiz questions on mobile (swipe left for next, swipe right for previous)
+- Mode-specific swipe rules: Easy/Study require answer before advancing, Medium allows free navigation both ways, Hard mode disables swiping
+- Nudge card animation when attempting to advance on an unanswered question
+- Direction-aware slide transition animation between questions
+- One-time swipe navigation tip on first answered question on mobile
+- Dedicated `swipe_nav` toggle in Settings
+
+### Fixed
+- Gesture disambiguation between option tapping, vertical scrolling, header buttons, and system back edge zones
+
 ## [1.8.0] - 2026-10-11
 
 ### Added
