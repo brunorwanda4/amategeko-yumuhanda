@@ -1,6 +1,6 @@
 use crate::state::AppState;
 use crate::ui::footer::AppFooter;
-use crate::ui::layout::{page_column, page_max_width, PagePadding as _};
+use crate::ui::layout::{page_column, page_max_width, PagePadding as _, SwipeGuard};
 use crate::ui::scroll::{vertical_scrollbar, DragScroll};
 use ::gpui::InteractiveElement as _;
 use amategeko_core::{t, tf, Language, ThemeMode};
@@ -573,7 +573,7 @@ impl SettingsView {
                                             on_action(this, SettingsAction::ToggleShuffleOptions, window, cx);
                                         },
                                     ))
-                                    .when(!is_desktop && crate::is_native_mobile(), |el| {
+                                    .when(!is_desktop, |el| {
                                         el.child(Self::render_divider(&colors)).child(
                                             Self::render_switch_row(
                                                 t("settings.swipe", lang),
@@ -1053,11 +1053,17 @@ impl SettingsView {
                     .child(div().text_xs().child(subtitle)),
             )
             .child(
-                Switch::new(switch_id)
-                    .checked(is_checked)
-                    .on_click(cx.listener(move |this, _, window, cx| {
-                        on_toggle(this, window, cx);
-                    })),
+                div()
+                    .capture_any_mouse_down(|_, _, _| {
+                        SwipeGuard::claim();
+                    })
+                    .child(
+                        Switch::new(switch_id)
+                            .checked(is_checked)
+                            .on_click(cx.listener(move |this, _, window, cx| {
+                                on_toggle(this, window, cx);
+                            })),
+                    ),
             )
     }
 
@@ -1171,6 +1177,12 @@ impl SettingsView {
                     .text_color(colors.foreground)
                     .child(format!("{value} {unit}")),
             )
-            .child(Slider::new(&slider_state).w(px(160.0)))
+            .child(
+                div()
+                    .capture_any_mouse_down(|_, _, _| {
+                        SwipeGuard::claim();
+                    })
+                    .child(Slider::new(&slider_state).w(px(160.0))),
+            )
     }
 }

@@ -36,23 +36,12 @@ struct SwipeGesture {
     recognized: bool,
 }
 
-struct SwipeGuard;
+use crate::ui::layout::SwipeGuard;
 
 thread_local! {
     static SWIPE_GESTURE: RefCell<Option<SwipeGesture>> = const { RefCell::new(None) };
-    static SWIPE_GUARDED: Cell<bool> = const { Cell::new(false) };
     static SWIPE_NUDGE: Cell<bool> = const { Cell::new(false) };
     static SWIPE_TRANSITION: Cell<Option<Direction>> = const { Cell::new(None) };
-}
-
-impl SwipeGuard {
-    fn claim() {
-        SWIPE_GUARDED.set(true);
-    }
-
-    fn take() -> bool {
-        SWIPE_GUARDED.replace(false)
-    }
 }
 
 impl QuizView {

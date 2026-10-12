@@ -43,6 +43,22 @@ pub fn swipe_decision(
     })
 }
 
+pub fn target_page(current_index: usize, dir: Direction, count: usize) -> Option<usize> {
+    if count == 0 || current_index >= count {
+        return None;
+    }
+    match dir {
+        Direction::Left => {
+            if current_index + 1 < count {
+                Some(current_index + 1)
+            } else {
+                None
+            }
+        }
+        Direction::Right => current_index.checked_sub(1),
+    }
+}
+
 pub fn quiz_swipe_target(
     mode: QuizMode,
     index: usize,
@@ -53,7 +69,7 @@ pub fn quiz_swipe_target(
     quiz_swipe_target_with_direction(mode, index, total, answered, direction, SWIPE_NEXT_ON_LEFT)
 }
 
-fn quiz_swipe_target_with_direction(
+pub fn quiz_swipe_target_with_direction(
     mode: QuizMode,
     index: usize,
     total: usize,
@@ -381,7 +397,58 @@ mod length_tests {
 
 #[cfg(test)]
 mod swipe_tests {
-    use super::{quiz_swipe_target, quiz_swipe_target_with_direction, Direction};
+    use super::{
+        quiz_swipe_target, quiz_swipe_target_with_direction, swipe_decision, target_page, Direction,
+    };
+    #[test]
+    fn test_swipe_decision_and_target_page() {
+        let screen_w = 360.0;
+        let edge = 24.0;
+
+        // short drag is ignored
+        assert_eq!(
+            swipe_decision((100.0, 200.0), (140.0, 200.0), 200, screen_w, edge),
+            None
+        );
+
+        // mostly vertical drag is ignored
+        assert_eq!(
+            swipe_decision((100.0, 200.0), (200.0, 260.0), 200, screen_w, edge),
+            None
+        );
+
+        // long fast horizontal drag works in both directions
+        assert_eq!(
+            swipe_decision((200.0, 200.0), (100.0, 200.0), 200, screen_w, edge),
+            Some(Direction::Left)
+        );
+        assert_eq!(
+            swipe_decision((100.0, 200.0), (200.0, 200.0), 200, screen_w, edge),
+            Some(Direction::Right)
+        );
+
+        // start inside edge zone is ignored
+        assert_eq!(
+            swipe_decision((10.0, 200.0), (200.0, 200.0), 200, screen_w, edge),
+            None
+        );
+        assert_eq!(
+            swipe_decision((350.0, 200.0), (150.0, 200.0), 200, screen_w, edge),
+            None
+        );
+
+        // first page + swipe right and last page + swipe left return None
+        let total_pages = 5;
+        assert_eq!(target_page(0, Direction::Right, total_pages), None);
+        assert_eq!(
+            target_page(total_pages - 1, Direction::Left, total_pages),
+            None
+        );
+
+        // valid navigation moves
+        assert_eq!(target_page(0, Direction::Left, total_pages), Some(1));
+        assert_eq!(target_page(1, Direction::Right, total_pages), Some(0));
+    }
     use crate::models::QuizMode;
 
     #[test]
@@ -427,7 +494,7 @@ mod swipe_tests {
             None
         );
         assert_eq!(
-            quiz_swipe_target_with_direction(QuizMode::Hagati, 1, 3, false, Direction::Left, false,),
+            quiz_swipe_target_with_direction(QuizMode::Hagati, 1, 3, false, Direction::Left, false),
             Some(0)
         );
     }

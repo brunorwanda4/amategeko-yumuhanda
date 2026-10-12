@@ -1,5 +1,5 @@
 use crate::state::AppState;
-use crate::ui::layout::{page_column, PagePadding as _};
+use crate::ui::layout::{page_column, PagePadding as _, SwipeGuard};
 use crate::ui::scroll::{vertical_scrollbar, DragScroll};
 use ::gpui::InteractiveElement as _;
 use amategeko_core::{t, tf, StatsCalculator, StatsFilter};
@@ -270,6 +270,9 @@ impl StatsView {
                     // 4. Bar Chart Card (Scores of the last 10 attempts)
                     .child(
                         div()
+                            .capture_any_mouse_down(|_, _, _| {
+                                SwipeGuard::claim();
+                            })
                             .flex()
                             .flex_col()
                             .p_3p5()

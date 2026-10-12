@@ -34,3 +34,21 @@ pub fn page_column() -> Div {
         .max_w(page_max_width())
         .mx_auto()
 }
+
+use std::cell::Cell;
+
+pub struct SwipeGuard;
+
+thread_local! {
+    static SWIPE_GUARDED: Cell<bool> = const { Cell::new(false) };
+}
+
+impl SwipeGuard {
+    pub fn claim() {
+        SWIPE_GUARDED.set(true);
+    }
+
+    pub fn take() -> bool {
+        SWIPE_GUARDED.replace(false)
+    }
+}

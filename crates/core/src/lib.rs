@@ -31,9 +31,9 @@ pub use models::*;
 pub use platform::SystemClock;
 pub use platform::{Clock, InMemoryStorage, MockClock, Storage};
 pub use quiz::{
-    effective_length, pass_threshold, quiz_swipe_target, swipe_decision, time_for, Direction,
-    QuizEngine, SWIPE_AXIS_LOCK_DISTANCE, SWIPE_EDGE_GUARD, SWIPE_MAX_DURATION_MS,
-    SWIPE_MIN_DISTANCE, SWIPE_NEXT_ON_LEFT,
+    effective_length, pass_threshold, quiz_swipe_target, quiz_swipe_target_with_direction,
+    swipe_decision, target_page, time_for, Direction, QuizEngine, SWIPE_AXIS_LOCK_DISTANCE,
+    SWIPE_EDGE_GUARD, SWIPE_MAX_DURATION_MS, SWIPE_MIN_DISTANCE, SWIPE_NEXT_ON_LEFT,
 };
 pub use stats::{
     MostMissedQuestion, RecentAttemptStat, StatsCalculator, StatsFilter, StatsSummary,

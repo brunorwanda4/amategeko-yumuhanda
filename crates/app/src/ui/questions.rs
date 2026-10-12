@@ -1,5 +1,5 @@
 use crate::state::AppState;
-use crate::ui::layout::{page_column, PagePadding as _};
+use crate::ui::layout::{page_column, PagePadding as _, SwipeGuard};
 use crate::ui::scroll::{vertical_scrollbar, DragScroll};
 use ::gpui::InteractiveElement as _;
 use amategeko_core::{t, Language, Question};
@@ -692,6 +692,7 @@ impl QuestionsView {
                                 .flex_shrink_0()
                                 .cursor_text()
                                 .capture_any_mouse_down(move |_, window, cx| {
+                                    SwipeGuard::claim();
                                     focus_input.update(cx, |input, cx| input.focus(window, cx));
                                 })
                                 .child(
@@ -895,6 +896,7 @@ impl QuestionsView {
                                 .min_w_0()
                                 .cursor_text()
                                 .capture_any_mouse_down(move |_, window, cx| {
+                                    SwipeGuard::claim();
                                     focus_input.update(cx, |input, cx| input.focus(window, cx));
                                 })
                                 .child(
@@ -1028,6 +1030,9 @@ impl QuestionsView {
                             parent.child(
                                 div()
                                     .id("mobile_filters_horizontal_scroll")
+                                    .capture_any_mouse_down(|_, _, _| {
+                                        SwipeGuard::claim();
+                                    })
                                     .flex()
                                     .flex_row()
                                     .items_center()

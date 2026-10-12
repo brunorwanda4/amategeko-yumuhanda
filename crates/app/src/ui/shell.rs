@@ -4,6 +4,7 @@ use crate::ui::home::{HomeAction, HomeProps, HomeView};
 use crate::ui::questions::{QuestionsFilter, QuestionsView};
 use crate::ui::quiz::QuizView;
 
+use crate::ui::layout::SwipeGuard;
 use crate::ui::results::{ResultFilter, ResultsView};
 use crate::ui::scroll::{configure_scrollbar_motion, vertical_scrollbar, ScrollbarContext};
 use crate::ui::settings::{SettingsAction, SettingsView};
@@ -13,8 +14,9 @@ use ::gpui::InteractiveElement as _;
 #[cfg(feature = "self-update")]
 use amategeko_core::tf;
 use amategeko_core::{
-    t, QuestionSet, QuizEngine, QuizMode, QuizTimer, StatsFilter, Strings, TimerLevel, TimerState,
-    TimerTracker,
+    swipe_decision, t, target_page, Direction, QuestionSet, QuizEngine, QuizMode, QuizTimer,
+    StatsFilter, Strings, TimerLevel, TimerState, TimerTracker, SWIPE_AXIS_LOCK_DISTANCE,
+    SWIPE_EDGE_GUARD,
 };
 use gpui_kit::assets::IconName;
 use gpui_kit::base::StyledExt;
@@ -26,6 +28,35 @@ use gpui_kit::component::tooltip::Tooltip;
 use gpui_kit::component::{ActiveTheme, Icon};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
+
+pub const MOBILE_PAGE_ORDER: [Screen; 5] = [
+    Screen::Home,
+    Screen::Quiz,
+    Screen::Questions,
+    Screen::Stats,
+    Screen::Settings,
+];
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ShellSwipeAxis {
+    Pending,
+    Horizontal,
+    Cancelled,
+}
+
+#[derive(Debug, Clone, Copy)]
+struct ShellSwipeGesture {
+    start: (f32, f32),
+    last: (f32, f32),
+    started_ms: u64,
+    screen_width: f32,
+    axis: ShellSwipeAxis,
+}
+
+thread_local! {
+    static SHELL_SWIPE_GESTURE: std::cell::RefCell<Option<ShellSwipeGesture>> = const { std::cell::RefCell::new(None) };
+    static SHELL_SWIPE_TRANSITION: std::cell::Cell<Option<Direction>> = const { std::cell::Cell::new(None) };
+}
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct SafeArea {
@@ -1550,6 +1581,103 @@ impl Render for ShellView {
                         .child(content),
                 )
         } else {
+            let is_dialog_open = self.show_help_dialog
+                || self.show_finish_confirm_dialog
+                || self.show_study_jump_dialog
+                || self.show_study_restart_dialog
+                || self.show_study_finished_dialog
+                || self.stats_confirm_clear
+                || self.settings_confirm_clear;
+            #[cfg(feature = "self-update")]
+            let is_dialog_open =
+                is_dialog_open || self.show_update_notes || self.show_update_confirm;
+
+            let search_input_focused = self
+                .questions_search_input
+                .read(cx)
+                .focus_handle(cx)
+                .is_focused(window);
+            let is_keyboard_open = self.questions_search_focused || search_input_focused;
+
+            let current_page_index = MOBILE_PAGE_ORDER
+                .iter()
+                .position(|s| *s == self.state.active_screen);
+
+            let swipe_allowed = !is_desktop
+                && self.state.settings.swipe_nav
+                && !is_in_quiz
+                && self.state.active_screen != Screen::Results
+                && !is_dialog_open
+                && !self.show_questions_filters_sheet
+                && !is_keyboard_open
+                && current_page_index.is_some();
+
+            let swipe_clock = self.state.clock.clone();
+            let swipe_up_clock = swipe_clock.clone();
+            let swipe_pages_count = MOBILE_PAGE_ORDER.len();
+
+            let on_shell_swipe_up = cx.listener(move |this, event: &MouseUpEvent, window, cx| {
+                let gesture = SHELL_SWIPE_GESTURE.with_borrow_mut(Option::take);
+                let Some(gesture) = gesture else {
+                    return;
+                };
+                if gesture.axis != ShellSwipeAxis::Horizontal {
+                    return;
+                }
+                let end = (event.position.x.as_f32(), event.position.y.as_f32());
+                let Some(direction) = swipe_decision(
+                    gesture.start,
+                    end,
+                    swipe_up_clock
+                        .now_millis()
+                        .saturating_sub(gesture.started_ms),
+                    gesture.screen_width,
+                    SWIPE_EDGE_GUARD,
+                ) else {
+                    return;
+                };
+
+                let current_idx = MOBILE_PAGE_ORDER
+                    .iter()
+                    .position(|s| *s == this.state.active_screen);
+
+                if let Some(curr) = current_idx {
+                    if let Some(target_idx) = target_page(curr, direction, swipe_pages_count) {
+                        cx.stop_propagation();
+                        if this.questions_search_focused {
+                            this.set_questions_search_focused(false, Some(window), cx);
+                        }
+                        this.show_questions_filters_sheet = false;
+                        let target_screen = MOBILE_PAGE_ORDER[target_idx].clone();
+                        SHELL_SWIPE_TRANSITION.set(Some(direction));
+                        this.state.navigate(target_screen);
+                        this.save_dev_state();
+                        cx.notify();
+                    }
+                }
+            });
+
+            let swipe_transition = SHELL_SWIPE_TRANSITION.replace(None);
+            let animated_content = if let Some(direction) = swipe_transition {
+                let start = if direction == Direction::Left {
+                    32.0
+                } else {
+                    -32.0
+                };
+                div()
+                    .size_full()
+                    .min_h_0()
+                    .with_animation(
+                        "shell-swipe-enter",
+                        Animation::new(Duration::from_millis(180)),
+                        move |el, progress| el.relative().left(px(start * (1.0 - progress))),
+                    )
+                    .child(content)
+                    .into_any_element()
+            } else {
+                content.into_any_element()
+            };
+
             // Mobile Layout: Top App Bar + Content + Bottom Bar (hidden in quiz)
             div()
                 .flex()
@@ -1565,7 +1693,59 @@ impl Render for ShellView {
                         .min_h_0()
                         .w_full()
                         .overflow_hidden()
-                        .child(content),
+                        .when(swipe_allowed, |el| {
+                            let down_clock = swipe_clock.clone();
+                            el.on_mouse_down(MouseButton::Left, move |event, window, _| {
+                                if SwipeGuard::take() {
+                                    SHELL_SWIPE_GESTURE.with_borrow_mut(|g| *g = None);
+                                    return;
+                                }
+                                let start = (event.position.x.as_f32(), event.position.y.as_f32());
+                                let screen_width = window.bounds().size.width.as_f32();
+                                if start.0 < SWIPE_EDGE_GUARD
+                                    || start.0 > screen_width - SWIPE_EDGE_GUARD
+                                {
+                                    SHELL_SWIPE_GESTURE.with_borrow_mut(|g| *g = None);
+                                    return;
+                                }
+                                SHELL_SWIPE_GESTURE.with_borrow_mut(|g| {
+                                    *g = Some(ShellSwipeGesture {
+                                        start,
+                                        last: start,
+                                        started_ms: down_clock.now_millis(),
+                                        screen_width,
+                                        axis: ShellSwipeAxis::Pending,
+                                    });
+                                });
+                            })
+                            .on_mouse_move(move |event, _, _| {
+                                if event.pressed_button != Some(MouseButton::Left) {
+                                    SHELL_SWIPE_GESTURE.with_borrow_mut(|g| *g = None);
+                                    return;
+                                }
+                                SHELL_SWIPE_GESTURE.with_borrow_mut(|slot| {
+                                    let Some(mut gesture) = *slot else {
+                                        return;
+                                    };
+                                    gesture.last =
+                                        (event.position.x.as_f32(), event.position.y.as_f32());
+                                    let dx = (gesture.last.0 - gesture.start.0).abs();
+                                    let dy = (gesture.last.1 - gesture.start.1).abs();
+                                    if gesture.axis == ShellSwipeAxis::Pending
+                                        && dx.max(dy) >= SWIPE_AXIS_LOCK_DISTANCE
+                                    {
+                                        gesture.axis = if dx >= dy {
+                                            ShellSwipeAxis::Horizontal
+                                        } else {
+                                            ShellSwipeAxis::Cancelled
+                                        };
+                                    }
+                                    *slot = Some(gesture);
+                                });
+                            })
+                            .capture_any_mouse_up(on_shell_swipe_up)
+                        })
+                        .child(animated_content),
                 )
                 .when(!is_in_quiz, |el| {
                     el.child(self.render_mobile_bottom_bar(cx))
