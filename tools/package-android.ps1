@@ -1,11 +1,20 @@
 param(
     [switch]$Play,
     [switch]$AllowDebugSigning,
+    [switch]$ExistingUserUpdate,
+    [string]$SigningBaselineApk,
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$ExtraArgs
 )
 
 $ErrorActionPreference = "Stop"
+
+if ($AllowDebugSigning -and $ExistingUserUpdate) {
+    throw "Choose either -AllowDebugSigning or -ExistingUserUpdate, not both."
+}
+if ($Play -and $ExistingUserUpdate) {
+    throw "-ExistingUserUpdate is only valid for the sideload APK."
+}
 
 foreach ($arg in $ExtraArgs) {
     if ($arg -eq "--allow-debug-signing") {
@@ -43,6 +52,31 @@ if (-not (Test-Path -LiteralPath $apkSigner) -or -not (Test-Path -LiteralPath $z
     throw "Android SDK apksigner and zipalign were not found under build-tools"
 }
 
+if (-not $Play -and -not $AllowDebugSigning) {
+    if ([string]::IsNullOrWhiteSpace($SigningBaselineApk)) {
+        throw "A publishable sideload APK requires -SigningBaselineApk pointing to an APK already installed by users. This prevents incompatible signing-key changes."
+    }
+    if (-not (Test-Path -LiteralPath $SigningBaselineApk -PathType Leaf)) {
+        throw "Signing baseline APK not found: $SigningBaselineApk"
+    }
+    $SigningBaselineApk = (Resolve-Path -LiteralPath $SigningBaselineApk).Path
+}
+
+function Get-ApkSignerSha256 {
+    param([Parameter(Mandatory = $true)][string]$ApkPath)
+
+    $verification = & $apkSigner verify --print-certs $ApkPath 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        throw "APK signature verification failed: $ApkPath"
+    }
+    foreach ($line in $verification) {
+        if ([string]$line -match '^Signer #1 certificate SHA-256 digest:\s*([0-9a-fA-F]+)\s*$') {
+            return $Matches[1].ToLowerInvariant()
+        }
+    }
+    throw "Could not read the APK signer digest: $ApkPath"
+}
+
 $jniDir = "crates\mobile\android\app\src\main\jniLibs"
 $jniAbiDir = Join-Path $jniDir "arm64-v8a"
 if (Test-Path -LiteralPath $jniAbiDir) {
@@ -68,7 +102,7 @@ Remove-Item -LiteralPath $source -Force -ErrorAction SilentlyContinue
 Push-Location "crates\mobile\android"
 try {
     $gradleArgs = @($gradleTask)
-    if ($AllowDebugSigning) {
+    if ($AllowDebugSigning -or $ExistingUserUpdate) {
         $gradleArgs += "-PallowDebugSigning=true"
     }
     & .\gradlew.bat @gradleArgs
@@ -93,10 +127,19 @@ $candidate = "dist\.amategeko-yumuhanda-$version-$suffix.candidate.apk"
 Remove-Item -LiteralPath $candidate, $destination -Force -ErrorAction SilentlyContinue
 Copy-Item -LiteralPath $source -Destination $candidate
 
-& $apkSigner verify --verbose --print-certs $candidate
+& $apkSigner verify --verbose $candidate
 if ($LASTEXITCODE -ne 0) {
     Remove-Item -LiteralPath $candidate -Force -ErrorAction SilentlyContinue
     throw "APK signature verification failed"
+}
+
+if (-not $Play -and -not $AllowDebugSigning) {
+    $baselineSigner = Get-ApkSignerSha256 -ApkPath $SigningBaselineApk
+    $candidateSigner = Get-ApkSignerSha256 -ApkPath $candidate
+    if ($baselineSigner -ne $candidateSigner) {
+        Remove-Item -LiteralPath $candidate -Force -ErrorAction SilentlyContinue
+        throw "APK signing key does not match the baseline APK. Configure the exact key used for the installed release; Android will reject this APK as an update."
+    }
 }
 
 & $zipAlign -c -P 4 -v 4 $candidate

@@ -53,8 +53,6 @@ captures/
 keystore.properties
 key.properties
 google-services.json
-.env
-.env.*
 !.env.example
 
 # ---------------------------------------------------------------
@@ -101,7 +99,6 @@ dev_state.json
 # Editors and IDEs
 # ---------------------------------------------------------------
 .idea/
-.vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
 *.iml
@@ -110,7 +107,6 @@ dev_state.json
 *~
 .fleet/
 .zed/
-.vscode
 
 # ---------------------------------------------------------------
 # Operating system
@@ -176,3 +172,4 @@ website/public/runtime/
 website/public/assets/
 
 crates/web/generated/
+config.bat
