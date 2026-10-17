@@ -1,5 +1,8 @@
 # Signed releases
 
+Regenerate bundled Rust dependency notices with `powershell -ExecutionPolicy Bypass -File scripts/generate-third-party-licenses.ps1`.
+Commit the resulting `assets/THIRD_PARTY_LICENSES.txt` with dependency changes.
+
 Repository: `https://github.com/brunorwanda4/amategeko-yumuhanda`.
 
 ### Android APK

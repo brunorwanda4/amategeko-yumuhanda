@@ -4,7 +4,7 @@ Every image, icon, and font used in the documentation website is listed here.
 
 | Path | Source | Licence | Credit required |
 |---|---|---|---|
-| `website/public/logo.png` | Provided by repository owner (brunorwanda4) | Proprietary — all rights reserved | Yes |
+| `website/public/logo.png` | Created by [Rwanda Bruno](https://github.com/brunorwanda4); Gemini helped with ideas | Proprietary — all rights reserved | Yes |
 | `website/public/favicon.png` | Same as logo.png | Proprietary — all rights reserved | Yes |
 
 | `website/components/canvasui/Ripple.tsx` | [Canvas UI Ripple](https://canvasui.dev/docs/components/ripple) by David Haz | MIT + Commons Clause | No |

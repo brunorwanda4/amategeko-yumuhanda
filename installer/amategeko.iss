@@ -50,6 +50,7 @@ Name: "desktopicon"; Description: "{cm:DesktopShortcut}"
 
 [Files]
 Source: "..\target\release\amategeko.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\assets\THIRD_PARTY_LICENSES.txt"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{autoprograms}\Amategeko y'Umuhanda"; Filename: "{app}\amategeko.exe"

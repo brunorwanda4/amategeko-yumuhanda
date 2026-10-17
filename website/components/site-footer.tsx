@@ -10,6 +10,7 @@ const productLinks = [
 ] as const;
 
 const projectLinks = [
+  ["Credits", "/credits"],
   ["GitHub", REPO_URL],
   ["Releases", RELEASES_URL],
   ["Report an issue", ISSUES_URL],
@@ -35,7 +36,7 @@ export function SiteFooter() {
           </p>
         </div>
         <FooterColumn title="Product" links={productLinks} />
-        <FooterColumn title="Project" links={projectLinks} external />
+        <FooterColumn title="Project" links={projectLinks} />
       </div>
       <div className="border-t border-border">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-6 py-5 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-8">
@@ -58,17 +59,15 @@ export function SiteFooter() {
 function FooterColumn({
   title,
   links,
-  external = false,
 }: {
   title: string;
   links: ReadonlyArray<readonly [string, string]>;
-  external?: boolean;
 }) {
   return (
     <nav aria-label={`${title} links`} className="flex flex-col gap-2.5 text-sm">
       <h2 className="font-semibold text-foreground text-sm tracking-tight">{title}</h2>
       {links.map(([label, href]) =>
-        external ? (
+        href.startsWith("http") ? (
           <a
             key={label}
             href={href}
