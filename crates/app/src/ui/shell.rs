@@ -237,6 +237,8 @@ pub struct ShellView {
     pub questions_expanded: HashSet<u32>,
     pub questions_revealed: HashMap<u32, String>,
     pub settings_confirm_clear: bool,
+    pub show_credits: bool,
+    pub show_licenses: bool,
     pub stats_confirm_clear: bool,
     pub focus_mode: bool,
     pub focus_handle: FocusHandle,
@@ -439,6 +441,8 @@ impl ShellView {
             questions_expanded: HashSet::new(),
             questions_revealed: HashMap::new(),
             settings_confirm_clear: false,
+            show_credits: false,
+            show_licenses: false,
             stats_confirm_clear: false,
             focus_mode: false,
             focus_handle: cx.focus_handle(),
@@ -794,6 +798,12 @@ impl ShellView {
             true
         } else if self.settings_confirm_clear {
             self.settings_confirm_clear = false;
+            true
+        } else if self.show_licenses {
+            self.show_licenses = false;
+            true
+        } else if self.show_credits {
+            self.show_credits = false;
             true
         } else if self.questions_search_focused {
             self.set_questions_search_focused(false, window.as_deref_mut(), cx);
@@ -1413,6 +1423,8 @@ impl Render for ShellView {
                 &self.settings_scroll_handle,
                 reveal_scrollbar,
                 self.settings_confirm_clear,
+                self.show_credits,
+                self.show_licenses,
                 window,
                 cx,
                 |this, action, window, cx| {
@@ -1544,6 +1556,24 @@ impl Render for ShellView {
                         SettingsAction::CheckUpdates => {
                             #[cfg(feature = "self-update")]
                             this.start_update_check(cx);
+                        }
+                        SettingsAction::OpenCredits => {
+                            this.show_credits = true;
+                            this.show_licenses = false;
+                            this.settings_scroll_handle = ::gpui::ScrollHandle::default();
+                        }
+                        SettingsAction::CloseCredits => {
+                            this.show_credits = false;
+                            this.show_licenses = false;
+                            this.settings_scroll_handle = ::gpui::ScrollHandle::default();
+                        }
+                        SettingsAction::OpenLicenses => {
+                            this.show_licenses = true;
+                            this.settings_scroll_handle = ::gpui::ScrollHandle::default();
+                        }
+                        SettingsAction::CloseLicenses => {
+                            this.show_licenses = false;
+                            this.settings_scroll_handle = ::gpui::ScrollHandle::default();
                         }
                     }
                     cx.notify();
@@ -3234,13 +3264,21 @@ impl ShellView {
         let colors = theme.colors;
         let lang = self.state.settings.language;
 
-        let title = match self.state.active_screen {
-            Screen::Home => t("app.title", lang),
-            Screen::Quiz => t("nav.quiz", lang),
-            Screen::Results => t("results.title", lang),
-            Screen::Questions => t("nav.questions", lang),
-            Screen::Stats => t("nav.stats", lang),
-            Screen::Settings => t("nav.settings", lang),
+        let title = if self.state.active_screen == Screen::Settings && self.show_credits {
+            if self.show_licenses {
+                t("credits.licenses", lang)
+            } else {
+                t("credits.title", lang)
+            }
+        } else {
+            match self.state.active_screen {
+                Screen::Home => t("app.title", lang),
+                Screen::Quiz => t("nav.quiz", lang),
+                Screen::Results => t("results.title", lang),
+                Screen::Questions => t("nav.questions", lang),
+                Screen::Stats => t("nav.stats", lang),
+                Screen::Settings => t("nav.settings", lang),
+            }
         };
 
         div()
