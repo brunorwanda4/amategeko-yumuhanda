@@ -28,6 +28,8 @@ if (-not $version) {
 
 Push-Location $projectRoot
 try {
+    & (Join-Path $projectRoot "scripts\generate-third-party-licenses.ps1")
+
     cargo build -p desktop --release
     if ($LASTEXITCODE -ne 0) {
         throw "The release build failed with exit code $LASTEXITCODE"

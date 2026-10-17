@@ -283,6 +283,10 @@ python extract_questions.py
 
 ---
 
+## Acknowledgements
+
+Thank you to the people and communities behind [Rust](https://www.rust-lang.org/), [GPUI](https://gpui.rs/), [GPUI Kit](https://gpui-kit.com/), [Next.js](https://nextjs.org/), and [Fumadocs](https://fumadocs.dev/). See the complete [credits and licenses](docs/CREDITS.md).
+
 ## License
 
 This project is open-source under the [Apache-2.0 License](LICENSE).

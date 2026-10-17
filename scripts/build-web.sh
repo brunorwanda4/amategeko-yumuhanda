@@ -8,6 +8,9 @@ cd "$PROJECT_ROOT"
 echo "Preparing questions..."
 bun website/scripts/prepare-questions.ts
 
+echo "Preparing third-party licenses..."
+bun website/scripts/prepare-credits.ts
+
 export CARGO_WEB_BUILD=1
 
 echo "Building web crate (profile: web)..."

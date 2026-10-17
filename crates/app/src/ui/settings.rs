@@ -15,6 +15,54 @@ use gpui_kit::component::{ActiveTheme, Icon, IconName};
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::*;
 
+const THIRD_PARTY_LICENSES: &str = include_str!("../../../../assets/THIRD_PARTY_LICENSES.txt");
+
+struct CreditTool {
+    name: &'static str,
+    purpose_key: &'static str,
+    license: &'static str,
+    url: &'static str,
+}
+
+const CREDIT_TOOLS: &[CreditTool] = &[
+    CreditTool {
+        name: "Rust",
+        purpose_key: "credits.purpose.rust",
+        license: "MIT OR Apache-2.0",
+        url: amategeko_core::links::RUST_URL,
+    },
+    CreditTool {
+        name: "GPUI",
+        purpose_key: "credits.purpose.gpui",
+        license: "Apache-2.0",
+        url: amategeko_core::links::GPUI_URL,
+    },
+    CreditTool {
+        name: "GPUI Kit",
+        purpose_key: "credits.purpose.gpui_kit",
+        license: "Apache-2.0",
+        url: amategeko_core::links::GPUI_KIT_URL,
+    },
+    CreditTool {
+        name: "gpui-mobile",
+        purpose_key: "credits.purpose.gpui_mobile",
+        license: "Apache-2.0",
+        url: amategeko_core::links::GPUI_MOBILE_URL,
+    },
+    CreditTool {
+        name: "Next.js",
+        purpose_key: "credits.purpose.nextjs",
+        license: "MIT",
+        url: amategeko_core::links::NEXTJS_URL,
+    },
+    CreditTool {
+        name: "Fumadocs",
+        purpose_key: "credits.purpose.fumadocs",
+        license: "MIT",
+        url: amategeko_core::links::FUMADOCS_URL,
+    },
+];
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SettingsAction {
     DecPassMark,
@@ -41,6 +89,10 @@ pub enum SettingsAction {
     ToggleSwipeNav,
     ToggleAutoUpdates,
     CheckUpdates,
+    OpenCredits,
+    CloseCredits,
+    OpenLicenses,
+    CloseLicenses,
 }
 
 pub struct SettingsView;
@@ -58,14 +110,28 @@ impl SettingsView {
         scroll_handle: &ScrollHandle,
         reveal_scrollbar: bool,
         confirm_clear: bool,
+        show_credits: bool,
+        show_licenses: bool,
         window: &mut Window,
         cx: &mut Context<V>,
         on_action: impl Fn(&mut V, SettingsAction, &mut Window, &mut Context<V>) + 'static + Copy,
-    ) -> impl IntoElement {
+    ) -> AnyElement {
         let theme = cx.theme();
         let colors = theme.colors;
         let s = &state.settings;
         let lang = s.language;
+        if show_credits {
+            return Self::render_credits(
+                is_desktop,
+                scroll_handle,
+                reveal_scrollbar,
+                show_licenses,
+                lang,
+                cx,
+                on_action,
+            )
+            .into_any_element();
+        }
         let update_status = crate::updater::status();
         let update_message = match &update_status {
             crate::updater::UpdateStatus::UpToDate => Some(t("update.uptodate", lang).to_string()),
@@ -740,6 +806,40 @@ impl SettingsView {
                                             ),
                                     )
                                     .child(Self::render_divider(&colors))
+                                    // Credits and licenses row
+                                    .child(
+                                        div()
+                                            .id("about_credits")
+                                            .flex()
+                                            .flex_row()
+                                            .items_center()
+                                            .justify_between()
+                                            .px_4()
+                                            .min_h(px(44.0))
+                                            .cursor_pointer()
+                                            .hover(|el| el.bg(colors.background))
+                                            .on_click(cx.listener(move |this, _, window, cx| {
+                                                on_action(
+                                                    this,
+                                                    SettingsAction::OpenCredits,
+                                                    window,
+                                                    cx,
+                                                );
+                                            }))
+                                            .child(
+                                                div()
+                                                    .text_sm()
+                                                    .font_semibold()
+                                                    .text_color(colors.foreground)
+                                                    .child(t("credits.title", lang)),
+                                            )
+                                            .child(
+                                                Icon::new(IconName::ChevronRight)
+                                                    .size(px(14.0))
+                                                    .text_color(colors.muted_foreground),
+                                            ),
+                                    )
+                                    .child(Self::render_divider(&colors))
                                     // Website row
                                     .child(
                                         Link::new("about_website")
@@ -867,6 +967,188 @@ impl SettingsView {
             )
             .when(is_desktop, |settings| {
                 settings.child(AppFooter::render(true, page_max_width(), lang, cx))
+            })
+            .into_any_element()
+    }
+
+    fn render_credits<V: 'static>(
+        is_desktop: bool,
+        scroll_handle: &ScrollHandle,
+        reveal_scrollbar: bool,
+        show_licenses: bool,
+        lang: Language,
+        cx: &mut Context<V>,
+        on_action: impl Fn(&mut V, SettingsAction, &mut Window, &mut Context<V>) + 'static + Copy,
+    ) -> impl IntoElement {
+        let colors = cx.theme().colors;
+        let tool_rows = CREDIT_TOOLS.iter().enumerate().map(|(index, tool)| {
+            Link::new(format!("credit_tool_{index}"))
+                .href(tool.url)
+                .open_with(|href, _, _, app_cx| {
+                    #[cfg(target_arch = "wasm32")]
+                    amategeko_core::platform::open_url(href);
+                    #[cfg(not(target_arch = "wasm32"))]
+                    app_cx.open_url(href);
+                })
+                .flex()
+                .flex_row()
+                .items_center()
+                .justify_between()
+                .gap_3()
+                .px_4()
+                .py_3()
+                .min_h(px(44.0))
+                .border_b_1()
+                .border_color(colors.border)
+                .hover(|el| el.bg(colors.background))
+                .child(
+                    div()
+                        .min_w_0()
+                        .flex()
+                        .flex_col()
+                        .gap_0p5()
+                        .child(
+                            div()
+                                .text_sm()
+                                .font_semibold()
+                                .text_color(colors.foreground)
+                                .child(tool.name),
+                        )
+                        .child(
+                            div()
+                                .text_xs()
+                                .text_color(colors.muted_foreground)
+                                .child(t(tool.purpose_key, lang)),
+                        ),
+                )
+                .child(
+                    div()
+                        .flex()
+                        .flex_row()
+                        .items_center()
+                        .gap_2()
+                        .child(
+                            div()
+                                .text_xs()
+                                .text_color(colors.muted_foreground)
+                                .child(tool.license),
+                        )
+                        .child(
+                            Icon::new(IconName::ExternalLink)
+                                .size(px(14.0))
+                                .text_color(colors.muted_foreground),
+                        ),
+                )
+                .into_any_element()
+        });
+
+        div()
+            .id("credits_scroll_view")
+            .track_scroll(scroll_handle)
+            .drag_scroll(scroll_handle)
+            .flex()
+            .flex_col()
+            .size_full()
+            .overflow_y_scroll()
+            .bg(colors.background)
+            .page_padding(is_desktop)
+            .child(vertical_scrollbar(
+                "credits_scrollbar",
+                scroll_handle,
+                is_desktop,
+                reveal_scrollbar,
+            ))
+            .child(
+                page_column()
+                    .gap_6()
+                    .child(
+                        div()
+                            .flex()
+                            .flex_row()
+                            .items_center()
+                            .gap_3()
+                            .child(
+                                Button::new("credits_back")
+                                    .outline()
+                                    .label(t("settings.cancel", lang))
+                                    .on_click(cx.listener(move |this, _, window, cx| {
+                                        on_action(
+                                            this,
+                                            if show_licenses {
+                                                SettingsAction::CloseLicenses
+                                            } else {
+                                                SettingsAction::CloseCredits
+                                            },
+                                            window,
+                                            cx,
+                                        );
+                                    })),
+                            )
+                            .child(
+                                div()
+                                    .text_2xl()
+                                    .font_family(crate::font::DISPLAY_FONT_FAMILY)
+                                    .font_bold()
+                                    .text_color(colors.foreground)
+                                    .child(if show_licenses {
+                                        t("credits.licenses", lang)
+                                    } else {
+                                        t("credits.title", lang)
+                                    }),
+                            ),
+                    )
+                    .when(!show_licenses, |page| {
+                        page.child(
+                            div()
+                                .text_sm()
+                                .text_color(colors.muted_foreground)
+                                .child(t("credits.thanks", lang)),
+                        )
+                        .child(
+                            div()
+                                .text_sm()
+                                .font_semibold()
+                                .text_color(colors.muted_foreground)
+                                .child(t("credits.builtwith", lang)),
+                        )
+                        .child(
+                            div()
+                                .flex()
+                                .flex_col()
+                                .overflow_hidden()
+                                .rounded_2xl()
+                                .border_1()
+                                .border_color(colors.border)
+                                .bg(colors.secondary)
+                                .children(tool_rows),
+                        )
+                        .child(
+                            Button::new("open_source_licenses")
+                                .primary()
+                                .label(t("credits.licenses", lang))
+                                .on_click(cx.listener(move |this, _, window, cx| {
+                                    on_action(this, SettingsAction::OpenLicenses, window, cx);
+                                })),
+                        )
+                    })
+                    .when(show_licenses, |page| {
+                        page.child(
+                            div()
+                                .min_w_0()
+                                .rounded_2xl()
+                                .border_1()
+                                .border_color(colors.border)
+                                .bg(colors.secondary)
+                                .p_4()
+                                .font_family("monospace")
+                                .text_xs()
+                                .text_color(colors.foreground)
+                                .child(THIRD_PARTY_LICENSES),
+                        )
+                    }),
+            )
+            .when(is_desktop, |credits| {
+                credits.child(AppFooter::render(true, page_max_width(), lang, cx))
             })
     }
 

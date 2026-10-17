@@ -174,5 +174,9 @@ website/public/app-spike/
 website/public/app/
 website/public/runtime/
 website/public/assets/
+website/public/THIRD_PARTY_LICENSES.txt
 
 crates/web/generated/
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat

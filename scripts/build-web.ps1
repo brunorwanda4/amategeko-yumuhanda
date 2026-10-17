@@ -10,6 +10,13 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
+Write-Host "Preparing third-party licenses..."
+bun website/scripts/prepare-credits.ts
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "prepare-credits.ts failed"
+    exit 1
+}
+
 $env:CARGO_WEB_BUILD = "1"
 
 Write-Host "Building web crate (profile: web)..."
