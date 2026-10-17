@@ -130,6 +130,12 @@ export default function AboutPage() {
             It is free, it works offline, and you can use it too.
           </strong>
         </p>
+        <p>
+          Built with great open-source tools.{" "}
+          <Link href="/credits" className="font-medium text-foreground underline underline-offset-4">
+            See the credits.
+          </Link>
+        </p>
       </div>
 
       {/* Stats Cards */}
