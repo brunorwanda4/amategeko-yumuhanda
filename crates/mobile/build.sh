@@ -216,31 +216,31 @@ build_ios() {
         cd "$GPUI_ROOT"
         cargo clean --target "$rust_target" 2>/dev/null || true
 
-        if [[ -d "$IOS_DIR/GpuiExample.xcodeproj" ]]; then
+        if [[ -d "$IOS_DIR/Amategeko.xcodeproj" ]]; then
             info "Cleaning Xcode derived data..."
             xcodebuild clean \
-                -project "$IOS_DIR/GpuiExample.xcodeproj" \
-                -scheme GpuiExample \
+                -project "$IOS_DIR/Amategeko.xcodeproj" \
+                -scheme Amategeko \
                 -configuration "$xcode_config" \
                 2>/dev/null || true
         fi
     fi
 
-    # ── Build the example crate (it depends on gpui-mobile, so both are built) ─
-    step "Building example crate for ${rust_target} (${PROFILE})"
+    # ── Build the mobile crate ───────────────────────────────────────────
+    step "Building mobile crate for ${rust_target} (${PROFILE})"
 
-    cd "$EXAMPLES_DIR"
-    cargo build \
+    cd "$PROJECT_ROOT"
+    cargo build -p mobile \
         --target "$rust_target" \
         $cargo_profile_flag \
         2>&1
 
-    local example_lib="$EXAMPLES_DIR/target/${rust_target}/${cargo_profile_dir}/libgpui_mobile_example.a"
+    local example_lib="$PROJECT_ROOT/target/${rust_target}/${cargo_profile_dir}/libgpui_mobile_app.a"
     if [[ ! -f "$example_lib" ]]; then
-        error "Example static library not found at: $example_lib"
+        error "Mobile static library not found at: $example_lib"
         exit 1
     fi
-    info "Example static library: $example_lib"
+    info "Mobile static library: $example_lib"
 
     # ── Generate Xcode project via XcodeGen ──────────────────────────────
     step "Generating Xcode project with XcodeGen"
@@ -252,7 +252,7 @@ build_ios() {
 
     cd "$IOS_DIR"
     xcodegen generate --spec project.yml
-    info "Xcode project generated at: $IOS_DIR/GpuiExample.xcodeproj"
+    info "Xcode project generated at: $IOS_DIR/Amategeko.xcodeproj"
 
     # ── Build with xcodebuild ────────────────────────────────────────────
     step "Building Xcode project (${xcode_config}, ${xcode_sdk})"
@@ -270,8 +270,8 @@ build_ios() {
         # devicectl returns a CoreDevice UUID which does NOT match the UDID
         # that xcodebuild expects in "-destination id=...".
         device_id=$(xcodebuild \
-            -project GpuiExample.xcodeproj \
-            -scheme GpuiExample \
+            -project Amategeko.xcodeproj \
+            -scheme Amategeko \
             -showdestinations 2>/dev/null \
             | grep "platform:iOS," \
             | grep -v Simulator \
@@ -299,8 +299,8 @@ build_ios() {
     fi
 
     xcodebuild \
-        -project GpuiExample.xcodeproj \
-        -scheme GpuiExample \
+        -project Amategeko.xcodeproj \
+        -scheme Amategeko \
         -configuration "$xcode_config" \
         -destination "$resolved_destination" \
         -derivedDataPath "$build_dir" \
@@ -358,7 +358,7 @@ _ios_run_simulator() {
     xcrun simctl install "$sim_id" "$app_path"
 
     info "Launching app..."
-    xcrun simctl launch --terminate-running-process "$sim_id" dev.gpui.mobile.example
+    xcrun simctl launch --terminate-running-process "$sim_id" rw.amategeko.app
     info "App launched on simulator! 🚀"
 }
 
@@ -376,7 +376,7 @@ _ios_run_device() {
 
     # Find the .app bundle for iphoneos
     local app_path
-    app_path=$(find "$build_dir" -path "*/Build/Products/${xcode_config}-iphoneos/GpuiExample.app" -type d | head -1)
+    app_path=$(find "$build_dir" -path "*/Build/Products/${xcode_config}-iphoneos/Amategeko.app" -type d | head -1)
 
     if [[ -z "$app_path" ]]; then
         error "Could not find .app bundle in build output."
@@ -396,7 +396,7 @@ _ios_run_device() {
         info "Launching app on device..."
         xcrun devicectl device process launch \
             --device "$device_id" \
-            dev.gpui.mobile.example \
+            rw.amategeko.app \
             2>&1 || true
 
         info "App launched on device! 🚀"
