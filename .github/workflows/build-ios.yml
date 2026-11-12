@@ -1,0 +1,111 @@
+name: Build iOS (IPA)
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: 'Build profile'
+        required: true
+        default: 'release'
+        type: choice
+        options:
+          - release
+          - debug
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build iOS App (.ipa)
+    runs-on: macos-14
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Select Xcode version
+        run: sudo xcode-select -switch /Applications/Xcode_16.0.app || sudo xcode-select -switch /Applications/Xcode.app
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # master
+        with:
+          toolchain: stable
+          targets: aarch64-apple-ios
+
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@63fed3e2fecf6f7b51dc6f043341b79ef82a9ae7 # v2.9.2
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Build Rust static library for iOS
+        run: |
+          PROFILE_FLAG=""
+          if [ "${{ inputs.profile || 'release' }}" = "release" ]; then
+            PROFILE_FLAG="--release"
+          fi
+          cargo build -p mobile --target aarch64-apple-ios $PROFILE_FLAG
+
+          STATIC_LIB="target/aarch64-apple-ios/${{ inputs.profile || 'release' }}/libgpui_mobile_app.a"
+          if [ ! -f "$STATIC_LIB" ]; then
+            echo "Error: static library not found at $STATIC_LIB" >&2
+            exit 1
+          fi
+          ls -lh "$STATIC_LIB"
+
+      - name: Generate Xcode project
+        run: |
+          cd crates/mobile/ios
+          xcodegen generate --spec project.yml
+
+      - name: Build iOS Application bundle
+        run: |
+          CONFIG="Release"
+          if [ "${{ inputs.profile || 'release' }}" = "debug" ]; then
+            CONFIG="Debug"
+          fi
+
+          xcodebuild \
+            -project crates/mobile/ios/Amategeko.xcodeproj \
+            -scheme Amategeko \
+            -configuration "$CONFIG" \
+            -destination "generic/platform=iOS" \
+            -derivedDataPath crates/mobile/ios/build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Package .ipa artifact
+        run: |
+          CONFIG="Release"
+          if [ "${{ inputs.profile || 'release' }}" = "debug" ]; then
+            CONFIG="Debug"
+          fi
+
+          APP_PATH=$(find crates/mobile/ios/build -name "Amategeko.app" -type d | head -1)
+          if [ -z "$APP_PATH" ]; then
+            echo "Error: Amategeko.app not found in build directory" >&2
+            exit 1
+          fi
+
+          echo "Found app bundle at: $APP_PATH"
+          mkdir -p ipa_export/Payload
+          cp -r "$APP_PATH" ipa_export/Payload/
+          cd ipa_export
+          zip -qr ../Amategeko-iOS-unsigned.ipa Payload
+          cd ..
+          ls -lh Amategeko-iOS-unsigned.ipa
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        with:
+          name: Amategeko-iOS-unsigned
+          path: Amategeko-iOS-unsigned.ipa
+          if-no-files-found: error
