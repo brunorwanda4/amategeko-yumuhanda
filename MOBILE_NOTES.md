@@ -66,3 +66,23 @@ Output APK is located at `crates/mobile/android/app/build/outputs/apk/debug/app-
 - Publishable sideload builds now require a previously published production APK as `-SigningBaselineApk` / `--signing-baseline-apk` and fail when the signer changes.
 - `-AllowDebugSigning` remains for local test artifacts and those `debugsigned` files must never be uploaded as releases.
 - The public v1.8.0 main APK was byte-for-byte identical to its debug-signed asset. Use the explicit existing-user update mode and the v1.8.0 APK baseline so later versions remain installable over it.
+
+## 5. iOS Build Pipeline & Cloud Sideload Packaging
+
+- **Architecture**:
+  - Rust static library (`libgpui_mobile_app.a`) compiled for `aarch64-apple-ios` (or `aarch64-apple-ios-sim` for simulator).
+  - XcodeGen spec in `crates/mobile/ios/project.yml` generates `Amategeko.xcodeproj`.
+  - Swift entry point in `crates/mobile/ios/App.swift` hosts GPUI via `gpui_ios_set_embedded`, `gpui_ios_register_app`, and `gpui_ios_run_demo`.
+  - Application bundle ID: `rw.amategeko.app`.
+
+- **Building locally on macOS**:
+  ```bash
+  cd crates/mobile
+  ./build.sh ios --device --release --no-run
+  ```
+
+- **Cloud Build (without a Mac)**:
+  - Run the GitHub Actions workflow `.github/workflows/build-ios.yml` (`workflow_dispatch`).
+  - It compiles on GitHub's macOS runner (`macos-14`) and produces `Amategeko-iOS-unsigned.ipa` as an artifact.
+  - Sideloading: connect an iPhone to a Windows PC or Mac running [Sideloadly](https://sideloadly.io) or AltServer, drag the `.ipa`, and sign with a free Apple ID.
+
