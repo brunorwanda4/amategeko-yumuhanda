@@ -99,8 +99,14 @@ Tracking milestones for "Amategeko y'Umuhanda" (Rwanda driving-test theory study
   - [x] Add responsive author credit footer to Home and Settings (2026-10-04)
   - [x] Fix long question and option wrapping, sidebar overflow, and Easy elapsed-time defaults and resume behavior (2026-10-04)
   - [x] Fast development loop (auto rebuild + restore state) (2026-10-04: justfile / scripts/dev.ps1 with watchexec, Cargo dev profile optimization [opt-level=1, line-tables-only, dependencies opt-level=3 reducing rebuilds from 34.02s to 11.75s], debug-only dev_state.json screen/filter/scroll restoration, and --timer 30s flag)
-  - [x] Add GPUI Kit scrollbars to every vertical app viewport, with responsive visibility, draggable desktop thumbs, reserved gutters, and persistent per-screen offsets (2026-10-04)
-- [ ] **Milestone 13: Optional iOS Verification** (Requires macOS + Xcode 15+)
+- [x] **Milestone 13: Optional iOS Verification & Cloud Build** (Configured 2026-11-12)
+  - [x] iOS XcodeGen project specification (`crates/mobile/ios/project.yml`)
+  - [x] Swift entry point & GPUI host view controller (`crates/mobile/ios/App.swift`)
+  - [x] Objective-C / C bridging headers (`Embedding.h`, `gpui_ios.h`)
+  - [x] Info.plist, LaunchScreen storyboard, and 1024x1024 branded app icon
+  - [x] Mobile build script updated for `Amategeko` static library and bundle ID
+  - [x] Cloud macOS CI workflow (`.github/workflows/build-ios.yml`) generating unsigned `.ipa` for Sideloadly/AltStore
+
 
 ## Releases
 
